@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: ISC AND MIT
+// Adapted icon artwork; see THIRD_PARTY_NOTICES.md and LICENSES/.
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor

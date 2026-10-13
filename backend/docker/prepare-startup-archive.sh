@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: MPL-2.0
+
 set -euo pipefail
 
 app_home=${1:-/app}

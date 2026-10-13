@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 package dev.vladleesi.braindanceapp.data.api.clients
 
 import dev.vladleesi.braindanceapp.BuildKonfig

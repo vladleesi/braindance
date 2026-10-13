@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 
 import com.codingfeline.buildkonfig.compiler.FieldSpec

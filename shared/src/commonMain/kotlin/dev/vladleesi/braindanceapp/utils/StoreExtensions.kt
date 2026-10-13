@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 package dev.vladleesi.braindanceapp.utils
 
 import dev.vladleesi.braindanceapp.data.models.games.WebsiteType

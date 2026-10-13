@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 package dev.vladleesi.braindanceapp.ui.components.details
 
 import androidx.compose.foundation.layout.Arrangement

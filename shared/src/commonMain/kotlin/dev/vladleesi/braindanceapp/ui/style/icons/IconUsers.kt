@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: ISC AND MIT
+// Adapted icon artwork; see THIRD_PARTY_NOTICES.md and LICENSES/.
+
 package dev.vladleesi.braindanceapp.ui.style.icons
 
 import androidx.compose.ui.graphics.Color

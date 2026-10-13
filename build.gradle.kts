@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 

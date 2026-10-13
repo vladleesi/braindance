@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 package dev.vladleesi.braindanceapp.logger
 
 import io.github.aakira.napier.DebugAntilog

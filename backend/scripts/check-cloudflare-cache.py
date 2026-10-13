@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MPL-2.0
+
 """Check the configured edge with dummy credentials; never prints response bodies or secret headers."""
 
 import sys

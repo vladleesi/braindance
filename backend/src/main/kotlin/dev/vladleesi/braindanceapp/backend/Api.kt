@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 @file:Suppress("MagicNumber", "StringLiteralDuplication")
 
 package dev.vladleesi.braindanceapp.backend

@@ -129,5 +129,25 @@ and add both Twitch secrets for IGDB requests. A fresh clone does not include an
 
 ## License
 
-Braindance is licensed under [GPL-3.0](LICENSE). Report issues through the
+Braindance's first-party source, build scripts, configuration, and documentation use [MPL-2.0](LICENSE).
+Commercial use is permitted. Keep distributed covered files and modifications under MPL, preserve required notices,
+and provide binary recipients with the matching source. See the [Mozilla FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/).
+
+For first-party files without inline comments, this notice applies:
+
+> This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+> If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+Third-party components, external data, and artwork are outside this grant; see
+[third-party terms and asset exclusions](THIRD_PARTY_NOTICES.md). Previously published GPL versions retain their rights.
+
+### Contributions and future development
+
+Contribute work you have permission to license under MPL-2.0. Add `SPDX-License-Identifier: MPL-2.0` to new
+first-party source, preserve upstream notices, and run `python3 .github/scripts/check-licenses.py` after licensing changes.
+
+Commercial forks and paid services are permitted. Future subscriptions should enforce entitlements on a trusted
+backend. Verify API commercial permissions and store payment rules separately; MPL does not guarantee store approval.
+
+Report issues through the
 [GitHub issue tracker](https://github.com/vladleesi/braindance/issues).
