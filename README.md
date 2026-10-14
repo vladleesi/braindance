@@ -1,5 +1,10 @@
 # Braindance
 
+[![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square)](https://kotlinlang.org/docs/multiplatform.html) [![Platforms](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web-0D9488?style=flat-square)](#platforms) [![App version](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=app&color=2563EB&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![CI](https://img.shields.io/github/actions/workflow/status/vladleesi/braindance/build-test-push.yml?branch=develop&event=push&label=CI&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml) [![License](https://img.shields.io/badge/license-MPL--2.0-B45309?style=flat-square)](https://github.com/vladleesi/braindance/blob/master/LICENSE)
+
+A game-tracking app for Android, iOS, and Web, built with Kotlin Multiplatform and Compose Multiplatform,
+powered by IGDB.
+
 > **Important:**
 > It is an ongoing project and is currently under development. However, I'm actively working on adding new features, enhancing existing functionality, and addressing any issues or bugs.
 
