@@ -2,6 +2,8 @@
 
 Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.5.1**. Use JDK 21 and run commands from the repository
 root. Twitch credentials stay on the backend; GamerPower needs no key.
+This reference is for backend development and optional independent hosting. For app availability, see the
+[project README](../README.md#platforms); for client setup, see the [development guide](../docs/development.md).
 
 ## Configuration
 
@@ -50,6 +52,8 @@ The Dockerfile requires the prepared distribution. To run without Docker, use
 replaces its default `-Xshare:auto -XX:SharedArchiveFile=/app/startup.jsa` options.
 
 ## Hosting
+
+Independent hosting is optional; use these instructions when running a backend for development or your own build.
 
 Use any Java 21 or container host. Configure HTTPS, runtime secrets, process restarts, and abuse controls.
 Set `PUBLIC_BASE_URL` to the external HTTPS API origin and `CORS_ALLOWED_ORIGINS` to your website origins, without
