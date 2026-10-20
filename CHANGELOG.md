@@ -18,11 +18,7 @@ History begins with the introduction of shared version tracking in `version.xcco
 
 ## 0.3.0
 
-### Android
-
-- Update network loading for game covers and giveaway images while retaining disk caching.
-
-### iOS
+### Android and iOS
 
 - Update network loading for game covers and giveaway images while retaining disk caching.
 
@@ -39,21 +35,16 @@ History begins with the introduction of shared version tracking in `version.xcco
 
 ## 0.2.0
 
-### Android
-
-- Load giveaway lists and details through the configured backend alongside game data.
-
-### iOS
+### Android and iOS
 
 - Load giveaway lists and details through the configured backend alongside game data.
 
 ## 0.1.0
 
+### Android and iOS
+
+- Begin shared Android/iOS version tracking at version `0.1.0`, build `1`.
+
 ### Android
 
-- Begin shared Android/iOS version tracking at version `0.1.0`, build `1`.
 - Remove the `-release` suffix from release version names.
-
-### iOS
-
-- Begin shared Android/iOS version tracking at version `0.1.0`, build `1`.

@@ -61,12 +61,11 @@ fun configureDetektTasks(tasks: NamedDomainObjectContainer<Task>) {
     tasks.withType<Detekt> {
         if (name == detektTaskName) setSource(files(project.projectDir))
         exclude("**/build/**")
+        val buildDir =
+            project.layout.buildDirectory.asFile
+                .get()
         exclude {
-            val buildDirPath =
-                project.layout.buildDirectory.asFile
-                    .get()
-                    .toPath()
-            val isInBuildDir = it.file.toPath().startsWith(buildDirPath)
+            val isInBuildDir = it.file.toPath().startsWith(buildDir.toPath())
             return@exclude isInBuildDir
         }
     }

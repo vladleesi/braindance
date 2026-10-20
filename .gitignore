@@ -11,6 +11,7 @@ local.properties
 .env.*
 !.env.example
 .deployment/
+.local-docs/
 gha-creds-*.json
 application_default_credentials.json
 xcuserdata

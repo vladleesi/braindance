@@ -29,7 +29,7 @@ internal const val PUBLIC_CACHE_ELIGIBLE_HEADER = "X-Public-Cache-Eligible"
 private const val MIN_ORIGIN_SECRET_LENGTH = 32
 private val proxyTransportHeaders = setOf("forwarded", "x-forwarded-host", "transfer-encoding")
 
-// Keep the Cloudflare expression in cloudflare.md in sync. Presence, including an empty value, bypasses cache.
+// Keep reverse-proxy eligibility rules aligned with this list. Even empty headers bypass cache.
 internal val cacheBypassHeaders =
     setOf(
         "authorization",
@@ -94,7 +94,7 @@ private fun ApplicationCall.canCachePublicResponse(
     ) {
         return false
     }
-    // Cloud Run can rewrite transport headers. A guarded Cloudflare attestation checks the original request.
+    // Proxies can rewrite transport headers. A guarded attestation checks the original request.
     val guarded = config.cloudflareOriginSecret != null
     if (
         guarded &&
