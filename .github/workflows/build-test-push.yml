@@ -217,11 +217,15 @@ jobs:
 
       - name: Push Changes to Master
         id: promote
-        # Keep master as an exact promotion of the validated develop commit.
+        # Fast-forward master to the validated develop commit without rewriting history.
         run: |
           before_sha="$(git rev-parse --verify refs/remotes/origin/master 2>/dev/null || true)"
+          if [ -n "$before_sha" ] && ! git merge-base --is-ancestor "$before_sha" HEAD; then
+            echo "::error::Master cannot fast-forward to this revision. Merge master into develop and rerun validation."
+            exit 1
+          fi
           echo "before_sha=$before_sha" >> "$GITHUB_OUTPUT"
-          git push --force origin HEAD:master
+          git push origin HEAD:refs/heads/master
 
   publish-promoted-backend:
     name: Publish and Deploy Promoted Backend

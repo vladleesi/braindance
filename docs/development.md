@@ -119,8 +119,11 @@ Backend version `0.5.1` is independent, in `backend/build.gradle.kts`. Update it
 the README/backend guide version text and examples synchronized. Use one final increment per affected product;
 documentation, tests, formatting, and CI-only changes do not need version bumps.
 
-CI validates `develop` and `master`, then promotes successful `develop` pushes to `master`. Frontend version changes
-publish one `app-vMAJOR.MINOR.PATCH` source release after all checks pass for that commit on `master`.
+CI validates `develop` and `master`, then fast-forwards successful `develop` pushes to `master` without force pushes.
+If the branches diverge, merge `master` into `develop` and push to run validation again.
+Web publication appends commits to `web-app`, preserving its history and removing obsolete generated files.
+Frontend version changes publish one `app-vMAJOR.MINOR.PATCH` source release after all checks pass for that commit on
+`master`.
 The [release workflow](../.github/workflows/release-frontend.yml) reads that version's changelog entry.
 Existing releases are preserved; pull requests and manual validation do not publish frontend releases.
 Retry failed publication through the failed workflow jobs.
