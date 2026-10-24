@@ -9,8 +9,7 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: write
+permissions: {}
 
 concurrency:
   group: frontend-release
@@ -20,9 +19,12 @@ jobs:
   publish-frontend-release:
     name: Publish Android, iOS, and Web Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout Validated Revision
+      # This trusted release job fetches Git refs and runs no project build code.
+      - name: Checkout Validated Revision # zizmor: ignore[artipacked]
         uses: actions/checkout@v7
         with:
           ref: ${{ inputs.source_sha }}

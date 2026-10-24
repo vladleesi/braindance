@@ -2,6 +2,13 @@
 
 Release notes for Android, iOS, and Web. Each version includes only platforms with user-visible changes.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
+Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
+
+## 0.3.3
+
+### Android
+
+- Restrict backups and device transfers to approved exports and require encryption for cloud backups.
 
 ## 0.3.2
 

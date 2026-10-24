@@ -24,6 +24,7 @@ android {
         minSdk = 24
         versionCode = mobileVersionProperties.getProperty("CURRENT_PROJECT_VERSION").toInt()
         versionName = mobileVersionProperties.getProperty("MARKETING_VERSION")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
         compose = true
@@ -62,4 +63,6 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.koin.android)
     debugImplementation(libs.compose.ui.tooling)
+    androidTestImplementation(libs.androidx.tests.ext.junit)
+    androidTestImplementation(libs.androidx.tests.runner)
 }

@@ -89,7 +89,7 @@ Allow that exact origin in the backend's CORS configuration before checking data
 
 Run the checks relevant to your changes; the [validation workflow](../.github/workflows/build-test-push.yml)
 defines the complete CI environment. It checks licenses, Android builds and unit/instrumented tasks, the production
-Web bundle, the iOS Simulator framework, and the backend build and container.
+Web bundle, the iOS Simulator framework, the backend build and container, and the security checks below.
 
 | Check | Command |
 | --- | --- |
@@ -102,22 +102,52 @@ Web bundle, the iOS Simulator framework, and the backend build and container.
 | Formatting and static analysis | `./gradlew ktlintFormat detekt` |
 | Repository license notices | `python3 .github/scripts/check-licenses.py` |
 
-Android connected checks need a running emulator or device; CI covers API 24 and 35. iOS checks require macOS/Xcode.
+Android connected checks need a running emulator or device; CI covers API 24 and 35, including packaged backup rules.
+iOS checks require macOS/Xcode.
 Backend tests use `TEST_REDIS_URL` for optional integration tests against a disposable Redis database; CI supplies it.
 Some frontend test tasks currently have no test sources, so their success alone does not establish behavior coverage.
 Detekt enables autocorrection; review the diff after formatting and analysis. Report any unavailable platform checks
 in your pull request. Documentation-only changes need link and accuracy checks, not a local application build.
 
+### Security checks
+
+- CodeQL analyzes the backend and Android compilation, including shared Kotlin sources, and blocks high/critical
+  findings. This does not cover Swift, platform-specific iOS Kotlin, or the Wasm runtime completely.
+  Android backups remain enabled with versioned allowlists; the blanket backup recommendation is excluded in
+  [`.github/codeql-config.yml`](../.github/codeql-config.yml).
+- Dependency Review blocks pushes and PRs introducing known high/critical vulnerabilities. The dependency graph
+  workflows resolve Gradle dependencies with read-only permissions, then submit snapshot data without executing PR code.
+  Both compared revisions are resolved automatically. Push validation waits for submission before review; public
+  fork PRs use a separate submission workflow. Incomplete snapshots fail the check after waiting for submission.
+  Keep Dependency graph and Dependabot alerts enabled in repository settings.
+- Trivy scans backend images for high/critical OS and library vulnerabilities during validation and again before
+  publication. Unfixed vulnerabilities also block publication; review findings rather than suppressing them broadly.
+- zizmor checks workflow security. Actions use readable release tags; the policy is in
+  [`.github/zizmor.yml`](../.github/zizmor.yml).
+- Keep GitHub secret scanning and push protection enabled to detect credentials and block supported secret patterns.
+
+[Security Checks](../.github/workflows/security.yml) runs through validation and weekly, with a manual trigger.
+Dependency snapshots also refresh weekly. Scheduled scans do not deploy.
+Security failures block automated promotion and publication, including Web publication after direct `master` pushes.
+Configure branch rulesets to require the security and validation checks for PR merges; workflow dependencies alone
+do not prevent direct Git pushes. The fork PR submission workflow must be present on the default branch to run.
+
+Android backup and device-transfer rules allow only `filesDir/backup_exports/`, reserved for reviewed, non-sensitive
+exports. The app currently writes no exports there. Keep credentials, private databases, and device-specific state
+outside that directory. Cloud backup requires client-side encryption on Android 9 and newer; Android 7-8.1 excludes
+all app data. Revisit both legacy backup rules and Android 12+ extraction rules when adding persistent user data.
+
 ## Versions and releases
 
-Frontend version `0.3.2` comes from root `version.xcconfig`. Keep Android, iOS, and Web on the same SemVer value;
+Frontend version `0.3.3` comes from root `version.xcconfig`. Keep Android, iOS, and Web on the same SemVer value;
 Android and iOS also share its positive integer build number. Update both values for frontend runtime changes and
 maintain the matching `## MAJOR.MINOR.PATCH` entry in [CHANGELOG.md](../CHANGELOG.md). Group identical user-visible
 notes under a shared platform heading; omit unchanged platforms. Keep the README's version and release link current.
 
-Backend version `0.5.1` is independent, in `backend/build.gradle.kts`. Update it for backend runtime changes and keep
-the README/backend guide version text and examples synchronized. Use one final increment per affected product;
-documentation, tests, formatting, and CI-only changes do not need version bumps.
+Backend version `0.5.2` is independent, in `backend/build.gradle.kts`. Update it for backend runtime changes and keep
+the README/backend guide version text and examples synchronized. Maintain the matching version's release notes in
+[backend/CHANGELOG.md](../backend/CHANGELOG.md). Use one final increment per affected product; documentation, tests,
+formatting, and CI-only changes do not need version bumps.
 
 CI validates `develop` and `master`, then fast-forwards successful `develop` pushes to `master` without force pushes.
 If the branches diverge, merge `master` into `develop` and push to run validation again.

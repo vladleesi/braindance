@@ -1,0 +1,6 @@
+rules:
+  unpinned-uses:
+    config:
+      # Use readable release tags for GitHub Actions.
+      policies:
+        '*': ref-pin

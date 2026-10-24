@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- An include allowlist excludes all other domains and paths, including future credentials and databases. -->
+<data-extraction-rules>
+    <cloud-backup disableIfNoEncryptionCapabilities="true">
+        <include domain="file" path="backup_exports/" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="file" path="backup_exports/" />
+    </device-transfer>
+</data-extraction-rules>

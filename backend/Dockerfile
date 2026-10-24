@@ -2,7 +2,9 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY build/install/backend/ /app/
 COPY docker/prepare-startup-archive.sh /tmp/prepare-startup-archive.sh
-RUN bash /tmp/prepare-startup-archive.sh /app \
+# The JVM entrypoint does not use the service manager inherited from the base image.
+RUN rm -f /usr/bin/pebble \
+    && bash /tmp/prepare-startup-archive.sh /app \
     && rm /tmp/prepare-startup-archive.sh \
     && chmod -R a=rX /app
 ENV JAVA_OPTS="-Xshare:auto -XX:SharedArchiveFile=/app/startup.jsa"

@@ -1,9 +1,10 @@
 # Braindance API
 
-Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.5.1**. Use JDK 21 and run commands from the repository
+Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.5.2**. Use JDK 21 and run commands from the repository
 root. Twitch credentials stay on the backend; GamerPower needs no key.
 This reference is for backend development and optional independent hosting. For app availability, see the
 [project README](../README.md#platforms); for client setup, see the [development guide](../docs/development.md).
+See the [backend changelog](CHANGELOG.md) for release notes.
 
 ## Configuration
 
@@ -43,8 +44,8 @@ To test, package, and run a container:
 
 ```sh
 ./gradlew :backend:test :backend:installDist
-docker build -f backend/Dockerfile -t braindance-api:0.5.1 backend
-docker run --env-file backend/.env -p 8080:8080 braindance-api:0.5.1
+docker build -f backend/Dockerfile -t braindance-api:0.5.2 backend
+docker run --env-file backend/.env -p 8080:8080 braindance-api:0.5.2
 ```
 
 The Dockerfile requires the prepared distribution. To run without Docker, use

@@ -1,0 +1,95 @@
+name: Generate Dependency Graph
+
+on:
+  workflow_call:
+  pull_request:
+    branches: [develop, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-graph:
+    name: Resolve Gradle Dependencies (${{ matrix.revision }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        revision: [base, head]
+    env:
+      # Keep the same manifest/correlator for both revisions and all workflow triggers.
+      GITHUB_DEPENDENCY_GRAPH_JOB_CORRELATOR: braindance-gradle
+    steps:
+      - name: Select Dependency Revision
+        id: source
+        env:
+          REVISION: ${{ matrix.revision }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_BRANCH: ${{ github.base_ref }}
+          PUSH_BASE_SHA: ${{ github.event.before }}
+        run: |
+          head_sha="${PR_HEAD_SHA:-$GITHUB_SHA}"
+          base_sha="${PR_BASE_SHA:-${PUSH_BASE_SHA:-$head_sha}}"
+          if [[ "$base_sha" =~ ^0+$ ]]; then base_sha="$head_sha"; fi
+          source_sha="$head_sha"
+          source_ref="$GITHUB_REF"
+          if [ "$REVISION" = base ]; then
+            source_sha="$base_sha"
+            if [ -n "$PR_BASE_BRANCH" ]; then source_ref="refs/heads/$PR_BASE_BRANCH"; fi
+          fi
+          echo "sha=$source_sha" >> "$GITHUB_OUTPUT"
+          echo "ref=$source_ref" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          ref: ${{ steps.source.outputs.sha }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+
+      - name: Install Android SDK Platform 37
+        run: android sdk install platforms/android-37
+
+      - name: Set up Gradle Dependency Reporting
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          dependency-graph: generate
+          dependency-graph-report-dir: dependency-graph-reports/${{ matrix.revision }}
+          cache-read-only: true
+
+      - name: Resolve Dependency Snapshot
+        id: snapshot
+        env:
+          GITHUB_DEPENDENCY_GRAPH_SHA: ${{ steps.source.outputs.sha }}
+          GITHUB_DEPENDENCY_GRAPH_REF: ${{ steps.source.outputs.ref }}
+        run: ./gradlew :ForceDependencyResolutionPlugin_resolveAllDependencies --no-configuration-cache --stacktrace
+
+      - name: Name Snapshot Artifact by Revision
+        # Distinct filenames keep the base and head snapshots separate when downloaded together.
+        env:
+          SNAPSHOT: ${{ steps.snapshot.outputs.dependency-graph-file }}
+          REVISION: ${{ matrix.revision }}
+        run: |
+          test -s "$SNAPSHOT"
+          mv "$SNAPSHOT" "$(dirname "$SNAPSHOT")/$REVISION.json"
+
+      - name: Upload Dependency Snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-graph_${{ matrix.revision }}
+          path: dependency-graph-reports/${{ matrix.revision }}/${{ matrix.revision }}.json
+          if-no-files-found: error
+          retention-days: 1

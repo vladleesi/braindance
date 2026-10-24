@@ -37,7 +37,8 @@ jobs:
       deploy: ${{ steps.changes.outputs.deploy }}
       source_sha: ${{ steps.changes.outputs.source_sha }}
     steps:
-      - name: Checkout Backend Revision
+      # Retain read-only Git authentication for the baseline fetch; this job runs no project code.
+      - name: Checkout Backend Revision # zizmor: ignore[artipacked]
         uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && 'master' || github.sha }}
@@ -95,6 +96,7 @@ jobs:
       - name: Checkout Validated Revision
         uses: actions/checkout@v7
         with:
+          persist-credentials: false
           ref: ${{ needs.changes.outputs.source_sha }}
 
       - name: Read Backend Version
@@ -119,15 +121,8 @@ jobs:
       - name: Test and Package Backend
         run: ./gradlew :backend:build :backend:installDist --stacktrace
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Publish Backend Image
-        id: publish
+      - name: Build Backend Image
+        id: image
         env:
           IMAGE: ghcr.io/${{ github.repository }}/backend
           BACKEND_VERSION: ${{ steps.backend-version.outputs.value }}
@@ -135,6 +130,35 @@ jobs:
         run: |
           image="$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')"
           docker build -f backend/Dockerfile -t "$image:$BACKEND_VERSION" -t "$image:$SOURCE_SHA" backend
+          echo "name=$image" >> "$GITHUB_OUTPUT"
+
+      - name: Scan Backend Image Before Publication
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ steps.image.outputs.name }}:${{ needs.changes.outputs.source_sha }}
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
+          format: table
+          cache: false
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Scanned Backend Image
+        id: publish
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          BACKEND_VERSION: ${{ steps.backend-version.outputs.value }}
+          SOURCE_SHA: ${{ needs.changes.outputs.source_sha }}
+        run: |
+          image="$IMAGE"
           docker push "$image:$BACKEND_VERSION"
           docker push "$image:${SOURCE_SHA}"
           published_image="$(docker image inspect "$image:${SOURCE_SHA}" --format '{{index .RepoDigests 0}}')"
@@ -156,7 +180,8 @@ jobs:
       PUBLISHED_IMAGE: ${{ needs.publish.outputs.image }}
       SOURCE_SHA: ${{ needs.changes.outputs.source_sha }}
     steps:
-      - name: Checkout Published Revision
+      # Retain read-only Git authentication to check the current master revision before deployment.
+      - name: Checkout Published Revision # zizmor: ignore[artipacked]
         uses: actions/checkout@v7
         with:
           ref: ${{ needs.changes.outputs.source_sha }}

@@ -1,0 +1,48 @@
+name: Submit Dependency Graph
+
+on:
+  workflow_call:
+  # This workflow submits JSON artifacts only; it checks out no code and uses no build cache.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: [Generate Dependency Graph]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  submit:
+    name: Submit Resolved Dependencies
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      # Never check out or execute project code in this job with write permissions.
+      - name: Download Base Dependency Snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: dependency-graph_base
+          path: dependency-snapshots
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Download Head Dependency Snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: dependency-graph_head
+          path: dependency-snapshots
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Submit Dependency Snapshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Submit the head last so the branch's latest snapshot describes its current dependencies.
+          for revision in base head; do
+            snapshot="dependency-snapshots/$revision.json"
+            test -s "$snapshot"
+            gh api --method POST "repos/$GITHUB_REPOSITORY/dependency-graph/snapshots" --input "$snapshot" --silent
+          done

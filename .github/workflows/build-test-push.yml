@@ -6,13 +6,21 @@ on:
     branches: [develop, master]
   # Pull requests run the same checks but never promote or deploy.
   pull_request:
-    branches: [develop]
+    branches: [develop, master]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  security-checks:
+    name: Security Checks
+    permissions:
+      actions: read
+      contents: write
+      security-events: write
+    uses: ./.github/workflows/security.yml
+
   repository-license-notices:
     name: Repository License Notices
     runs-on: ubuntu-latest
@@ -20,6 +28,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Check Repository License Notices
         run: python3 .github/scripts/check-licenses.py
@@ -31,6 +41,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 21
         uses: actions/setup-java@v6
@@ -64,6 +76,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 21
         uses: actions/setup-java@v6
@@ -104,6 +118,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Enable KVM
         run: |
@@ -144,6 +160,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 21
         uses: actions/setup-java@v6
@@ -160,6 +178,7 @@ jobs:
   backend-validation:
     name: Backend Validation
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     services:
       redis:
         image: redis:7-alpine
@@ -176,6 +195,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 21
         uses: actions/setup-java@v6
@@ -190,12 +211,36 @@ jobs:
         run: ./gradlew :backend:build :backend:installDist --stacktrace
 
       - name: Build Backend Container
-        run: docker build -f backend/Dockerfile backend
+        run: docker build -f backend/Dockerfile -t braindance-backend:validation backend
+
+      - name: Smoke Test Backend Container
+        run: |
+          docker run --rm --entrypoint sh braindance-backend:validation -c 'test ! -e /usr/bin/pebble'
+          container="$(docker run --detach --publish 127.0.0.1::8080 \
+            --env IGDB_RATE_LIMITER=in-memory braindance-backend:validation)"
+          trap 'docker rm --force "$container" >/dev/null' EXIT
+          port="$(docker port "$container" 8080/tcp | cut -d: -f2)"
+          curl --fail --silent --connect-timeout 2 --max-time 5 \
+            --retry 10 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
+            "http://127.0.0.1:$port/health" | grep -qx '{"ok":true}'
+
+      - name: Scan Backend Container
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: braindance-backend:validation
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
+          format: table
+          cache: false
 
   promote-to-master:
     name: Promote Develop to Master
     runs-on: ubuntu-latest
     needs:
+      - security-checks
       - repository-license-notices
       - android-build-and-unit-tests
       - android-instrumented-tests
@@ -210,7 +255,8 @@ jobs:
       before_sha: ${{ steps.promote.outputs.before_sha }}
 
     steps:
-      - name: Checkout Code
+      # Git credentials are needed only in this trusted promotion job, which runs no project code.
+      - name: Checkout Code # zizmor: ignore[artipacked]
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
@@ -248,6 +294,7 @@ jobs:
   publish-master-backend:
     name: Publish and Deploy Validated Master Backend
     needs:
+      - security-checks
       - repository-license-notices
       - android-build-and-unit-tests
       - android-instrumented-tests
@@ -282,6 +329,7 @@ jobs:
   publish-master-frontend-release:
     name: Publish Validated Master Frontend Release
     needs:
+      - security-checks
       - repository-license-notices
       - android-build-and-unit-tests
       - android-instrumented-tests
@@ -307,6 +355,26 @@ jobs:
     uses: ./.github/workflows/publish-web-app.yml
     with:
       promoted: true
+      artifact_name: web-app-production
+    secrets:
+      BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+
+  publish-master-web-app:
+    name: Publish Validated Master Web App
+    needs:
+      - security-checks
+      - repository-license-notices
+      - android-build-and-unit-tests
+      - android-instrumented-tests
+      - web-app-build
+      - ios-framework-validation
+      - backend-validation
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+      actions: read
+      contents: write
+    uses: ./.github/workflows/publish-web-app.yml
+    with:
       artifact_name: web-app-production
     secrets:
       BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}

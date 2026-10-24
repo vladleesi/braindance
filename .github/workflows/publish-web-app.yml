@@ -1,10 +1,7 @@
 name: Master Web App Publication
 
 on:
-  # Direct pushes to master build and publish the browser app branch.
-  push:
-    branches: [master]
-  # Develop validation calls this directly because its GITHUB_TOKEN promotion cannot trigger a push workflow.
+  # Validation gates both direct master pushes and GITHUB_TOKEN promotions.
   workflow_call:
     inputs:
       promoted:
@@ -21,9 +18,7 @@ on:
       BACKEND_BASE_URL:
         required: false
 
-permissions:
-  actions: read
-  contents: write
+permissions: {}
 
 concurrency:
   group: web-app-publication
@@ -32,15 +27,19 @@ concurrency:
 jobs:
   publish-web-app:
     name: Publish Web App Branch
-    # Reusable calls publish only revisions that the validation workflow promoted to master.
+    # Validation calls this after a successful promotion or a validated master push.
     if: inputs.promoted || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
     env:
       ORG_GRADLE_PROJECT_BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
       WEB_CUSTOM_DOMAIN: ${{ vars.WEB_CUSTOM_DOMAIN }}
 
     steps:
-      - name: Checkout Master
+      # This trusted publication job needs Git authentication to fetch and push the web-app branch.
+      - name: Checkout Master # zizmor: ignore[artipacked]
         uses: actions/checkout@v7
         with:
           ref: master

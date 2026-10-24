@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- Only reviewed, non-sensitive exports belong in filesDir/backup_exports. All other data stays out. -->
+<full-backup-content>
+    <include domain="file" path="backup_exports/" requireFlags="clientSideEncryption" />
+</full-backup-content>

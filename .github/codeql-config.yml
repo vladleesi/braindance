@@ -1,0 +1,7 @@
+name: Braindance Security
+
+query-filters:
+  # Backups are intentional and constrained by Android's versioned backup_rules/data_extraction_rules.
+  # This query flags allowBackup alone without inspecting the restrictive backup allowlists.
+  - exclude:
+      id: java/android/backup-enabled
