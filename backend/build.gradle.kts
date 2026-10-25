@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "dev.vladleesi.braindanceapp"
-version = "0.5.2"
+version = "0.6.0"
 
 kotlin {
     compilerOptions {
@@ -41,8 +41,17 @@ dependencies {
     testRuntimeOnly(libs.unit.tests.launcher)
 }
 
+tasks.jar {
+    manifest.attributes("Implementation-Version" to project.version.toString())
+}
+
+tasks.named<JavaExec>("run") {
+    systemProperty("backendVersion", project.version.toString())
+}
+
 tasks.test {
     useJUnitPlatform()
+    systemProperty("backendVersion", project.version.toString())
 }
 
 tasks.named("detekt") {

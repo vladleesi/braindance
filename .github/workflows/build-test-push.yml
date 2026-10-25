@@ -220,9 +220,13 @@ jobs:
             --env IGDB_RATE_LIMITER=in-memory braindance-backend:validation)"
           trap 'docker rm --force "$container" >/dev/null' EXIT
           port="$(docker port "$container" 8080/tcp | cut -d: -f2)"
-          curl --fail --silent --connect-timeout 2 --max-time 5 \
+          version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' backend/build.gradle.kts)"
+          test -n "$version"
+          health="$(curl --fail --silent --connect-timeout 2 --max-time 5 \
             --retry 10 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
-            "http://127.0.0.1:$port/health" | grep -qx '{"ok":true}'
+            "http://127.0.0.1:$port/health")"
+          printf '%s' "$health" | python3 -c \
+            'import json, sys; assert json.load(sys.stdin) == {"ok": True, "version": sys.argv[1]}' "$version"
 
       - name: Scan Backend Container
         uses: aquasecurity/trivy-action@v0.36.0

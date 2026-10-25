@@ -144,7 +144,7 @@ Android and iOS also share its positive integer build number. Update both values
 maintain the matching `## MAJOR.MINOR.PATCH` entry in [CHANGELOG.md](../CHANGELOG.md). Group identical user-visible
 notes under a shared platform heading; omit unchanged platforms. Keep the README's version and release link current.
 
-Backend version `0.5.2` is independent, in `backend/build.gradle.kts`. Update it for backend runtime changes and keep
+Backend version `0.6.0` is independent, in `backend/build.gradle.kts`. Update it for backend runtime changes and keep
 the README/backend guide version text and examples synchronized. Maintain the matching version's release notes in
 [backend/CHANGELOG.md](../backend/CHANGELOG.md). Use one final increment per affected product; documentation, tests,
 formatting, and CI-only changes do not need version bumps.

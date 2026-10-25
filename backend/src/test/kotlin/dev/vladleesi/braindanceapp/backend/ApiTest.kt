@@ -20,6 +20,7 @@ import io.ktor.server.testing.testApplication
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -112,7 +113,17 @@ class ApiTest {
                 }
             application { api(config, IgdbService(remote, RateLimiter { true }, config), GiveawayService(remote)) }
             assertEquals(HttpStatusCode.OK, client.get("/healthz").status)
-            assertEquals(HttpStatusCode.OK, client.get("/health").status)
+            val health = client.get("/health")
+            assertEquals(HttpStatusCode.OK, health.status)
+            assertEquals(
+                JsonObject(
+                    mapOf(
+                        "ok" to JsonPrimitive(true),
+                        "version" to JsonPrimitive(checkNotNull(System.getProperty("backendVersion"))),
+                    ),
+                ),
+                Json.parseToJsonElement(health.bodyAsText()),
+            )
             assertEquals(HttpStatusCode.BadRequest, client.get("/v1/games/details").status)
             assertEquals(HttpStatusCode.UnsupportedMediaType, client.post("/v1/games/details").status)
             assertEquals(

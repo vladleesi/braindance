@@ -49,7 +49,7 @@ while IFS= read -r -t 5 line <&3 || [[ -n "$line" ]]; do
 done
 exec 3<&-
 exec 3>&-
-if [[ "$response" != HTTP/1.1\ 200* || "$response" != *'{"ok":true}'* ]]; then
+if [[ "$response" != HTTP/1.1\ 200* || "$response" != *'"ok":true'* ]]; then
     echo 'Archive training health check failed' >&2
     exit 1
 fi

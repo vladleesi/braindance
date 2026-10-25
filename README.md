@@ -46,7 +46,7 @@ and host it independently under the applicable license terms.
 
 Android, iOS, and Web share UI and application logic through Kotlin Multiplatform and Compose Multiplatform.
 A Kotlin/JVM Ktor backend keeps Twitch credentials server-side and provides IGDB and GamerPower data.
-Its independent version is `0.5.2`. See the [backend changelog](backend/CHANGELOG.md) for release notes.
+Its independent version is `0.6.0`. See the [backend changelog](backend/CHANGELOG.md) for release notes.
 
 - [Development guide](docs/development.md): requirements, project layout, local setup, validation, and releases.
 - [Backend reference](backend/README.md): server configuration, API, packaging, and optional independent hosting.

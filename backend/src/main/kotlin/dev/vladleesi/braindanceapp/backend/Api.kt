@@ -43,6 +43,9 @@ fun Application.api(
     igdb: IgdbService,
     giveaways: GiveawayService,
 ) {
+    val backendVersion =
+        BackendConfig::class.java.`package`.implementationVersion
+            ?: checkNotNull(System.getProperty("backendVersion")) { "Backend build version is unavailable" }
     installApiCachePolicy(config)
     installRequestTiming()
     routing {
@@ -73,7 +76,8 @@ fun Application.api(
                 if (allowed) cors(origin)
                 try {
                     when {
-                        path == "/health" && method == "GET" -> respondJson(200, """{"ok":true}""")
+                        path == "/health" && method == "GET" ->
+                            respondJson(200, """{"ok":true,"version":"$backendVersion"}""")
                         path == "/healthz" && method == "GET" -> {
                             if (config.credentialsAvailable) {
                                 respondJson(200, """{"ok":true}""")

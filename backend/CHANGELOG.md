@@ -3,6 +3,10 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.6.0
+
+- Include the backend version in `/health` responses, derived from the Gradle build version.
+
 ## 0.5.2
 
 - Remove the unused Pebble service manager from the runtime container image.
