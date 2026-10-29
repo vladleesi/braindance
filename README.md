@@ -1,8 +1,8 @@
 # Braindance
 
-[![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square)](https://kotlinlang.org/docs/multiplatform.html) [![Platforms](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web-0D9488?style=flat-square)](#platforms) [![Source release](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=source&color=2563EB&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![CI checks on develop](https://img.shields.io/github/check-runs/vladleesi/braindance/develop?label=CI&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![License](https://img.shields.io/badge/license-MPL--2.0-B45309?style=flat-square)](#license)
+[![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square)](https://kotlinlang.org/docs/multiplatform.html) [![Platforms: Android, iOS, and experimental Web](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web%20%28experimental%29-0D9488?style=flat-square)](#platforms) [![Source release](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=source&color=2563EB&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![CI checks on develop](https://img.shields.io/github/actions/workflow/status/vladleesi/braindance/build-test-push.yml?branch=develop&event=push&label=CI&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![License](https://img.shields.io/badge/license-MPL--2.0-B45309?style=flat-square)](#license)
 
-Braindance is a game discovery and tracking app in development for Android, iOS, and Web.
+Braindance is a game discovery and tracking app in development for Android and iOS, with an **experimental Web preview**.
 Browse upcoming and popular games, explore their details, and find game giveaways in one place.
 
 ![Braindance vibe](https://github.com/vladleesi/braindance/assets/30999008/cdb06536-ecbf-43ae-9336-3833a89a3718)
@@ -20,10 +20,12 @@ The current app uses data from IGDB and GamerPower.
 
 | Platform | Availability |
 | --- | --- |
-| Web | [Open the Web preview](https://braindance.vladleesi.dev/). Requires a modern browser with WasmGC support. |
+| **Web (experimental)** | [Open the experimental Web preview](https://braindance.vladleesi.dev/). Requires WasmGC support. |
 | Android and iOS | Developer builds are supported; official store releases are planned. |
 
-Braindance is actively developed. The Web preview can change, and some screens are unfinished.
+Braindance is actively developed, and some screens are unfinished.
+**Web support is experimental:** browser behavior, performance, and feature availability may change.
+The preview requires a modern browser with WasmGC support.
 The goal is an official app you can install or open without configuring API credentials or running servers.
 Mobile store links will be added here when releases are available; no release date is announced.
 

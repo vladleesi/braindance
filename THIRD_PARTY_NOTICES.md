@@ -3,6 +3,18 @@
 The root MPL license does not relicense the components and assets below. Preserve their notices when copying,
 converting, bundling, or distributing them. Include the full applicable license texts with distributed copies.
 
+## Agent guidelines
+
+The imported rules in `AGENTS.md` and `docs/agent-guidance/*.md` come from
+[vladleesi/agent-guidelines v1.3.0](https://github.com/vladleesi/agent-guidelines/tree/v1.3.0),
+commit `a8423f9d663d046cefb4f7f239bcf816087b9526`.
+Selected modules: general, agent-workflow, testing, security, git, ci, release, deployment, kotlin, compose,
+backend, python, and frontend. Placement and headings were adapted for local task loading; imported bullets
+remain verbatim. The copyright and permission notice is retained in the
+[MIT license](LICENSES/Agent-guidelines-MIT.txt), separate from
+first-party MPL-2.0 instructions. This is a one-time import; fetching, comparing with, or updating the collection
+requires an explicit user request.
+
 ## Bundled code and fonts
 
 | Material | Location | License and attribution |
