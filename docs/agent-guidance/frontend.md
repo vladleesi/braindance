@@ -17,8 +17,9 @@
   contracts. Do not keep navigation information needed after reload only in memory.
 - Measure production output before optimizing. Reserve media dimensions, size
   and compress assets appropriately, and defer noncritical work. Avoid
-  speculative preloading or caching; match cache policy to whether asset URLs
-  identify content.
+  speculative preloading or caching. Match cache policy to asset identity: use
+  long-lived immutable caching only for content-fingerprinted static assets;
+  keep HTML entry points revalidatable so clients can discover updated asset URLs.
 - For public indexable pages, keep titles, descriptions, canonicals, structured
   data, feeds, and sitemaps accurate and consistent with visible content.
   Validate output and links; never invent facts or freshness signals.
