@@ -4,6 +4,9 @@
     <string name="horizontal_list_previous">Previous items</string>
     <string name="horizontal_list_next">Next items</string>
 
+    <!-- Profile screen -->
+    <string name="profile_screen_version">v%1$s</string>
+
     <!-- Home screen -->
     <string name="home_screen_popular_most_anticipated">Most Anticipated</string>
     <string name="home_screen_popular_latest_giveaways">Latest Giveaways</string>

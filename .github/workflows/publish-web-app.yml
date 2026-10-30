@@ -78,18 +78,42 @@ jobs:
           SOURCE_SHA: ${{ github.sha }}
         run: |
           publish_dir="$RUNNER_TEMP/web-app"
+          previous_dir="$RUNNER_TEMP/previous-web-bootstrap"
           mkdir -p "$publish_dir"
+          mkdir -p "$previous_dir"
           cp -R webApp/build/dist/wasmJs/productionExecutable/. "$publish_dir/"
+          find "$publish_dir" -maxdepth 1 -type f ! -name index.html ! -name .web-bootstrap-files \
+            -exec basename {} \; \
+            | sort > "$publish_dir/.web-bootstrap-files"
 
           web_app_ref="$(git ls-remote --heads origin refs/heads/web-app)"
           if [ -n "$web_app_ref" ]; then
             git fetch --no-tags --depth=1 origin refs/heads/web-app:refs/remotes/origin/web-app
             git switch --create web-app origin/web-app
+            # Retain the current publication; identical reruns must also preserve its previous assets.
+            publication_changes="$(rsync -rcni "$publish_dir/" ./)"
+            if [ -f .web-bootstrap-files ] && [ -n "$publication_changes" ]; then
+              while IFS= read -r asset; do
+                case "$asset" in
+                  ''|.*|*/*) echo "Invalid bootstrap asset filename" >&2; exit 1 ;;
+                esac
+                if [ ! -f "$asset" ] || [ -L "$asset" ]; then
+                  echo "Missing or invalid bootstrap asset" >&2
+                  exit 1
+                fi
+                cp -- "$asset" "$previous_dir/"
+              done < .web-bootstrap-files
+            else
+              # Preserve legacy bootstrap assets and all retained assets on an identical rerun.
+              find . -maxdepth 1 -type f \( -name '*.wasm' -o -name 'webApp*.js*' \) \
+                -exec cp -- {} "$previous_dir/" \;
+            fi
             git rm -r --ignore-unmatch .
           else
             git switch --orphan web-app
           fi
           git clean -fdx
+          cp -R "$previous_dir/." .
           cp -R "$publish_dir/." .
           touch .nojekyll
           if [ -n "$WEB_CUSTOM_DOMAIN" ]; then

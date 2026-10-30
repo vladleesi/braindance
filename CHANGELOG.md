@@ -4,6 +4,16 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.3.5
+
+### Android, iOS, and Web
+
+- Show the app version at the bottom of Profile.
+
+### Web
+
+- Version the browser bundle to prevent cached JavaScript from loading removed Wasm files after an update.
+
 ## 0.3.4
 
 ### Android, iOS, and Web

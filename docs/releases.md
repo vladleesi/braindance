@@ -12,7 +12,8 @@
 ## Publication and recovery
 
 CI validates `develop` and `master`; successful `develop` pushes fast-forward `master` without force pushes.
-Web publishes to `web-app`, preserving history and removing obsolete generated files.
+Web publishes to `web-app`, preserving history and the previous publication's root bootstrap assets for cached pages.
+Each frontend version uses a distinct JavaScript filename. Older bootstrap assets are removed at the next publication.
 
 Frontend version changes create one `app-vMAJOR.MINOR.PATCH` source release after all checks pass for that commit
 on `master`. The [release workflow](../.github/workflows/release-frontend.yml) uses its matching changelog entry.

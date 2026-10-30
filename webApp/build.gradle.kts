@@ -2,6 +2,7 @@
 
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 
+import org.gradle.language.jvm.tasks.ProcessResources
 import java.util.Properties
 
 plugins {
@@ -17,10 +18,16 @@ val frontendVersionProperties =
         rootProject.file("version.xcconfig").inputStream().use(::load)
     }
 version = frontendVersionProperties.getProperty("MARKETING_VERSION")
+val webBundleName = "webApp-$version.js"
 
 kotlin {
+    val bundleName = webBundleName
     wasmJs {
-        browser()
+        browser {
+            commonWebpackConfig {
+                outputFileName = bundleName
+            }
+        }
         binaries.executable()
     }
 
@@ -30,5 +37,13 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui.multiplatform)
         }
+    }
+}
+
+tasks.named<ProcessResources>("wasmJsProcessResources") {
+    val bundleName = webBundleName
+    inputs.property("webBundleName", bundleName)
+    filesMatching("index.html") {
+        expand("webBundleName" to bundleName)
     }
 }

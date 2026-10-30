@@ -22,6 +22,11 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
+val frontendVersionProperties =
+    Properties().apply {
+        rootProject.file("version.xcconfig").inputStream().use(::load)
+    }
+
 kotlin {
     android {
         namespace = "$appNamespace.shared"
@@ -125,6 +130,11 @@ buildkonfig {
     packageName = appNamespace
 
     defaultConfigs {
+        buildConfigField(
+            FieldSpec.Type.STRING,
+            "APP_VERSION",
+            frontendVersionProperties.getProperty("MARKETING_VERSION"),
+        )
         val localPropertiesFile = rootProject.layout.projectDirectory.file("local.properties")
         val localBackendUrl =
             project.providers
