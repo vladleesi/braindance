@@ -7,7 +7,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
-import redis.clients.jedis.JedisPooled
+import redis.clients.jedis.RedisClient
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -17,8 +17,8 @@ class RedisRateLimiterTest {
     fun limitIsSharedByConcurrentReplicas() =
         runBlocking {
             val url = requireNotNull(System.getenv("TEST_REDIS_URL"))
-            JedisPooled(url).use { first ->
-                JedisPooled(url).use { second ->
+            RedisClient.create(url).use { first ->
+                RedisClient.create(url).use { second ->
                     val key = "braindance:test:${java.util.UUID.randomUUID()}"
                     val replicas = listOf(RedisRateLimiter(first, key), RedisRateLimiter(second, key))
                     val decisions =

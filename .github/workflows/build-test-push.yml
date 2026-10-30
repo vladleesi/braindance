@@ -101,7 +101,7 @@ jobs:
 
       - name: Store Validated Web App
         if: github.event_name == 'push'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: web-app-production
           path: webApp/build/dist/wasmJs/productionExecutable
@@ -181,9 +181,9 @@ jobs:
     timeout-minutes: 30
     services:
       redis:
-        image: redis:7-alpine
+        image: redis:8-alpine
         ports:
-          - 6379:6379
+          - "127.0.0.1:6379:6379"
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s

@@ -87,7 +87,7 @@ jobs:
           mv "$SNAPSHOT" "$(dirname "$SNAPSHOT")/$REVISION.json"
 
       - name: Upload Dependency Snapshot
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dependency-graph_${{ matrix.revision }}
           path: dependency-graph-reports/${{ matrix.revision }}/${{ matrix.revision }}.json

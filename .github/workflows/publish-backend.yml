@@ -80,9 +80,9 @@ jobs:
       packages: write
     services:
       redis:
-        image: redis:7-alpine
+        image: redis:8-alpine
         ports:
-          - 6379:6379
+          - "127.0.0.1:6379:6379"
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s
@@ -145,7 +145,7 @@ jobs:
           cache: false
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

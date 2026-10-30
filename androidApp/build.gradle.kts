@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
+import com.android.build.api.variant.ApplicationVariantBuilder
+import com.android.build.api.variant.HostTestBuilder
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
@@ -20,7 +22,7 @@ android {
     compileSdk = 37
     defaultConfig {
         applicationId = "dev.vladleesi.braindanceapp"
-        targetSdk = 36
+        targetSdk = 37
         minSdk = 24
         versionCode = mobileVersionProperties.getProperty("CURRENT_PROJECT_VERSION").toInt()
         versionName = mobileVersionProperties.getProperty("MARKETING_VERSION")
@@ -28,6 +30,9 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
     }
     packaging {
         resources {
@@ -48,6 +53,10 @@ android {
     }
 }
 
+androidComponents {
+    beforeVariants { variant -> enableComposePreviewUnitTests(variant) }
+}
+
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
@@ -65,4 +74,10 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling)
     androidTestImplementation(libs.androidx.tests.ext.junit)
     androidTestImplementation(libs.androidx.tests.runner)
+}
+
+// AGP 9.5 Compose previews package resources through every variant's unit-test component.
+@Suppress("UnstableApiUsage")
+fun enableComposePreviewUnitTests(variant: ApplicationVariantBuilder) {
+    variant.hostTests.getValue(HostTestBuilder.UNIT_TEST_TYPE).enable = true
 }

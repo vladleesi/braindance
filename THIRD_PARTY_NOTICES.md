@@ -29,6 +29,13 @@ copyright, license, and NOTICE material for the exact components shipped, includ
 native libraries, and container base software. The files above do not constitute a complete binary-release notice
 bundle. Generated license comments alone may omit required full license texts.
 
+The backend uses the [Jedis 8 client](https://github.com/redis/jedis/tree/v8.0.2) under MIT and an
+[Eclipse Temurin Java 25 runtime](https://adoptium.net/temurin) under GPL-2.0 with the Classpath Exception;
+retain the notices provided with each distribution. CI uses the official [Redis 8 image](https://hub.docker.com/_/redis)
+as a disposable test service. Redis 8 is available under AGPLv3, RSALv2, or SSPLv1; see the
+[Redis licensing terms](https://redis.io/legal/licenses/). It is not bundled in the backend image, and the CI image
+version does not change an independently hosted Redis service.
+
 ## Artwork and branding
 
 The following assets are excluded from the root MPL grant. Their provenance and redistribution permissions remain

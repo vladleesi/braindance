@@ -21,7 +21,7 @@ jobs:
     steps:
       # Never check out or execute project code in this job with write permissions.
       - name: Download Base Dependency Snapshot
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dependency-graph_base
           path: dependency-snapshots
@@ -29,7 +29,7 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: Download Head Dependency Snapshot
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dependency-graph_head
           path: dependency-snapshots

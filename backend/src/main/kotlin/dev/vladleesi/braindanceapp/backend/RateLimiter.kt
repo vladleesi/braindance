@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import redis.clients.jedis.JedisPooled
+import redis.clients.jedis.RedisClient
 
 fun interface RateLimiter {
     suspend fun takeSlot(): Boolean
@@ -41,7 +41,7 @@ class InMemoryRateLimiter(
 
 /** One Redis key is shared by every replica. Redis EVAL makes the sliding-window decision atomic. */
 class RedisRateLimiter(
-    private val redis: JedisPooled,
+    private val redis: RedisClient,
     private val key: String = "braindance:igdb:rate",
 ) : RateLimiter {
     override suspend fun takeSlot(): Boolean =

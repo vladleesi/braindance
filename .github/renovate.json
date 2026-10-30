@@ -1,4 +1,13 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": ["github>vladleesi/renovate-config"]
+    "extends": ["github>vladleesi/renovate-config"],
+    "packageRules": [
+        {
+            "description": "Use the current datetime API; the legacy Instant/Clock compatibility build is unnecessary.",
+            "matchPackageNames": [
+                "org.jetbrains.kotlinx:kotlinx-datetime"
+            ],
+            "allowedVersions": "!/-0\\.6\\.x-compat$/"
+        }
+    ]
 }

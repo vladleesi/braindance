@@ -2,6 +2,8 @@
 
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import org.jetbrains.kotlin.gradle.targets.wasm.yarn.WasmYarnPlugin
+import org.jetbrains.kotlin.gradle.targets.wasm.yarn.WasmYarnRootExtension
 
 plugins {
     base
@@ -18,6 +20,13 @@ plugins {
 }
 
 val detektTaskName = "detekt"
+
+plugins.withType<WasmYarnPlugin> {
+    extensions.configure<WasmYarnRootExtension> {
+        // GHSA-96hv-2xvq-fx4p: Kotlin's WebSocket dependency needs bounded fragment buffering.
+        resolution("ws", libs.versions.ws.get())
+    }
+}
 
 allprojects {
     pluginManager.withPlugin("io.gitlab.arturbosch.detekt") {

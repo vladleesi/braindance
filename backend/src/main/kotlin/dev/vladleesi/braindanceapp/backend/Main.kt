@@ -8,7 +8,7 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.server.application.ServerReady
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import redis.clients.jedis.JedisPooled
+import redis.clients.jedis.RedisClient
 
 fun main() {
     val startup = StartupTiming()
@@ -31,7 +31,7 @@ fun main() {
         startup.measure("redis_pool") {
             if (config.rateLimiterMode == "redis") {
                 require(!config.redisUrl.isNullOrBlank()) { "REDIS_URL is required for the global IGDB limit" }
-                JedisPooled(config.redisUrl)
+                RedisClient.create(config.redisUrl)
             } else {
                 null
             }

@@ -84,7 +84,7 @@ private fun HorizontalListButton(
     IconButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = Modifier.size(48.dp),
+        modifier = Modifier.size(width = 44.dp, height = 48.dp),
     ) {
         Icon(
             imageVector = ChevronLeft,

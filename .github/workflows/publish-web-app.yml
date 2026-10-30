@@ -68,7 +68,7 @@ jobs:
 
       - name: Download Validated Web App
         if: inputs.artifact_name != ''
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.artifact_name }}
           path: webApp/build/dist/wasmJs/productionExecutable

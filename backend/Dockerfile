@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 COPY build/install/backend/ /app/
 COPY docker/prepare-startup-archive.sh /tmp/prepare-startup-archive.sh

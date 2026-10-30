@@ -4,6 +4,20 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.3.4
+
+### Android, iOS, and Web
+
+- Update shared UI, navigation, and networking libraries with upstream fixes.
+
+### Android
+
+- Target Android 17 (API 37).
+
+### Web
+
+- Tighten spacing between carousel arrows and the See all action.
+
 ## 0.3.3
 
 ### Android

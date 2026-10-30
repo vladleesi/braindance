@@ -5,8 +5,11 @@ For app availability, see the [README](../README.md#platforms); for pull request
 
 ## Requirements
 
-- JDK 21 and the checked-in Gradle wrapper.
-- Android: Android Studio and SDK API 37; minimum supported device API 24.
+- JDK 21 and the checked-in Gradle wrapper. It is the newest maintained Temurin release below JDK 25;
+  JDK 22–24 are end-of-life, and Detekt 1.23.8 cannot run on JDK 25.
+  The backend container uses Java 25 independently of the build JDK.
+- Android: Android Studio Rabbit 2 (2026.2.2) or newer with AGP 9.5 support and SDK API 37;
+  minimum supported device API 24.
 - iOS: macOS, Xcode, and an iOS Simulator; minimum iOS 15.0. Device builds need your own signing configuration.
 - Web: an **experimental preview** requiring a modern browser with WasmGC support.
   Browser behavior, performance, and feature availability may change.
@@ -72,8 +75,8 @@ Documentation-only changes need link and accuracy checks, not an app build.
 
 ## Versions and releases
 
-Frontend version `0.3.3` and its shared Android/iOS build number come from `version.xcconfig`.
-Backend version `0.6.0` is independent, in `backend/build.gradle.kts`. Runtime changes require the affected product's
+Frontend version `0.3.4` and its shared Android/iOS build number come from `version.xcconfig`.
+Backend version `0.6.1` is independent, in `backend/build.gradle.kts`. Runtime changes require the affected product's
 version, changelog, and README updates; documentation, tests, formatting, and CI-only changes need no version bump.
 See [release conventions and publication](releases.md) for the full workflow and recovery steps.
 
