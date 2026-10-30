@@ -5,8 +5,8 @@
 These instructions apply to this repository and its descendants. Project-specific requirements and recorded
 decisions take precedence over imported defaults. Explicit user instructions remain authoritative.
 
-One-time import from [vladleesi/agent-guidelines](https://github.com/vladleesi/agent-guidelines/tree/v1.4.0),
-release **v1.4.0**, commit **f939ccb4bf270ed9a55ac18ebbdc34540ede6b04**.
+One-time import from [vladleesi/agent-guidelines](https://github.com/vladleesi/agent-guidelines/tree/v1.5.0),
+release **v1.5.0**, commit **11f8f36e0308d0acc07b1352a8fa68cc137e6638**.
 Selected modules: `general`, `agent-workflow`, `testing`, `security`, `git`, `ci`, `release`, `deployment`,
 `kotlin`, `compose`, `backend`, `python`, and `frontend`. Imported rules retain their
 [MIT notice](LICENSES/Agent-guidelines-MIT.txt); see [third-party notices](THIRD_PARTY_NOTICES.md#agent-guidelines).
@@ -52,6 +52,15 @@ for release/publication workflow changes or recovery.
   get approval for project-wide convention changes. Revisit accepted or rejected
   decisions only on request or materially changed requirements. Consult project
   context before asking answered questions.
+- For optimization requests, work within the existing design and prefer the
+  smallest local diff. New architecture, configuration schemes, dependencies,
+  files, or changes to surrounding components require explicit approval; reuse
+  approval already given for that scope. If correctness requires broader changes,
+  explain the limitation and propose the smallest alternative before editing;
+  obtain approval for the expanded scope.
+- When asked to revert an optimization, restore the prior design and behavior,
+  remove additions introduced solely by that optimization, and validate the
+  restored state. Preserve unrelated changes.
 - Keep documentation accurate: concision must not hide actual behavior, weaken
   safeguards, or introduce unsupported claims. Preserve necessary API/protocol
   contracts, prerequisites, security limitations, data-loss warnings, and recovery
