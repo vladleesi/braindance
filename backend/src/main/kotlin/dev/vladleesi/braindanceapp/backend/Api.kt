@@ -40,6 +40,7 @@ internal val gameQueryParameters =
     )
 
 internal const val RECOMMENDATIONS_PATH = "/v1/games/recommendations"
+internal const val POPULAR_NOW_PATH = "/v1/games/popular-now"
 internal const val GIVEAWAY_DETAILS_ROUTE = "/v1/giveaways/{id}"
 
 /**
@@ -50,6 +51,7 @@ internal val routeQueryParameters: Map<String, Set<String>> =
     gameQueryParameters +
         mapOf(
             RECOMMENDATIONS_PATH to setOf("id", "limit"),
+            POPULAR_NOW_PATH to emptySet(),
             "/v1/giveaways" to emptySet(),
             GIVEAWAY_DETAILS_ROUTE to emptySet(),
             "/v1/giveaways/image" to setOf("url"),
@@ -74,7 +76,7 @@ fun Application.api(
 ) {
     val recommendations = RecommendationService(igdb)
     monitor.subscribe(ApplicationStopped) { recommendations.close() }
-    api(config, igdb, giveaways, recommendations)
+    api(config, igdb, giveaways, recommendations, PopularNowService(igdb))
 }
 
 internal fun Application.api(
@@ -82,6 +84,7 @@ internal fun Application.api(
     igdb: IgdbService,
     giveaways: GiveawayService,
     recommendations: RecommendationService,
+    popularNow: PopularNowService,
 ) {
     val backendVersion =
         BackendConfig::class.java.`package`.implementationVersion
@@ -127,6 +130,7 @@ internal fun Application.api(
                         }
                         path == RECOMMENDATIONS_PATH && method == "GET" ->
                             respondRecommendations(recommendations, config)
+                        path == POPULAR_NOW_PATH && method == "GET" -> respondPopularNow(popularNow, config)
                         path in gameQueryParameters && method in setOf("GET", "POST") -> respondGame(path, igdb, config)
                         path.startsWith("/v1/giveaways") && method == "GET" -> {
                             if (path == "/v1/giveaways/image") {
@@ -245,7 +249,7 @@ private suspend fun RoutingContext.respondRecommendations(
         200 -> {
             // Degraded and stale fallbacks stay private so edge caches do not extend a partial answer.
             if (result.kind == RecommendationResult.Kind.COMPLETE) call.attributes.put(publicResponse, Unit)
-            respondJson(200, recommendationsJson(result.games.take(limit)))
+            respondJson(200, gameCardsJson(result.games.take(limit)))
         }
         404 -> respondJson(404, """{"error":"Game not found"}""")
         429 -> respondJson(429, """{"error":"Rate limit exceeded"}""")
@@ -253,8 +257,35 @@ private suspend fun RoutingContext.respondRecommendations(
     }
 }
 
+private suspend fun RoutingContext.respondPopularNow(
+    popularNow: PopularNowService,
+    config: BackendConfig,
+) {
+    // The feed has one canonical URL so every visitor shares one cache entry.
+    if (call.request.uri.length > 2048 || !call.request.queryParameters.isEmpty()) {
+        respondJson(400, """{"error":"Invalid request"}""")
+        return
+    }
+    if (!config.credentialsAvailable) {
+        respondJson(503, """{"error":"Backend credentials unavailable"}""")
+        return
+    }
+    when (val result = popularNow.popularNow()) {
+        is ResponseCache.LoadResult.Hit -> {
+            // A stale fallback stays private so edge caches do not extend it.
+            if (!result.stale) call.attributes.put(publicResponse, Unit)
+            respondJson(200, result.response.body.decodeToString())
+        }
+        is ResponseCache.LoadResult.Uncached ->
+            when (result.status) {
+                429 -> respondJson(429, """{"error":"Rate limit exceeded"}""")
+                else -> respondJson(502, """{"error":"Upstream unavailable"}""")
+            }
+    }
+}
+
 /** Matches the `id`, `name`, and `cover.url` shape of IGDB game objects already used by clients. */
-internal fun recommendationsJson(games: List<Recommendation>): String =
+internal fun gameCardsJson(games: List<Recommendation>): String =
     JsonArray(
         games.map { game ->
             JsonObject(

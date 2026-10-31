@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: MPL-2.0
+
+package dev.vladleesi.braindanceapp.data.api
+
+import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+
+class GameFeedDecodingTest {
+    @Test
+    fun compactFeedCardsDecodeIntoGameItems() {
+        // The exact shape served by /v1/games/popular-now and /v1/games/anticipated.
+        val feedJson =
+            """[{"id":1942,"name":"The Witcher 3: Wild Hunt","cover":{"url":"//images.igdb.com/t_thumb/co1.jpg"}},""" +
+                """{"id":7,"name":"No Cover"}]"""
+        val games = backendJson.decodeFromString<List<GameItem>>(feedJson)
+        assertEquals(listOf(1942, 7), games.map { it.id })
+        assertEquals("//images.igdb.com/t_thumb/co1.jpg", games.first().cover?.url)
+        assertNull(games.first().platforms)
+        assertNull(games.last().cover)
+    }
+}

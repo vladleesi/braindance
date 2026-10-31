@@ -49,7 +49,9 @@ fun main() {
         startup.measure("server_create") {
             embeddedServer(Netty, port = config.port, host = "0.0.0.0") {
                 monitor.subscribe(ServerReady) { startup.checkpoint("server_ready") }
-                startup.measure("application_routes") { api(config, igdb, giveaways, recommendations) }
+                startup.measure("application_routes") {
+                    api(config, igdb, giveaways, recommendations, PopularNowService(igdb))
+                }
             }
         }
     Runtime.getRuntime().addShutdownHook(

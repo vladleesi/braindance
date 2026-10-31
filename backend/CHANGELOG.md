@@ -3,6 +3,15 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.8.0
+
+- Add `GET /v1/games/popular-now`, a Popular Right Now feed fused from IGDB Playing and Visits, Steam peak players,
+  and Twitch hours watched with two IGDB requests per cache miss. It returns only IDs, names, and cover URLs,
+  validates each popularity type's name and freshness, and serves the previous feed privately for up to 24 hours
+  when IGDB fails. `/v1/games/popular` and `/v1/games/popularity` remain for released clients.
+- Return only names and covers from `/v1/games/anticipated`, and skip upcoming games without covers, cancelled
+  games, and erotic games.
+
 ## 0.7.1
 
 - Cache successful game, giveaway, and giveaway image responses in process for 10 minutes within fixed memory

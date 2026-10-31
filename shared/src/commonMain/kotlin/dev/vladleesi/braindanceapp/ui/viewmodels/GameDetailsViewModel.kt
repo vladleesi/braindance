@@ -106,7 +106,6 @@ class GameDetailsViewModel(
                                 ?.url
                                 ?.toCoverUrl(CoverSize.P_720)
                                 .orEmpty(),
-                        platforms = emptyList(),
                     )
                 }
             _recommendations.value = RecommendationsState.Success(cards)

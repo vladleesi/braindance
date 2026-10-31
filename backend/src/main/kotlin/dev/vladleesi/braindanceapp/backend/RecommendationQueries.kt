@@ -41,6 +41,13 @@ internal data class IgdbGame(
     @SerialName("total_rating_count") val totalRatingCount: Int? = null,
     val hypes: Int? = null,
     @SerialName("similar_games") val similarGames: List<Int> = emptyList(),
+    // Only queries that expand `age_ratings.rating_category` populate this.
+    @SerialName("age_ratings") val ageRatings: List<IgdbAgeRating> = emptyList(),
+)
+
+@Serializable
+internal data class IgdbAgeRating(
+    @SerialName("rating_category") val ratingCategory: Int? = null,
 )
 
 @Serializable

@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeStateEntity
-import dev.vladleesi.braindanceapp.utils.ParentPlatformType
 import dev.vladleesi.braindanceapp.utils.clickable
 import dev.vladleesi.braindanceapp.utils.rememberCachedImagePainter
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
@@ -69,5 +68,4 @@ data class MiniGameCardModel(
     val id: Int,
     val title: String,
     val backgroundImageUrl: String,
-    val platforms: List<ParentPlatformType>,
 ) : HomeStateEntity

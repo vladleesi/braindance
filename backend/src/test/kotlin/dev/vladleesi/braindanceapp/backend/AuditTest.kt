@@ -176,8 +176,9 @@ class AuditTest {
         ) = service.buildQuery(path, Json.parseToJsonElement(json) as JsonObject)
         assertEquals(
             "/v4/games" to (
-                "fields name,platforms.name,cover.url;" +
-                    "where first_release_date > 4102444800 & hypes > 0 & version_parent = null;" +
+                "fields name,cover.url;" +
+                    "where first_release_date > 4102444800 & hypes > 0 & version_parent = null & cover != null" +
+                    " & (game_status = null | game_status != 6) & (themes = null | themes != (42));" +
                     "sort hypes desc;limit 50;"
             ),
             query("/v1/games/anticipated", """{"currentTimestamp":4102444800,"pageSize":50}"""),

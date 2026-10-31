@@ -6,12 +6,10 @@ import dev.vladleesi.braindanceapp.data.api.KtorClientManager
 import dev.vladleesi.braindanceapp.data.api.clients.BackendClient
 import dev.vladleesi.braindanceapp.data.api.remote.GamerPowerRemote
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
-import dev.vladleesi.braindanceapp.data.api.remote.PopularityPrimitivesRemote
 import dev.vladleesi.braindanceapp.data.api.warmUpBackend
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
-import dev.vladleesi.braindanceapp.data.repository.PopularityPrimitivesRepo
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
@@ -48,7 +46,6 @@ private fun ktorClientManagerModule(debugHttpLogging: Boolean) =
 private val remoteModule =
     module {
         singleOf(::GamesRemote)
-        singleOf(::PopularityPrimitivesRemote)
         singleOf(::GamerPowerRemote)
     }
 
@@ -57,7 +54,6 @@ private val repositoryModule =
         singleOf(::HomeRepo)
         singleOf(::GamerPowerRepo)
         singleOf(::GameDetailsRepo)
-        singleOf(::PopularityPrimitivesRepo)
     }
 
 private val viewModelModule =

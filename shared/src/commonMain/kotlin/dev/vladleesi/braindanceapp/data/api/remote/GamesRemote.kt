@@ -29,12 +29,6 @@ class GamesRemote(
             parameter("pageSize", pageSize)
         }
 
-    suspend fun popularGames(
-        ids: List<Int>,
-        pageSize: Int,
-    ): HttpResponse =
-        backendHttpClient.get(ApiConfig.Endpoints.POPULAR_GAMES) {
-            parameter("ids", ids.joinToString(","))
-            parameter("pageSize", pageSize)
-        }
+    /** The backend ranks and hydrates the whole feed, so one request returns the finished cards. */
+    suspend fun popularNow(): HttpResponse = backendHttpClient.get(ApiConfig.Endpoints.POPULAR_NOW)
 }

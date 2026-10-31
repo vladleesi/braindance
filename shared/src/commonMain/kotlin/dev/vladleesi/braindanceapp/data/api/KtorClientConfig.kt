@@ -54,18 +54,19 @@ private fun HttpClientConfig<*>.loggerConfig(debugHttpLogging: Boolean) {
     }
 }
 
+/** JSON settings for backend responses; shared with tests so they decode exactly like the app. */
+internal val backendJson =
+    Json {
+        ignoreUnknownKeys = true
+        prettyPrint = true
+        explicitNulls = false
+        // Set default value to expected values
+        isLenient = true
+    }
+
 private fun HttpClientConfig<*>.jsonConfig() {
     install(ContentNegotiation) {
-        json(
-            json =
-                Json {
-                    ignoreUnknownKeys = true
-                    prettyPrint = true
-                    explicitNulls = false
-                    // Set default value to expected values
-                    isLenient = true
-                },
-        )
+        json(json = backendJson)
     }
 }
 

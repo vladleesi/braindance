@@ -7,8 +7,7 @@ object ApiConfig {
         const val GAME_DETAILS = "v1/games/details"
         const val GAME_RECOMMENDATIONS = "v1/games/recommendations"
         const val MOST_ANTICIPATED = "v1/games/anticipated"
-        const val POPULAR_GAMES = "v1/games/popular"
-        const val POPULARITY_PRIMITIVES = "v1/games/popularity"
+        const val POPULAR_NOW = "v1/games/popular-now"
         const val GIVEAWAYS = "v1/giveaways"
     }
 }

@@ -153,9 +153,11 @@ class IgdbService(
             "/v1/games/anticipated" -> {
                 val timestamp = positive(input["currentTimestamp"], 4102444800) ?: return null
                 val size = positive(input["pageSize"], 50) ?: return null
+                // Cards render only name and cover. Null-safe clauses keep games whose status or themes are missing.
                 "/v4/games" to (
-                    "fields name,platforms.name,cover.url;" +
-                        "where first_release_date > $timestamp & hypes > 0 & version_parent = null;" +
+                    "fields name,cover.url;" +
+                        "where first_release_date > $timestamp & hypes > 0 & version_parent = null & cover != null" +
+                        " & (game_status = null | game_status != 6) & (themes = null | themes != (42));" +
                         "sort hypes desc;limit $size;"
                 )
             }

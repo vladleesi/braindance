@@ -14,7 +14,6 @@ import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.formatEndDate
 import dev.vladleesi.braindanceapp.utils.giveawayPlatforms
 import dev.vladleesi.braindanceapp.utils.orZero
-import dev.vladleesi.braindanceapp.utils.parentPlatformTypes
 import dev.vladleesi.braindanceapp.utils.toCoverUrl
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -78,12 +77,11 @@ class HomeViewModel(
         }
     }
 
-    fun loadPopularRightNow(pageSize: Int = PAGE_SIZE) {
+    fun loadPopularRightNow() {
         viewModelScope.launch(handler) {
             runCatching {
                 _popularRightNow.emit(HomeState.Loading)
-                val gameItems = homeRepo.popularRightNow(pageSize = pageSize)
-                gameItems.orEmpty().mapperMiniGameCardModel()
+                homeRepo.popularRightNow().mapperMiniGameCardModel()
             }.onSuccess { result ->
                 _popularRightNow.emit(HomeState.Success(result))
             }.onFailure { throwable ->
@@ -102,7 +100,6 @@ class HomeViewModel(
                         ?.url
                         ?.toCoverUrl(CoverSize.P_720)
                         .orEmpty(),
-                platforms = item.platforms.orEmpty().parentPlatformTypes(),
             )
         }
 

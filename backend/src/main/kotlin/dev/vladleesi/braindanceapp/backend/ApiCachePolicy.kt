@@ -28,6 +28,17 @@ internal const val PUBLIC_CACHE_CONTROL = "public, max-age=1200"
 // Ranked recommendations change slowly; a day-long shared lifetime lets the edge serve them across scaled-to-zero
 // backend instances while browsers keep the standard 20-minute lifetime.
 internal const val RECOMMENDATIONS_CACHE_CONTROL = "public, max-age=1200, s-maxage=86400"
+
+// Popularity primitives cover 24-hour windows. Browsers keep the standard 20 minutes because they cannot be purged;
+// the edge keeps the feed for a quarter of that window, avoiding origin misses and cold starts per edge location.
+internal const val POPULAR_NOW_CACHE_CONTROL = "public, max-age=1200, s-maxage=21600"
+
+/** Public cache lifetimes that differ from [PUBLIC_CACHE_CONTROL], keyed by registered route. */
+private val routeCacheControl =
+    mapOf(
+        RECOMMENDATIONS_PATH to RECOMMENDATIONS_CACHE_CONTROL,
+        POPULAR_NOW_PATH to POPULAR_NOW_CACHE_CONTROL,
+    )
 internal const val ORIGIN_SECRET_HEADER = "X-Origin-Verify"
 internal const val PUBLIC_CACHE_ELIGIBLE_HEADER = "X-Public-Cache-Eligible"
 private const val MIN_ORIGIN_SECRET_LENGTH = 32
@@ -70,10 +81,8 @@ internal fun Application.installApiCachePolicy(config: BackendConfig) {
                 val cacheable = call.canCachePublicResponse(config, content)
                 call.response.headers.append(
                     HttpHeaders.CacheControl,
-                    if (cacheable && call.request.path() == RECOMMENDATIONS_PATH) {
-                        RECOMMENDATIONS_CACHE_CONTROL
-                    } else if (cacheable) {
-                        PUBLIC_CACHE_CONTROL
+                    if (cacheable) {
+                        routeOf(call.request.path())?.let(routeCacheControl::get) ?: PUBLIC_CACHE_CONTROL
                     } else {
                         PRIVATE_CACHE_CONTROL
                     },

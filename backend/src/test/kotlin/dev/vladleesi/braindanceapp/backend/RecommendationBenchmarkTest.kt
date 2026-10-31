@@ -38,7 +38,8 @@ class RecommendationBenchmarkTest {
         testApplication {
             val igdb = FakeIgdb(SyntheticCatalog.games, SyntheticCatalog.keywordNames)
             val service = RecommendationService(IgdbService(igdb, RateLimiter { true }, config), log = {})
-            application { api(config, IgdbService(igdb, RateLimiter { true }, config), GiveawayService(igdb), service) }
+            val igdbService = IgdbService(igdb, RateLimiter { true }, config)
+            application { api(config, igdbService, GiveawayService(igdb), service, PopularNowService(igdbService)) }
             val ids = SyntheticCatalog.scenarios.map { it.sourceId }
             val uncached = ids.map { id -> measure { client.get("/v1/games/recommendations?id=$id") } }
             val missRequests = igdb.igdbRequests.get()
