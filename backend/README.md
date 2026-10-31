@@ -1,6 +1,6 @@
 # Braindance API
 
-Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.6.1**. Use JDK 21 and run commands from the repository
+Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.6.2**. Use JDK 21 and run commands from the repository
 root. Twitch credentials stay on the backend; GamerPower needs no key.
 This reference is for backend development and optional independent hosting. For app availability, see the
 [project README](../README.md#platforms); for client setup, see the [development guide](../docs/development.md).
@@ -44,8 +44,8 @@ To test, package, and run a container:
 
 ```sh
 ./gradlew :backend:test :backend:installDist
-docker build -f backend/Dockerfile -t braindance-api:0.6.1 backend
-docker run --env-file backend/.env -p 8080:8080 braindance-api:0.6.1
+docker build -f backend/Dockerfile -t braindance-api:0.6.2 backend
+docker run --env-file backend/.env -p 8080:8080 braindance-api:0.6.2
 ```
 
 The Dockerfile requires the prepared distribution. To run without Docker, use
@@ -80,7 +80,7 @@ Tag published images with the backend version and source commit, and deploy a fi
 | `/v1/giveaways/42` | Giveaway details |
 | `/v1/giveaways/image?url=...` | Proxy for images under `https://www.gamerpower.com/offers/` |
 
-`/health` returns `{"ok":true,"version":"0.6.1"}`. The version comes from `backend/build.gradle.kts` and is embedded
+`/health` returns `{"ok":true,"version":"0.6.2"}`. The version comes from `backend/build.gradle.kts` and is embedded
 in the JAR's `Implementation-Version` manifest attribute. Gradle passes the same value as the `backendVersion` JVM
 property for `:backend:run` and tests, which use compiled classes instead of the packaged JAR.
 For direct IDE launches, set the JVM option `-DbackendVersion=development`; packaged applications prefer the JAR version.

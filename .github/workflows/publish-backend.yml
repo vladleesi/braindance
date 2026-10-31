@@ -74,7 +74,9 @@ jobs:
     name: Publish Backend Image
     needs: changes
     if: needs.changes.outputs.deploy == 'true'
-    runs-on: ubuntu-latest
+    # ubuntu-26.04 Docker publishes OCI indexes with attestations; Cloud Run then started instances about
+    # 5 seconds later than with the single Docker v2 manifest this runner publishes.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -129,7 +131,9 @@ jobs:
           SOURCE_SHA: ${{ needs.changes.outputs.source_sha }}
         run: |
           image="$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')"
-          docker build -f backend/Dockerfile -t "$image:$BACKEND_VERSION" -t "$image:$SOURCE_SHA" backend
+          # Publish one runnable manifest without attestation entries to keep Cloud Run cold starts short.
+          docker build --provenance=false --sbom=false -f backend/Dockerfile \
+            -t "$image:$BACKEND_VERSION" -t "$image:$SOURCE_SHA" backend
           echo "name=$image" >> "$GITHUB_OUTPUT"
 
       - name: Scan Backend Image Before Publication

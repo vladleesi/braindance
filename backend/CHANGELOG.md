@@ -3,6 +3,10 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.6.2
+
+- Publish the container image as a single manifest without attestation entries to restore faster cold starts.
+
 ## 0.6.1
 
 - Update Ktor and serialization libraries and migrate the Redis rate limiter to Jedis 8.

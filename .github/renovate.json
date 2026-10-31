@@ -8,6 +8,13 @@
                 "org.jetbrains.kotlinx:kotlinx-datetime"
             ],
             "allowedVersions": "!/-0\\.6\\.x-compat$/"
+        },
+        {
+            "description": "Keep backend image publication on ubuntu-24.04; ubuntu-26.04 images delayed Cloud Run cold starts by about 5 seconds.",
+            "matchDatasources": ["github-runners"],
+            "matchPackageNames": ["ubuntu"],
+            "matchFileNames": [".github/workflows/publish-backend.yml"],
+            "enabled": false
         }
     ]
 }
