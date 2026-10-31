@@ -4,6 +4,13 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.4.2
+
+### Web
+
+- Stay on the current screen, with its back history, after reloading the page.
+- Keep carousel titles and cards in place when loading placeholders are replaced by games.
+
 ## 0.4.1
 
 ### Android, iOS, and Web

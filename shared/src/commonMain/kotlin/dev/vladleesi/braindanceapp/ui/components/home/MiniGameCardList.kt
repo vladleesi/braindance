@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -83,33 +84,22 @@ fun MiniGameCardList(
 ) {
     Column(modifier = modifier) {
         val listState = rememberLazyListState()
-        Box(modifier = Modifier.fillMaxWidth()) {
-            StaticText(
-                text = title,
-                modifier =
-                    Modifier
-                        .padding(horizontal = Dimens.medium)
-                        .align(Alignment.CenterStart),
-                style = titleTextStyle,
-            )
-            Row(
-                modifier = Modifier.align(Alignment.CenterEnd),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                HorizontalListControls(listState = listState)
-                onExpandClick?.let {
-                    Button(
-                        onClick = onExpandClick,
-                        elevation = null,
-                    ) {
-                        Text(
-                            text = "See all",
-                            style = MaterialTheme.typography.subtitle2,
-                        )
+        MiniGameCardListHeader(
+            title = title,
+            titleTextStyle = titleTextStyle,
+            listState = listState,
+            expandButton =
+                onExpandClick?.let { onClick ->
+                    {
+                        Button(onClick = onClick, elevation = null) {
+                            Text(
+                                text = "See all",
+                                style = MaterialTheme.typography.subtitle2,
+                            )
+                        }
                     }
-                }
-            }
-        }
+                },
+        )
         LazyRow(
             state = listState,
             modifier = Modifier.padding(top = Dimens.small),
@@ -132,32 +122,30 @@ fun MiniGameCardListSkeleton(
     showExpandPlaceholder: Boolean = true,
 ) {
     Column(modifier = modifier) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            StaticText(
-                text = title,
-                modifier =
-                    Modifier
-                        .padding(horizontal = Dimens.medium)
-                        .align(Alignment.CenterStart),
-                style = titleTextStyle,
-            )
-            if (showExpandPlaceholder) {
-                Button(
-                    onClick = {},
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                ) {
-                    Text(
-                        text = "",
-                        style = MaterialTheme.typography.subtitle2,
-                        modifier =
-                            Modifier
-                                .width(50.dp)
-                                .clip(RoundedCornerShape(Dimens.small))
-                                .shimmerEffect(),
-                    )
-                }
-            }
-        }
+        // An unattached list state cannot scroll, so the controls render disabled at their loaded size.
+        MiniGameCardListHeader(
+            title = title,
+            titleTextStyle = titleTextStyle,
+            listState = rememberLazyListState(),
+            expandButton =
+                if (showExpandPlaceholder) {
+                    {
+                        Button(onClick = {}, elevation = null) {
+                            Text(
+                                text = "",
+                                style = MaterialTheme.typography.subtitle2,
+                                modifier =
+                                    Modifier
+                                        .width(50.dp)
+                                        .clip(RoundedCornerShape(Dimens.small))
+                                        .shimmerEffect(),
+                            )
+                        }
+                    }
+                } else {
+                    null
+                },
+        )
         val skeletonCount = if (isLargeDevice()) MINI_GAME_CARD_SKELETON_COUNT * 2 else MINI_GAME_CARD_SKELETON_COUNT
         LazyRow(
             modifier = Modifier.padding(top = Dimens.small),
@@ -168,6 +156,33 @@ fun MiniGameCardListSkeleton(
             items(skeletonCount) {
                 MiniGameCardSkeleton()
             }
+        }
+    }
+}
+
+/** Shared by the loaded list and its skeleton so both states keep the same title and item positions. */
+@Composable
+private fun MiniGameCardListHeader(
+    title: String,
+    titleTextStyle: TextStyle,
+    listState: LazyListState,
+    expandButton: (@Composable () -> Unit)?,
+) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        StaticText(
+            text = title,
+            modifier =
+                Modifier
+                    .padding(horizontal = Dimens.medium)
+                    .align(Alignment.CenterStart),
+            style = titleTextStyle,
+        )
+        Row(
+            modifier = Modifier.align(Alignment.CenterEnd),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            HorizontalListControls(listState = listState)
+            expandButton?.invoke()
         }
     }
 }

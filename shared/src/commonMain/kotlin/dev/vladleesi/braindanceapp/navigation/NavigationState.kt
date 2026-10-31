@@ -3,12 +3,14 @@
 package dev.vladleesi.braindanceapp.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.navigation3.runtime.NavBackStack
@@ -18,37 +20,20 @@ import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.savedstate.serialization.SavedStateConfiguration
-import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
-import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
-import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import kotlinx.serialization.PolymorphicSerializer
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 /**
- * Create a navigation state that persists config changes and process death.
+ * Create a navigation state that persists config changes and process death, and browser page reloads on the web.
  */
 @Composable
 fun rememberNavigationState(
     startRoute: NavKey,
     topLevelRoutes: Set<NavKey>,
 ): NavigationState {
-    val navSerializersModule =
-        SerializersModule {
-            // TODO: Need to be simplified
-            polymorphic(NavKey::class) {
-                // Bottom bar
-                subclass(BottomBarRoute.HomeRoute::class)
-                subclass(BottomBarRoute.NewsRoute::class)
-                subclass(BottomBarRoute.SearchRoute::class)
-                subclass(BottomBarRoute.CollectionsRoute::class)
-                subclass(BottomBarRoute.ProfileRoute::class)
-
-                // Other routes
-                subclass(GameDetailsRoute::class)
-                subclass(GiveawayDetailsRoute::class)
-            }
+    // Only used as initial values; platform saved state, where it exists, still takes precedence.
+    val restored =
+        remember(topLevelRoutes) {
+            decodeNavigationSnapshot(navigationPersistence?.read(), topLevelRoutes)
         }
 
     val topLevelRoute =
@@ -58,7 +43,7 @@ fun rememberNavigationState(
             stateSerializer = PolymorphicSerializer(NavKey::class),
             configuration = SavedStateConfiguration { serializersModule = navSerializersModule },
         ) {
-            mutableStateOf(startRoute)
+            mutableStateOf(restored?.topLevelRoute ?: startRoute)
         }
 
     val backStacks =
@@ -68,13 +53,23 @@ fun rememberNavigationState(
                     SavedStateConfiguration {
                         serializersModule = navSerializersModule
                     },
-                key,
+                elements = (restored?.backStack(key) ?: listOf(key)).toTypedArray(),
             )
         }
 
-    return remember(startRoute, topLevelRoutes) {
-        NavigationState(startRoute, topLevelRoute, backStacks)
+    val state =
+        remember(startRoute, topLevelRoutes) {
+            NavigationState(startRoute, topLevelRoute, backStacks)
+        }
+    navigationPersistence?.let { persistence ->
+        LaunchedEffect(state, persistence) {
+            // snapshotFlow skips unchanged text, so only real navigation changes are written.
+            snapshotFlow {
+                encodeNavigationSnapshot(state.topLevelRoute, topLevelRoutes, state.backStacks)
+            }.collect(persistence::write)
+        }
     }
+    return state
 }
 
 /**
