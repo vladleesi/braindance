@@ -5,8 +5,8 @@
 These instructions apply to this repository and its descendants. Project-specific requirements and recorded
 decisions take precedence over imported defaults. Explicit user instructions remain authoritative.
 
-One-time import from [vladleesi/agent-guidelines](https://github.com/vladleesi/agent-guidelines/tree/v1.5.0),
-release **v1.5.0**, commit **11f8f36e0308d0acc07b1352a8fa68cc137e6638**.
+One-time import from [vladleesi/agent-guidelines](https://github.com/vladleesi/agent-guidelines/tree/v1.6.0),
+release **v1.6.0**, commit **32605b784bb6a530a38344685e8a6aa7f164d2fa**.
 Selected modules: `general`, `agent-workflow`, `testing`, `security`, `git`, `ci`, `release`, `deployment`,
 `kotlin`, `compose`, `backend`, `python`, and `frontend`. Imported rules retain their
 [MIT notice](LICENSES/Agent-guidelines-MIT.txt); see [third-party notices](THIRD_PARTY_NOTICES.md#agent-guidelines).
@@ -220,6 +220,7 @@ for release/publication workflow changes or recovery.
 - Use existing `Dimens` values for Compose padding and spacing instead of raw `dp` values when an appropriate value
   already exists. Add a new shared dimension only when it represents a reusable design-system value.
 - Use constructor injection for business dependencies.
+- In suspending code, rethrow `CancellationException` with either `try`/`catch` or `runCatching`.
 - Consider Android and iOS implications of shared or platform changes.
 
 ## Web application

@@ -9,8 +9,12 @@
 - Use structured concurrency owned for the work's lifetime. Keep blocking I/O
   off UI/event-loop threads; inject dispatchers when substitution is needed.
   Never use unowned scopes to bypass lifecycle cancellation.
-- Rethrow `CancellationException` in broad catches, including `runCatching`
-  recovery. Handle expected failures explicitly; release resources on
+- Prefer `runCatching` to `try`/`catch` only where it is more readable and suits
+  the case, such as turning a non-suspending failure into `null` or a fallback
+  value. Keep `try`/`catch` for specific exception types, `finally` cleanup, or
+  rethrowing.
+- Rethrow `CancellationException` in broad catches with either `try`/`catch` or
+  `runCatching` recovery. Handle expected failures explicitly; release resources on
   cancellation. Define overlapping requests' effects on state.
 - Expose read-only state; keep mutations with its owner. Use atomic updates or
   synchronization for concurrency; distinguish loading, empty, success, and

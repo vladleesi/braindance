@@ -2,8 +2,11 @@
 
 - Record useful lasting decisions in existing instructions or relevant docs; do
   not create config or documents for trivial preferences.
-- Prefer explicit names and clear control flow over dense expressions. Explain
-  non-obvious constraints, not syntax.
+- Name parameters and properties for what they contain, such as `snapshotJson`
+  or `gameId`, not generic names like `text`, `data`, or `value`; document a
+  parameter when its source or format is not obvious from the name.
+- Prefer clear control flow over dense expressions. Explain non-obvious
+  constraints, not syntax.
 - Separate business decisions from independently changing presentation,
   transport, and persistence. Pass dependencies explicitly; add interfaces or
   layers only for required boundaries or substitutions.
