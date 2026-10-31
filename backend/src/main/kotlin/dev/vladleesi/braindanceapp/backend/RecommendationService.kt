@@ -15,7 +15,14 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Clock
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 /** Outcome of a recommendation request. Only [Kind.COMPLETE] results may be cached publicly. */
 internal data class RecommendationResult(
@@ -83,7 +90,7 @@ internal class RecommendationService(
     }
 
     private suspend fun refresh(gameId: Int): RecommendationResult {
-        val started = System.nanoTime()
+        val started = TimeSource.Monotonic.markNow()
         val metrics = Metrics()
         val computed =
             try {
@@ -101,18 +108,18 @@ internal class RecommendationService(
                 computed
             }
         store(gameId, result)
-        log(metrics.event(gameId, result, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)))
+        log(metrics.event(gameId, result, started.elapsedNow().inWholeMilliseconds))
         return result
     }
 
     private suspend fun compute(
         gameId: Int,
-        started: Long,
+        started: TimeMark,
         metrics: Metrics,
     ): RecommendationResult {
         val sourceResponse =
-            withTimeout(SOURCE_TIMEOUT_MILLIS) {
-                igdb.execute(MULTIQUERY_PATH, RecommendationQueries.sourceQuery(gameId), SLOT_WAIT_MILLIS)
+            withTimeout(SOURCE_TIMEOUT) {
+                igdb.execute(MULTIQUERY_PATH, RecommendationQueries.sourceQuery(gameId), SLOT_WAIT.inWholeMilliseconds)
             }
         metrics.record(sourceResponse)
         if (sourceResponse.status != OK) return RecommendationResult(errorStatus(sourceResponse.status))
@@ -123,14 +130,13 @@ internal class RecommendationService(
 
         val discoveryQuery =
             RecommendationQueries.discoveryQuery(graph, RecommendationRanking.retrievalKeywords(graph))
-        val elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
-        val budget = (TOTAL_BUDGET_MILLIS - elapsed).coerceAtLeast(MIN_DISCOVERY_MILLIS)
+        val budget = (TOTAL_BUDGET - started.elapsedNow()).coerceAtLeast(MIN_DISCOVERY)
         // Without any usable discovery filter the graph neighbors are the complete candidate set.
         val discovered = if (discoveryQuery == null) emptyList() else discover(discoveryQuery, budget, metrics)
-        val scoringStarted = System.nanoTime()
+        val scoringStarted = TimeSource.Monotonic.markNow()
         val pool = RecommendationRanking.candidatePool(graph, discovered.orEmpty())
         val ranked = RecommendationRanking.rank(graph, pool)
-        metrics.scoringMicros = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - scoringStarted)
+        metrics.scoringMicros = scoringStarted.elapsedNow().inWholeMicroseconds
         metrics.candidates = pool.size
         val kind = if (discovered == null) RecommendationResult.Kind.DEGRADED else RecommendationResult.Kind.COMPLETE
         return RecommendationResult(OK, ranked, kind)
@@ -139,12 +145,12 @@ internal class RecommendationService(
     /** Returns null when discovery fails, so the caller falls back to native graph neighbors. */
     private suspend fun discover(
         query: String,
-        budgetMillis: Long,
+        budget: Duration,
         metrics: Metrics,
     ): List<IgdbGame>? {
         val response =
-            withTimeoutOrNull(budgetMillis) {
-                igdb.execute(MULTIQUERY_PATH, query, SLOT_WAIT_MILLIS.coerceAtMost(budgetMillis / 2))
+            withTimeoutOrNull(budget) {
+                igdb.execute(MULTIQUERY_PATH, query, minOf(SLOT_WAIT, budget / 2).inWholeMilliseconds)
             }
         if (response == null) {
             metrics.discoveryFailure = "timeout"
@@ -187,10 +193,11 @@ internal class RecommendationService(
         val entry =
             when {
                 result.status == OK && result.kind == RecommendationResult.Kind.COMPLETE ->
-                    CacheEntry(result, now + FRESH_MILLIS, now + STALE_IF_ERROR_MILLIS)
+                    CacheEntry(result, now + FRESH.inWholeMilliseconds, now + STALE_IF_ERROR.inWholeMilliseconds)
                 result.status == OK && result.kind == RecommendationResult.Kind.DEGRADED ->
-                    CacheEntry(result, now + DEGRADED_MILLIS, now + DEGRADED_MILLIS)
-                result.status == NOT_FOUND -> CacheEntry(result, now + DEGRADED_MILLIS, now + DEGRADED_MILLIS)
+                    CacheEntry(result, now + DEGRADED.inWholeMilliseconds, now + DEGRADED.inWholeMilliseconds)
+                result.status == NOT_FOUND ->
+                    CacheEntry(result, now + DEGRADED.inWholeMilliseconds, now + DEGRADED.inWholeMilliseconds)
                 // Keep the expired complete entry for later stale-if-error responses; do not cache failures.
                 else -> return
             }
@@ -229,15 +236,15 @@ internal class RecommendationService(
         const val MULTIQUERY_PATH = "/v4/multiquery"
         private const val MAX_CACHE_ENTRIES = 512
         private const val LOAD_FACTOR = 0.75f
-        private const val FRESH_MILLIS = 24 * 60 * 60 * 1000L
-        private const val STALE_IF_ERROR_MILLIS = 7 * 24 * 60 * 60 * 1000L
-        private const val DEGRADED_MILLIS = 2 * 60 * 1000L
+        private val FRESH = 24.hours
+        private val STALE_IF_ERROR = 7.days
+        private val DEGRADED = 2.minutes
 
         // Clients time out after five seconds, so a complete answer must fit well inside that.
-        private const val SOURCE_TIMEOUT_MILLIS = 3500L
-        private const val TOTAL_BUDGET_MILLIS = 4500L
-        private const val MIN_DISCOVERY_MILLIS = 800L
-        private const val SLOT_WAIT_MILLIS = 1000L
+        private val SOURCE_TIMEOUT = 3.5.seconds
+        private val TOTAL_BUDGET = 4.5.seconds
+        private val MIN_DISCOVERY = 800.milliseconds
+        private val SLOT_WAIT = 1.seconds
 
         private const val OK = 200
         private const val NOT_FOUND = 404
