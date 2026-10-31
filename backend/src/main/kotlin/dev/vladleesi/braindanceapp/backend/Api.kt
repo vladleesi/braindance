@@ -8,6 +8,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.request.host
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
@@ -38,10 +39,24 @@ internal val gameQueryParameters =
         "/v1/games/popularity" to setOf("type", "pageSize"),
     )
 
+internal const val RECOMMENDATIONS_PATH = "/v1/games/recommendations"
+internal val recommendationQueryParameters = setOf("id", "limit")
+
 fun Application.api(
     config: BackendConfig,
     igdb: IgdbService,
     giveaways: GiveawayService,
+) {
+    val recommendations = RecommendationService(igdb)
+    monitor.subscribe(ApplicationStopped) { recommendations.close() }
+    api(config, igdb, giveaways, recommendations)
+}
+
+internal fun Application.api(
+    config: BackendConfig,
+    igdb: IgdbService,
+    giveaways: GiveawayService,
+    recommendations: RecommendationService,
 ) {
     val backendVersion =
         BackendConfig::class.java.`package`.implementationVersion
@@ -85,6 +100,8 @@ fun Application.api(
                                 respondJson(503, """{"error":"Backend credentials unavailable"}""")
                             }
                         }
+                        path == RECOMMENDATIONS_PATH && method == "GET" ->
+                            respondRecommendations(recommendations, config)
                         path in gameQueryParameters && method in setOf("GET", "POST") -> respondGame(path, igdb, config)
                         path.startsWith("/v1/giveaways") && method == "GET" -> {
                             if (path == "/v1/giveaways/image") {
@@ -175,6 +192,54 @@ private suspend fun RoutingContext.respondGame(
         else -> respondJson(502, """{"error":"Upstream unavailable"}""")
     }
 }
+
+private suspend fun RoutingContext.respondRecommendations(
+    recommendations: RecommendationService,
+    config: BackendConfig,
+) {
+    val parameters = call.request.queryParameters
+    val valid =
+        call.request.uri.length <= 2048 &&
+            parameters.entries().all { it.key in recommendationQueryParameters && it.value.size == 1 }
+    val id = parameters["id"]?.toIntOrNull()?.takeIf { valid && it > 0 }
+    val limit =
+        parameters["limit"]
+            ?.let { value -> value.toIntOrNull()?.takeIf { it in 1..RecommendationRanking.MAX_RESULTS } ?: 0 }
+            ?: RecommendationService.DEFAULT_LIMIT
+    if (id == null || limit == 0) {
+        respondJson(400, """{"error":"Invalid request"}""")
+        return
+    }
+    if (!config.credentialsAvailable) {
+        respondJson(503, """{"error":"Backend credentials unavailable"}""")
+        return
+    }
+    val result = recommendations.recommendations(id)
+    when (result.status) {
+        200 -> {
+            // Degraded and stale fallbacks stay private so edge caches do not extend a partial answer.
+            if (result.kind == RecommendationResult.Kind.COMPLETE) call.attributes.put(publicResponse, Unit)
+            respondJson(200, recommendationsJson(result.games.take(limit)))
+        }
+        404 -> respondJson(404, """{"error":"Game not found"}""")
+        429 -> respondJson(429, """{"error":"Rate limit exceeded"}""")
+        else -> respondJson(502, """{"error":"Upstream unavailable"}""")
+    }
+}
+
+/** Matches the `id`, `name`, and `cover.url` shape of IGDB game objects already used by clients. */
+internal fun recommendationsJson(games: List<Recommendation>): String =
+    JsonArray(
+        games.map { game ->
+            JsonObject(
+                buildMap {
+                    put("id", JsonPrimitive(game.id))
+                    put("name", JsonPrimitive(game.name))
+                    game.coverUrl?.let { put("cover", JsonObject(mapOf("url" to JsonPrimitive(it)))) }
+                },
+            )
+        },
+    ).toString()
 
 private fun RoutingContext.gameInput(path: String): JsonObject? {
     val parameters = call.request.queryParameters

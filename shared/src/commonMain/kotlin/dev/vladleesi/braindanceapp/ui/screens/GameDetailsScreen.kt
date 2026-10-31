@@ -48,6 +48,7 @@ import dev.vladleesi.braindanceapp.ui.components.details.GenreTags
 import dev.vladleesi.braindanceapp.ui.components.details.ReleaseDateLabel
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardList
+import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
@@ -76,6 +77,7 @@ fun GameDetailsScreen(
         mutableStateOf(id)
     }
     val state by viewModel.gameDetailsState.collectAsState()
+    val recommendations by viewModel.recommendations.collectAsState()
 
     LaunchedEffect(Unit) {
         gameId.let { viewModel.load() }
@@ -94,6 +96,7 @@ fun GameDetailsScreen(
             key(currentState.gameDetails.id) {
                 GameDetailsScreen(
                     state = currentState,
+                    recommendations = recommendations,
                     modifier = modifier,
                     onBackButtonPressed = { navigator.goBack() },
                 )
@@ -104,6 +107,7 @@ fun GameDetailsScreen(
 @Composable
 private fun GameDetailsScreen(
     state: GameDetailsState.Success,
+    recommendations: List<MiniGameCardModel>,
     modifier: Modifier,
     onBackButtonPressed: (() -> Unit),
 ) {
@@ -143,14 +147,13 @@ private fun GameDetailsScreen(
             if (stores.isNotEmpty()) {
                 storesBlockItem(stores)
             }
-            val similarGames = state.gameDetails.similarGames
-            if (similarGames.isNotEmpty()) {
+            if (recommendations.isNotEmpty()) {
                 item { Spacer(modifier = Modifier.size(Dimens.large)) }
                 item {
                     MiniGameCardList(
                         title = stringResource(Res.string.game_details_screen_similar_games),
                         titleTextStyle = MaterialTheme.typography.h3,
-                        games = similarGames,
+                        games = recommendations,
                         onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
                     )
                 }

@@ -18,6 +18,12 @@ class GamesRemote(
             parameter("id", id)
         }
 
+    /** The backend ranks recommendations; the default limit keeps one shared edge-cache URL per game. */
+    suspend fun recommendations(id: Int): HttpResponse =
+        backendHttpClient.get(ApiConfig.Endpoints.GAME_RECOMMENDATIONS) {
+            parameter("id", id)
+        }
+
     suspend fun mostAnticipated(pageSize: Int): HttpResponse =
         backendHttpClient.get(ApiConfig.Endpoints.MOST_ANTICIPATED) {
             parameter("pageSize", pageSize)

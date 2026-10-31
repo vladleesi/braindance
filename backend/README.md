@@ -1,6 +1,6 @@
 # Braindance API
 
-Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.6.2**. Use JDK 21 and run commands from the repository
+Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.7.0**. Use JDK 21 and run commands from the repository
 root. Twitch credentials stay on the backend; GamerPower needs no key.
 This reference is for backend development and optional independent hosting. For app availability, see the
 [project README](../README.md#platforms); for client setup, see the [development guide](../docs/development.md).
@@ -44,8 +44,8 @@ To test, package, and run a container:
 
 ```sh
 ./gradlew :backend:test :backend:installDist
-docker build -f backend/Dockerfile -t braindance-api:0.6.2 backend
-docker run --env-file backend/.env -p 8080:8080 braindance-api:0.6.2
+docker build -f backend/Dockerfile -t braindance-api:0.7.0 backend
+docker run --env-file backend/.env -p 8080:8080 braindance-api:0.7.0
 ```
 
 The Dockerfile requires the prepared distribution. To run without Docker, use
@@ -73,6 +73,7 @@ Tag published images with the backend version and source commit, and deploy a fi
 | `/health` | Readiness and backend version; no credential checks or upstream calls |
 | `/healthz` | Credential presence; 503 if either Twitch value is missing |
 | `/v1/games/details?id=42` | Game details |
+| `/v1/games/recommendations?id=42&limit=24` | Ranked similar games; optional `limit` 1–50, default 24 |
 | `/v1/games/anticipated?pageSize=20` | Upcoming games; optional `currentTimestamp` in Unix seconds |
 | `/v1/games/popular?ids=42,43&pageSize=20` | Games for 1–50 comma-separated IDs |
 | `/v1/games/popularity?type=34&pageSize=40` | Popularity primitives; only `type=34` is supported |
@@ -80,21 +81,21 @@ Tag published images with the backend version and source commit, and deploy a fi
 | `/v1/giveaways/42` | Giveaway details |
 | `/v1/giveaways/image?url=...` | Proxy for images under `https://www.gamerpower.com/offers/` |
 
-`/health` returns `{"ok":true,"version":"0.6.2"}`. The version comes from `backend/build.gradle.kts` and is embedded
+`/health` returns `{"ok":true,"version":"0.7.0"}`. The version comes from `backend/build.gradle.kts` and is embedded
 in the JAR's `Implementation-Version` manifest attribute. Gradle passes the same value as the `backendVersion` JVM
 property for `:backend:run` and tests, which use compiled classes instead of the packaged JAR.
 For direct IDE launches, set the JVM option `-DbackendVersion=development`; packaged applications prefer the JAR version.
 
 Game IDs are positive 32-bit integers; game lists require `pageSize` from 1–50. An explicit `currentTimestamp`
 must be 1–4102444800; omission uses the current time. Unknown or duplicate query keys are rejected.
-Legacy game POSTs retain their JSON bodies. Game URLs/POST bodies are limited to 2 KiB; upstream JSON to 1 MiB
+Legacy game POSTs retain their JSON bodies. Recommendations are GET-only. Game URLs/POST bodies are limited to 2 KiB; upstream JSON to 1 MiB
 for IGDB and 2 MiB for GamerPower, and images to 5 MiB. Token requests time out after 5 seconds; other upstream
 requests after 8 seconds. Responses default to `private, no-store`.
 
 ## Optional caching and proxy guard
 
 Public caching requires `PUBLIC_CACHE_ENABLED=true` and an HTTPS `PUBLIC_BASE_URL`. Eligible anonymous game and
-giveaway GET/200 responses use `public, max-age=1200`. Preserve full query strings and Origin in cache keys,
+giveaway GET/200 responses use `public, max-age=1200`; complete recommendation rankings add `s-maxage=86400`. Preserve full query strings and Origin in cache keys,
 respect backend cache headers, and never override no-store for credentials, cookies, health, preflight, errors,
 or legacy POSTs. Purge existing entries when changing CORS or disabling caching.
 
@@ -103,6 +104,44 @@ overwrite visitor guard headers and supply exactly one matching `X-Origin-Verify
 checks. Guarded caching also requires `X-Public-Cache-Eligible: 1` only for original requests satisfying the
 [backend policy](src/main/kotlin/dev/vladleesi/braindanceapp/backend/ApiCachePolicy.kt); otherwise supply `0`.
 Leave caching disabled if you cannot verify proxy rules. The guard does not provide network isolation.
+
+## Recommendations
+
+`/v1/games/recommendations` returns a JSON array of `{"id","name","cover":{"url"}}` objects, strongest match first.
+It returns 404 for unknown games and may return fewer results than `limit` when remaining candidates are weak.
+The `similar_games` field of `/v1/games/details` is IGDB's unranked list, kept for released clients.
+
+A cache miss makes two IGDB [multiquery](https://api-docs.igdb.com/#multi-query) requests, each using one
+rate-limit slot:
+
+1. The source game with its `similar_games` metadata, and games that list the source as similar.
+2. Bounded searches for second-degree graph neighbors, the same collection or franchise, the source's distinctive
+   genre/theme/perspective profile, and distinctive source keywords shared with its neighbors.
+
+Candidates are filtered to main games, standalone expansions, remakes, remasters, and expanded games without a
+`version_parent`; DLC, bundles, ports, editions, cancelled entries, and duplicates are removed. Scores combine
+IDF-weighted metadata similarity (keywords, themes, genres, perspectives, modes, release era) with IGDB graph links,
+shared series, and popularity; the last three only amplify games whose metadata already agrees. Storefront and
+platform keywords such as achievements are ignored. Weights live in `RecommendationRanking.kt`.
+
+Complete rankings are cached in process for 24 hours (512 games) and served for up to 7 more days if a refresh
+fails. Concurrent misses for one game share one computation. If the second request fails or exceeds the latency
+budget, the ranked native neighbors are returned privately and cached for 2 minutes. Process caches are lost when an
+instance stops; the shared edge cache keeps complete rankings across instances when public caching is enabled and
+the proxy rule includes this path.
+
+Quality and benchmark checks:
+
+```sh
+./gradlew :backend:test --tests '*Recommendation*'
+BRAINDANCE_BENCHMARK=1 ./gradlew :backend:test --tests '*RecommendationBenchmarkTest*' --rerun -i
+BRAINDANCE_LIVE_EVAL=1 TWITCH_CLIENT_ID=... TWITCH_CLIENT_SECRET=... \
+  ./gradlew :backend:test --tests '*LiveRecommendationEvaluationTest*' --rerun -i
+```
+
+The default suite uses synthetic fixtures. The benchmark uses a zero-latency fake IGDB and measures backend
+overhead only. The live evaluation reads real IGDB data with your credentials and prints a native-versus-hybrid
+report against curated title patterns.
 
 ## Optional shared rate limiting
 

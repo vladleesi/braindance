@@ -24,6 +24,10 @@ internal val publicResponse = AttributeKey<Unit>("PublicResponse")
 
 internal const val PRIVATE_CACHE_CONTROL = "private, no-store"
 internal const val PUBLIC_CACHE_CONTROL = "public, max-age=1200"
+
+// Ranked recommendations change slowly; a day-long shared lifetime lets the edge serve them across scaled-to-zero
+// backend instances while browsers keep the standard 20-minute lifetime.
+internal const val RECOMMENDATIONS_CACHE_CONTROL = "public, max-age=1200, s-maxage=86400"
 internal const val ORIGIN_SECRET_HEADER = "X-Origin-Verify"
 internal const val PUBLIC_CACHE_ELIGIBLE_HEADER = "X-Public-Cache-Eligible"
 private const val MIN_ORIGIN_SECRET_LENGTH = 32
@@ -66,7 +70,9 @@ internal fun Application.installApiCachePolicy(config: BackendConfig) {
                 val cacheable = call.canCachePublicResponse(config, content)
                 call.response.headers.append(
                     HttpHeaders.CacheControl,
-                    if (cacheable) {
+                    if (cacheable && call.request.path() == RECOMMENDATIONS_PATH) {
+                        RECOMMENDATIONS_CACHE_CONTROL
+                    } else if (cacheable) {
                         PUBLIC_CACHE_CONTROL
                     } else {
                         PRIVATE_CACHE_CONTROL
@@ -142,6 +148,7 @@ private fun ApplicationCall.hasPublicQuery(): Boolean {
         when {
             path == "/v1/giveaways" || validGiveawayId(path) -> emptySet()
             path == "/v1/giveaways/image" -> setOf("url")
+            path == RECOMMENDATIONS_PATH -> recommendationQueryParameters
             else -> gameQueryParameters[path] ?: return false
         }
     return request.queryParameters.entries().all { (name, values) -> name in names && values.size == 1 }

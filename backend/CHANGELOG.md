@@ -3,6 +3,15 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.7.0
+
+- Add `GET /v1/games/recommendations` with hybrid ranking of up to 50 similar games from IGDB graph links and
+  weighted metadata similarity, filtering editions, DLC, bundles, and other non-game entries.
+- Discover candidates with two IGDB multiquery requests per cache miss; cache complete rankings in process for
+  24 hours with single-flight deduplication and serve expired results when IGDB fails.
+- Give complete recommendation responses a 24-hour shared cache lifetime (`s-maxage=86400`).
+- Allow internal IGDB calls to wait briefly for a rate-limit slot instead of failing immediately.
+
 ## 0.6.2
 
 - Publish the container image as a single manifest without attestation entries to restore faster cold starts.

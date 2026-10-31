@@ -5,6 +5,7 @@
 package dev.vladleesi.braindanceapp.backend
 
 import io.ktor.http.HttpHeaders
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -34,10 +35,22 @@ class IgdbService(
         input: JsonObject,
     ): ApiResult {
         val query = buildQuery(path, input) ?: return ApiResult(400)
+        return execute(query.first, query.second)
+    }
+
+    /**
+     * Sends a validated APICalypse body to IGDB. Each attempt consumes one rate-limit slot; [slotWaitMillis] lets
+     * internal callers briefly wait for a slot instead of failing immediately when a burst saturates the limit.
+     */
+    internal suspend fun execute(
+        path: String,
+        body: String,
+        slotWaitMillis: Long = 0,
+    ): ApiResult {
         var accessToken = getToken()
         repeat(2) { attempt ->
-            if (!rateLimiter.takeSlot()) return ApiResult(429)
-            val response = upstream.igdb(query.first, query.second, checkNotNull(config.clientId), accessToken)
+            if (!takeSlot(slotWaitMillis)) return ApiResult(429)
+            val response = upstream.igdb(path, body, checkNotNull(config.clientId), accessToken)
             if (response.status.value == 401 && attempt == 0) {
                 accessToken = getToken(rejectedToken = accessToken)
             } else {
@@ -49,6 +62,16 @@ class IgdbService(
             }
         }
         return ApiResult(502)
+    }
+
+    private suspend fun takeSlot(waitMillis: Long): Boolean {
+        val deadline = clock.millis() + waitMillis
+        while (true) {
+            if (rateLimiter.takeSlot()) return true
+            val remaining = deadline - clock.millis()
+            if (remaining <= 0) return false
+            delay(remaining.coerceAtMost(SLOT_RETRY_MILLIS))
+        }
     }
 
     private suspend fun getToken(rejectedToken: String? = null): String =
@@ -98,6 +121,7 @@ class IgdbService(
         return when (path) {
             "/v1/games/details" -> {
                 val id = positive(input["id"], Int.MAX_VALUE.toLong()) ?: return null
+                // similar_games stays for released clients; current clients use /v1/games/recommendations.
                 "/v4/games" to (
                     "fields name,cover.url,similar_games.name,similar_games.cover.url," +
                         "videos.video_id,genres.name,summary,storyline,platforms.name,websites.url," +
@@ -134,5 +158,9 @@ class IgdbService(
             }
             else -> null
         }
+    }
+
+    private companion object {
+        const val SLOT_RETRY_MILLIS = 150L
     }
 }

@@ -30,7 +30,7 @@ The goal is an official app you can install or open without configuring API cred
 Mobile store links will be added here when releases are available; no release date is announced.
 
 The current frontend source version is
-[0.3.6](https://github.com/vladleesi/braindance/releases/tag/app-v0.3.6).
+[0.4.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.4.0).
 GitHub releases currently provide source code, not store-ready mobile downloads.
 See [CHANGELOG.md](CHANGELOG.md) for changes across Android, iOS, and Web.
 
@@ -48,7 +48,7 @@ and host it independently under the applicable license terms.
 
 Android, iOS, and Web share UI and application logic through Kotlin Multiplatform and Compose Multiplatform.
 A Kotlin/JVM Ktor backend keeps Twitch credentials server-side and provides IGDB and GamerPower data.
-Its independent version is `0.6.2`. See the [backend changelog](backend/CHANGELOG.md) for release notes.
+Its independent version is `0.7.0`. See the [backend changelog](backend/CHANGELOG.md) for release notes.
 
 - [Development guide](docs/development.md): requirements, project layout, local setup, validation, and releases.
 - [Backend reference](backend/README.md): server configuration, API, packaging, and optional independent hosting.

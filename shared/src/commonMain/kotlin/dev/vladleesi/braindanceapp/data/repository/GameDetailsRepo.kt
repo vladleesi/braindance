@@ -4,6 +4,7 @@ package dev.vladleesi.braindanceapp.data.repository
 
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import io.ktor.client.call.body
 
 class GameDetailsRepo(
@@ -13,4 +14,6 @@ class GameDetailsRepo(
         val response = gamesRemote.gameDetails(gameId)
         return response.body()
     }
+
+    suspend fun recommendations(gameId: Int): List<SimilarGame> = gamesRemote.recommendations(gameId).body()
 }

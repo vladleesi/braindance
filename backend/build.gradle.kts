@@ -5,12 +5,13 @@ import io.gitlab.arturbosch.detekt.Detekt
 plugins {
     application
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
 }
 
 group = "dev.vladleesi.braindanceapp"
-version = "0.6.2"
+version = "0.7.0"
 
 kotlin {
     compilerOptions {

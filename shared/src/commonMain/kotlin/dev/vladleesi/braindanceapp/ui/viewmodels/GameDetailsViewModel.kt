@@ -14,6 +14,7 @@ import dev.vladleesi.braindanceapp.utils.orZero
 import dev.vladleesi.braindanceapp.utils.parentPlatformTypes
 import dev.vladleesi.braindanceapp.utils.toCoverUrl
 import dev.vladleesi.braindanceapp.utils.toStoreTypes
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,11 @@ class GameDetailsViewModel(
 ) : ScreenViewModel() {
     private val _gameDetailsState = MutableStateFlow<GameDetailsState>(GameDetailsState.Loading)
     val gameDetailsState: StateFlow<GameDetailsState> = _gameDetailsState.asStateFlow()
+
+    private val _recommendations = MutableStateFlow<List<MiniGameCardModel>>(emptyList())
+
+    /** Loaded independently so a slow or failed recommendation request never delays or replaces the details. */
+    val recommendations: StateFlow<List<MiniGameCardModel>> = _recommendations.asStateFlow()
 
     private val handler =
         CoroutineExceptionHandler { _, exception ->
@@ -40,6 +46,7 @@ class GameDetailsViewModel(
                 _gameDetailsState.emit(GameDetailsState.Error("Invalid game ID: $gameId"))
                 return@launch
             }
+            loadRecommendations(gameId)
             val game = gameDetailsRepo.gameDetails(gameId.orZero())?.firstOrNull()
             val gameDetails =
                 GameDetails(
@@ -63,19 +70,6 @@ class GameDetailsViewModel(
                                 name = genre.name.orEmpty(),
                             )
                         },
-                    similarGames =
-                        game?.similarGames.orEmpty().map {
-                            MiniGameCardModel(
-                                id = it.id.orZero(),
-                                title = it.name.orEmpty(),
-                                backgroundImageUrl =
-                                    it.cover
-                                        ?.url
-                                        ?.toCoverUrl(CoverSize.P_720)
-                                        .orEmpty(),
-                                platforms = emptyList(),
-                            )
-                        },
                 )
             _gameDetailsState.emit(
                 GameDetailsState.Success(gameDetails),
@@ -85,6 +79,35 @@ class GameDetailsViewModel(
 
     override fun onRefresh() {
         onLoad()
+    }
+
+    private fun loadRecommendations(gameId: Int) {
+        viewModelScope.launch {
+            val games =
+                try {
+                    gameDetailsRepo.recommendations(gameId)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // The section is optional: keep the details visible and leave it hidden until a refresh.
+                    BLogger.error(message = "Recommendations unavailable: ${e.message.orEmpty()}", throwable = e)
+                    return@launch
+                }
+            _recommendations.value =
+                games.mapNotNull { game ->
+                    val id = game.id ?: return@mapNotNull null
+                    MiniGameCardModel(
+                        id = id,
+                        title = game.name.orEmpty(),
+                        backgroundImageUrl =
+                            game.cover
+                                ?.url
+                                ?.toCoverUrl(CoverSize.P_720)
+                                .orEmpty(),
+                        platforms = emptyList(),
+                    )
+                }
+        }
     }
 }
 
@@ -110,7 +133,6 @@ data class GameDetails(
     val platforms: List<ParentPlatformType>,
     val stores: List<StoreTypeModel>,
     val genres: List<GenreTag>,
-    val similarGames: List<MiniGameCardModel>,
 )
 
 data class GenreTag(

@@ -4,6 +4,14 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.4.0
+
+### Android, iOS, and Web
+
+- Show up to 24 similar games on game details, ranked by gameplay similarity instead of IGDB's fixed list of 10.
+- Exclude editions, DLC, and bundles from similar games.
+- Show game details without waiting for similar games to load.
+
 ## 0.3.6
 
 ### Android, iOS, and Web
