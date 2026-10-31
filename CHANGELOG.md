@@ -4,6 +4,17 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.3.6
+
+### Android, iOS, and Web
+
+- Make scrolling and loading placeholders smoother on the home and details screens.
+
+### Web
+
+- Show the dark app background instead of a white page while the app loads.
+- Keep carousel arrow highlights inside their round buttons and show a pointer cursor on hover.
+
 ## 0.3.5
 
 ### Android, iOS, and Web

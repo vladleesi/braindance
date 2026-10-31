@@ -12,6 +12,7 @@ import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.util.DebugLogger
+import coil3.util.Logger
 import okio.FileSystem
 
 object ImageLoaderInitializer {
@@ -35,7 +36,8 @@ private fun createImageLoader(context: PlatformContext) =
         .networkCachePolicy(CachePolicy.ENABLED)
         .configurePlatformCache()
         .crossfade(true)
-        .logger(DebugLogger())
+        // Per-request logs are costly on every image load; keep only warnings and failures.
+        .logger(DebugLogger(minLevel = Logger.Level.Warn))
         .build()
 
 // Configures the memory cache with a specific percentage of available memory

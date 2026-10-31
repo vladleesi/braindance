@@ -32,6 +32,7 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.HomeState
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
 
 private const val MINI_GAME_CARD_SKELETON_COUNT = 4
+private const val MINI_GAME_CARD_CONTENT_TYPE = "mini_game_card"
 
 @Composable
 fun MiniGameCardList(
@@ -41,8 +42,8 @@ fun MiniGameCardList(
     onRefresh: () -> Unit,
     onItemClick: (Int) -> Unit,
 ) {
-    Crossfade(targetState = state) {
-        when (state) {
+    Crossfade(targetState = state) { targetState ->
+        when (targetState) {
             HomeState.Loading ->
                 MiniGameCardListSkeleton(
                     title = title,
@@ -53,7 +54,7 @@ fun MiniGameCardList(
                 MiniGameCardList(
                     title = title,
                     titleTextStyle = MaterialTheme.typography.h2,
-                    games = state.entities.filterIsInstance<MiniGameCardModel>(),
+                    games = targetState.entities.filterIsInstance<MiniGameCardModel>(),
                     modifier = modifier,
                     onItemClick = onItemClick,
                     onExpandClick = {},
@@ -62,7 +63,7 @@ fun MiniGameCardList(
             is HomeState.Error ->
                 CarouselErrorState(
                     title = title,
-                    errorMessage = state.message,
+                    errorMessage = targetState.message,
                     onRefresh = onRefresh,
                     modifier = modifier,
                 )
@@ -114,7 +115,7 @@ fun MiniGameCardList(
             horizontalArrangement = Arrangement.spacedBy(Dimens.small),
             contentPadding = PaddingValues(horizontal = Dimens.medium),
         ) {
-            items(games, key = { it.id }, contentType = { it }) { card ->
+            items(games, key = { it.id }, contentType = { MINI_GAME_CARD_CONTENT_TYPE }) { card ->
                 MiniGameCard(card = card, onClick = onItemClick)
             }
         }

@@ -3,6 +3,8 @@
 package dev.vladleesi.braindanceapp.utils
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
@@ -14,13 +16,17 @@ fun String.toContentDescription(): String = "Image: $this"
 fun rememberCachedImagePainter(
     data: Any?,
     imageCacheKey: String?,
-) = rememberAsyncImagePainter(
-    model =
-        ImageRequest
-            .Builder(LocalPlatformContext.current)
-            .data(data)
-            .memoryCacheKey(imageCacheKey)
-            .diskCacheKey(imageCacheKey)
-            .crossfade(true)
-            .build(),
-)
+): AsyncImagePainter {
+    val context = LocalPlatformContext.current
+    val request =
+        remember(context, data, imageCacheKey) {
+            ImageRequest
+                .Builder(context)
+                .data(data)
+                .memoryCacheKey(imageCacheKey)
+                .diskCacheKey(imageCacheKey)
+                .crossfade(true)
+                .build()
+        }
+    return rememberAsyncImagePainter(model = request)
+}

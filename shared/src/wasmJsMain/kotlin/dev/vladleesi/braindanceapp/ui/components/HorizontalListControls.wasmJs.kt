@@ -5,30 +5,43 @@ package dev.vladleesi.braindanceapp.ui.components
 import ChevronLeft
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.horizontal_list_next
 import dev.vladleesi.braindanceapp.resources.horizontal_list_previous
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.utils.withCircleRippleEffect
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 private const val ITEMS_PER_SCROLL = 3
 private const val SCROLL_ANIMATION_DURATION_MILLIS = 450
 private const val REVERSE_ICON_ROTATION_DEGREES = 180f
+
+private val ButtonTouchTargetSize = 48.dp
+private val ButtonCircleSize = 28.dp
 
 @Composable
 actual fun HorizontalListControls(
@@ -74,6 +87,10 @@ actual fun HorizontalListControls(
     }
 }
 
+/**
+ * Keeps a full-size touch target while drawing hover, focus, and press feedback only inside the visible circle,
+ * so the ripple neither overflows into the neighboring button nor gets cut by it.
+ */
 @Composable
 private fun HorizontalListButton(
     contentDescription: String,
@@ -81,21 +98,33 @@ private fun HorizontalListButton(
     onClick: () -> Unit,
     rotateIcon: Boolean = false,
 ) {
-    IconButton(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier.size(width = 44.dp, height = 48.dp),
+    Box(
+        modifier =
+            Modifier
+                .size(ButtonTouchTargetSize)
+                .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
+                .clickable(
+                    enabled = enabled,
+                    role = Role.Button,
+                    interactionSource = null,
+                    indication = ripple(bounded = false, radius = ButtonCircleSize / 2),
+                    onClick = onClick,
+                ),
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = ChevronLeft,
-            contentDescription = contentDescription,
-            modifier =
-                Modifier
-                    .size(28.dp)
-                    .withCircleRippleEffect(MaterialTheme.colors.secondary)
-                    .padding(Dimens.tiny)
-                    .then(if (rotateIcon) Modifier.rotate(REVERSE_ICON_ROTATION_DEGREES) else Modifier),
-        )
+        val contentAlpha = if (enabled) LocalContentAlpha.current else ContentAlpha.disabled
+        CompositionLocalProvider(LocalContentAlpha provides contentAlpha) {
+            Icon(
+                imageVector = ChevronLeft,
+                contentDescription = contentDescription,
+                modifier =
+                    Modifier
+                        .size(ButtonCircleSize)
+                        .background(color = MaterialTheme.colors.secondary, shape = CircleShape)
+                        .padding(Dimens.tiny)
+                        .then(if (rotateIcon) Modifier.rotate(REVERSE_ICON_ROTATION_DEGREES) else Modifier),
+            )
+        }
     }
 }
 

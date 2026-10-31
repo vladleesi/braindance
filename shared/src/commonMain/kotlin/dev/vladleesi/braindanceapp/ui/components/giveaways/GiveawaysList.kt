@@ -32,6 +32,7 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.HomeState
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
 
 private const val GIVEAWAYS_SKELETON_COUNT = 3
+private const val GIVEAWAY_ITEM_CONTENT_TYPE = "giveaway_item"
 
 @Composable
 fun GiveawaysList(
@@ -41,8 +42,8 @@ fun GiveawaysList(
     modifier: Modifier = Modifier,
     onItemClick: (Int) -> Unit,
 ) {
-    Crossfade(targetState = state) {
-        when (state) {
+    Crossfade(targetState = state) { targetState ->
+        when (targetState) {
             HomeState.Loading ->
                 GiveawaysListSkeleton(
                     title = title,
@@ -52,7 +53,7 @@ fun GiveawaysList(
             is HomeState.Success<*> ->
                 GiveawaysList(
                     title = title,
-                    giveaways = state.entities.filterIsInstance<GiveawayItemModel>(),
+                    giveaways = targetState.entities.filterIsInstance<GiveawayItemModel>(),
                     modifier = modifier,
                     onItemClick = onItemClick,
                 )
@@ -60,7 +61,7 @@ fun GiveawaysList(
             is HomeState.Error ->
                 CarouselErrorState(
                     title = title,
-                    errorMessage = state.message,
+                    errorMessage = targetState.message,
                     onRefresh = onRefresh,
                 )
         }
@@ -154,7 +155,7 @@ private fun GiveawaysList(
             items(
                 items = giveaways,
                 key = { model -> model.id },
-                contentType = { it },
+                contentType = { GIVEAWAY_ITEM_CONTENT_TYPE },
             ) { item ->
                 GiveawayItem(
                     item = item,

@@ -30,7 +30,7 @@ The goal is an official app you can install or open without configuring API cred
 Mobile store links will be added here when releases are available; no release date is announced.
 
 The current frontend source version is
-[0.3.5](https://github.com/vladleesi/braindance/releases/tag/app-v0.3.5).
+[0.3.6](https://github.com/vladleesi/braindance/releases/tag/app-v0.3.6).
 GitHub releases currently provide source code, not store-ready mobile downloads.
 See [CHANGELOG.md](CHANGELOG.md) for changes across Android, iOS, and Web.
 
