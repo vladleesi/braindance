@@ -47,6 +47,7 @@ fun MiniGameCardList(
             HomeState.Loading ->
                 MiniGameCardListSkeleton(
                     title = title,
+                    titleTextStyle = MaterialTheme.typography.h2,
                     modifier = modifier,
                 )
 
@@ -122,10 +123,13 @@ fun MiniGameCardList(
     }
 }
 
+/** Loading placeholder for [MiniGameCardList]; show [showExpandPlaceholder] only where a "See all" action exists. */
 @Composable
-private fun MiniGameCardListSkeleton(
+fun MiniGameCardListSkeleton(
     title: String,
+    titleTextStyle: TextStyle,
     modifier: Modifier = Modifier,
+    showExpandPlaceholder: Boolean = true,
 ) {
     Column(modifier = modifier) {
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -135,21 +139,23 @@ private fun MiniGameCardListSkeleton(
                     Modifier
                         .padding(horizontal = Dimens.medium)
                         .align(Alignment.CenterStart),
-                style = MaterialTheme.typography.h2,
+                style = titleTextStyle,
             )
-            Button(
-                onClick = {},
-                modifier = Modifier.align(Alignment.CenterEnd),
-            ) {
-                Text(
-                    text = "",
-                    style = MaterialTheme.typography.subtitle2,
-                    modifier =
-                        Modifier
-                            .width(50.dp)
-                            .clip(RoundedCornerShape(Dimens.small))
-                            .shimmerEffect(),
-                )
+            if (showExpandPlaceholder) {
+                Button(
+                    onClick = {},
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                ) {
+                    Text(
+                        text = "",
+                        style = MaterialTheme.typography.subtitle2,
+                        modifier =
+                            Modifier
+                                .width(50.dp)
+                                .clip(RoundedCornerShape(Dimens.small))
+                                .shimmerEffect(),
+                    )
+                }
             }
         }
         val skeletonCount = if (isLargeDevice()) MINI_GAME_CARD_SKELETON_COUNT * 2 else MINI_GAME_CARD_SKELETON_COUNT

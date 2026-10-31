@@ -2,6 +2,7 @@
 
 package dev.vladleesi.braindanceapp.ui.screens
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,17 +49,20 @@ import dev.vladleesi.braindanceapp.ui.components.details.GenreTags
 import dev.vladleesi.braindanceapp.ui.components.details.ReleaseDateLabel
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardList
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
+import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardListSkeleton
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
+import dev.vladleesi.braindanceapp.ui.viewmodels.RecommendationsState
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+
+private const val SIMILAR_GAMES_KEY = "similar_games"
 
 @Composable
 fun GameDetailsScreen(
@@ -107,7 +111,7 @@ fun GameDetailsScreen(
 @Composable
 private fun GameDetailsScreen(
     state: GameDetailsState.Success,
-    recommendations: List<MiniGameCardModel>,
+    recommendations: RecommendationsState,
     modifier: Modifier,
     onBackButtonPressed: (() -> Unit),
 ) {
@@ -147,15 +151,33 @@ private fun GameDetailsScreen(
             if (stores.isNotEmpty()) {
                 storesBlockItem(stores)
             }
-            if (recommendations.isNotEmpty()) {
+            val showRecommendations =
+                recommendations is RecommendationsState.Loading ||
+                    (recommendations is RecommendationsState.Success && recommendations.games.isNotEmpty())
+            if (showRecommendations) {
                 item { Spacer(modifier = Modifier.size(Dimens.large)) }
-                item {
-                    MiniGameCardList(
-                        title = stringResource(Res.string.game_details_screen_similar_games),
-                        titleTextStyle = MaterialTheme.typography.h3,
-                        games = recommendations,
-                        onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
-                    )
+                item(key = SIMILAR_GAMES_KEY) {
+                    val title = stringResource(Res.string.game_details_screen_similar_games)
+                    Crossfade(targetState = recommendations) { target ->
+                        when (target) {
+                            RecommendationsState.Loading ->
+                                MiniGameCardListSkeleton(
+                                    title = title,
+                                    titleTextStyle = MaterialTheme.typography.h3,
+                                    showExpandPlaceholder = false,
+                                )
+
+                            is RecommendationsState.Success ->
+                                MiniGameCardList(
+                                    title = title,
+                                    titleTextStyle = MaterialTheme.typography.h3,
+                                    games = target.games,
+                                    onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
+                                )
+
+                            RecommendationsState.Unavailable -> Unit
+                        }
+                    }
                 }
             }
             item { Spacer(modifier = Modifier.size(Dimens.large)) }

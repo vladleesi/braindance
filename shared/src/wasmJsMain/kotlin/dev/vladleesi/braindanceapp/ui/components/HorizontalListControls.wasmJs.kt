@@ -40,7 +40,9 @@ private const val ITEMS_PER_SCROLL = 3
 private const val SCROLL_ANIMATION_DURATION_MILLIS = 450
 private const val REVERSE_ICON_ROTATION_DEGREES = 180f
 
-private val ButtonTouchTargetSize = 48.dp
+// Narrower than tall: the circles sit closer together while each pointer target stays well above 24dp.
+private val ButtonTouchTargetWidth = 40.dp
+private val ButtonTouchTargetHeight = 48.dp
 private val ButtonCircleSize = 28.dp
 
 @Composable
@@ -50,7 +52,7 @@ actual fun HorizontalListControls(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    Row(modifier = modifier) {
+    Row(modifier = modifier.padding(end = Dimens.small)) {
         HorizontalListButton(
             contentDescription = stringResource(Res.string.horizontal_list_previous),
             enabled = listState.canScrollBackward,
@@ -101,7 +103,7 @@ private fun HorizontalListButton(
     Box(
         modifier =
             Modifier
-                .size(ButtonTouchTargetSize)
+                .size(width = ButtonTouchTargetWidth, height = ButtonTouchTargetHeight)
                 .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default)
                 .clickable(
                     enabled = enabled,

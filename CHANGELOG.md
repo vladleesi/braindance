@@ -4,6 +4,16 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.4.1
+
+### Android, iOS, and Web
+
+- Show loading placeholders while similar games load on game details.
+
+### Web
+
+- Place carousel arrow buttons closer together and give them more space from the content on their right.
+
 ## 0.4.0
 
 ### Android, iOS, and Web

@@ -28,10 +28,10 @@ class GameDetailsViewModel(
     private val _gameDetailsState = MutableStateFlow<GameDetailsState>(GameDetailsState.Loading)
     val gameDetailsState: StateFlow<GameDetailsState> = _gameDetailsState.asStateFlow()
 
-    private val _recommendations = MutableStateFlow<List<MiniGameCardModel>>(emptyList())
+    private val _recommendations = MutableStateFlow<RecommendationsState>(RecommendationsState.Loading)
 
     /** Loaded independently so a slow or failed recommendation request never delays or replaces the details. */
-    val recommendations: StateFlow<List<MiniGameCardModel>> = _recommendations.asStateFlow()
+    val recommendations: StateFlow<RecommendationsState> = _recommendations.asStateFlow()
 
     private val handler =
         CoroutineExceptionHandler { _, exception ->
@@ -82,6 +82,7 @@ class GameDetailsViewModel(
     }
 
     private fun loadRecommendations(gameId: Int) {
+        _recommendations.value = RecommendationsState.Loading
         viewModelScope.launch {
             val games =
                 try {
@@ -91,9 +92,10 @@ class GameDetailsViewModel(
                 } catch (e: Exception) {
                     // The section is optional: keep the details visible and leave it hidden until a refresh.
                     BLogger.error(message = "Recommendations unavailable: ${e.message.orEmpty()}", throwable = e)
+                    _recommendations.value = RecommendationsState.Unavailable
                     return@launch
                 }
-            _recommendations.value =
+            val cards =
                 games.mapNotNull { game ->
                     val id = game.id ?: return@mapNotNull null
                     MiniGameCardModel(
@@ -107,8 +109,20 @@ class GameDetailsViewModel(
                         platforms = emptyList(),
                     )
                 }
+            _recommendations.value = RecommendationsState.Success(cards)
         }
     }
+}
+
+sealed interface RecommendationsState {
+    data object Loading : RecommendationsState
+
+    data class Success(
+        val games: List<MiniGameCardModel>,
+    ) : RecommendationsState
+
+    /** The request failed; the optional section stays hidden until a refresh. */
+    data object Unavailable : RecommendationsState
 }
 
 sealed class GameDetailsState {

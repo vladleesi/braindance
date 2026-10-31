@@ -75,7 +75,7 @@ Documentation-only changes need link and accuracy checks, not an app build.
 
 ## Versions and releases
 
-Frontend version `0.4.0` and its shared Android/iOS build number come from `version.xcconfig`.
+Frontend version `0.4.1` and its shared Android/iOS build number come from `version.xcconfig`.
 Backend version `0.7.0` is independent, in `backend/build.gradle.kts`. Runtime changes require the affected product's
 version, changelog, and README updates; documentation, tests, formatting, and CI-only changes need no version bump.
 See [release conventions and publication](releases.md) for the full workflow and recovery steps.
