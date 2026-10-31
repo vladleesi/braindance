@@ -5,8 +5,10 @@ package dev.vladleesi.braindanceapp.backend
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import java.time.Clock
 import java.time.Instant
@@ -70,6 +72,21 @@ class RecommendationServiceTest {
                 val results = callers.awaitAll()
                 assertEquals(1, results.distinct().size)
                 assertEquals(2, igdb.igdbRequests.get())
+            }
+        }
+
+    @Test
+    fun parallelRequestsNeverComputeACachedGameTwice() =
+        runBlocking {
+            // Real threads widen the window between the cache lookup and joining an in-flight computation.
+            repeat(20) {
+                val igdb = fake()
+                service(igdb).use { service ->
+                    coroutineScope {
+                        List(64) { async(Dispatchers.Default) { service.recommendations(200) } }.awaitAll()
+                    }
+                }
+                assertEquals(2, igdb.igdbRequests.get(), "round $it")
             }
         }
 

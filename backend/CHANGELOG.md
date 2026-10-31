@@ -3,6 +3,11 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.8.1
+
+- Avoid a duplicate recommendation computation when concurrent requests arrive just as a computation for the same
+  game finishes.
+
 ## 0.8.0
 
 - Add `GET /v1/games/popular-now`, a Popular Right Now feed fused from IGDB Playing and Visits, Steam peak players,

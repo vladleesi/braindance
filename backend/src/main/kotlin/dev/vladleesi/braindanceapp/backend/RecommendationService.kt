@@ -60,14 +60,15 @@ internal class RecommendationService(
     )
 
     suspend fun recommendations(gameId: Int): RecommendationResult {
-        val now = clock.millis()
-        cached(gameId)?.takeIf { now < it.freshUntil }?.let { return it.result }
+        freshResult(gameId)?.let { return it }
         // Waiters can cancel independently; the shared computation is bounded by its own timeouts.
         val computation =
             inFlight.computeIfAbsent(gameId) {
                 scope.async(start = CoroutineStart.LAZY) {
                     try {
-                        refresh(gameId)
+                        // A previous computation can store its result and finish between the lookup above and
+                        // this one starting, so check again before computing.
+                        freshResult(gameId) ?: refresh(gameId)
                     } finally {
                         inFlight.remove(gameId)
                     }
@@ -168,6 +169,9 @@ internal class RecommendationService(
     }
 
     private fun cached(gameId: Int): CacheEntry? = synchronized(cache) { cache[gameId] }
+
+    private fun freshResult(gameId: Int): RecommendationResult? =
+        cached(gameId)?.takeIf { clock.millis() < it.freshUntil }?.result
 
     private fun staleFallback(gameId: Int): RecommendationResult? {
         val entry = cached(gameId) ?: return null
