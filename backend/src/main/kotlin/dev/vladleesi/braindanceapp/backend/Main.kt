@@ -4,7 +4,6 @@ package dev.vladleesi.braindanceapp.backend
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.server.application.ServerReady
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -40,10 +39,7 @@ fun main() {
     val upstream =
         KtorUpstream {
             startup.measure("http_client_initialization") {
-                HttpClient(CIO) {
-                    expectSuccess = false
-                    install(HttpTimeout)
-                }
+                HttpClient(CIO) { upstreamDefaults() }
             }
         }
     val igdb = startup.measure("igdb_service_creation") { IgdbService(upstream, limiter, config) }

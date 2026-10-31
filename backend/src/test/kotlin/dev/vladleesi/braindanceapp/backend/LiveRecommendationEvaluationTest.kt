@@ -4,7 +4,6 @@ package dev.vladleesi.braindanceapp.backend
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.HttpTimeout
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.int
@@ -108,13 +107,7 @@ class LiveRecommendationEvaluationTest {
             "Set BRAINDANCE_LIVE_EVAL=1 and Twitch credentials",
         )
         val config = BackendConfig(clientId, clientSecret, null, emptySet(), 8080)
-        val upstream =
-            KtorUpstream(
-                HttpClient(CIO) {
-                    expectSuccess = false
-                    install(HttpTimeout)
-                },
-            )
+        val upstream = KtorUpstream(HttpClient(CIO) { upstreamDefaults() })
         val igdb = IgdbService(upstream, InMemoryRateLimiter(), config)
         try {
             runBlocking {

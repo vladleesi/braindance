@@ -5,6 +5,8 @@
 package dev.vladleesi.braindanceapp.backend
 
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
@@ -44,6 +46,16 @@ suspend fun HttpResponse.readLimited(limit: Int): ByteArray {
         output.write(buffer, 0, count)
     }
     return output.toByteArray()
+}
+
+/**
+ * Shared settings for the upstream client. IGDB, Twitch, and GamerPower answer directly; redirects stay disabled so
+ * a redirecting response cannot steer the image proxy or API calls to another host.
+ */
+fun HttpClientConfig<*>.upstreamDefaults() {
+    expectSuccess = false
+    followRedirects = false
+    install(HttpTimeout)
 }
 
 interface Upstream {

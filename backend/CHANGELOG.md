@@ -3,6 +3,15 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.7.1
+
+- Cache successful game, giveaway, and giveaway image responses in process for 10 minutes within fixed memory
+  budgets, sharing one upstream request between concurrent identical requests. Requests that bypass the edge cache
+  no longer exhaust the shared IGDB rate limit.
+- Round the default anticipated-games timestamp to 10 minutes so requests in one period share a cached response.
+- Keep at most eight IGDB requests open at once, matching IGDB's documented limit.
+- Stop following upstream redirects, so responses cannot steer the image proxy or API calls to other hosts.
+
 ## 0.7.0
 
 - Add `GET /v1/games/recommendations` with hybrid ranking of up to 50 similar games from IGDB graph links and

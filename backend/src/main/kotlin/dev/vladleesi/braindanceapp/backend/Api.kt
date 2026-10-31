@@ -40,7 +40,32 @@ internal val gameQueryParameters =
     )
 
 internal const val RECOMMENDATIONS_PATH = "/v1/games/recommendations"
-internal val recommendationQueryParameters = setOf("id", "limit")
+internal const val GIVEAWAY_DETAILS_ROUTE = "/v1/giveaways/{id}"
+
+/**
+ * Every route and the query parameters it accepts. Register a new route here once; cache eligibility and timing
+ * logs read it through [routeOf]. Paths with an ID are registered under their template.
+ */
+internal val routeQueryParameters: Map<String, Set<String>> =
+    gameQueryParameters +
+        mapOf(
+            RECOMMENDATIONS_PATH to setOf("id", "limit"),
+            "/v1/giveaways" to emptySet(),
+            GIVEAWAY_DETAILS_ROUTE to emptySet(),
+            "/v1/giveaways/image" to setOf("url"),
+            "/health" to emptySet(),
+            "/healthz" to emptySet(),
+        )
+
+/** The registered route for a request path, or null for unknown paths. */
+internal fun routeOf(path: String): String? =
+    when {
+        validGiveawayId(path) -> GIVEAWAY_DETAILS_ROUTE
+        // The template is a registry key, not a requestable path.
+        path == GIVEAWAY_DETAILS_ROUTE -> null
+        path in routeQueryParameters -> path
+        else -> null
+    }
 
 fun Application.api(
     config: BackendConfig,
@@ -198,9 +223,10 @@ private suspend fun RoutingContext.respondRecommendations(
     config: BackendConfig,
 ) {
     val parameters = call.request.queryParameters
+    val accepted = routeQueryParameters.getValue(RECOMMENDATIONS_PATH)
     val valid =
         call.request.uri.length <= 2048 &&
-            parameters.entries().all { it.key in recommendationQueryParameters && it.value.size == 1 }
+            parameters.entries().all { it.key in accepted && it.value.size == 1 }
     val id = parameters["id"]?.toIntOrNull()?.takeIf { valid && it > 0 }
     val limit =
         parameters["limit"]
@@ -258,8 +284,10 @@ private fun RoutingContext.gameInput(path: String): JsonObject? {
         }
     }
     // A stable feed URL lets different startups share an edge entry; explicit timestamps remain supported.
+    // The default is rounded to the in-process cache lifetime so requests in one period share a cached response.
     if (path == "/v1/games/anticipated" && "currentTimestamp" !in input) {
-        input["currentTimestamp"] = JsonPrimitive(Instant.now().epochSecond)
+        val periodSeconds = IgdbService.RESPONSE_TTL_MILLIS / 1000
+        input["currentTimestamp"] = JsonPrimitive(Instant.now().epochSecond / periodSeconds * periodSeconds)
     }
     return JsonObject(input)
 }

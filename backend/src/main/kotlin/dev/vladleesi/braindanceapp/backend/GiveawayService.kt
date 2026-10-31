@@ -12,10 +12,16 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import java.net.URI
+import java.time.Clock
 
 class GiveawayService(
     private val upstream: Upstream,
+    clock: Clock = Clock.systemUTC(),
 ) {
+    // Rewritten links depend on the request base, so it is part of the key; production uses one fixed base.
+    private val giveaways = ResponseCache(CACHE_TTL_MILLIS, GIVEAWAY_CACHE_BYTES, MAX_GIVEAWAY_BYTES, clock)
+    private val images = ResponseCache(CACHE_TTL_MILLIS, IMAGE_CACHE_BYTES, MAX_CACHED_IMAGE_BYTES, clock)
+
     suspend fun giveaway(
         path: String,
         requestBase: String,
@@ -33,27 +39,48 @@ class GiveawayService(
                         ?.takeIf { it in 1..Int.MAX_VALUE.toLong() } ?: return ApiResult(404)
                 "https://www.gamerpower.com/api/giveaway?id=$id"
             }
+        val result = giveaways.getOrLoad("$url\n$requestBase") { fetchGiveaway(url, requestBase) }
+        return when (result) {
+            is ResponseCache.LoadResult.Hit -> ApiResult(200, result.response.body)
+            is ResponseCache.LoadResult.Uncached -> ApiResult(result.status)
+        }
+    }
+
+    private suspend fun fetchGiveaway(
+        url: String,
+        requestBase: String,
+    ): ResponseCache.LoadResult {
         val response = upstream.giveaway(url)
-        if (response.status.value == 404) return ApiResult(404)
-        if (response.status.value == 429) return ApiResult(429)
-        if (response.status.value !in 200..299) return ApiResult(502)
-        if (!response.headers[HttpHeaders.ContentType].orEmpty().contains("application/json")) return ApiResult(502)
-        val payload = Json.parseToJsonElement(response.body.decodeToString())
-        val rewritten =
-            when (payload) {
-                is JsonArray -> JsonArray(payload.map { rewrite(it, requestBase) })
-                else -> rewrite(payload, requestBase)
+        val status = response.status.value
+        val contentType = response.headers[HttpHeaders.ContentType].orEmpty()
+        return when {
+            status == 404 || status == 429 -> ResponseCache.LoadResult.Uncached(status)
+            status !in 200..299 || !contentType.contains("application/json") -> ResponseCache.LoadResult.Uncached(502)
+            else -> {
+                val rewritten =
+                    when (val payload = Json.parseToJsonElement(response.body.decodeToString())) {
+                        is JsonArray -> JsonArray(payload.map { rewrite(it, requestBase) })
+                        else -> rewrite(payload, requestBase)
+                    }
+                ResponseCache.LoadResult.Hit(CachedResponse(rewritten.toString().encodeToByteArray()))
             }
-        return ApiResult(200, rewritten.toString().encodeToByteArray())
+        }
     }
 
     suspend fun image(rawUrl: String?): Pair<ApiResult, String?> {
         val url = validImageUrl(rawUrl) ?: return ApiResult(400) to null
+        return when (val result = images.getOrLoad(url) { fetchImage(url) }) {
+            is ResponseCache.LoadResult.Hit -> ApiResult(200, result.response.body) to result.response.contentType
+            is ResponseCache.LoadResult.Uncached -> ApiResult(result.status) to null
+        }
+    }
+
+    private suspend fun fetchImage(url: String): ResponseCache.LoadResult {
         val response =
             try {
                 upstream.image(url)
             } catch (_: BodyTooLarge) {
-                return ApiResult(502) to null
+                return ResponseCache.LoadResult.Uncached(502)
             }
         val contentType = response.headers[HttpHeaders.ContentType]
         val contentLength = response.headers[HttpHeaders.ContentLength]?.toLongOrNull()
@@ -61,9 +88,9 @@ class GiveawayService(
             contentType?.startsWith("image/") != true ||
             (contentLength != null && contentLength > 5 * 1024 * 1024)
         ) {
-            return ApiResult(502) to null
+            return ResponseCache.LoadResult.Uncached(502)
         }
-        return ApiResult(200, response.body) to contentType
+        return ResponseCache.LoadResult.Hit(CachedResponse(response.body, contentType))
     }
 
     private fun rewrite(
@@ -81,6 +108,14 @@ class GiveawayService(
                 }
             },
         )
+    }
+
+    private companion object {
+        const val CACHE_TTL_MILLIS = 10 * 60 * 1000L
+        const val GIVEAWAY_CACHE_BYTES = 8L * 1024 * 1024
+        const val MAX_GIVEAWAY_BYTES = 2 * 1024 * 1024
+        const val IMAGE_CACHE_BYTES = 16L * 1024 * 1024
+        const val MAX_CACHED_IMAGE_BYTES = 1024 * 1024
     }
 
     internal fun validImageUrl(value: String?): String? =

@@ -349,4 +349,15 @@ class ApiCachePolicyTest {
                 "[]".encodeToByteArray(),
             )
     }
+
+    @Test
+    fun routeRegistryResolvesKnownPathsOnly() {
+        for (route in routeQueryParameters.keys - GIVEAWAY_DETAILS_ROUTE) {
+            assertEquals(route, routeOf(route), route)
+        }
+        assertEquals(GIVEAWAY_DETAILS_ROUTE, routeOf("/v1/giveaways/42"))
+        for (path in listOf(GIVEAWAY_DETAILS_ROUTE, "/v1/giveaways/0", "/v1/games/details/", "/v1/unknown", "")) {
+            assertNull(routeOf(path), path)
+        }
+    }
 }

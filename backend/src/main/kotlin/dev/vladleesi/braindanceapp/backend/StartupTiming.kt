@@ -59,14 +59,7 @@ internal fun Application.installRequestTiming() {
         createApplicationPlugin("RequestTiming") {
             onCall { call -> call.attributes.put(started, System.nanoTime()) }
             on(ResponseSent) { call ->
-                val path = call.request.path()
-                val route =
-                    when {
-                        path in gameQueryParameters -> path
-                        path in setOf("/health", "/healthz", "/v1/giveaways", "/v1/giveaways/image") -> path
-                        validGiveawayId(path) -> "/v1/giveaways/{id}"
-                        else -> "other"
-                    }
+                val route = routeOf(call.request.path()) ?: "other"
                 // One completed request per known route and process; never log visitor URLs, headers or bodies.
                 if (logged.add(route)) {
                     val duration = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - call.attributes[started])

@@ -7,7 +7,9 @@ package dev.vladleesi.braindanceapp.backend
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -30,12 +32,30 @@ class IgdbService(
     private var token: String? = null
     private var expiresAt = 0L
 
+    // IGDB allows eight open requests; the rate limiter alone admits more when IGDB responds slowly.
+    private val openRequests = Semaphore(MAX_OPEN_REQUESTS)
+
+    // Game queries are public and identical for every visitor, so the validated query is a complete cache key.
+    private val responses = ResponseCache(RESPONSE_TTL_MILLIS, RESPONSE_CACHE_BYTES, MAX_CACHED_RESPONSE_BYTES, clock)
+
     suspend fun query(
         path: String,
         input: JsonObject,
     ): ApiResult {
-        val query = buildQuery(path, input) ?: return ApiResult(400)
-        return execute(query.first, query.second)
+        val (upstreamPath, body) = buildQuery(path, input) ?: return ApiResult(400)
+        val result =
+            responses.getOrLoad("$upstreamPath\n$body") {
+                val response = execute(upstreamPath, body)
+                if (response.status == 200) {
+                    ResponseCache.LoadResult.Hit(CachedResponse(checkNotNull(response.body)))
+                } else {
+                    ResponseCache.LoadResult.Uncached(response.status)
+                }
+            }
+        return when (result) {
+            is ResponseCache.LoadResult.Hit -> ApiResult(200, result.response.body)
+            is ResponseCache.LoadResult.Uncached -> ApiResult(result.status)
+        }
     }
 
     /**
@@ -50,7 +70,8 @@ class IgdbService(
         var accessToken = getToken()
         repeat(2) { attempt ->
             if (!takeSlot(slotWaitMillis)) return ApiResult(429)
-            val response = upstream.igdb(path, body, checkNotNull(config.clientId), accessToken)
+            val response =
+                openRequests.withPermit { upstream.igdb(path, body, checkNotNull(config.clientId), accessToken) }
             if (response.status.value == 401 && attempt == 0) {
                 accessToken = getToken(rejectedToken = accessToken)
             } else {
@@ -160,7 +181,12 @@ class IgdbService(
         }
     }
 
-    private companion object {
-        const val SLOT_RETRY_MILLIS = 150L
+    companion object {
+        /** In-process lifetime of successful game responses; shorter than the 20-minute shared edge lifetime. */
+        const val RESPONSE_TTL_MILLIS = 10 * 60 * 1000L
+        private const val RESPONSE_CACHE_BYTES = 16L * 1024 * 1024
+        private const val MAX_CACHED_RESPONSE_BYTES = 256 * 1024
+        private const val MAX_OPEN_REQUESTS = 8
+        private const val SLOT_RETRY_MILLIS = 150L
     }
 }

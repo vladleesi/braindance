@@ -68,6 +68,7 @@ class ApiTest {
                     "popularity?type=34&pageSize=40" to """{"type":34,"pageSize":40}""",
                 )
             for ((endpoint, body) in cases) {
+                val before = queries.size
                 val get = client.get("/v1/games/$endpoint")
                 val post =
                     client.post("/v1/games/${endpoint.substringBefore('?')}") {
@@ -76,7 +77,8 @@ class ApiTest {
                     }
                 assertEquals(HttpStatusCode.OK, get.status)
                 assertEquals(post.bodyAsText(), get.bodyAsText())
-                assertEquals(queries[queries.lastIndex - 1], queries.last())
+                // The response cache is keyed by the exact IGDB query, so one upstream call proves both are identical.
+                assertEquals(before + 1, queries.size, endpoint)
                 assertEquals(PRIVATE_CACHE_CONTROL, post.headers[HttpHeaders.CacheControl])
             }
             val count = queries.size

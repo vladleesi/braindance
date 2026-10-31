@@ -31,6 +31,9 @@ class AuditTest {
     private val config = BackendConfig("id", "secret", null, emptySet(), 8080)
     private val input = Json.parseToJsonElement("""{"id":42}""") as JsonObject
 
+    // Token handling sits below the response cache; repeated or concurrent calls must each reach IGDB.
+    private suspend fun IgdbService.uncachedDetails() = execute("/v4/games", "fields name;where id = 42;limit 1;")
+
     @Test
     fun streamingLimitStopsUnfinishedBody(): Unit =
         runBlocking {
@@ -123,7 +126,7 @@ class AuditTest {
                 token(if (tokenRequests == 1) "old" else "new")
             }
             val service = IgdbService(remote, RateLimiter { true }, config)
-            service.query("/v1/games/details", input)
+            service.uncachedDetails()
             var oldCalls = 0
             remote.igdbHandler = { accessToken ->
                 if (accessToken == "old") {
@@ -140,7 +143,7 @@ class AuditTest {
                 }
             }
             withTimeout(2000) {
-                List(2) { async { service.query("/v1/games/details", input) } }.awaitAll()
+                List(2) { async { service.uncachedDetails() } }.awaitAll()
             }
             assertEquals(2, tokenRequests)
         }
@@ -159,7 +162,7 @@ class AuditTest {
                 response(200, """{"access_token":"short","expires_in":60}""")
             }
             val service = IgdbService(remote, RateLimiter { true }, config)
-            repeat(2) { service.query("/v1/games/details", input) }
+            repeat(2) { service.uncachedDetails() }
             assertEquals(2, calls)
         }
 

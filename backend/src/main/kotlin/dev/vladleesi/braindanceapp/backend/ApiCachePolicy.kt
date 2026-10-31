@@ -144,13 +144,7 @@ private fun ApplicationCall.hasPublicQuery(): Boolean {
     val path = request.path()
     // Do not cache path aliases or unknown/duplicate query parameters, even when a handler ignores them.
     if (request.uri.substringBefore('?') != path) return false
-    val names =
-        when {
-            path == "/v1/giveaways" || validGiveawayId(path) -> emptySet()
-            path == "/v1/giveaways/image" -> setOf("url")
-            path == RECOMMENDATIONS_PATH -> recommendationQueryParameters
-            else -> gameQueryParameters[path] ?: return false
-        }
+    val names = routeOf(path)?.let(routeQueryParameters::getValue) ?: return false
     return request.queryParameters.entries().all { (name, values) -> name in names && values.size == 1 }
 }
 
