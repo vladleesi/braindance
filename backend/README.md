@@ -1,7 +1,11 @@
 # Braindance API
 
-Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.10.1**. Twitch credentials stay on the backend;
-GamerPower needs no key. Use JDK 21 and run commands from the repository root.
+The Kotlin/JVM Ktor backend serves game and giveaway data from IGDB and GamerPower to Braindance.
+Version **0.10.1**. This reference covers backend development and optional independent hosting;
+using the [experimental Web preview](https://braindance.vladleesi.dev/) does not require backend setup.
+
+Twitch credentials stay on the backend; GamerPower needs no key.
+Use JDK 21 and run commands from the repository root.
 See the [changelog](CHANGELOG.md), the [project README](../README.md#platforms), and the
 [development guide](../docs/development.md) for client setup.
 

@@ -1,48 +1,44 @@
 # Braindance
+[![Development status: in development](https://img.shields.io/badge/status-in%20development-D97706?style=flat-square)](#platforms) [![Platforms: Android, iOS, and experimental Web](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web%20%28experimental%29-0D9488?style=flat-square)](#platforms) [![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square)](https://kotlinlang.org/docs/multiplatform.html) [![App source release](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=source&color=2563EB&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![Backend version](https://img.shields.io/badge/backend-0.10.1-475569?style=flat-square)](backend/CHANGELOG.md) [![CI checks on develop](https://img.shields.io/github/actions/workflow/status/vladleesi/braindance/build-test-push.yml?branch=develop&event=push&label=CI&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![Web publication checks on master](https://img.shields.io/github/check-runs/vladleesi/braindance/master?nameFilter=Publish%20Promoted%20Web%20App%20%2F%20Publish%20Web%20App%20Branch&label=Web%20publication&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![Backend deployment checks on master](https://img.shields.io/github/check-runs/vladleesi/braindance/master?nameFilter=Publish%20and%20Deploy%20Promoted%20Backend%20%2F%20Deploy%20Published%20Backend&label=backend%20publication&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![License](https://img.shields.io/badge/license-MPL--2.0-B45309?style=flat-square)](#license)
 
-[![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square)](https://kotlinlang.org/docs/multiplatform.html) [![Platforms: Android, iOS, and experimental Web](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web%20%28experimental%29-0D9488?style=flat-square)](#platforms) [![Source release](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=source&color=2563EB&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![CI checks on develop](https://img.shields.io/github/actions/workflow/status/vladleesi/braindance/build-test-push.yml?branch=develop&event=push&label=CI&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![License](https://img.shields.io/badge/license-MPL--2.0-B45309?style=flat-square)](#license)
+Braindance is a game discovery service to help you find what to play next.
+Browse popular and upcoming games, explore similar titles, and find giveaways in one place.
 
-Braindance is a game discovery and tracking app in development for Android and iOS, with an **experimental Web preview**.
-Browse upcoming and popular games, explore their details, and find game giveaways in one place.
+**[Try the experimental Web preview](https://braindance.vladleesi.dev/)** — open it in your browser;
+no installation or technical setup is needed.
 
 ![Braindance vibe](https://github.com/vladleesi/braindance/assets/30999008/cdb06536-ecbf-43ae-9336-3833a89a3718)
 
 ## What you can do
 
-- Browse anticipated and currently popular games.
-- Open game details and discover related games.
-- Find giveaways and view their details.
+- Explore **Popular Right Now** and **Most Anticipated** to find released and upcoming games.
+- View game details and discover similar games.
+- Browse giveaways, read their instructions, and follow links to claim them.
 
-Personal tracking and collections, search, news, and profile screens are still in progress.
-The current app uses data from IGDB and GamerPower.
+Personal tracking, collections, search results, news, and profile features are not available yet;
+their screens are unfinished. Game data comes from IGDB, and giveaways from GamerPower.
 
 ## Platforms
 
 | Platform | Availability |
 | --- | --- |
-| **Web (experimental)** | [Open the experimental Web preview](https://braindance.vladleesi.dev/). Requires WasmGC support. |
-| Android and iOS | Developer builds are supported; official store releases are planned. |
+| **Web (experimental)** | [Preview available now](https://braindance.vladleesi.dev/) in a modern browser with WasmGC support. |
+| Android and iOS | Official releases are planned; store downloads are not available yet. |
 
-Braindance is actively developed, and some screens are unfinished.
-**Web support is experimental:** browser behavior, performance, and feature availability may change.
-The preview requires a modern browser with WasmGC support.
-The goal is an official app you can install or open without configuring API credentials or running servers.
-Mobile store links will be added here when releases are available; no release date is announced.
-
-The current frontend source version is
-[0.6.1](https://github.com/vladleesi/braindance/releases/tag/app-v0.6.1).
-GitHub releases currently provide source code, not store-ready mobile downloads.
-See [CHANGELOG.md](CHANGELOG.md) for changes across Android, iOS, and Web.
+Braindance is actively developed toward a public launch, with no confirmed release date.
+Web support is experimental: browser behavior, performance, and feature availability may change.
+See [CHANGELOG.md](CHANGELOG.md) for updates across Android, iOS, and Web.
 
 ## Help improve Braindance
 
-Bug reports, ideas, code, and documentation improvements are welcome.
-[Report an issue](https://github.com/vladleesi/braindance/issues) or read
-[CONTRIBUTING.md](CONTRIBUTING.md) for a simple path from an idea to a pull request.
-You do not need to run a backend to report a problem or suggest an improvement.
+Your feedback helps shape Braindance:
 
-Braindance is open source under MPL-2.0. You can explore the code, contribute, modify it, build your own version,
-and host it independently under the applicable license terms.
+- [Report a bug](https://github.com/vladleesi/braindance/issues/new?template=bug_report.md).
+- [Suggest a feature or share usability feedback](https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md).
+- [Contribute code or documentation](CONTRIBUTING.md).
+
+You do not need to build the app or run a backend to participate. Feedback from the Web preview is welcome.
+Braindance is open source; the [contribution guide](CONTRIBUTING.md) covers both feedback and pull requests.
 
 ## For developers
 
@@ -50,10 +46,16 @@ Android, iOS, and Web share UI and application logic through Kotlin Multiplatfor
 A Kotlin/JVM Ktor backend keeps Twitch credentials server-side and provides IGDB and GamerPower data.
 Its independent version is `0.10.1`. See the [backend changelog](backend/CHANGELOG.md) for release notes.
 
-- [Development guide](docs/development.md): requirements, project layout, local setup, validation, and releases.
+- [Development guide](docs/development.md): requirements, project layout, local builds, debugging, and validation.
 - [Backend reference](backend/README.md): server configuration, API, packaging, and optional independent hosting.
+- [Release guide](docs/releases.md): versioning and publication workflows.
 
-Developer builds need a reachable backend for data features. The development guide covers that configuration.
+The current frontend source version is
+[0.6.1](https://github.com/vladleesi/braindance/releases/tag/app-v0.6.1).
+GitHub releases provide source code, not store-ready mobile downloads.
+Developer builds for Android, iOS, and Web are supported; see the development guide for backend configuration.
+
+Publication badges show checks for the revision on `master`; a skipped backend check does not indicate a new deployment.
 
 ## License
 

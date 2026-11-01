@@ -1,15 +1,32 @@
 # Contributing to Braindance
 
-Bug reports, ideas, code, and documentation improvements are welcome.
+You can help improve Braindance by reporting bugs, suggesting features, sharing usability feedback,
+or contributing code and documentation. You do not need to build the app or run a backend to give feedback;
+you can use the [experimental Web preview](https://braindance.vladleesi.dev/).
 Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Bugs and ideas
+## Report a bug
 
-Search [existing issues](https://github.com/vladleesi/braindance/issues) before opening one. For bugs, include the
-platform, app/source version, reproduction steps, and expected/actual behavior. Remove credentials and personal
-information from screenshots or logs. For ideas, explain the problem and proposed benefit.
+Search [existing issues](https://github.com/vladleesi/braindance/issues) first; if someone has reported the same
+problem, add any useful details there. Otherwise, [open a bug report](https://github.com/vladleesi/braindance/issues/new?template=bug_report.md)
+and describe:
 
-## Making a change
+- What you were trying to do, what happened, and what you expected.
+- Steps to reproduce the problem, if you know them.
+- Your platform and browser or operating system, plus the app version if known.
+  For the Web preview, the page URL and approximate time can help.
+
+Screenshots can help explain a problem. Logs are optional; remove credentials and personal information
+from any screenshots, links, or logs before sharing them publicly. Partial reports are welcome if you cannot
+reproduce the issue consistently or find the version.
+
+## Suggest a feature or share feedback
+
+Search existing issues, then [share an idea or usability feedback](https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md).
+Explain what you wanted to do and what would make it easier. Feedback about confusing navigation, unclear text,
+or accessibility is welcome. A proposed solution is optional; you do not need a technical design.
+
+## Contribute code or documentation
 
 Follow `.editorconfig`, neighboring code, and the [project conventions](AGENTS.md#project-conventions).
 
