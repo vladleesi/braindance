@@ -3,6 +3,7 @@
 
 """Check the configured edge with dummy credentials; never prints response bodies or secret headers."""
 
+import re
 import secrets
 import sys
 import time
@@ -54,13 +55,24 @@ def main():
         return status, result, cache_status
 
     def verify_public(path, origin=None, expect_miss=False):
+        # Shared lifetimes per route; Popular Right Now pages expire together at the end of a six-hour feed window.
+        route = path.split("?", 1)[0]
+        edge_lifetimes = {"/v1/games/details": 86400, "/v1/games/anticipated": 21600, "/v1/giveaways": 3600}
+        expected_cache = f"public, max-age=1200, s-maxage={edge_lifetimes.get(route, 3600)}"
         saw_hit = False
         for attempt in range(5):
             status, headers, cache_status = request(path, headers={"Origin": origin} if origin else {})
             require(status == 200, "Public data unavailable; verify origin, upstream, TLS and WAF")
             if expect_miss and attempt == 0:
                 require(cache_status == "MISS", "Fresh public query did not produce a MISS")
-            require(headers.get("Cache-Control") == "public, max-age=1200", "Expected a 20-minute public TTL")
+            cache_control = headers.get("Cache-Control", "")
+            if route == "/v1/games/trending":
+                window = re.fullmatch(r"public, max-age=(\d+), s-maxage=(\d+)", cache_control)
+                require(window and 0 < int(window[2]) <= 21600 and int(window[1]) == min(1200, int(window[2])),
+                        "Unexpected feed window lifetime")
+            else:
+                require(cache_control == expected_cache, "Unexpected public cache lifetime")
+            require(headers.get("Cloudflare-CDN-Cache-Control") is None, "Edge-only cache directives leaked")
             require(not headers.get("Set-Cookie"), "Public response contains a cookie")
             require(headers.get("Access-Control-Allow-Origin") == origin, "Cached CORS variant mismatch")
             require("origin" in {value.strip().lower() for value in headers.get("Vary", "").split(",")},

@@ -41,7 +41,11 @@ class RecommendationApiTest {
 
             val response = client.get("$base/v1/games/recommendations?id=200&limit=3")
             assertEquals(HttpStatusCode.OK, response.status)
-            assertEquals(RECOMMENDATIONS_CACHE_CONTROL, response.headers[HttpHeaders.CacheControl])
+            assertEquals("public, max-age=1200, s-maxage=86400", response.headers[HttpHeaders.CacheControl])
+            assertEquals(
+                "public, max-age=86400, stale-if-error=86400",
+                response.headers[CLOUDFLARE_CACHE_CONTROL_HEADER],
+            )
             val games = Json.parseToJsonElement(response.bodyAsText()).jsonArray
             assertEquals(3, games.size)
             val first = games.first().jsonObject

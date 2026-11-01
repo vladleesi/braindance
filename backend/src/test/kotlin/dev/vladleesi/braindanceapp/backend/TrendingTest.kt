@@ -6,6 +6,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
@@ -15,6 +16,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -36,6 +38,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 class TrendingTest {
@@ -495,6 +499,19 @@ class TrendingTest {
             game(4, releases = listOf(release(2000, 6), release(2, 167, "PS5"))),
         )
 
+    private fun pastFeedWindow(clock: MutableClock) {
+        clock.nowMillis += TrendingService.feedTimeLeft(clock.nowMillis).inWholeMilliseconds + 60_000
+    }
+
+    /** Pages expire at the end of the current feed window, and browsers keep them for at most 20 minutes. */
+    private fun assertFeedWindowCaching(headers: Headers) {
+        val cacheControl = checkNotNull(headers[HttpHeaders.CacheControl])
+        val match = checkNotNull(Regex("""public, max-age=(\d+), s-maxage=(\d+)""").matchEntire(cacheControl))
+        val (browser, edge) = match.destructured.toList().map(String::toInt)
+        assertTrue(edge in 1..21_600 && browser == minOf(1200, edge), cacheControl)
+        assertEquals("public, max-age=$edge, stale-if-error=86400", headers[CLOUDFLARE_CACHE_CONTROL_HEADER])
+    }
+
     private fun service(
         stub: StubIgdb,
         clock: Clock,
@@ -565,16 +582,16 @@ class TrendingTest {
         }
 
     @Test
-    fun expiredFeedsRefreshWithCurrentData(): Unit =
+    fun feedsRefreshWithCurrentDataWhenTheirWindowEnds(): Unit =
         runBlocking {
             val stub = StubIgdb()
             val clock = MutableClock(now * 1000)
             val service = service(stub, clock)
             assertEquals(listOf(2, 3, 4, 1), ids(service.trending()))
             stub.recent = listOf(game(900, releasedDaysAgo = 1, hypes = 200))
-            clock.nowMillis += 29 * 60 * 1000L
-            assertEquals(listOf(2, 3, 4, 1), ids(service.trending()), "fresh entries are served from cache")
-            clock.nowMillis += 2 * 60 * 1000L
+            clock.nowMillis += TrendingService.feedTimeLeft(clock.nowMillis).inWholeMilliseconds - 60_000
+            assertEquals(listOf(2, 3, 4, 1), ids(service.trending()), "one feed serves its whole window")
+            clock.nowMillis += 60_000
             assertContains(ids(service.trending()), 900)
             assertEquals(2 to 2, stub.discoveryCalls.get() to stub.hydrationCalls.get())
         }
@@ -588,6 +605,26 @@ class TrendingTest {
             checkNotNull(stub.gate).complete(Unit)
             assertTrue(callers.awaitAll().all { it is ResponseCache.LoadResult.Hit })
             assertEquals(1 to 1, stub.discoveryCalls.get() to stub.hydrationCalls.get())
+        }
+
+    @Test
+    fun slowRefreshOutlivesTheResponseBudgetAndFillsTheCache(): Unit =
+        runBlocking {
+            val stub = StubIgdb().apply { gate = CompletableDeferred() }
+            val igdb = IgdbService(stub, RateLimiter { true }, config)
+            val service = TrendingService(igdb, MutableClock(now * 1000), log = {}, responseBudget = 50.milliseconds)
+            // A cold refresh outlasts the budget: callers time out, and a retry joins the running refresh.
+            repeat(2) { assertEquals(ResponseCache.LoadResult.Uncached(504), service.trending()) }
+            checkNotNull(stub.gate).complete(Unit)
+            val served =
+                withTimeout(5.seconds) {
+                    var result = service.trending()
+                    while (result !is ResponseCache.LoadResult.Hit) result = service.trending()
+                    result
+                }
+            assertEquals(listOf(2, 3, 4, 1), ids(served))
+            assertEquals(1 to 1, stub.discoveryCalls.get() to stub.hydrationCalls.get())
+            service.close()
         }
 
     @Test
@@ -622,7 +659,7 @@ class TrendingTest {
             val service = service(stub, clock)
             val fresh = assertIs<ResponseCache.LoadResult.Hit>(service.trending())
             stub.failure = HttpStatusCode.TooManyRequests
-            clock.nowMillis += 31 * 60 * 1000L
+            pastFeedWindow(clock)
             val stale = assertIs<ResponseCache.LoadResult.Hit>(service.trending())
             assertTrue(stale.stale)
             assertEquals(fresh.response.body.decodeToString(), stale.response.body.decodeToString())
@@ -649,7 +686,7 @@ class TrendingTest {
             val client = createClient { defaultRequest { header(HttpHeaders.Host, "localhost") } }
             val response = client.get("https://localhost/v1/games/trending")
             assertEquals(HttpStatusCode.OK, response.status)
-            assertEquals(HOME_FEED_CACHE_CONTROL, response.headers[HttpHeaders.CacheControl])
+            assertFeedWindowCaching(response.headers)
             val items = Json.parseToJsonElement(response.bodyAsText()).jsonArray.map { it.jsonObject }
             assertEquals(setOf("id", "name", "cover", "reason"), items.first().keys)
             assertEquals(
@@ -678,7 +715,7 @@ class TrendingTest {
             assertEquals(emptyList(), ids("page=5&pageSize=20"))
             assertEquals(calls, stub.discoveryCalls.get() to stub.hydrationCalls.get())
             val paged = client.get("https://localhost/v1/games/trending?page=2&pageSize=2")
-            assertEquals(HOME_FEED_CACHE_CONTROL, paged.headers[HttpHeaders.CacheControl])
+            assertFeedWindowCaching(paged.headers)
             val invalidQueries =
                 listOf(
                     "pageSize=0",
@@ -698,7 +735,7 @@ class TrendingTest {
             // The legacy Popular Right Now endpoint is gone.
             assertEquals(HttpStatusCode.NotFound, client.get("https://localhost/v1/games/popular-now").status)
             stub.failure = HttpStatusCode.ServiceUnavailable
-            clock.nowMillis += 31 * 60 * 1000L
+            pastFeedWindow(clock)
             val stale = client.get("https://localhost/v1/games/trending")
             assertEquals(HttpStatusCode.OK, stale.status)
             assertEquals(PRIVATE_CACHE_CONTROL, stale.headers[HttpHeaders.CacheControl])

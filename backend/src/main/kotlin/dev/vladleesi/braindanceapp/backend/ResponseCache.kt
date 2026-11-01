@@ -23,7 +23,8 @@ internal class CachedResponse(
  * used entries are evicted to stay within [maxBytes], and bodies larger than [maxEntryBytes] are never stored.
  * Concurrent misses for one key share a single load, so a burst or a cache-bypassing client cannot multiply upstream
  * requests for the same data. With [staleIfErrorMillis], an expired entry is kept that much longer and returned as
- * stale only when a reload fails. Callers must build keys only from validated, normalized request data.
+ * stale only when a reload fails. [expiresAt] can replace the fixed lifetime, for example to expire entries at a
+ * shared boundary. Callers must build keys only from validated, normalized request data.
  */
 internal class ResponseCache(
     private val ttlMillis: Long,
@@ -31,6 +32,7 @@ internal class ResponseCache(
     private val maxEntryBytes: Int,
     private val clock: Clock = Clock.systemUTC(),
     private val staleIfErrorMillis: Long = 0,
+    private val expiresAt: (storedAtMillis: Long) -> Long = { it + ttlMillis },
 ) {
     private class Entry(
         val response: CachedResponse,
@@ -121,7 +123,8 @@ internal class ResponseCache(
             null
         }
 
-    private fun store(
+    /** Stores [response] under [key], for example from a load that finished after its caller stopped waiting. */
+    fun store(
         key: String,
         response: CachedResponse,
     ) {
@@ -129,7 +132,7 @@ internal class ResponseCache(
         if (size > maxEntryBytes) return
         synchronized(entries) {
             entries.remove(key)?.let { storedBytes -= it.response.body.size }
-            entries[key] = Entry(response, clock.millis() + ttlMillis)
+            entries[key] = Entry(response, expiresAt(clock.millis()))
             storedBytes += size
             val iterator = entries.values.iterator()
             while (storedBytes > maxBytes && iterator.hasNext()) {

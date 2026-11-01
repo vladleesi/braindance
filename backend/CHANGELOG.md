@@ -3,6 +3,19 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.10.1
+
+- Keep a slow `/v1/games/trending` refresh running after the 4.5-second response budget instead of discarding it.
+  A cold instance can need longer than a client waits; the first request still fails, but a retry joins the running
+  refresh or reads its cached feed instead of starting over.
+- Let shared caches keep more public responses longer than browsers: game details for a day, Most Anticipated for
+  6 hours, giveaways for an hour, and giveaway images for 7 days, like complete recommendations already were. Browsers
+  still keep them for 20 minutes.
+- Send `Cloudflare-CDN-Cache-Control` with `stale-if-error=86400` on public responses, so Cloudflare serves its last
+  copy when the origin fails, such as after a cold-start timeout.
+- Serve one Popular Right Now feed per six-hour UTC window, in process and at the edge, so its pages stay consistent.
+  The in-process feed previously refreshed every 30 minutes.
+
 ## 0.10.0
 
 - Remove endpoints and request forms that only released clients used: `/v1/games/popular-now`,

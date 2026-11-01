@@ -69,8 +69,12 @@ fun Application.api(
     giveaways: GiveawayService,
 ) {
     val recommendations = RecommendationService(igdb)
-    monitor.subscribe(ApplicationStopped) { recommendations.close() }
-    api(config, igdb, giveaways, recommendations, TrendingService(igdb))
+    val trending = TrendingService(igdb)
+    monitor.subscribe(ApplicationStopped) {
+        recommendations.close()
+        trending.close()
+    }
+    api(config, igdb, giveaways, recommendations, trending)
 }
 
 // Each service is a separate dependency so tests can substitute clocks and upstreams per feature.

@@ -1,6 +1,6 @@
 # Braindance API
 
-Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.10.0**. Twitch credentials stay on the backend;
+Kotlin/JVM Ktor backend for IGDB and GamerPower. Version **0.10.1**. Twitch credentials stay on the backend;
 GamerPower needs no key. Use JDK 21 and run commands from the repository root.
 See the [changelog](CHANGELOG.md), the [project README](../README.md#platforms), and the
 [development guide](../docs/development.md) for client setup.
@@ -39,8 +39,8 @@ IGDB access. For direct IDE launches, set the JVM option `-DbackendVersion=devel
 
 ```sh
 ./gradlew :backend:test :backend:installDist
-docker build -f backend/Dockerfile -t braindance-api:0.10.0 backend
-docker run --env-file backend/.env -p 8080:8080 braindance-api:0.10.0
+docker build -f backend/Dockerfile -t braindance-api:0.10.1 backend
+docker run --env-file backend/.env -p 8080:8080 braindance-api:0.10.1
 ```
 
 The Dockerfile needs the prepared distribution; without Docker, run `backend/build/install/backend/bin/backend`.
@@ -59,7 +59,7 @@ All endpoints are GET-only and return JSON. Unknown or duplicate query keys are 
 
 | Endpoint | Returns |
 | --- | --- |
-| `/health`, `/healthz` | `{"ok":true,"version":"0.10.0"}`; `/healthz` returns 503 without Twitch credentials |
+| `/health`, `/healthz` | `{"ok":true,"version":"0.10.1"}`; `/healthz` returns 503 without Twitch credentials |
 | `/v1/games/details?id=42` | Game details |
 | `/v1/games/recommendations?id=42&limit=24` | Similar games, best first; `limit` 1–50 (default 24); 404 if unknown |
 | `/v1/games/trending?page=1&pageSize=20` | [Popular Right Now](#popular-right-now) feed of released games |
@@ -90,11 +90,14 @@ Up to 100 games are ranked. Without parameters the endpoint returns the first 20
 (1–50, default 20) must be positive integers without signs or leading zeros, and a page must start within the first
 100 games; pages past the end are empty. The feed is shorter rather than filled with weak candidates.
 
-A cache miss makes two IGDB multiqueries. The ranked feed is cached in process for 30 minutes, pages are cut from it,
-and if a refresh fails the previous feed is served privately for up to 24 hours. IGDB stores no popularity history,
-so the feed does not measure growth. Signals, weights, and eligibility are documented in
-[`Trending.kt`](src/main/kotlin/dev/vladleesi/braindanceapp/backend/Trending.kt); each cache miss logs a `trending`
-line with candidate counts per stage.
+A cache miss makes two IGDB multiqueries. A request waits up to 4.5 seconds; a slower refresh, as on a cold start,
+keeps running for up to 20 seconds and fills the cache for the next request. One ranked feed serves each six-hour UTC
+window (00:00, 06:00, 12:00, 18:00), in process and at the edge, so pages fetched in one window match; separate
+instances can still rank slightly differently. If a refresh fails, the previous feed is served privately for up to 24
+hours.
+IGDB stores no popularity history, so the feed does not measure growth. Signals, weights, and eligibility are
+documented in [`Trending.kt`](src/main/kotlin/dev/vladleesi/braindanceapp/backend/Trending.kt); each cache miss logs a
+`trending` line with candidate counts per stage.
 
 ## Recommendations
 
@@ -108,10 +111,22 @@ Scoring is documented in
 ## Caching and proxy guard
 
 Public caching requires `PUBLIC_CACHE_ENABLED=true` and an HTTPS `PUBLIC_BASE_URL`. Eligible anonymous GET/200
-responses use `public, max-age=1200`; complete recommendations add `s-maxage=86400` and Popular Right Now pages
-`s-maxage=21600`. A proxy must keep full query strings and Origin in cache keys, respect backend cache headers, list
-`/v1/games/trending` among cacheable paths, and never override no-store for credentials, cookies, health, preflight,
-errors, stale fallbacks, or non-GET methods. Purge cached entries when changing CORS or disabling caching.
+responses let browsers keep them for 20 minutes (`max-age=1200`) and shared caches longer (`s-maxage`):
+
+| Route | Shared lifetime |
+| --- | --- |
+| `/v1/games/details`, complete `/v1/games/recommendations` | 1 day |
+| `/v1/games/anticipated` | 6 hours |
+| `/v1/games/trending` | Until the current six-hour feed window ends; browsers at most that long |
+| `/v1/giveaways`, `/v1/giveaways/42` | 1 hour |
+| `/v1/giveaways/image` | 7 days |
+
+Public responses also send `Cloudflare-CDN-Cache-Control` with the same shared lifetime and `stale-if-error=86400`,
+so Cloudflare serves its last copy for up to a day when the origin returns 5xx. Cloudflare reads that header instead
+of `Cache-Control` and does not forward it; other proxies ignore it. A proxy must keep full query strings and Origin
+in cache keys, respect backend cache headers, list the routes above among cacheable paths, and never override no-store
+for credentials, cookies, health, preflight, errors, stale fallbacks, or non-GET methods. Purge cached entries when
+changing CORS or disabling caching.
 
 With `CLOUDFLARE_ORIGIN_SECRET` (at least 32 printable, non-space ASCII characters), a trusted proxy must overwrite
 visitor guard headers and send exactly one matching `X-Origin-Verify` on every request, including health checks.

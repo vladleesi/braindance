@@ -2,6 +2,13 @@
 
 package dev.vladleesi.braindanceapp.backend
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -14,10 +21,11 @@ import kotlinx.serialization.json.jsonArray
 import java.time.Clock
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.ln1p
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -549,14 +557,18 @@ internal class TrendingService(
     private val igdb: IgdbService,
     private val clock: Clock = Clock.systemUTC(),
     private val log: (String) -> Unit = ::println,
-) {
+    private val responseBudget: Duration = RESPONSE_BUDGET,
+) : AutoCloseable {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val refresh = AtomicReference<Deferred<ResponseCache.LoadResult>?>()
     private val cache =
         ResponseCache(
-            CACHE_TTL.inWholeMilliseconds,
+            FEED_WINDOW.inWholeMilliseconds,
             CACHE_BYTES,
             CACHE_BYTES.toInt(),
             clock,
             staleIfErrorMillis = STALE_IF_ERROR.inWholeMilliseconds,
+            expiresAt = ::feedWindowEnd,
         )
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -567,10 +579,43 @@ internal class TrendingService(
         page: Int = 1,
         pageSize: Int = DEFAULT_PAGE_SIZE,
     ): ResponseCache.LoadResult =
-        when (val result = cache.getOrLoad(CACHE_KEY) { load() }) {
+        when (val result = cache.getOrLoad(CACHE_KEY) { awaitRefresh() }) {
             is ResponseCache.LoadResult.Hit -> result.copy(response = pagesOf(result.response).page(page, pageSize))
             is ResponseCache.LoadResult.Uncached -> result
         }
+
+    override fun close() {
+        scope.cancel()
+    }
+
+    /**
+     * Waits up to [responseBudget], just under the clients' timeout, for the shared feed refresh. A cold instance can
+     * need longer; the refresh then keeps running, bounded by [LOAD_LIMIT] and upstream timeouts, and stores its feed,
+     * so a retry joins it or reads the cache instead of starting over.
+     */
+    private suspend fun awaitRefresh(): ResponseCache.LoadResult {
+        val running = refresh.get()?.takeUnless { it.isCompleted } ?: startRefresh()
+        return withTimeoutOrNull(responseBudget) { running.await() }
+            ?: ResponseCache.LoadResult.Uncached(GATEWAY_TIMEOUT)
+    }
+
+    private fun startRefresh(): Deferred<ResponseCache.LoadResult> {
+        val started =
+            scope.async(start = CoroutineStart.LAZY) {
+                load().also { if (it is ResponseCache.LoadResult.Hit) cache.store(CACHE_KEY, it.response) }
+            }
+        while (true) {
+            val current = refresh.get()
+            if (current != null && !current.isCompleted) {
+                started.cancel()
+                return current
+            }
+            if (refresh.compareAndSet(current, started)) {
+                started.start()
+                return started
+            }
+        }
+    }
 
     private fun pagesOf(feed: CachedResponse): FeedPages =
         pages?.takeIf { it.feed === feed } ?: FeedPages(feed, json).also { pages = it }
@@ -597,7 +642,7 @@ internal class TrendingService(
     private suspend fun load(): ResponseCache.LoadResult {
         val metrics = LoadMetrics()
         val result =
-            withTimeoutOrNull(TOTAL_BUDGET) {
+            withTimeoutOrNull(LOAD_LIMIT) {
                 val nowSeconds = clock.millis() / MILLIS_PER_SECOND
                 val discovery = execute(discoveryQuery(nowSeconds))
                 metrics.igdbRequests++
@@ -742,10 +787,24 @@ internal class TrendingService(
         private const val CACHE_KEY = "trending"
         private const val MILLIS_PER_SECOND = 1000
         private const val EVENT_LIMIT = 50
-        private val CACHE_TTL = 30.minutes
+
+        // IGDB refreshes popularity daily. One ranked feed serves each fixed UTC window, in process and at the edge,
+        // so its pages stay consistent; feeds of different instances in one window can still differ slightly.
+        private val FEED_WINDOW = 6.hours
+
+        private fun feedWindowEnd(nowMillis: Long): Long {
+            val window = FEED_WINDOW.inWholeMilliseconds
+            return (nowMillis / window + 1) * window
+        }
+
+        /** Time until the current feed window ends, rounded up to whole seconds. */
+        fun feedTimeLeft(nowMillis: Long): Duration =
+            ((feedWindowEnd(nowMillis) - nowMillis + MILLIS_PER_SECOND - 1) / MILLIS_PER_SECOND).seconds
+
         private val STALE_IF_ERROR = 24.hours
         private const val CACHE_BYTES = 256L * 1024
-        private val TOTAL_BUDGET = 4.5.seconds
+        private val RESPONSE_BUDGET = 4.5.seconds
+        private val LOAD_LIMIT = 20.seconds
         private val SLOT_WAIT = 1.seconds
         private const val OK = 200
         private const val BAD_GATEWAY = 502

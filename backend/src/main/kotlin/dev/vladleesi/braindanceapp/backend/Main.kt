@@ -45,12 +45,13 @@ fun main() {
     val igdb = startup.measure("igdb_service_creation") { IgdbService(upstream, limiter, config) }
     val giveaways = startup.measure("giveaway_service_creation") { GiveawayService(upstream) }
     val recommendations = startup.measure("recommendation_service_creation") { RecommendationService(igdb) }
+    val trending = TrendingService(igdb)
     val server =
         startup.measure("server_create") {
             embeddedServer(Netty, port = config.port, host = "0.0.0.0") {
                 monitor.subscribe(ServerReady) { startup.checkpoint("server_ready") }
                 startup.measure("application_routes") {
-                    api(config, igdb, giveaways, recommendations, TrendingService(igdb))
+                    api(config, igdb, giveaways, recommendations, trending)
                 }
             }
         }
@@ -58,6 +59,7 @@ fun main() {
         Thread {
             server.stop()
             recommendations.close()
+            trending.close()
             upstream.close()
             redis?.close()
         },
@@ -67,6 +69,7 @@ fun main() {
         server.start(wait = true)
     } finally {
         recommendations.close()
+        trending.close()
         upstream.close()
         redis?.close()
     }

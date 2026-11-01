@@ -39,10 +39,40 @@ class ApiCachePolicyTest {
             publicCacheEnabled = true,
         )
 
+    private val giveawaysCacheControl = "public, max-age=1200, s-maxage=3600"
+
     private fun ApplicationTestBuilder.publicClient() =
         createClient {
             defaultRequest { header(HttpHeaders.Host, "localhost") }
         }
+
+    @Test
+    fun edgeLifetimesFollowRoutesAndOnlyTheEdgeServesStaleOnErrors() {
+        val now = 1_800_000_000_000L
+        val expected =
+            mapOf(
+                "/v1/games/details" to ("public, max-age=1200, s-maxage=86400" to 86_400),
+                "/v1/games/anticipated" to ("public, max-age=1200, s-maxage=21600" to 21_600),
+                RECOMMENDATIONS_PATH to ("public, max-age=1200, s-maxage=86400" to 86_400),
+                "/v1/giveaways" to ("public, max-age=1200, s-maxage=3600" to 3_600),
+                GIVEAWAY_DETAILS_ROUTE to ("public, max-age=1200, s-maxage=3600" to 3_600),
+                "/v1/giveaways/image" to ("public, max-age=1200, s-maxage=604800" to 604_800),
+                // The feed window ends four hours after this instant.
+                TRENDING_PATH to ("public, max-age=1200, s-maxage=14400" to 14_400),
+                null to ("public, max-age=1200" to 1_200),
+            )
+        for ((route, value) in expected) {
+            val (cacheControl, edge) = value
+            assertEquals(
+                PublicCacheHeaders(cacheControl, "public, max-age=$edge, stale-if-error=86400"),
+                publicCacheHeaders(route, now),
+                route,
+            )
+        }
+        // Near the end of a window, browsers keep the feed only until the window ends.
+        val late = publicCacheHeaders(TRENDING_PATH, now + 4 * 3_600_000L - 90_500)
+        assertEquals("public, max-age=91, s-maxage=91", late.cacheControl)
+    }
 
     @Test
     fun onlyAnonymousExactListCanBeCached() =
@@ -52,7 +82,7 @@ class ApiCachePolicyTest {
             application { api(config, IgdbService(remote, RateLimiter { true }, config), GiveawayService(remote)) }
             val public = client.get("$base/v1/giveaways")
             assertEquals(HttpStatusCode.OK, public.status)
-            assertEquals(PUBLIC_CACHE_CONTROL, public.headers[HttpHeaders.CacheControl])
+            assertEquals(giveawaysCacheControl, public.headers[HttpHeaders.CacheControl])
             assertNull(public.headers[HttpHeaders.SetCookie])
             assertNull(public.headers[HttpHeaders.Authorization])
             assertNull(public.headers[ORIGIN_SECRET_HEADER])
@@ -92,7 +122,7 @@ class ApiCachePolicyTest {
             }
             val browser = client.get("$base/v1/giveaways") { header(HttpHeaders.Origin, "https://app.example") }
             assertEquals("https://app.example", browser.headers["Access-Control-Allow-Origin"])
-            assertEquals(PUBLIC_CACHE_CONTROL, browser.headers[HttpHeaders.CacheControl])
+            assertEquals(giveawaysCacheControl, browser.headers[HttpHeaders.CacheControl])
             assertEquals("Origin", browser.headers[HttpHeaders.Vary])
             assertNull(browser.headers["Access-Control-Allow-Credentials"])
             for (origin in listOf("https://evil.example", "http://localhost:12345", "http://127.0.0.1:12345")) {
@@ -123,10 +153,18 @@ class ApiCachePolicyTest {
                 for (origin in listOf(null, "https://app.example", "https://second.example")) {
                     val response = client.get("$base$path") { origin?.let { header(HttpHeaders.Origin, it) } }
                     assertEquals(HttpStatusCode.OK, response.status, path)
-                    assertEquals("public, max-age=1200", response.headers[HttpHeaders.CacheControl], path)
+                    val route = checkNotNull(routeOf(path.substringBefore('?')))
+                    val expected = publicCacheHeaders(route, System.currentTimeMillis())
+                    assertEquals(expected.cacheControl, response.headers[HttpHeaders.CacheControl], path)
+                    assertEquals(
+                        expected.cloudflareCacheControl,
+                        response.headers[CLOUDFLARE_CACHE_CONTROL_HEADER],
+                        path,
+                    )
                     assertEquals(origin, response.headers["Access-Control-Allow-Origin"], path)
                     val authenticated = client.get("$base$path") { header(HttpHeaders.Authorization, "Bearer dummy") }
                     assertEquals(PRIVATE_CACHE_CONTROL, authenticated.headers[HttpHeaders.CacheControl], path)
+                    assertNull(authenticated.headers[CLOUDFLARE_CACHE_CONTROL_HEADER], path)
                 }
             }
             for (path in listOf(
@@ -202,7 +240,7 @@ class ApiCachePolicyTest {
                     }
                 }
             }
-            assertEquals(PUBLIC_CACHE_CONTROL, client.get("$base/v1/giveaways").headers[HttpHeaders.CacheControl])
+            assertEquals(giveawaysCacheControl, client.get("$base/v1/giveaways").headers[HttpHeaders.CacheControl])
             assertEquals(PRIVATE_CACHE_CONTROL, client.get("$base/v1/user").headers[HttpHeaders.CacheControl])
             for (inContent in listOf(false, true)) {
                 contentHeader = inContent
@@ -242,7 +280,7 @@ class ApiCachePolicyTest {
                     header("X-Forwarded-Host", "internal.example")
                     header("Forwarded", "host=internal.example")
                 }
-            assertEquals(PUBLIC_CACHE_CONTROL, attested.headers[HttpHeaders.CacheControl])
+            assertEquals(giveawaysCacheControl, attested.headers[HttpHeaders.CacheControl])
             assertNull(attested.headers[PUBLIC_CACHE_ELIGIBLE_HEADER])
             assertFalse(attested.bodyAsText().contains("internal.example"))
             val browser =
@@ -251,7 +289,7 @@ class ApiCachePolicyTest {
                     header(PUBLIC_CACHE_ELIGIBLE_HEADER, "1")
                     header(HttpHeaders.Origin, "https://app.example")
                 }
-            assertEquals(PUBLIC_CACHE_CONTROL, browser.headers[HttpHeaders.CacheControl])
+            assertEquals(giveawaysCacheControl, browser.headers[HttpHeaders.CacheControl])
             assertEquals("https://app.example", browser.headers["Access-Control-Allow-Origin"])
             for (name in cacheBypassHeaders - setOf("forwarded", "x-forwarded-host", "transfer-encoding")) {
                 val response =
