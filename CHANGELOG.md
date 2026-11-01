@@ -4,6 +4,18 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.6.0
+
+### Android, iOS, and Web
+
+- Replace Popular Right Now with Trending Now at the top of Home. It favors games with recent launches, early access
+  exits, new platform releases, or showcase appearances over consistently popular games.
+- Label trending games with the reason when it is known, such as New release or Now on PS5.
+
+### iOS
+
+- Remove duplicate safe-area spacing above content and below bottom navigation.
+
 ## 0.5.0
 
 ### Android, iOS, and Web

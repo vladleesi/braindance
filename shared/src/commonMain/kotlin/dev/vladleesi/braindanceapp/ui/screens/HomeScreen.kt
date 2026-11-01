@@ -30,7 +30,7 @@ import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_latest_giveaways
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_most_anticipated
-import dev.vladleesi.braindanceapp.resources.home_screen_popular_popular_right_now
+import dev.vladleesi.braindanceapp.resources.home_screen_trending_now
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawaysList
@@ -53,9 +53,9 @@ fun HomeScreen(
 ) {
     val navigator = LocalNavigator.current
 
+    val trendingNow by viewModel.trendingNow.collectAsState()
     val mostAnticipated by viewModel.mostAnticipated.collectAsState()
     val giveaways by viewModel.giveaways.collectAsState()
-    val popularRightNow by viewModel.popularRightNow.collectAsState()
 
     // Load the screen only on first navigation
     LaunchedEffect(Unit) {
@@ -95,6 +95,14 @@ fun HomeScreen(
             item { SpacerStatusBarInsets() }
             item {
                 MiniGameCardList(
+                    title = stringResource(Res.string.home_screen_trending_now),
+                    state = trendingNow,
+                    onRefresh = { viewModel.loadTrendingNow() },
+                    onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
+                )
+            }
+            item {
+                MiniGameCardList(
                     title = stringResource(Res.string.home_screen_popular_most_anticipated),
                     state = mostAnticipated,
                     onRefresh = { viewModel.loadMostAnticipated() },
@@ -107,14 +115,6 @@ fun HomeScreen(
                     state = giveaways,
                     onRefresh = { viewModel.loadGiveaways() },
                     onItemClick = { id -> navigator.navigate(GiveawayDetailsRoute(id)) },
-                )
-            }
-            item {
-                MiniGameCardList(
-                    title = stringResource(Res.string.home_screen_popular_popular_right_now),
-                    state = popularRightNow,
-                    onRefresh = { viewModel.loadPopularRightNow() },
-                    onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
                 )
             }
             item { Spacer(Modifier.height(Dimens.large)) }

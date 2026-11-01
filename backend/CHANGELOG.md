@@ -3,6 +3,14 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.9.0
+
+- Add `GET /v1/games/trending`, a Trending Now feed that weighs current attention from IGDB, Twitch, and Steam by
+  recent launches, early access exits, new platform releases, and IGDB events. Entries include an optional verified
+  `reason` (and `platform` for new platform releases). A cache miss makes two IGDB requests, weak candidates are
+  dropped rather than used as filler, and the previous feed is served privately for up to 24 hours when a refresh
+  fails. `/v1/games/popular-now` remains for released clients.
+
 ## 0.8.1
 
 - Avoid a duplicate recommendation computation when concurrent requests arrive just as a computation for the same

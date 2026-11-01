@@ -10,7 +10,7 @@ import kotlin.test.assertNull
 class GameFeedDecodingTest {
     @Test
     fun compactFeedCardsDecodeIntoGameItems() {
-        // The exact shape served by /v1/games/popular-now and /v1/games/anticipated.
+        // The exact shape served by /v1/games/anticipated.
         val feedJson =
             """[{"id":1942,"name":"The Witcher 3: Wild Hunt","cover":{"url":"//images.igdb.com/t_thumb/co1.jpg"}},""" +
                 """{"id":7,"name":"No Cover"}]"""

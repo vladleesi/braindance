@@ -289,12 +289,13 @@ class PopularNowTest {
                     GiveawayService(stub),
                     RecommendationService(igdb, log = {}),
                     PopularNowService(igdb, clock, log = {}),
+                    TrendingService(igdb, clock, log = {}),
                 )
             }
             val client = createClient { defaultRequest { header(HttpHeaders.Host, "localhost") } }
             val response = client.get("https://localhost/v1/games/popular-now")
             assertEquals(HttpStatusCode.OK, response.status)
-            assertEquals(POPULAR_NOW_CACHE_CONTROL, response.headers[HttpHeaders.CacheControl])
+            assertEquals(HOME_FEED_CACHE_CONTROL, response.headers[HttpHeaders.CacheControl])
             val first =
                 Json
                     .parseToJsonElement(response.bodyAsText())

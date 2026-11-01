@@ -4,6 +4,7 @@ package dev.vladleesi.braindanceapp.data.repository
 
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import io.ktor.client.call.body
 
 class HomeRepo(
@@ -14,5 +15,5 @@ class HomeRepo(
         return response.body()
     }
 
-    suspend fun popularRightNow(): List<GameItem> = gamesRemote.popularNow().body()
+    suspend fun trendingNow(): List<TrendingGameItem> = gamesRemote.trendingNow().body()
 }

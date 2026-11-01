@@ -56,7 +56,6 @@ internal object PopularNowRanking {
     // Weighted reciprocal rank fusion: weight / (RRF_K + rank). A smaller constant than the common 60 keeps a game at
     // the top of one credible source competitive with games that appear lower in several sources.
     private const val RRF_K = 20.0
-    private const val MAX_PER_COLLECTION = 2
 
     // IGDB game_status values.
     private const val EARLY_ACCESS_STATUS = 4
@@ -114,34 +113,52 @@ internal object PopularNowRanking {
         nowSeconds: Long,
         limit: Int = RESULT_COUNT,
     ): List<Recommendation> {
-        val seenTitles = mutableSetOf<String>()
-        val collectionCounts = mutableMapOf<Int, Int>()
+        val variety = FeedVariety()
         val selected = mutableListOf<Recommendation>()
         for (gameId in fusedGameIds) {
             if (selected.size == limit) break
             val game = games[gameId] ?: continue
             val name = game.name?.takeIf(String::isNotBlank) ?: continue
             val coverUrl = game.cover?.url?.takeIf(String::isNotBlank) ?: continue
-            if (!isEligible(game, nowSeconds)) continue
-            if (game.collections.any { (collectionCounts[it] ?: 0) >= MAX_PER_COLLECTION }) continue
-            if (!seenTitles.add(RecommendationRanking.normalizedTitle(name))) continue
-            game.collections.forEach { collectionCounts[it] = (collectionCounts[it] ?: 0) + 1 }
+            if (!isReleased(game, nowSeconds) || !isListable(game) || !variety.accept(game, name)) continue
             selected += Recommendation(game.id, name, coverUrl, score = 0.0)
         }
         return selected
     }
 
-    private fun isEligible(
+    /** A first release date that has passed, or early access, which IGDB may list without a date. */
+    fun isReleased(
         game: IgdbGame,
         nowSeconds: Long,
-    ): Boolean {
-        val released = game.firstReleaseDate?.let { it <= nowSeconds } == true || game.gameStatus == EARLY_ACCESS_STATUS
-        return released &&
-            game.versionParent == null &&
+    ): Boolean = game.firstReleaseDate?.let { it <= nowSeconds } == true || game.gameStatus == EARLY_ACCESS_STATUS
+
+    /** Main games, standalone expansions, remakes, and remasters that are not cancelled, rumored, or adult-only. */
+    fun isListable(game: IgdbGame): Boolean =
+        game.versionParent == null &&
             (game.gameType == null || game.gameType in RecommendationQueries.recommendableGameTypes) &&
             game.gameStatus !in cancelledOrRumored &&
             RecommendationQueries.EROTIC_THEME !in game.themes &&
             game.ageRatings.none { it.ratingCategory in adultRatingCategories }
+}
+
+/**
+ * Keeps a home feed varied in feed order: a repeated normalized title is skipped, and so is a game from a collection
+ * that already has [maxPerCollection] entries.
+ */
+internal class FeedVariety(
+    private val maxPerCollection: Int = 2,
+) {
+    private val seenTitles = mutableSetOf<String>()
+    private val collectionCounts = mutableMapOf<Int, Int>()
+
+    fun accept(
+        game: IgdbGame,
+        name: String,
+    ): Boolean {
+        if (game.collections.any { (collectionCounts[it] ?: 0) >= maxPerCollection }) return false
+        if (!seenTitles.add(RecommendationRanking.normalizedTitle(name))) return false
+        game.collections.forEach { collectionCounts[it] = (collectionCounts[it] ?: 0) + 1 }
+        return true
     }
 }
 
@@ -175,7 +192,11 @@ internal class PopularNowService(
                     execute(RecommendationService.MULTIQUERY_PATH, discoveryQuery())
                 metrics.igdbRequests++
                 if (discovery.status != OK) return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(discovery.status)
-                val signals = validSignals(RecommendationQueries.parseMultiquery(checkNotNull(discovery.body)))
+                val signals =
+                    validPopularitySignals(
+                        RecommendationQueries.parseMultiquery(checkNotNull(discovery.body)),
+                        clock.millis(),
+                    )
                 metrics.signals = signals.keys
                 if (signals.isEmpty()) return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(BAD_GATEWAY)
                 val candidates = PopularNowRanking.fuse(signals).take(PopularNowRanking.HYDRATION_COUNT)
@@ -209,31 +230,6 @@ internal class PopularNowService(
         body: String,
     ) = igdb.execute(path, body, SLOT_WAIT.inWholeMilliseconds)
 
-    /** Keeps signals whose IGDB type name still matches and whose newest value was calculated recently. */
-    private fun validSignals(results: Map<String, JsonArray>): Map<PopularitySignal, List<Int>> {
-        val typeNames =
-            results["types"].orEmpty().associate {
-                val type = it.jsonObject
-                type
-                    .getValue("id")
-                    .jsonPrimitive.content
-                    .toInt() to type["name"]?.jsonPrimitive?.content.orEmpty()
-            }
-        val oldestAccepted = (clock.millis().milliseconds - MAX_SIGNAL_AGE).inWholeSeconds
-        return PopularitySignal.entries
-            .mapNotNull { signal ->
-                val primitives =
-                    results[signal.queryName].orEmpty().map { json.decodeFromJsonElement<PopularityPrimitive>(it) }
-                val newest = primitives.mapNotNull { it.calculatedAt }.maxOrNull()
-                val valid =
-                    signal.matchesTypeName(typeNames[signal.typeId].orEmpty()) &&
-                        primitives.isNotEmpty() &&
-                        newest != null &&
-                        newest >= oldestAccepted
-                if (valid) signal to PopularNowRanking.rankedGameIds(primitives) else null
-            }.toMap()
-    }
-
     /** One structured log line per cache miss; it contains no request or credential data. */
     private class LoadMetrics {
         private val started = System.nanoTime()
@@ -254,28 +250,65 @@ internal class PopularNowService(
         private val CACHE_TTL = 30.minutes
         private val STALE_IF_ERROR = 24.hours
         private const val CACHE_BYTES = 256L * 1024
-        private val MAX_SIGNAL_AGE = 7.days
         private val TOTAL_BUDGET = 4.5.seconds
         private val SLOT_WAIT = 1.seconds
         private const val OK = 200
         private const val BAD_GATEWAY = 502
         private const val GATEWAY_TIMEOUT = 504
 
-        fun discoveryQuery(): String =
-            buildString {
-                val typeIds = PopularitySignal.entries.joinToString(",") { it.typeId.toString() }
-                append("query popularity_types \"types\" {fields name;where id = ($typeIds);limit 10;};")
-                for (signal in PopularitySignal.entries) {
-                    append(
-                        "query popularity_primitives \"${signal.queryName}\" {fields game_id,value,calculated_at;" +
-                            "where popularity_type = ${signal.typeId};sort value desc;" +
-                            "limit ${PopularNowRanking.SIGNAL_DEPTH};};",
-                    )
-                }
-            }
+        fun discoveryQuery(): String = popularitySignalQueries(PopularNowRanking.SIGNAL_DEPTH)
 
         fun hydrationQuery(gameIds: List<Int>): String =
             "fields name,cover.url,game_type,game_status,version_parent,first_release_date,themes,collections," +
                 "age_ratings.rating_category;where id = (${gameIds.joinToString(",")});limit ${gameIds.size};"
     }
+}
+
+/** Multiquery parts for the popularity type names and the top [depth] games of every [PopularitySignal]. */
+internal fun popularitySignalQueries(depth: Int): String =
+    buildString {
+        val typeIds = PopularitySignal.entries.joinToString(",") { it.typeId.toString() }
+        append("query popularity_types \"types\" {fields name;where id = ($typeIds);limit 10;};")
+        for (signal in PopularitySignal.entries) {
+            append(
+                "query popularity_primitives \"${signal.queryName}\" {fields game_id,value,calculated_at;" +
+                    "where popularity_type = ${signal.typeId};sort value desc;limit $depth;};",
+            )
+        }
+    }
+
+private val MAX_SIGNAL_AGE = 7.days
+private val primitiveJson = Json { ignoreUnknownKeys = true }
+
+/**
+ * Ranked game IDs for each signal in multiquery [results] whose IGDB type name still matches and whose newest value
+ * was calculated within seven days of [nowMillis]. Invalid or outdated signals are omitted rather than guessed.
+ */
+internal fun validPopularitySignals(
+    results: Map<String, JsonArray>,
+    nowMillis: Long,
+): Map<PopularitySignal, List<Int>> {
+    val typeNames =
+        results["types"].orEmpty().associate {
+            val type = it.jsonObject
+            type
+                .getValue("id")
+                .jsonPrimitive.content
+                .toInt() to type["name"]?.jsonPrimitive?.content.orEmpty()
+        }
+    val oldestAccepted = (nowMillis.milliseconds - MAX_SIGNAL_AGE).inWholeSeconds
+    return PopularitySignal.entries
+        .mapNotNull { signal ->
+            val primitives =
+                results[signal.queryName].orEmpty().map {
+                    primitiveJson.decodeFromJsonElement<PopularityPrimitive>(it)
+                }
+            val newest = primitives.mapNotNull { it.calculatedAt }.maxOrNull()
+            val valid =
+                signal.matchesTypeName(typeNames[signal.typeId].orEmpty()) &&
+                    primitives.isNotEmpty() &&
+                    newest != null &&
+                    newest >= oldestAccepted
+            if (valid) signal to PopularNowRanking.rankedGameIds(primitives) else null
+        }.toMap()
 }

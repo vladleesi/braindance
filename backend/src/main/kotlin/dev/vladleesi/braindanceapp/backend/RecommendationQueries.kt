@@ -43,6 +43,27 @@ internal data class IgdbGame(
     @SerialName("similar_games") val similarGames: List<Int> = emptyList(),
     // Only queries that expand `age_ratings.rating_category` populate this.
     @SerialName("age_ratings") val ageRatings: List<IgdbAgeRating> = emptyList(),
+    // Only the trending hydration query expands release dates with their platform and status.
+    @SerialName("release_dates") val releaseDates: List<IgdbReleaseDate> = emptyList(),
+)
+
+/** One platform and region release; [date] is in Unix seconds and missing for undated entries. */
+@Serializable
+internal data class IgdbReleaseDate(
+    val date: Long? = null,
+    val platform: IgdbPlatform? = null,
+    val status: IgdbReleaseStatus? = null,
+)
+
+@Serializable
+internal data class IgdbPlatform(
+    val id: Int,
+    val abbreviation: String? = null,
+)
+
+@Serializable
+internal data class IgdbReleaseStatus(
+    val name: String? = null,
 )
 
 @Serializable

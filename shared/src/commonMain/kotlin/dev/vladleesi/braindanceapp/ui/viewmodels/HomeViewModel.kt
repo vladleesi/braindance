@@ -4,11 +4,13 @@ package dev.vladleesi.braindanceapp.ui.viewmodels
 
 import androidx.lifecycle.viewModelScope
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayItemModel
+import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardLabel
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
 import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.formatEndDate
@@ -31,8 +33,8 @@ class HomeViewModel(
     private val _giveaways = MutableStateFlow<HomeState>(HomeState.Loading)
     val giveaways: StateFlow<HomeState> = _giveaways.asStateFlow()
 
-    private val _popularRightNow = MutableStateFlow<HomeState>(HomeState.Loading)
-    val popularRightNow: StateFlow<HomeState> = _popularRightNow.asStateFlow()
+    private val _trendingNow = MutableStateFlow<HomeState>(HomeState.Loading)
+    val trendingNow: StateFlow<HomeState> = _trendingNow.asStateFlow()
 
     private val handler =
         CoroutineExceptionHandler { _, exception ->
@@ -40,9 +42,9 @@ class HomeViewModel(
         }
 
     override fun onLoad() {
+        loadTrendingNow()
         loadMostAnticipated()
         loadGiveaways()
-        loadPopularRightNow()
     }
 
     override fun onRefresh() {
@@ -77,15 +79,15 @@ class HomeViewModel(
         }
     }
 
-    fun loadPopularRightNow() {
+    fun loadTrendingNow() {
         viewModelScope.launch(handler) {
             runCatching {
-                _popularRightNow.emit(HomeState.Loading)
-                homeRepo.popularRightNow().mapperMiniGameCardModel()
+                _trendingNow.emit(HomeState.Loading)
+                homeRepo.trendingNow().map { it.toMiniGameCardModel() }
             }.onSuccess { result ->
-                _popularRightNow.emit(HomeState.Success(result))
+                _trendingNow.emit(HomeState.Success(result))
             }.onFailure { throwable ->
-                _popularRightNow.emit(HomeState.Error(throwable.message.orEmpty()))
+                _trendingNow.emit(HomeState.Error(throwable.message.orEmpty()))
             }
         }
     }
@@ -120,6 +122,22 @@ class HomeViewModel(
         private const val PAGE_SIZE = 20
     }
 }
+
+/** Maps a trending card; a reason this client does not know is omitted rather than shown generically. */
+internal fun TrendingGameItem.toMiniGameCardModel() =
+    MiniGameCardModel(
+        id = id,
+        title = name.orEmpty(),
+        backgroundImageUrl = cover?.url?.toCoverUrl(CoverSize.P_720).orEmpty(),
+        label =
+            when (reason) {
+                "new_release" -> MiniGameCardLabel.NewRelease
+                "full_release" -> MiniGameCardLabel.FullRelease
+                "showcased" -> MiniGameCardLabel.Showcased
+                "new_platform" -> MiniGameCardLabel.NewPlatform(platform?.takeIf(String::isNotBlank))
+                else -> null
+            },
+    )
 
 sealed interface HomeState {
     data object Loading : HomeState

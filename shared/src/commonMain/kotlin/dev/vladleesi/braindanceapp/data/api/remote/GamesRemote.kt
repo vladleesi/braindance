@@ -30,5 +30,5 @@ class GamesRemote(
         }
 
     /** The backend ranks and hydrates the whole feed, so one request returns the finished cards. */
-    suspend fun popularNow(): HttpResponse = backendHttpClient.get(ApiConfig.Endpoints.POPULAR_NOW)
+    suspend fun trendingNow(): HttpResponse = backendHttpClient.get(ApiConfig.Endpoints.TRENDING)
 }

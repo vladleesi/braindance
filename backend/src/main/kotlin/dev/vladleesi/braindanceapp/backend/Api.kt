@@ -41,6 +41,7 @@ internal val gameQueryParameters =
 
 internal const val RECOMMENDATIONS_PATH = "/v1/games/recommendations"
 internal const val POPULAR_NOW_PATH = "/v1/games/popular-now"
+internal const val TRENDING_PATH = "/v1/games/trending"
 internal const val GIVEAWAY_DETAILS_ROUTE = "/v1/giveaways/{id}"
 
 /**
@@ -52,6 +53,7 @@ internal val routeQueryParameters: Map<String, Set<String>> =
         mapOf(
             RECOMMENDATIONS_PATH to setOf("id", "limit"),
             POPULAR_NOW_PATH to emptySet(),
+            TRENDING_PATH to emptySet(),
             "/v1/giveaways" to emptySet(),
             GIVEAWAY_DETAILS_ROUTE to emptySet(),
             "/v1/giveaways/image" to setOf("url"),
@@ -76,15 +78,18 @@ fun Application.api(
 ) {
     val recommendations = RecommendationService(igdb)
     monitor.subscribe(ApplicationStopped) { recommendations.close() }
-    api(config, igdb, giveaways, recommendations, PopularNowService(igdb))
+    api(config, igdb, giveaways, recommendations, PopularNowService(igdb), TrendingService(igdb))
 }
 
+// Each service is a separate dependency so tests can substitute clocks and upstreams per feature.
+@Suppress("LongParameterList")
 internal fun Application.api(
     config: BackendConfig,
     igdb: IgdbService,
     giveaways: GiveawayService,
     recommendations: RecommendationService,
     popularNow: PopularNowService,
+    trending: TrendingService,
 ) {
     val backendVersion =
         BackendConfig::class.java.`package`.implementationVersion
@@ -130,7 +135,8 @@ internal fun Application.api(
                         }
                         path == RECOMMENDATIONS_PATH && method == "GET" ->
                             respondRecommendations(recommendations, config)
-                        path == POPULAR_NOW_PATH && method == "GET" -> respondPopularNow(popularNow, config)
+                        path == POPULAR_NOW_PATH && method == "GET" -> respondFeed(config) { popularNow.popularNow() }
+                        path == TRENDING_PATH && method == "GET" -> respondFeed(config) { trending.trending() }
                         path in gameQueryParameters && method in setOf("GET", "POST") -> respondGame(path, igdb, config)
                         path.startsWith("/v1/giveaways") && method == "GET" -> {
                             if (path == "/v1/giveaways/image") {
@@ -257,9 +263,10 @@ private suspend fun RoutingContext.respondRecommendations(
     }
 }
 
-private suspend fun RoutingContext.respondPopularNow(
-    popularNow: PopularNowService,
+/** Serves a ranked home feed that has one canonical URL. */
+private suspend fun RoutingContext.respondFeed(
     config: BackendConfig,
+    load: suspend () -> ResponseCache.LoadResult,
 ) {
     // The feed has one canonical URL so every visitor shares one cache entry.
     if (call.request.uri.length > 2048 || !call.request.queryParameters.isEmpty()) {
@@ -270,7 +277,7 @@ private suspend fun RoutingContext.respondPopularNow(
         respondJson(503, """{"error":"Backend credentials unavailable"}""")
         return
     }
-    when (val result = popularNow.popularNow()) {
+    when (val result = load()) {
         is ResponseCache.LoadResult.Hit -> {
             // A stale fallback stays private so edge caches do not extend it.
             if (!result.stale) call.attributes.put(publicResponse, Unit)
