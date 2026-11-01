@@ -5,7 +5,7 @@ package dev.vladleesi.braindanceapp.data.models.games
 import kotlinx.serialization.Serializable
 
 /**
- * A Trending Now card from `/v1/games/trending`. [reason] is an optional verified cause, such as `new_release`;
+ * A Popular Right Now card from `/v1/games/trending`. [reason] is an optional verified cause, such as `new_release`;
  * [platform] is a short platform name sent only with `new_platform`. Unknown reasons are ignored by the UI.
  */
 @Serializable

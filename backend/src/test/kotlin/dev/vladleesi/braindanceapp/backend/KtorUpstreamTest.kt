@@ -6,7 +6,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -86,11 +85,8 @@ class KtorUpstreamTest {
                 }
                 assertEquals(HttpStatusCode.OK, client.get("/health").status)
                 assertEquals(HttpStatusCode.NotFound, client.get("/missing").status)
-                assertEquals(HttpStatusCode.UnsupportedMediaType, client.post("/v1/games/details").status)
-                assertEquals(
-                    HttpStatusCode.BadRequest,
-                    client.post("/v1/games/details") { header(HttpHeaders.ContentType, "application/json") }.status,
-                )
+                assertEquals(HttpStatusCode.NotFound, client.post("/v1/games/details").status)
+                assertEquals(HttpStatusCode.BadRequest, client.get("/v1/games/details").status)
                 assertEquals(HttpStatusCode.BadRequest, client.get("/v1/giveaways/image").status)
             }
         }

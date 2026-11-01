@@ -8,7 +8,7 @@
     <string name="profile_screen_version">v%1$s</string>
 
     <!-- Home screen -->
-    <string name="home_screen_trending_now">Trending Now</string>
+    <string name="home_screen_popular_right_now">Popular Right Now</string>
     <string name="home_screen_popular_most_anticipated">Most Anticipated</string>
     <string name="home_screen_popular_latest_giveaways">Latest Giveaways</string>
 

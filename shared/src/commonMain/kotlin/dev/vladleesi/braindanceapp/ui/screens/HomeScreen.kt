@@ -30,7 +30,7 @@ import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_latest_giveaways
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_most_anticipated
-import dev.vladleesi.braindanceapp.resources.home_screen_trending_now
+import dev.vladleesi.braindanceapp.resources.home_screen_popular_right_now
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawaysList
@@ -95,7 +95,7 @@ fun HomeScreen(
             item { SpacerStatusBarInsets() }
             item {
                 MiniGameCardList(
-                    title = stringResource(Res.string.home_screen_trending_now),
+                    title = stringResource(Res.string.home_screen_popular_right_now),
                     state = trendingNow,
                     onRefresh = { viewModel.loadTrendingNow() },
                     onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },

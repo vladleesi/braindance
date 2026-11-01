@@ -3,6 +3,7 @@
 
 """Check the configured edge with dummy credentials; never prints response bodies or secret headers."""
 
+import secrets
 import sys
 import time
 import urllib.error
@@ -74,16 +75,16 @@ def main():
             time.sleep(1)
         require(saw_hit, "No warm HIT; check cache/attestation rules, Origin Cache Control and Development Mode")
 
-    # A supported timestamp creates a fresh cache key without purging unrelated cached data.
-    fresh_path = f"/v1/games/anticipated?currentTimestamp={int(time.time())}&pageSize=1"
+    # A supported, rarely requested game ID creates a fresh cache key without purging unrelated cached data.
+    fresh_path = f"/v1/games/details?id={secrets.randbelow(1_000_000_000) + 1_000_000_000}"
     verify_public(fresh_path, expect_miss=True)
 
     public_paths = [
         "/v1/giveaways",
         "/v1/games/details?id=42",
         "/v1/games/anticipated?pageSize=20",
-        "/v1/games/popularity?type=34&pageSize=40",
-        "/v1/games/popular?ids=42,43&pageSize=20",
+        "/v1/games/trending",
+        "/v1/games/trending?page=2&pageSize=20",
     ]
     for path in public_paths:
         verify_public(path)
@@ -116,6 +117,7 @@ def main():
         ("/v1/games/details?id=42&id=43", "GET", {}),
         ("/v1/games/details?id=42", "GET", {"Authorization": "Bearer dummy"}),
         ("/v1/games/details?id=42", "GET", {"Cookie": "session=dummy"}),
+        ("/v1/games/trending?page=01", "GET", {}),
     ]
     cases.extend(("/v1/giveaways", method, {}) for method in ("POST", "PUT", "PATCH", "DELETE", "HEAD"))
     cases.extend(("/v1/games/details?id=42", method, {}) for method in ("POST", "PUT", "PATCH", "DELETE", "HEAD"))

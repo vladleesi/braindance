@@ -116,8 +116,6 @@ class ApiCachePolicyTest {
                 listOf(
                     "/v1/games/details?id=42",
                     "/v1/games/anticipated?pageSize=20",
-                    "/v1/games/popular?ids=42,43&pageSize=20",
-                    "/v1/games/popularity?type=34&pageSize=40",
                     "/v1/giveaways/42",
                     "/v1/giveaways/image?url=https%3A%2F%2Fwww.gamerpower.com%2Foffers%2Fa.png",
                 )

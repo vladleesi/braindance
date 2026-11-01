@@ -70,6 +70,7 @@ class TrendingTest {
         collections: List<Int> = emptyList(),
         cover: Boolean = true,
         name: String = "Game $id",
+        hypes: Int? = null,
     ) = IgdbGame(
         id = id,
         name = name,
@@ -80,6 +81,7 @@ class TrendingTest {
         themes = themes,
         collections = collections,
         releaseDates = releases,
+        hypes = hypes,
     )
 
     private fun activity(
@@ -132,11 +134,9 @@ class TrendingTest {
         val established = activity(game(2))
         assertEquals(null to TrendingRanking.ESTABLISHED, established.reason to established.relevance)
         val upcoming = activity(game(3, releasedDaysAgo = -30))
-        assertNull(upcoming.reason)
-        assertTrue(upcoming.relevance > TrendingRanking.ESTABLISHED)
+        assertEquals(null to TrendingRanking.ESTABLISHED, upcoming.reason to upcoming.relevance)
 
         assertEquals(TrendingReason.SHOWCASED, activity(game(2), showcaseDaysAgo = 2).reason)
-        assertEquals(TrendingReason.SHOWCASED, activity(game(3, releasedDaysAgo = -30), showcaseDaysAgo = 2).reason)
         val oldShowcase = activity(game(2), showcaseDaysAgo = 25)
         assertEquals(null to TrendingRanking.ESTABLISHED, oldShowcase.reason to oldShowcase.relevance)
     }
@@ -194,7 +194,7 @@ class TrendingTest {
     }
 
     @Test
-    fun rankingPrefersFreshActivityOverStableAudiencesWithoutFilling() {
+    fun recentActivityBoostsRankingWithoutGatingEstablishedInterest() {
         val games =
             listOf(
                 game(1),
@@ -203,21 +203,147 @@ class TrendingTest {
                 game(4, releasedDaysAgo = 2),
                 game(5, releases = listOf(release(2000, 6), release(3, 167))),
                 game(6),
+                game(7),
+                game(8),
             ).associateBy { it.id }
-        // 1 is the largest established game; 3 is a smaller established one; 6 is established and showcased.
-        val attention = TrendingRanking.attention(everywhere(1 to 1, 2 to 8, 3 to 10, 4 to 60, 5 to 12, 6 to 15))
+        // 1 leads every signal without recent activity; 6 is showcased; 8 is established and far down every list.
+        val attention =
+            TrendingRanking.attention(
+                everywhere(1 to 1, 2 to 8, 3 to 10, 4 to 60, 5 to 12, 6 to 15, 7 to 70, 8 to 160),
+            )
         val ranked = TrendingRanking.rank(attention, games, mapOf(6 to day), now)
-        assertEquals(listOf(2, 6, 5, 4, 1), ranked.map { it.id })
+        // Fresh games outrank the overall leader, which still appears ahead of a weaker established game: activity
+        // and habitual audiences weigh rankings, while only weak interest removes a game.
+        assertEquals(listOf(2, 6, 5, 4, 1, 3, 7), ranked.map { it.id })
         assertEquals(
-            listOf(TrendingReason.NEW_RELEASE, TrendingReason.SHOWCASED, TrendingReason.NEW_PLATFORM),
-            ranked.take(3).map { it.reason },
+            listOf(
+                TrendingReason.NEW_RELEASE,
+                TrendingReason.SHOWCASED,
+                TrendingReason.NEW_PLATFORM,
+                TrendingReason.NEW_RELEASE,
+            ),
+            ranked.take(4).map { it.reason },
         )
-        // The top established game stays only below every fresh game; a smaller one does not fill the feed.
-        assertNull(ranked.last().reason)
-        assertTrue(ranked.none { it.id == 3 })
-        assertTrue(ranked.all { it.score >= TrendingRanking.MIN_SCORE })
+        assertEquals(listOf(1, 3, 7), ranked.filter { it.established }.map { it.id })
+        assertTrue(ranked.filter { it.established }.all { it.reason == null })
+        assertTrue(ranked.none { it.id == 8 }, "established games need meaningful attention")
+        // The boost is bounded: the strongest activity at most multiplies interest by 1 + ACTIVITY_BOOST.
+        val launch = ranked.first()
+        assertEquals(launch.attention * (1 + TrendingRanking.ACTIVITY_BOOST), launch.score, 1e-9)
         val reversed = games.entries.reversed().associate { it.toPair() }
         assertEquals(ranked, TrendingRanking.rank(attention, reversed, mapOf(6 to day), now))
+    }
+
+    @Test
+    fun richCandidatePoolFillsTheFeedWithFreshGames() {
+        // 10 established leaders, 25 fresh games below them, and 5 fresh games only one signal lists, deep in it.
+        val established = (1..10).map { game(it) }
+        val launches = (11..35).map { game(it, releasedDaysAgo = it % 20L) }
+        val singleSignal = (36..40).map { game(it, releasedDaysAgo = 3) }
+        val games = (established + launches + singleSignal).associateBy { it.id }
+        val ranks = (1..10).map { it to it } + (11..35).map { it to it + 10 }
+        val signals =
+            everywhere(*ranks.toTypedArray()) +
+                (PopularitySignal.TWITCH_HOURS_WATCHED to (1000..1149).toList() + (36..40))
+        val page = TrendingRanking.DEFAULT_TUNING.copy(resultCount = TrendingRanking.RESULT_COUNT)
+        val selection = TrendingRanking.select(TrendingRanking.attention(signals), games, emptyMap(), now, page)
+        assertEquals(TrendingRanking.RESULT_COUNT, selection.games.size)
+        // The established leaders qualify, but launches with comparable attention rank above them.
+        assertTrue(selection.games.all { !it.established && it.reason == TrendingReason.NEW_RELEASE })
+        assertEquals(40, selection.funnel.displayable)
+        assertEquals(30 to 10, selection.funnel.fresh to selection.funnel.established)
+        // Ordering is deterministic and strongest first.
+        val scores = selection.games.map { it.score }
+        assertEquals(scores.sortedDescending(), scores)
+    }
+
+    @Test
+    fun unreleasedGamesAreLeftForMostAnticipated() {
+        val games =
+            listOf(
+                game(1, releasedDaysAgo = -30, hypes = 900),
+                game(2, releasedDaysAgo = null, hypes = 400),
+                game(3, releasedDaysAgo = null, status = 4),
+                game(4, releasedDaysAgo = 3),
+            ).associateBy { it.id }
+        val attention = TrendingRanking.attention(everywhere(1 to 1, 2 to 2, 3 to 3, 4 to 40))
+        // 1 is dated upcoming and showcased, 2 is undated, and 3 is in early access without a date.
+        val selection = TrendingRanking.select(attention, games, mapOf(1 to day), now)
+        assertEquals(listOf(4, 3), selection.games.map { it.id })
+        assertEquals(2, selection.funnel.unreleased)
+    }
+
+    @Test
+    fun eachPageAdmitsItsOwnEstablishedShare() {
+        // 30 broadly popular established games, and 30 launches only one signal lists, deep in it.
+        val established = (1..30).map { game(it) }
+        val launches = (31..60).map { game(it, releasedDaysAgo = 3) }
+        val games = (established + launches).associateBy { it.id }
+        val signals =
+            everywhere(*(1..30).map { it to it }.toTypedArray()) +
+                (PopularitySignal.STEAM_PEAK_PLAYERS to (1000..1099).toList() + (31..60))
+        val feed = TrendingRanking.rank(TrendingRanking.attention(signals), games, emptyMap(), now)
+        val pages = feed.chunked(TrendingRanking.RESULT_COUNT)
+        // Every page holds at most MAX_ESTABLISHED leaders; held-back leaders keep their order on later pages.
+        assertEquals(listOf(6, 6, 6), pages.map { page -> page.count { it.established } })
+        assertEquals((1..18).toList(), feed.filter { it.established }.map { it.id })
+        assertEquals(60 - 30 + 18, feed.size)
+    }
+
+    @Test
+    fun establishedGamesAreCappedAndNeedMeaningfulAttention() {
+        val games = (1..10).map { game(it) }.associateBy { it.id }
+        val ranks = (1..9).map { it to it * 5 } + (10 to 190)
+        val attention = TrendingRanking.attention(everywhere(*ranks.toTypedArray()))
+        val selection = TrendingRanking.select(attention, games, emptyMap(), now)
+        // Only MAX_ESTABLISHED appear, and nothing fills the remaining slots; rank 190 everywhere is too weak.
+        assertEquals((1..TrendingRanking.MAX_ESTABLISHED).toList(), selection.games.map { it.id })
+        assertTrue(selection.games.all { it.established && it.reason == null })
+        assertEquals(3 to 1, selection.funnel.establishedCapped to selection.funnel.weak)
+    }
+
+    @Test
+    fun freshGamesNeedListingsOrHypes() {
+        val games =
+            listOf(
+                game(1, releasedDaysAgo = 3, hypes = 40),
+                game(2, releasedDaysAgo = 3, hypes = TrendingRanking.MIN_HYPES - 1),
+                game(3, releasedDaysAgo = 3),
+                game(4, hypes = 500),
+                game(5, releasedDaysAgo = 3, hypes = 0),
+                game(6, hypes = 25),
+            ).associateBy { it.id }
+        // Only game 5 is listed, deep in one signal of two.
+        val signals =
+            mapOf(
+                PopularitySignal.IGDB_VISITS to (1000..1189).toList() + 5,
+                PopularitySignal.IGDB_PLAYING to (2000..2009).toList(),
+            )
+        val selection = TrendingRanking.select(TrendingRanking.attention(signals), games, mapOf(6 to day), now)
+        // An unlisted launch with hypes, a deep single-signal listing, and a hyped showcased game qualify. An obscure
+        // launch and an established game with only old hypes do not.
+        assertEquals(setOf(1, 5, 6), selection.games.map { it.id }.toSet())
+        assertEquals(TrendingReason.SHOWCASED, selection.games.single { it.id == 6 }.reason)
+        assertEquals(3, selection.funnel.weak)
+    }
+
+    @Test
+    fun incompleteMetadataIsRankedWithWhatIgdbProvides() {
+        val games =
+            listOf(
+                // No type, release dates, or hypes: the first release date alone shows a launch.
+                IgdbGame(1, "Untyped", IgdbCover("//c/1.jpg"), firstReleaseDate = now - 2 * day),
+                // Early access without any dates is released but has no dated activity.
+                IgdbGame(2, "Undated", IgdbCover("//c/2.jpg"), gameStatus = 4),
+                IgdbGame(3, "No cover", null, firstReleaseDate = now - 2 * day),
+                IgdbGame(4, " ", IgdbCover("//c/4.jpg"), firstReleaseDate = now - 2 * day),
+            ).associateBy { it.id }
+        val attention = TrendingRanking.attention(everywhere(1 to 30, 2 to 2, 3 to 1, 4 to 3))
+        val selection = TrendingRanking.select(attention, games, emptyMap(), now)
+        assertEquals(listOf(1, 2), selection.games.map { it.id })
+        assertEquals(TrendingReason.NEW_RELEASE to false, selection.games[0].reason to selection.games[0].established)
+        assertEquals(null to true, selection.games[1].reason to selection.games[1].established)
+        assertEquals(2, selection.funnel.displayable)
     }
 
     @Test
@@ -239,15 +365,23 @@ class TrendingTest {
         val ranked = TrendingRanking.rank(attention, games, emptyMap(), now)
         // DLC, cancelled, erotic, coverless, rumored, a third collection entry, and a duplicate title are skipped.
         assertEquals(listOf(5, 6, 9), ranked.map { it.id })
-        assertEquals(listOf(5), TrendingRanking.rank(attention, games, emptyMap(), now, limit = 1).map { it.id })
+        val single = TrendingRanking.DEFAULT_TUNING.copy(resultCount = 1)
+        assertEquals(listOf(5), TrendingRanking.rank(attention, games, emptyMap(), now, single).map { it.id })
     }
 
     @Test
-    fun hydrationKeepsTheStrongestAttentionWithinItsBound() {
+    fun hydrationPlanBoundsPoolsWithoutOverlap() {
         val ids = (1..300).toList()
         val attention = TrendingRanking.attention(PopularitySignal.entries.associateWith { ids })
-        val order = TrendingRanking.hydrationOrder(attention)
-        assertEquals(ids.take(TrendingRanking.HYDRATION_COUNT), order)
+        // 5 was fetched as a recent release; 150 and 2000 were featured at events, 2000 most recently.
+        val plan = TrendingRanking.hydrationPlan(attention, setOf(5), mapOf(150 to day, 2000 to 0L, 3 to day))
+        assertEquals((1..101).filter { it != 5 }, plan.attentionIds)
+        assertEquals(TrendingRanking.HYDRATION_COUNT, plan.attentionIds.size)
+        assertEquals(listOf(2000, 150), plan.showcaseIds)
+        assertEquals((102..300).filter { it != 150 }, plan.tailIds)
+        val showcases = (1..1000).associate { 5000 + it to it.toLong() }
+        val bounded = TrendingRanking.hydrationPlan(emptyMap(), emptySet(), showcases)
+        assertEquals((5001..5000 + TrendingRanking.MAX_SHOWCASE_IDS).toList(), bounded.showcaseIds)
     }
 
     @Test
@@ -272,6 +406,7 @@ class TrendingTest {
         var events: String? = """[{"id":1,"start_time":${now - 2 * day},"end_time":${now - day},"games":[3]}]""",
         var primitives: Map<Int, List<Int>> =
             PopularitySignal.entries.associate { it.typeId to listOf(1, 2, 3, 4) },
+        var recent: List<IgdbGame> = emptyList(),
     ) : Upstream {
         val discoveryCalls = AtomicInteger()
         val hydrationCalls = AtomicInteger()
@@ -299,43 +434,52 @@ class TrendingTest {
             gate?.await()
             synchronized(bodies) { bodies += query }
             failure?.let { return UpstreamResponse(it, headersOf(), byteArrayOf()) }
+            assertEquals(RecommendationService.MULTIQUERY_PATH, path)
             val body =
-                if (path == RecommendationService.MULTIQUERY_PATH) {
+                if (query.contains("query popularity_primitives")) {
                     discoveryCalls.incrementAndGet()
                     val types =
-                        mapOf(1 to "Visits", 3 to "Playing", 5 to "24hr Peak Players", 34 to "24hr Hours Watched")
-                            .entries
+                        mapOf(
+                            1 to "Visits",
+                            2 to "Want to Play",
+                            3 to "Playing",
+                            5 to "24hr Peak Players",
+                            34 to "24hr Hours Watched",
+                        ).entries
                             .joinToString(",") { """{"id":${it.key},"name":"${it.value}"}""" }
                     val lists =
                         PopularitySignal.entries.joinToString(",") { signal ->
                             val rows =
                                 primitives[signal.typeId].orEmpty().withIndex().joinToString(",") { (index, gameId) ->
-                                    """{"game_id":$gameId,"value":${100 - index},"calculated_at":$now}"""
+                                    """{"game_id":$gameId,"value":${1000 - index},"calculated_at":$now}"""
                                 }
                             """{"name":"${signal.queryName}","result":[$rows]}"""
                         }
                     val eventResult = events?.let { """,{"name":"events","result":$it}""" }.orEmpty()
-                    """[{"name":"types","result":[$types]},$lists$eventResult]"""
+                    val recentResult = """,{"name":"recent","result":${encode(recent)}}"""
+                    """[{"name":"types","result":[$types]},$lists$eventResult$recentResult]"""
                 } else {
                     hydrationCalls.incrementAndGet()
-                    val requested =
-                        Regex("""where id = \(([0-9,]+)\)""")
-                            .find(query)
-                            ?.groupValues
-                            ?.get(1)
-                            .orEmpty()
-                            .split(',')
-                            .mapNotNull(String::toIntOrNull)
-                            .toSet()
-                    val elements =
-                        games
-                            .filter { it.id in requested }
-                            .sortedByDescending { it.id }
-                            .map { json.encodeToJsonElement(it) as JsonObject }
-                    JsonArray(elements).toString()
+                    // Each named games query returns the requested games; the tail query keeps only recent releases,
+                    // as IGDB's date filter would. Games come back in reverse ID order: ranking must not rely on it.
+                    Regex("""query games "(\w+)" \{[^}]*?where id = \(([0-9,]+)\)""")
+                        .findAll(query)
+                        .joinToString(",", "[", "]") { match ->
+                            val (name, idList) = match.destructured
+                            val requested = idList.split(',').map(String::toInt).toSet()
+                            val found =
+                                games.filter { game ->
+                                    game.id in requested &&
+                                        (name != "tail" || (game.firstReleaseDate ?: 0) in now - 60 * day..now)
+                                }
+                            """{"name":"$name","result":${encode(found)}}"""
+                        }
                 }
             return UpstreamResponse(HttpStatusCode.OK, jsonHeaders, body.encodeToByteArray())
         }
+
+        private fun encode(found: List<IgdbGame>) =
+            JsonArray(found.sortedByDescending { it.id }.map { json.encodeToJsonElement(it) as JsonObject }).toString()
 
         override suspend fun giveaway(url: String) = error("unused")
 
@@ -376,11 +520,63 @@ class TrendingTest {
             assertEquals(1 to 1, stub.discoveryCalls.get() to stub.hydrationCalls.get())
             val (discovery, hydration) = stub.bodies
             assertContains(discovery, "query events \"events\" {fields start_time,end_time,games;")
-            assertContains(discovery, "where popularity_type = 34;sort value desc;limit 100;")
+            assertContains(discovery, "where popularity_type = 34;sort value desc;limit 200;")
+            assertContains(discovery, "query games \"recent\" {fields name,cover.url,")
+            assertContains(discovery, "& hypes >= 20 & version_parent = null & cover != null")
             assertContains(hydration, "release_dates.platform.abbreviation,release_dates.status.name;")
-            assertContains(hydration, "where id = (1,2,3,4);limit 4;")
+            assertContains(hydration, "query games \"attention\" {")
+            assertContains(hydration, "where id = (1,2,3,4) & ${FeedEligibility.releasedFilter(now)};limit 4;};")
+            // Pools without IDs are omitted rather than sent empty.
+            assertTrue("\"tail\"" !in hydration && "\"showcased\"" !in hydration)
             service.trending()
             assertEquals(1 to 1, stub.discoveryCalls.get() to stub.hydrationCalls.get())
+        }
+
+    @Test
+    fun releaseAndEventCandidatesOutsideTopListsStillUseTwoRequests(): Unit =
+        runBlocking {
+            val listed = (1..130).toList()
+            val games =
+                listOf(
+                    game(1),
+                    // A tail listing released recently, and one released long ago, which IGDB filters out.
+                    game(125, releasedDaysAgo = 6),
+                    game(126),
+                    // Event games no popularity signal lists: one with interest, one obscure.
+                    game(501, hypes = 60),
+                    game(502, hypes = 0),
+                )
+            val stub =
+                StubIgdb(
+                    games = games,
+                    events = """[{"id":1,"start_time":${now - 2 * day},"end_time":${now - day},"games":[501,502,1]}]""",
+                    primitives = PopularitySignal.entries.associate { it.typeId to listed },
+                    // A recent release absent from every popularity list.
+                    recent = listOf(game(900, releasedDaysAgo = 4, hypes = 80)),
+                )
+            val feed = ids(service(stub, MutableClock(now * 1000)).trending())
+            assertEquals(setOf(1, 125, 501, 900), feed.toSet())
+            assertEquals(1 to 1, stub.discoveryCalls.get() to stub.hydrationCalls.get())
+            val hydration = stub.bodies.last()
+            assertContains(hydration, "query games \"tail\" {")
+            assertContains(hydration, "query games \"showcased\" {")
+            assertContains(hydration, "where id = (501,502) & version_parent = null")
+            assertTrue("900" !in hydration, "recent releases arrive with discovery and are not hydrated again")
+        }
+
+    @Test
+    fun expiredFeedsRefreshWithCurrentData(): Unit =
+        runBlocking {
+            val stub = StubIgdb()
+            val clock = MutableClock(now * 1000)
+            val service = service(stub, clock)
+            assertEquals(listOf(2, 3, 4, 1), ids(service.trending()))
+            stub.recent = listOf(game(900, releasedDaysAgo = 1, hypes = 200))
+            clock.nowMillis += 29 * 60 * 1000L
+            assertEquals(listOf(2, 3, 4, 1), ids(service.trending()), "fresh entries are served from cache")
+            clock.nowMillis += 2 * 60 * 1000L
+            assertContains(ids(service.trending()), 900)
+            assertEquals(2 to 2, stub.discoveryCalls.get() to stub.hydrationCalls.get())
         }
 
     @Test
@@ -412,9 +608,9 @@ class TrendingTest {
             val noSignals = StubIgdb(primitives = emptyMap())
             assertEquals(ResponseCache.LoadResult.Uncached(502), service(noSignals, clock).trending())
             assertEquals(1, noSignals.discoveryCalls.get() + noSignals.hydrationCalls.get())
-            // Only established games with modest attention: nothing qualifies, so nothing is cached.
+            // Only an established game far down every list: nothing qualifies, so nothing is cached.
             val weak =
-                StubIgdb(primitives = PopularitySignal.entries.associate { it.typeId to (101..150).toList() + 1 })
+                StubIgdb(primitives = PopularitySignal.entries.associate { it.typeId to (101..290).toList() + 1 })
             assertEquals(ResponseCache.LoadResult.Uncached(502), service(weak, clock).trending())
         }
 
@@ -447,7 +643,6 @@ class TrendingTest {
                     igdb,
                     GiveawayService(stub),
                     RecommendationService(igdb, log = {}),
-                    PopularNowService(igdb, clock, log = {}),
                     TrendingService(igdb, clock, log = {}),
                 )
             }
@@ -466,10 +661,42 @@ class TrendingTest {
             )
             val port = items.first { it.getValue("id").jsonPrimitive.int == 4 }
             assertEquals("PS5", port.getValue("platform").jsonPrimitive.content)
-            for (query in listOf("pageSize=20", "limit=5", "id=1")) {
+            // Pages are cut from the same cached feed: no further IGDB requests.
+            val calls = stub.discoveryCalls.get() to stub.hydrationCalls.get()
+
+            suspend fun ids(query: String) =
+                Json
+                    .parseToJsonElement(client.get("https://localhost/v1/games/trending?$query").bodyAsText())
+                    .jsonArray
+                    .map {
+                        it.jsonObject
+                            .getValue("id")
+                            .jsonPrimitive.int
+                    }
+            assertEquals(listOf(2, 3, 4, 1), ids("page=1&pageSize=20"))
+            assertEquals(listOf(4, 1), ids("page=2&pageSize=2"))
+            assertEquals(emptyList(), ids("page=5&pageSize=20"))
+            assertEquals(calls, stub.discoveryCalls.get() to stub.hydrationCalls.get())
+            val paged = client.get("https://localhost/v1/games/trending?page=2&pageSize=2")
+            assertEquals(HOME_FEED_CACHE_CONTROL, paged.headers[HttpHeaders.CacheControl])
+            val invalidQueries =
+                listOf(
+                    "pageSize=0",
+                    "pageSize=51",
+                    "page=0",
+                    "page=01",
+                    "page=+2",
+                    "page=6",
+                    "page=1&page=2",
+                    "limit=5",
+                    "id=1",
+                )
+            for (query in invalidQueries) {
                 val invalid = client.get("https://localhost/v1/games/trending?$query")
                 assertEquals(HttpStatusCode.BadRequest, invalid.status, query)
             }
+            // The legacy Popular Right Now endpoint is gone.
+            assertEquals(HttpStatusCode.NotFound, client.get("https://localhost/v1/games/popular-now").status)
             stub.failure = HttpStatusCode.ServiceUnavailable
             clock.nowMillis += 31 * 60 * 1000L
             val stale = client.get("https://localhost/v1/games/trending")
@@ -515,7 +742,13 @@ class TrendingTest {
         events: List<IgdbEvent>,
     ): List<TrendingGame> {
         val attention = TrendingRanking.attention(signals)
-        val hydrated = TrendingRanking.hydrationOrder(attention).associateWith { games.getValue(it) }
-        return TrendingRanking.rank(attention, hydrated, TrendingRanking.showcaseAges(events, now), now)
+        val showcases = TrendingRanking.showcaseAges(events, now)
+        val plan = TrendingRanking.hydrationPlan(attention, emptySet(), showcases)
+        // IGDB returns at most the pool limits, as a full-size live hydration would.
+        val hydratedIds =
+            plan.attentionIds + plan.tailIds.take(TrendingRanking.TAIL_LIMIT) +
+                plan.showcaseIds.take(TrendingRanking.SHOWCASE_LIMIT)
+        val hydrated = hydratedIds.associateWith { games.getValue(it) }
+        return TrendingRanking.rank(attention, hydrated, showcases, now)
     }
 }

@@ -13,7 +13,6 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import java.time.Clock
 
@@ -142,10 +141,8 @@ class IgdbService(
         return when (path) {
             "/v1/games/details" -> {
                 val id = positive(input["id"], Int.MAX_VALUE.toLong()) ?: return null
-                // similar_games stays for released clients; current clients use /v1/games/recommendations.
                 "/v4/games" to (
-                    "fields name,cover.url,similar_games.name,similar_games.cover.url," +
-                        "videos.video_id,genres.name,summary,storyline,platforms.name,websites.url," +
+                    "fields name,cover.url,videos.video_id,genres.name,summary,storyline,platforms.name,websites.url," +
                         "websites.type,screenshots.animated,screenshots.url,first_release_date," +
                         "release_dates.human;where id = $id;limit 15;"
                 )
@@ -160,24 +157,6 @@ class IgdbService(
                         " & (game_status = null | game_status != 6) & (themes = null | themes != (42));" +
                         "sort hypes desc;limit $size;"
                 )
-            }
-            "/v1/games/popular" -> {
-                val size = positive(input["pageSize"], 50) ?: return null
-                val ids = runCatching { input["ids"]?.jsonArray }.getOrNull() ?: return null
-                if (ids.isEmpty() || ids.size > 50) return null
-                val parsed = ids.map { positive(it, Int.MAX_VALUE.toLong()) ?: return null }
-                "/v4/games" to (
-                    "fields name,platforms.name,cover.url;" +
-                        "where id = (${parsed.joinToString(", ")}) & age_ratings != null " +
-                        "& age_ratings.rating_category != 7 & age_ratings.rating_category != 26 " +
-                        "& age_ratings.rating_category != 38;sort hypes desc;limit $size;"
-                )
-            }
-            "/v1/games/popularity" -> {
-                if (positive(input["type"], 34) != 34L) return null
-                val size = positive(input["pageSize"], 50) ?: return null
-                "/v4/popularity_primitives" to
-                    "fields game_id;where popularity_type = 34;sort value desc;limit $size;"
             }
             else -> null
         }

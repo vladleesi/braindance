@@ -3,6 +3,24 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.10.0
+
+- Remove endpoints and request forms that only released clients used: `/v1/games/popular-now`,
+  `/v1/games/popular`, `/v1/games/popularity`, JSON POST bodies for game endpoints, the `currentTimestamp`
+  parameter of `/v1/games/anticipated`, and `similar_games` in `/v1/games/details`. Every endpoint is GET-only.
+- Fill `/v1/games/trending`, Home's Popular Right Now feed, with up to 20 released games when enough credible
+  candidates exist; it previously returned about five. Upcoming games stay in Most Anticipated. Attention adds IGDB
+  Want to Play and weights discovery (Visits 40%, Want to Play and Twitch 20% each, Playing and Steam 10% each) with
+  a flatter rank curve. Recent dated activity boosts a game by at most 75% instead of gating it; established games
+  rank by half their attention, need meaningful attention, and are capped at six per 20 games.
+- Add optional `page` and `pageSize` parameters to `/v1/games/trending` over up to 100 ranked games; requests
+  without them return the first 20 as before.
+- Consider recent releases with IGDB hypes and recent event games outside the popularity top lists, and listed recent
+  releases beyond the 100 strongest. Popularity lists are read to depth 200. A cache miss still makes two IGDB
+  requests, and its log line now reports how many candidates survive each stage.
+- Stop excluding games rated GRAC 19+ or ACB R 18+; these regional mature ratings hid mainstream games, including
+  ones ESRB rates T. ESRB AO and erotic games remain excluded.
+
 ## 0.9.0
 
 - Add `GET /v1/games/trending`, a Trending Now feed that weighs current attention from IGDB, Twitch, and Steam by

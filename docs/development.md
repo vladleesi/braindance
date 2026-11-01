@@ -21,7 +21,7 @@ Keep platform APIs in platform source sets or hosts and Twitch credentials on th
 ## Configure client builds
 
 Data screens need a reachable backend. Use one available for development or follow the
-[backend setup](../backend/README.md#run-and-package), including its Twitch credential configuration.
+[backend setup](../backend/README.md#run-locally), including its Twitch credential configuration.
 GamerPower needs no key. Keep credentials out of Git, client builds, container images, and `local.properties`.
 
 Create an ignored root `local.properties`:
@@ -75,8 +75,8 @@ Documentation-only changes need link and accuracy checks, not an app build.
 
 ## Versions and releases
 
-Frontend version `0.6.0` and its shared Android/iOS build number come from `version.xcconfig`.
-Backend version `0.9.0` is independent, in `backend/build.gradle.kts`. Runtime changes require the affected product's
+Frontend version `0.6.1` and its shared Android/iOS build number come from `version.xcconfig`.
+Backend version `0.10.0` is independent, in `backend/build.gradle.kts`. Runtime changes require the affected product's
 version, changelog, and README updates; documentation, tests, formatting, and CI-only changes need no version bump.
 See [release conventions and publication](releases.md) for the full workflow and recovery steps.
 
@@ -85,7 +85,7 @@ See [release conventions and publication](releases.md) for the full workflow and
 For Web, configure the backend URL, run `./gradlew :webApp:wasmJsBrowserDistribution`, and serve
 `webApp/build/dist/wasmJs/productionExecutable` over HTTPS with compression and the `application/wasm` MIME type.
 Cache fingerprinted assets immutably; keep HTML revalidatable. Allow the exact website origin in backend CORS;
-allowlist changes need no client rebuild. For the server, see [backend hosting](../backend/README.md#hosting).
+allowlist changes need no client rebuild. For the server, see [backend hosting](../backend/README.md#package-and-host).
 
 Before enabling publication workflows for your own infrastructure, replace or disable their existing deployment
 steps; they do not configure a new host automatically.

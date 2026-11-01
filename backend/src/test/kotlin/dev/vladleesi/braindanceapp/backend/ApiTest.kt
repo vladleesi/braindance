@@ -24,6 +24,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 
 class ApiTest {
@@ -43,7 +44,7 @@ class ApiTest {
     }
 
     @Test
-    fun getQueriesMatchLegacyPostAndRejectInvalidParameters() =
+    fun getQueriesRejectInvalidParametersAndRemovedRequests() =
         testApplication {
             val queries = mutableListOf<String>()
             val (remote, http) =
@@ -59,28 +60,10 @@ class ApiTest {
                     }
                 }
             application { api(config, IgdbService(remote, RateLimiter { true }, config), GiveawayService(remote)) }
-            val cases =
-                mapOf(
-                    "details?id=42" to """{"id":42}""",
-                    "anticipated?currentTimestamp=1780000000&pageSize=20" to
-                        """{"currentTimestamp":1780000000,"pageSize":20}""",
-                    "popular?ids=42,43&pageSize=20" to """{"ids":[42,43],"pageSize":20}""",
-                    "popularity?type=34&pageSize=40" to """{"type":34,"pageSize":40}""",
-                )
-            for ((endpoint, body) in cases) {
-                val before = queries.size
-                val get = client.get("/v1/games/$endpoint")
-                val post =
-                    client.post("/v1/games/${endpoint.substringBefore('?')}") {
-                        header(HttpHeaders.ContentType, "application/json")
-                        setBody(body)
-                    }
-                assertEquals(HttpStatusCode.OK, get.status)
-                assertEquals(post.bodyAsText(), get.bodyAsText())
-                // The response cache is keyed by the exact IGDB query, so one upstream call proves both are identical.
-                assertEquals(before + 1, queries.size, endpoint)
-                assertEquals(PRIVATE_CACHE_CONTROL, post.headers[HttpHeaders.CacheControl])
+            for (endpoint in listOf("details?id=42", "anticipated?pageSize=20")) {
+                assertEquals(HttpStatusCode.OK, client.get("/v1/games/$endpoint").status, endpoint)
             }
+            assertContains(queries.last(), "first_release_date > ")
             val count = queries.size
             for (endpoint in listOf(
                 "details?id=0",
@@ -88,21 +71,28 @@ class ApiTest {
                 "details?id=42&token=dummy",
                 "details?id=2147483648",
                 "anticipated?pageSize=51",
-                "popular?ids=1,0&pageSize=20",
-                "popular?ids=${(1..51).joinToString(",")}&pageSize=20",
-                "popularity?type=1&pageSize=20",
+                "anticipated?currentTimestamp=1780000000&pageSize=20",
             )) {
                 val response = client.get("/v1/games/$endpoint")
                 assertEquals(HttpStatusCode.BadRequest, response.status, endpoint)
                 assertEquals(PRIVATE_CACHE_CONTROL, response.headers[HttpHeaders.CacheControl])
             }
+            // Requests only released clients sent are gone: legacy endpoints and JSON POST bodies.
+            for (endpoint in listOf(
+                "popular?ids=42,43&pageSize=20",
+                "popularity?type=34&pageSize=40",
+                "popular-now",
+            )) {
+                assertEquals(HttpStatusCode.NotFound, client.get("/v1/games/$endpoint").status, endpoint)
+            }
+            val post =
+                client.post("/v1/games/details") {
+                    header(HttpHeaders.ContentType, "application/json")
+                    setBody("""{"id":42}""")
+                }
+            assertEquals(HttpStatusCode.NotFound, post.status)
+            assertEquals(PRIVATE_CACHE_CONTROL, post.headers[HttpHeaders.CacheControl])
             assertEquals(count, queries.size)
-            assertEquals(HttpStatusCode.OK, client.get("/v1/games/anticipated?pageSize=20").status)
-            assertContains(queries.last(), "first_release_date > ")
-            assertEquals(
-                HttpStatusCode.OK,
-                client.get("/v1/games/popular?ids=${(1..50).joinToString(",")}&pageSize=50").status,
-            )
             http.close()
         }
 
@@ -127,31 +117,7 @@ class ApiTest {
                 Json.parseToJsonElement(health.bodyAsText()),
             )
             assertEquals(HttpStatusCode.BadRequest, client.get("/v1/games/details").status)
-            assertEquals(HttpStatusCode.UnsupportedMediaType, client.post("/v1/games/details").status)
-            assertEquals(
-                HttpStatusCode.BadRequest,
-                client
-                    .post("/v1/games/details") {
-                        header(HttpHeaders.ContentType, "application/json")
-                        setBody("{")
-                    }.status,
-            )
-            assertEquals(
-                HttpStatusCode.BadRequest,
-                client
-                    .post("/v1/games/details") {
-                        header(HttpHeaders.ContentType, "application/json")
-                        setBody("""{"id":0}""")
-                    }.status,
-            )
-            assertEquals(
-                HttpStatusCode.PayloadTooLarge,
-                client
-                    .post("/v1/games/details") {
-                        header(HttpHeaders.ContentType, "application/json")
-                        setBody("x".repeat(2049))
-                    }.status,
-            )
+            assertEquals(HttpStatusCode.NotFound, client.post("/v1/games/details").status)
             val preflight = client.options("/v1/games/details") { header(HttpHeaders.Origin, "https://app.example") }
             assertEquals(HttpStatusCode.NoContent, preflight.status)
             assertEquals("https://app.example", preflight.headers["Access-Control-Allow-Origin"])
@@ -194,25 +160,11 @@ class ApiTest {
                     }
                 }
             application { api(config, IgdbService(remote, RateLimiter { true }, config), GiveawayService(remote)) }
-            val cases =
-                mapOf(
-                    "details" to """{"id":42}""",
-                    "anticipated" to """{"currentTimestamp":1780000000,"pageSize":20}""",
-                    "popular" to """{"ids":[42,43],"pageSize":20}""",
-                    "popularity" to """{"type":34,"pageSize":40}""",
-                )
-            for ((endpoint, body) in cases) {
-                assertEquals(
-                    HttpStatusCode.OK,
-                    client
-                        .post("/v1/games/$endpoint") {
-                            header(HttpHeaders.ContentType, "application/json")
-                            setBody(body)
-                        }.status,
-                )
+            for (endpoint in listOf("details?id=42", "anticipated?pageSize=20")) {
+                assertEquals(HttpStatusCode.OK, client.get("/v1/games/$endpoint").status, endpoint)
             }
             assertEquals(1, tokenCalls)
-            assertEquals(4, queries.size)
+            assertEquals(2, queries.size)
             val service = IgdbService(remote, RateLimiter { true }, config)
             val details =
                 service.buildQuery(
@@ -231,14 +183,7 @@ class ApiTest {
                 ).second,
                 "where id = 42;",
             )
-            val popularity =
-                service.buildQuery(
-                    "/v1/games/popularity",
-                    Json.parseToJsonElement("""{"type":34,"pageSize":40}""") as JsonObject,
-                )
-            assertEquals("/v4/popularity_primitives", popularity?.first)
-            assertNotNull(popularity)
-            assertContains(popularity.second, "where popularity_type = 34;sort value desc;limit 40;")
+            assertFalse("similar_games" in details.second, "current clients use /v1/games/recommendations")
             http.close()
         }
 
@@ -363,14 +308,7 @@ class ApiTest {
             application { api(missing, IgdbService(remote, RateLimiter { true }, missing), GiveawayService(remote)) }
             assertEquals(HttpStatusCode.ServiceUnavailable, client.get("/healthz").status)
             assertEquals(HttpStatusCode.OK, client.get("/health").status)
-            assertEquals(
-                HttpStatusCode.ServiceUnavailable,
-                client
-                    .post("/v1/games/details") {
-                        header(HttpHeaders.ContentType, "application/json")
-                        setBody("""{"id":42}""")
-                    }.status,
-            )
+            assertEquals(HttpStatusCode.ServiceUnavailable, client.get("/v1/games/details?id=42").status)
             assertEquals(
                 HttpStatusCode.NoContent,
                 client
@@ -423,11 +361,7 @@ class ApiTest {
                     }
                 }
             application { api(config, IgdbService(remote, RateLimiter { true }, config), GiveawayService(remote)) }
-            val game =
-                client.post("/v1/games/details") {
-                    header(HttpHeaders.ContentType, "application/json")
-                    setBody("""{"id":42}""")
-                }
+            val game = client.get("/v1/games/details?id=42")
             assertEquals(HttpStatusCode.PayloadTooLarge, game.status)
             assertEquals("""{"error":"Query too large"}""", game.bodyAsText())
             assertEquals(HttpStatusCode.BadGateway, client.get("/v1/giveaways").status)

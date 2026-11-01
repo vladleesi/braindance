@@ -30,15 +30,14 @@ internal const val PUBLIC_CACHE_CONTROL = "public, max-age=1200"
 internal const val RECOMMENDATIONS_CACHE_CONTROL = "public, max-age=1200, s-maxage=86400"
 
 // IGDB refreshes popularity primitives daily. Browsers keep the standard 20 minutes because they cannot be purged;
-// the edge keeps the Popular Right Now and Trending Now feeds for a quarter of that period, avoiding origin misses and
-// cold starts per edge location.
+// the edge keeps the Popular Right Now feed for a quarter of that period, avoiding origin misses and cold starts per
+// edge location.
 internal const val HOME_FEED_CACHE_CONTROL = "public, max-age=1200, s-maxage=21600"
 
 /** Public cache lifetimes that differ from [PUBLIC_CACHE_CONTROL], keyed by registered route. */
 private val routeCacheControl =
     mapOf(
         RECOMMENDATIONS_PATH to RECOMMENDATIONS_CACHE_CONTROL,
-        POPULAR_NOW_PATH to HOME_FEED_CACHE_CONTROL,
         TRENDING_PATH to HOME_FEED_CACHE_CONTROL,
     )
 internal const val ORIGIN_SECRET_HEADER = "X-Origin-Verify"
@@ -139,7 +138,7 @@ private fun ApplicationCall.canCachePublicResponse(
         mapOf(
             "vary" to "Origin",
             "access-control-allow-origin" to origins?.singleOrNull(),
-            "access-control-allow-methods" to "GET, POST, OPTIONS",
+            "access-control-allow-methods" to "GET, OPTIONS",
             "access-control-allow-headers" to "Content-Type",
             "access-control-max-age" to "86400",
         )

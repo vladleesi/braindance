@@ -13,34 +13,27 @@ import io.ktor.server.request.host
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
 import io.ktor.server.request.port
-import io.ktor.server.request.receiveChannel
 import io.ktor.server.request.uri
 import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import io.ktor.utils.io.readAvailable
 import kotlinx.coroutines.CancellationException
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import java.io.ByteArrayOutputStream
 import java.net.URI
 import java.time.Instant
 
 internal val gameQueryParameters =
     mapOf(
         "/v1/games/details" to setOf("id"),
-        "/v1/games/anticipated" to setOf("currentTimestamp", "pageSize"),
-        "/v1/games/popular" to setOf("ids", "pageSize"),
-        "/v1/games/popularity" to setOf("type", "pageSize"),
+        "/v1/games/anticipated" to setOf("pageSize"),
     )
 
 internal const val RECOMMENDATIONS_PATH = "/v1/games/recommendations"
-internal const val POPULAR_NOW_PATH = "/v1/games/popular-now"
 internal const val TRENDING_PATH = "/v1/games/trending"
 internal const val GIVEAWAY_DETAILS_ROUTE = "/v1/giveaways/{id}"
 
@@ -52,8 +45,7 @@ internal val routeQueryParameters: Map<String, Set<String>> =
     gameQueryParameters +
         mapOf(
             RECOMMENDATIONS_PATH to setOf("id", "limit"),
-            POPULAR_NOW_PATH to emptySet(),
-            TRENDING_PATH to emptySet(),
+            TRENDING_PATH to setOf("page", "pageSize"),
             "/v1/giveaways" to emptySet(),
             GIVEAWAY_DETAILS_ROUTE to emptySet(),
             "/v1/giveaways/image" to setOf("url"),
@@ -78,7 +70,7 @@ fun Application.api(
 ) {
     val recommendations = RecommendationService(igdb)
     monitor.subscribe(ApplicationStopped) { recommendations.close() }
-    api(config, igdb, giveaways, recommendations, PopularNowService(igdb), TrendingService(igdb))
+    api(config, igdb, giveaways, recommendations, TrendingService(igdb))
 }
 
 // Each service is a separate dependency so tests can substitute clocks and upstreams per feature.
@@ -88,7 +80,6 @@ internal fun Application.api(
     igdb: IgdbService,
     giveaways: GiveawayService,
     recommendations: RecommendationService,
-    popularNow: PopularNowService,
     trending: TrendingService,
 ) {
     val backendVersion =
@@ -135,9 +126,8 @@ internal fun Application.api(
                         }
                         path == RECOMMENDATIONS_PATH && method == "GET" ->
                             respondRecommendations(recommendations, config)
-                        path == POPULAR_NOW_PATH && method == "GET" -> respondFeed(config) { popularNow.popularNow() }
-                        path == TRENDING_PATH && method == "GET" -> respondFeed(config) { trending.trending() }
-                        path in gameQueryParameters && method in setOf("GET", "POST") -> respondGame(path, igdb, config)
+                        path == TRENDING_PATH && method == "GET" -> respondTrending(trending, config)
+                        path in gameQueryParameters && method == "GET" -> respondGame(path, igdb, config)
                         path.startsWith("/v1/giveaways") && method == "GET" -> {
                             if (path == "/v1/giveaways/image") {
                                 respondImage(giveaways)
@@ -177,49 +167,25 @@ private suspend fun RoutingContext.respondGame(
     igdb: IgdbService,
     config: BackendConfig,
 ) {
-    val get = call.request.httpMethod.value == "GET"
-    val contentType = call.request.headers[HttpHeaders.ContentType].orEmpty()
-    if (!get && !contentType.startsWith("application/json")) {
-        respondJson(415, """{"error":"Expected application/json"}""")
-        return
-    }
     if (!config.credentialsAvailable) {
         respondJson(503, """{"error":"Backend credentials unavailable"}""")
         return
     }
     val input =
-        if (get) {
-            gameInput(path) ?: run {
-                respondJson(400, """{"error":"Invalid request"}""")
-                return
-            }
-        } else {
-            val body =
-                try {
-                    readRequest(2048)
-                } catch (_: BodyTooLarge) {
-                    respondJson(413, """{"error":"Query too large"}""")
-                    return
-                }
-            try {
-                Json.parseToJsonElement(body.decodeToString())
-            } catch (_: Exception) {
-                respondJson(400, """{"error":"Invalid JSON"}""")
-                return
-            }
+        gameInput(path) ?: run {
+            respondJson(400, """{"error":"Invalid request"}""")
+            return
         }
     val result =
         try {
-            (input as? JsonObject)?.let { igdb.query(path, it) } ?: ApiResult(400)
+            igdb.query(path, input)
         } catch (_: BodyTooLarge) {
             respondJson(413, """{"error":"Query too large"}""")
             return
         }
     when (result.status) {
         200 -> {
-            if (get) {
-                call.attributes.put(publicResponse, Unit)
-            }
+            call.attributes.put(publicResponse, Unit)
             respondJson(200, checkNotNull(result.body).decodeToString())
         }
         400 -> respondJson(400, """{"error":"Invalid request"}""")
@@ -263,13 +229,27 @@ private suspend fun RoutingContext.respondRecommendations(
     }
 }
 
-/** Serves a ranked home feed that has one canonical URL. */
-private suspend fun RoutingContext.respondFeed(
+/**
+ * Serves one page of the Popular Right Now feed. Without parameters it is the first 20 games, so current clients
+ * share one cache entry; `page` and `pageSize` accept only canonical positive integers, so each page has one URL.
+ */
+private suspend fun RoutingContext.respondTrending(
+    trending: TrendingService,
     config: BackendConfig,
-    load: suspend () -> ResponseCache.LoadResult,
 ) {
-    // The feed has one canonical URL so every visitor shares one cache entry.
-    if (call.request.uri.length > 2048 || !call.request.queryParameters.isEmpty()) {
+    val parameters = call.request.queryParameters
+    val accepted = routeQueryParameters.getValue(TRENDING_PATH)
+    val valid =
+        call.request.uri.length <= 2048 &&
+            parameters.entries().all { it.key in accepted && it.value.size == 1 }
+    val pageSize = if (valid) feedNumber(parameters["pageSize"], TrendingService.DEFAULT_PAGE_SIZE) else null
+    val page = if (valid) feedNumber(parameters["page"], 1) else null
+    val inRange =
+        pageSize != null &&
+            page != null &&
+            pageSize <= TrendingService.MAX_PAGE_SIZE &&
+            (page - 1).toLong() * pageSize < TrendingRanking.FEED_GAMES
+    if (!inRange) {
         respondJson(400, """{"error":"Invalid request"}""")
         return
     }
@@ -277,7 +257,7 @@ private suspend fun RoutingContext.respondFeed(
         respondJson(503, """{"error":"Backend credentials unavailable"}""")
         return
     }
-    when (val result = load()) {
+    when (val result = trending.trending(page, pageSize)) {
         is ResponseCache.LoadResult.Hit -> {
             // A stale fallback stays private so edge caches do not extend it.
             if (!result.stale) call.attributes.put(publicResponse, Unit)
@@ -289,6 +269,16 @@ private suspend fun RoutingContext.respondFeed(
                 else -> respondJson(502, """{"error":"Upstream unavailable"}""")
             }
     }
+}
+
+/** [default] when absent; a positive decimal without sign or leading zeros; otherwise null. */
+private fun feedNumber(
+    value: String?,
+    default: Int,
+): Int? {
+    if (value == null) return default
+    if (!Regex("[1-9][0-9]{0,2}").matches(value)) return null
+    return value.toInt()
 }
 
 /** Matches the `id`, `name`, and `cover.url` shape of IGDB game objects already used by clients. */
@@ -313,17 +303,11 @@ private fun RoutingContext.gameInput(path: String): JsonObject? {
     }
     val input = mutableMapOf<String, JsonElement>()
     for ((name, values) in parameters.entries()) {
-        if (name == "ids") {
-            val ids = values.single().split(',')
-            if (ids.isEmpty() || ids.size > 50) return null
-            input[name] = JsonArray(ids.map { JsonPrimitive(it.toLongOrNull() ?: return null) })
-        } else {
-            input[name] = JsonPrimitive(values.single().toLongOrNull() ?: return null)
-        }
+        input[name] = JsonPrimitive(values.single().toLongOrNull() ?: return null)
     }
-    // A stable feed URL lets different startups share an edge entry; explicit timestamps remain supported.
-    // The default is rounded to the in-process cache lifetime so requests in one period share a cached response.
-    if (path == "/v1/games/anticipated" && "currentTimestamp" !in input) {
+    // A stable feed URL lets different startups share an edge entry. The timestamp is rounded to the in-process cache
+    // lifetime so requests in one period share a cached response.
+    if (path == "/v1/games/anticipated") {
         val periodSeconds = IgdbService.RESPONSE_TTL_MILLIS / 1000
         input["currentTimestamp"] = JsonPrimitive(Instant.now().epochSecond / periodSeconds * periodSeconds)
     }
@@ -379,7 +363,7 @@ internal fun validGiveawayId(path: String): Boolean {
 
 private fun RoutingContext.cors(origin: String) {
     call.response.headers.append("Access-Control-Allow-Origin", origin)
-    call.response.headers.append("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    call.response.headers.append("Access-Control-Allow-Methods", "GET, OPTIONS")
     call.response.headers.append("Access-Control-Allow-Headers", "Content-Type")
     call.response.headers.append("Access-Control-Max-Age", "86400")
 }
@@ -393,17 +377,4 @@ private suspend fun RoutingContext.respondJson(
         ContentType.parse("application/json; charset=utf-8"),
         HttpStatusCode.fromValue(status),
     )
-}
-
-private suspend fun RoutingContext.readRequest(limit: Int): ByteArray {
-    val channel = call.receiveChannel()
-    val output = ByteArrayOutputStream()
-    val buffer = ByteArray(8192)
-    while (true) {
-        val count = channel.readAvailable(buffer)
-        if (count == -1) break
-        if (output.size() + count > limit) throw BodyTooLarge()
-        output.write(buffer, 0, count)
-    }
-    return output.toByteArray()
 }

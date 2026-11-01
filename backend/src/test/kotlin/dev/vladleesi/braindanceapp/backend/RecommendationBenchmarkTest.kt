@@ -45,7 +45,6 @@ class RecommendationBenchmarkTest {
                     igdbService,
                     GiveawayService(igdb),
                     service,
-                    PopularNowService(igdbService),
                     TrendingService(igdbService),
                 )
             }

@@ -50,7 +50,7 @@ fun main() {
             embeddedServer(Netty, port = config.port, host = "0.0.0.0") {
                 monitor.subscribe(ServerReady) { startup.checkpoint("server_ready") }
                 startup.measure("application_routes") {
-                    api(config, igdb, giveaways, recommendations, PopularNowService(igdb), TrendingService(igdb))
+                    api(config, igdb, giveaways, recommendations, TrendingService(igdb))
                 }
             }
         }

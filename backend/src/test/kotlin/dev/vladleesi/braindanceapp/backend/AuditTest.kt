@@ -183,19 +183,12 @@ class AuditTest {
             ),
             query("/v1/games/anticipated", """{"currentTimestamp":4102444800,"pageSize":50}"""),
         )
-        assertEquals(
-            "/v4/games" to (
-                "fields name,platforms.name,cover.url;where id = (42, 43) & age_ratings != null " +
-                    "& age_ratings.rating_category != 7 & age_ratings.rating_category != 26 " +
-                    "& age_ratings.rating_category != 38;sort hypes desc;limit 20;"
-            ),
-            query("/v1/games/popular", """{"ids":[42,43],"pageSize":20}"""),
-        )
         for (json in listOf("""{"id":"42"}""", """{"id":2147483648}""", """{"id":1.5}""")) {
             assertNull(query("/v1/games/details", json))
         }
-        assertNull(query("/v1/games/popular", """{"ids":[],"pageSize":20}"""))
-        assertNull(query("/v1/games/popularity", """{"type":33,"pageSize":20}"""))
+        // Released-client endpoints are no longer built.
+        assertNull(query("/v1/games/popular", """{"ids":[42],"pageSize":20}"""))
+        assertNull(query("/v1/games/popularity", """{"type":34,"pageSize":20}"""))
     }
 
     private fun response(

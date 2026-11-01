@@ -121,7 +121,7 @@ internal object RecommendationQueries {
      * and updates are not recommended. Missing types are kept so incomplete entries are not silently dropped.
      */
     val recommendableGameTypes = setOf(0, 4, 8, 9, 10)
-    private val gameTypeFilter = "(game_type = (${recommendableGameTypes.joinToString(",")}) | game_type = null)"
+    val gameTypeFilter = "(game_type = (${recommendableGameTypes.joinToString(",")}) | game_type = null)"
     const val EROTIC_THEME = 42
 
     const val DIRECT_LIMIT = 10

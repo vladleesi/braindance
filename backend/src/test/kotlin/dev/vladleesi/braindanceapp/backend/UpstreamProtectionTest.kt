@@ -100,7 +100,7 @@ class UpstreamProtectionTest {
                     List(50) { index ->
                         async {
                             client
-                                .get("/v1/games/popularity?type=34&pageSize=40") {
+                                .get("/v1/games/details?id=42") {
                                     header(HttpHeaders.Cookie, "s=$index")
                                 }.status
                         }
