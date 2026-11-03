@@ -14,7 +14,13 @@ string|home_screen_popular_most_anticipated|TW9zdCBBbnRpY2lwYXRlZA==
 string|home_screen_popular_right_now|UG9wdWxhciBSaWdodCBOb3c=
 string|horizontal_list_next|TmV4dCBpdGVtcw==
 string|horizontal_list_previous|UHJldmlvdXMgaXRlbXM=
+string|profile_open_source_title|QnJhaW5kYW5jZSBpcyBvcGVuIHNvdXJjZQ==
+string|profile_screen_title|UHJvZmlsZQ==
 string|profile_screen_version|diUxJHM=
+string|profile_support_copy|Q29weSBsaW5r
+string|profile_support_description|TGlrZSB0aGUgcHJvamVjdD8gU3VwcG9ydCBpdCBvbiBHaXRIdWIu
+string|profile_support_share|U2hhcmU=
+string|profile_support_star|U3RhciBvbiBHaXRIdWI=
 string|trending_reason_full_release|RnVsbCByZWxlYXNl
 string|trending_reason_new_platform|TmV3IHBsYXRmb3Jt
 string|trending_reason_new_release|TmV3IHJlbGVhc2U=
