@@ -4,6 +4,12 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.7.0
+
+### Android, iOS, and Web
+
+- Add an open-source card to Profile with GitHub star and share actions alongside the app version.
+
 ## 0.6.1
 
 ### Android, iOS, and Web

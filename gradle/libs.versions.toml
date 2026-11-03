@@ -26,7 +26,7 @@ ws = "8.21.0"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-android" }
 compose-ui-multiplatform = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-android" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "compose" }
@@ -70,6 +70,9 @@ coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.re
 
 # logger
 logging-napier = { module = "io.github.aakira:napier", version = "2.7.1" }
+
+# Sharing
+sharekit = { module = "dev.vladleesi:kmp-sharekit", version = "0.2.0" }
 
 # koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }

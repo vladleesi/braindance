@@ -5,7 +5,13 @@
     <string name="horizontal_list_next">Next items</string>
 
     <!-- Profile screen -->
+    <string name="profile_screen_title">Profile</string>
     <string name="profile_screen_version">v%1$s</string>
+    <string name="profile_open_source_title">Braindance is open source</string>
+    <string name="profile_support_description">Like the project? Support it on GitHub.</string>
+    <string name="profile_support_star">Star on GitHub</string>
+    <string name="profile_support_share">Share</string>
+    <string name="profile_support_copy">Copy link</string>
 
     <!-- Home screen -->
     <string name="home_screen_popular_right_now">Popular Right Now</string>

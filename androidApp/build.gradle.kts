@@ -65,6 +65,7 @@ kotlin {
 
 dependencies {
     implementation(project(":shared"))
+    implementation(libs.sharekit)
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.runtime)
     implementation(libs.compose.material)

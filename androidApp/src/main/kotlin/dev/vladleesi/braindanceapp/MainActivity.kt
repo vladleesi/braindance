@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.navBar
+import dev.vladleesi.kmpsharekit.ShareKit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,6 +26,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             BraindanceApp()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ShareKit.setActivity(this)
     }
 }
 

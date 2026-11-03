@@ -15,8 +15,8 @@ no installation or technical setup is needed.
 - View game details and discover similar games.
 - Browse giveaways, read their instructions, and follow links to claim them.
 
-Personal tracking, collections, search results, news, and profile features are not available yet;
-their screens are unfinished. Game data comes from IGDB, and giveaways from GamerPower.
+Personal tracking, collections, search results, news, and account management are not available yet.
+Game data comes from IGDB, and giveaways from GamerPower.
 
 ## Platforms
 
@@ -51,7 +51,7 @@ Its independent version is `0.10.1`. See the [backend changelog](backend/CHANGEL
 - [Release guide](docs/releases.md): versioning and publication workflows.
 
 The current frontend source version is
-[0.6.1](https://github.com/vladleesi/braindance/releases/tag/app-v0.6.1).
+[0.7.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.7.0).
 GitHub releases provide source code, not store-ready mobile downloads.
 Developer builds for Android, iOS, and Web are supported; see the development guide for backend configuration.
 

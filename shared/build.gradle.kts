@@ -87,6 +87,8 @@ kotlin {
             implementation(libs.coil.network.ktor)
             // Logger
             implementation(libs.logging.napier)
+            // Sharing
+            implementation(libs.sharekit)
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
@@ -118,6 +120,11 @@ kotlin {
         val iosArm64Test = getByName("iosArm64Test")
         val iosSimulatorArm64Test = getByName("iosSimulatorArm64Test")
     }
+}
+
+dependencies {
+    // The IDE preview renderer runs on Android; commonMain only needs the annotation dependency.
+    add("androidRuntimeClasspath", libs.compose.ui.tooling)
 }
 
 compose.resources {

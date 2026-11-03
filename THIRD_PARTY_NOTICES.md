@@ -20,7 +20,7 @@ requires an explicit user request.
 | Material | Location | License and attribution |
 | --- | --- | --- |
 | Poppins 4.004, five font weights | `shared/src/commonMain/composeResources/font/poppins_*.ttf` | Copyright 2020 The Poppins Project Authors. [SIL OFL 1.1](LICENSES/Poppins-OFL-1.1.txt), retained for the fonts and their modifications. [Upstream](https://github.com/google/fonts/tree/main/ofl/poppins). |
-| Lucide/Feather icon adaptations | `shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui/style/icons/Icon*.kt`, except `IconOpenInNew.kt` | [Lucide ISC](LICENSES/Lucide-ISC.txt) and [Feather MIT](LICENSES/Feather-MIT.txt); both sets of notices are retained through SPDX `ISC AND MIT`. [Upstream artwork](https://github.com/lucide-icons/lucide/tree/0.468.0/icons). |
+| Lucide/Feather icon adaptations | `shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui/style/icons/Icon*.kt`, except `IconOpenInNew.kt`, `IconShare.kt`, and `IconStar.kt` | [Lucide ISC](LICENSES/Lucide-ISC.txt) and [Feather MIT](LICENSES/Feather-MIT.txt); both sets of notices are retained through SPDX `ISC AND MIT`. [Upstream artwork](https://github.com/lucide-icons/lucide/tree/0.468.0/icons). |
 | Google Material open-in-new icon adaptation | Same directory, `IconOpenInNew.kt` | [Apache-2.0](LICENSES/Apache-2.0.txt). [Upstream artwork](https://github.com/google/material-design-icons/blob/master/symbols/web/open_in_new/materialsymbolsoutlined/open_in_new_24px.svg). |
 | Gradle wrapper | `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar` | [Apache-2.0](LICENSES/Apache-2.0.txt). Existing script copyright and license headers are preserved. |
 
@@ -28,6 +28,10 @@ Dependencies and SDKs retain their own terms. Application and container distribu
 copyright, license, and NOTICE material for the exact components shipped, including transitive dependencies,
 native libraries, and container base software. The files above do not constitute a complete binary-release notice
 bundle. Generated license comments alone may omit required full license texts.
+
+Profile sharing uses [ShareKit 0.2.0](https://github.com/vladleesi/kmp-sharekit/tree/v0.2.0)
+(`dev.vladleesi:kmp-sharekit`) under [Apache-2.0](LICENSES/Apache-2.0.txt). Its only declared runtime dependency is
+the Kotlin standard library, already used by the application. Preserve any notices in the published artifacts.
 
 The backend uses the [Jedis 8 client](https://github.com/redis/jedis/tree/v8.0.2) under MIT and an
 [Eclipse Temurin Java 25 runtime](https://adoptium.net/temurin) under GPL-2.0 with the Classpath Exception;
