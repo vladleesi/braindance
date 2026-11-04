@@ -4,6 +4,23 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.7.2
+
+### Android, iOS, and Web
+
+- Explain why content could not load, such as no connection, a slow or busy server, or too many requests, instead
+  of showing technical error text.
+- Show "not found" for a giveaway that has been removed, instead of a generic error.
+- Release a game or giveaway screen's data when you leave it, so browsing many items no longer keeps using more
+  memory.
+- Give image downloads the same timeout and automatic retry as other requests, and size the image cache to the
+  device instead of a fixed 512 MB.
+- Stop writing diagnostic logs in release builds.
+
+### iOS
+
+- Fix a crash when Braindance is opened in a second window on iPad.
+
 ## 0.7.1
 
 ### Android, iOS, and Web
