@@ -8,7 +8,6 @@ import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
-import dev.vladleesi.braindanceapp.logger.BLogger
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayItemModel
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardLabel
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
@@ -16,11 +15,13 @@ import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.formatEndDate
 import dev.vladleesi.braindanceapp.utils.giveawayPlatforms
 import dev.vladleesi.braindanceapp.utils.orZero
+import dev.vladleesi.braindanceapp.utils.suspendRunCatching
 import dev.vladleesi.braindanceapp.utils.toCoverUrl
-import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
@@ -36,10 +37,17 @@ class HomeViewModel(
     private val _trendingNow = MutableStateFlow<HomeState>(HomeState.Loading)
     val trendingNow: StateFlow<HomeState> = _trendingNow.asStateFlow()
 
-    private val handler =
-        CoroutineExceptionHandler { _, exception ->
-            BLogger.error(message = exception.message.orEmpty(), throwable = exception)
-        }
+    private val _isRefreshing = MutableStateFlow(false)
+
+    /** True from a pull-to-refresh until all three sections have finished reloading. */
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    // One running load per section: starting a section again cancels its previous load, so an older response can never
+    // replace a newer one.
+    private var trendingJob: Job? = null
+    private var mostAnticipatedJob: Job? = null
+    private var giveawaysJob: Job? = null
+    private var refreshJob: Job? = null
 
     override fun onLoad() {
         loadTrendingNow()
@@ -48,47 +56,51 @@ class HomeViewModel(
     }
 
     override fun onRefresh() {
+        refreshJob?.cancel()
+        _isRefreshing.value = true
         onLoad()
+        val sections = listOfNotNull(trendingJob, mostAnticipatedJob, giveawaysJob)
+        refreshJob =
+            viewModelScope.launch {
+                sections.joinAll()
+                _isRefreshing.value = false
+            }
     }
 
     fun loadMostAnticipated(pageSize: Int = PAGE_SIZE) {
-        viewModelScope.launch(handler) {
-            runCatching {
-                _mostAnticipated.emit(HomeState.Loading)
-                val gameItems = homeRepo.mostAnticipated(pageSize = pageSize)
-                gameItems.orEmpty().mapperMiniGameCardModel()
-            }.onSuccess { result ->
-                _mostAnticipated.emit(HomeState.Success(result))
-            }.onFailure { throwable ->
-                _mostAnticipated.emit(HomeState.Error(throwable.message.orEmpty()))
+        mostAnticipatedJob =
+            loadSection(mostAnticipatedJob, _mostAnticipated) {
+                homeRepo.mostAnticipated(pageSize = pageSize).orEmpty().mapperMiniGameCardModel()
             }
-        }
     }
 
     fun loadGiveaways(pageSize: Int = PAGE_SIZE) {
-        viewModelScope.launch(handler) {
-            runCatching {
-                _giveaways.emit(HomeState.Loading)
-                val giveaways = gamerPowerRepo.giveaways(pageSize = pageSize)
-                giveaways.orEmpty().mapperGiveawayModel()
-            }.onSuccess { result ->
-                _giveaways.emit(HomeState.Success(result))
-            }.onFailure { throwable ->
-                _giveaways.emit(HomeState.Error(throwable.message.orEmpty()))
+        giveawaysJob =
+            loadSection(giveawaysJob, _giveaways) {
+                gamerPowerRepo.giveaways(pageSize = pageSize).orEmpty().mapperGiveawayModel()
             }
-        }
     }
 
     fun loadTrendingNow() {
-        viewModelScope.launch(handler) {
-            runCatching {
-                _trendingNow.emit(HomeState.Loading)
+        trendingJob =
+            loadSection(trendingJob, _trendingNow) {
                 homeRepo.trendingNow().map { it.toMiniGameCardModel() }
-            }.onSuccess { result ->
-                _trendingNow.emit(HomeState.Success(result))
-            }.onFailure { throwable ->
-                _trendingNow.emit(HomeState.Error(throwable.message.orEmpty()))
             }
+    }
+
+    private fun loadSection(
+        previous: Job?,
+        state: MutableStateFlow<HomeState>,
+        load: suspend () -> List<HomeStateEntity>,
+    ): Job {
+        previous?.cancel()
+        return viewModelScope.launch {
+            state.value = HomeState.Loading
+            state.value =
+                suspendRunCatching { load() }.fold(
+                    onSuccess = { entities -> HomeState.Success(entities) },
+                    onFailure = { throwable -> HomeState.Error(throwable.message.orEmpty()) },
+                )
         }
     }
 

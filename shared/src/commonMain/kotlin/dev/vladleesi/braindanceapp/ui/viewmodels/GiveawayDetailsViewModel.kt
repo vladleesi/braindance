@@ -6,7 +6,8 @@ import androidx.lifecycle.viewModelScope
 import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
-import kotlinx.coroutines.CoroutineExceptionHandler
+import dev.vladleesi.braindanceapp.utils.suspendRunCatching
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,28 +20,27 @@ class GiveawayDetailsViewModel(
     private val _giveawayDetailsState = MutableStateFlow<GiveawayDetailsState>(GiveawayDetailsState.Loading)
     val giveawayDetailsState: StateFlow<GiveawayDetailsState> = _giveawayDetailsState.asStateFlow()
 
-    private val handler =
-        CoroutineExceptionHandler { _, exception ->
-            BLogger.error(message = exception.message.orEmpty(), throwable = exception)
-            _giveawayDetailsState.value = GiveawayDetailsState.Error(exception.message.orEmpty())
-        }
+    // One running load: a refresh cancels the previous one, so an older response can never replace a newer one.
+    private var loadJob: Job? = null
 
     override fun onLoad() {
-        viewModelScope.launch(handler) {
-            runCatching {
-                _giveawayDetailsState.emit(GiveawayDetailsState.Loading)
+        loadJob?.cancel()
+        loadJob =
+            viewModelScope.launch {
+                _giveawayDetailsState.value = GiveawayDetailsState.Loading
                 if (giveawayId == null) {
-                    _giveawayDetailsState.emit(GiveawayDetailsState.Error("Invalid giveaway ID: $giveawayId"))
+                    _giveawayDetailsState.value = GiveawayDetailsState.Error("Invalid giveaway ID: $giveawayId")
                     return@launch
                 }
-                val result = gamerPowerRepo.giveaway(giveawayId)
-                requireNotNull(result)
-            }.onSuccess { result ->
-                _giveawayDetailsState.emit(GiveawayDetailsState.Success(result))
-            }.onFailure { throwable ->
-                _giveawayDetailsState.emit(GiveawayDetailsState.Error(throwable.message.orEmpty()))
+                _giveawayDetailsState.value =
+                    suspendRunCatching { requireNotNull(gamerPowerRepo.giveaway(giveawayId)) }.fold(
+                        onSuccess = { giveaway -> GiveawayDetailsState.Success(giveaway) },
+                        onFailure = { throwable ->
+                            BLogger.error(message = throwable.message.orEmpty(), throwable = throwable)
+                            GiveawayDetailsState.Error(throwable.message.orEmpty())
+                        },
+                    )
             }
-        }
     }
 
     override fun onRefresh() {

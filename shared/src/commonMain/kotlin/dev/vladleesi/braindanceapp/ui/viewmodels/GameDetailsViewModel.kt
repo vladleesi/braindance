@@ -3,6 +3,8 @@
 package dev.vladleesi.braindanceapp.ui.viewmodels
 
 import androidx.lifecycle.viewModelScope
+import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
@@ -12,10 +14,10 @@ import dev.vladleesi.braindanceapp.utils.StoreTypeModel
 import dev.vladleesi.braindanceapp.utils.formatDate
 import dev.vladleesi.braindanceapp.utils.orZero
 import dev.vladleesi.braindanceapp.utils.parentPlatformTypes
+import dev.vladleesi.braindanceapp.utils.suspendRunCatching
 import dev.vladleesi.braindanceapp.utils.toCoverUrl
 import dev.vladleesi.braindanceapp.utils.toStoreTypes
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,48 +35,29 @@ class GameDetailsViewModel(
     /** Loaded independently so a slow or failed recommendation request never delays or replaces the details. */
     val recommendations: StateFlow<RecommendationsState> = _recommendations.asStateFlow()
 
-    private val handler =
-        CoroutineExceptionHandler { _, exception ->
-            BLogger.error(message = exception.message.orEmpty(), throwable = exception)
-            _gameDetailsState.value = GameDetailsState.Error(exception.message.orEmpty())
-        }
+    // One running load each: a refresh cancels the previous loads, so an older response can never replace a newer one.
+    private var detailsJob: Job? = null
+    private var recommendationsJob: Job? = null
 
     override fun onLoad() {
-        viewModelScope.launch(handler) {
-            _gameDetailsState.emit(GameDetailsState.Loading)
-            if (gameId == null) {
-                _gameDetailsState.emit(GameDetailsState.Error("Invalid game ID: $gameId"))
-                return@launch
-            }
-            loadRecommendations(gameId)
-            val game = gameDetailsRepo.gameDetails(gameId.orZero())?.firstOrNull()
-            val gameDetails =
-                GameDetails(
-                    id = game?.id.orZero(),
-                    name = game?.name.orEmpty(),
-                    summary = game?.summary.orEmpty(),
-                    storyline = game?.storyline.orEmpty(),
-                    coverImageUrl =
-                        game
-                            ?.cover
-                            ?.url
-                            ?.toCoverUrl(CoverSize.ORIGINAL)
-                            .orEmpty(),
-                    releaseDate = game?.releaseDates?.firstOrNull()?.human ?: game?.firstReleaseDate?.formatDate(),
-                    platforms = game?.platforms.orEmpty().parentPlatformTypes(),
-                    stores = game?.websites.orEmpty().toStoreTypes(),
-                    genres =
-                        game?.genres.orEmpty().map { genre ->
-                            GenreTag(
-                                id = genre.id.orZero(),
-                                name = genre.name.orEmpty(),
-                            )
+        detailsJob?.cancel()
+        detailsJob =
+            viewModelScope.launch {
+                _gameDetailsState.value = GameDetailsState.Loading
+                if (gameId == null) {
+                    _gameDetailsState.value = GameDetailsState.Error("Invalid game ID: $gameId")
+                    return@launch
+                }
+                loadRecommendations(gameId)
+                _gameDetailsState.value =
+                    suspendRunCatching { gameDetailsRepo.gameDetails(gameId)?.firstOrNull().toGameDetails() }.fold(
+                        onSuccess = { details -> GameDetailsState.Success(details) },
+                        onFailure = { throwable ->
+                            BLogger.error(message = throwable.message.orEmpty(), throwable = throwable)
+                            GameDetailsState.Error(throwable.message.orEmpty())
                         },
-                )
-            _gameDetailsState.emit(
-                GameDetailsState.Success(gameDetails),
-            )
-        }
+                    )
+            }
     }
 
     override fun onRefresh() {
@@ -82,36 +65,63 @@ class GameDetailsViewModel(
     }
 
     private fun loadRecommendations(gameId: Int) {
+        recommendationsJob?.cancel()
         _recommendations.value = RecommendationsState.Loading
-        viewModelScope.launch {
-            val games =
-                try {
-                    gameDetailsRepo.recommendations(gameId)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    // The section is optional: keep the details visible and leave it hidden until a refresh.
-                    BLogger.error(message = "Recommendations unavailable: ${e.message.orEmpty()}", throwable = e)
-                    _recommendations.value = RecommendationsState.Unavailable
-                    return@launch
-                }
-            val cards =
-                games.mapNotNull { game ->
-                    val id = game.id ?: return@mapNotNull null
-                    MiniGameCardModel(
-                        id = id,
-                        title = game.name.orEmpty(),
-                        backgroundImageUrl =
-                            game.cover
-                                ?.url
-                                ?.toCoverUrl(CoverSize.P_720)
-                                .orEmpty(),
+        recommendationsJob =
+            viewModelScope.launch {
+                _recommendations.value =
+                    suspendRunCatching { gameDetailsRepo.recommendations(gameId) }.fold(
+                        onSuccess = { games -> RecommendationsState.Success(games.toCards()) },
+                        onFailure = { throwable ->
+                            // The section is optional: keep the details visible and leave it hidden until a refresh.
+                            BLogger.error(
+                                message = "Recommendations unavailable: ${throwable.message.orEmpty()}",
+                                throwable = throwable,
+                            )
+                            RecommendationsState.Unavailable
+                        },
                     )
-                }
-            _recommendations.value = RecommendationsState.Success(cards)
-        }
+            }
     }
 }
+
+private fun GameItem?.toGameDetails() =
+    GameDetails(
+        id = this?.id.orZero(),
+        name = this?.name.orEmpty(),
+        summary = this?.summary.orEmpty(),
+        storyline = this?.storyline.orEmpty(),
+        coverImageUrl =
+            this
+                ?.cover
+                ?.url
+                ?.toCoverUrl(CoverSize.ORIGINAL)
+                .orEmpty(),
+        releaseDate = this?.releaseDates?.firstOrNull()?.human ?: this?.firstReleaseDate?.formatDate(),
+        platforms = this?.platforms.orEmpty().parentPlatformTypes(),
+        stores = this?.websites.orEmpty().toStoreTypes(),
+        genres =
+            this?.genres.orEmpty().map { genre ->
+                GenreTag(
+                    id = genre.id.orZero(),
+                    name = genre.name.orEmpty(),
+                )
+            },
+    )
+
+private fun List<SimilarGame>.toCards() =
+    mapNotNull { game ->
+        val id = game.id ?: return@mapNotNull null
+        MiniGameCardModel(
+            id = id,
+            title = game.name.orEmpty(),
+            backgroundImageUrl =
+                game.cover
+                    ?.url
+                    ?.toCoverUrl(CoverSize.P_720)
+                    .orEmpty(),
+        )
+    }
 
 sealed interface RecommendationsState {
     data object Loading : RecommendationsState

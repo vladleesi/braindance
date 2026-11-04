@@ -40,6 +40,8 @@ kotlin {
         }
         withHostTest {
             isIncludeAndroidResources = true
+            // Logging reaches android.util.Log, whose host-test stubs otherwise throw "not mocked".
+            isReturnDefaultValues = true
         }
     }
 

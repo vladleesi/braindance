@@ -2,12 +2,15 @@
 
 package dev.vladleesi.braindanceapp.utils
 
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+
 enum class DelayDuration(
-    val millis: Long,
+    val duration: Duration,
 ) {
-    ExtraShort(150L),
-    Short(200L),
-    Medium(400L),
-    Large(700L),
-    ExtraLarge(2_000L),
+    ExtraShort(150L.milliseconds),
+    Short(200L.milliseconds),
+    Medium(400L.milliseconds),
+    Large(700L.milliseconds),
+    ExtraLarge(2_000L.milliseconds),
 }
