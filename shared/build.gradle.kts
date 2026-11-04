@@ -97,6 +97,8 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.unit.tests.kotlin)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
         }
         androidMain.dependencies {
             // Network
