@@ -51,7 +51,7 @@ Its independent version is `0.10.1`. See the [backend changelog](backend/CHANGEL
 - [Release guide](docs/releases.md): versioning and publication workflows.
 
 The current frontend source version is
-[0.7.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.7.0).
+[0.7.1](https://github.com/vladleesi/braindance/releases/tag/app-v0.7.1).
 GitHub releases provide source code, not store-ready mobile downloads.
 Developer builds for Android, iOS, and Web are supported; see the development guide for backend configuration.
 

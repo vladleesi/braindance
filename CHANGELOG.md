@@ -4,6 +4,18 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.7.1
+
+### Android, iOS, and Web
+
+- Show an error after a few seconds when the server is slow or unreachable, instead of loading indefinitely; brief
+  server hiccups are retried automatically.
+- Keep pull to refresh visible until every Home section has reloaded, and never let an older, slower response
+  replace a newer one.
+- Stop Home and Similar Games lists from crashing on incomplete or repeated cards.
+- Show a "not found" message for a game or giveaway that no longer exists, instead of an empty page.
+- Show store and giveaway buttons only for secure links, and stop crashing when no app can open a link.
+
 ## 0.7.0
 
 ### Android, iOS, and Web
