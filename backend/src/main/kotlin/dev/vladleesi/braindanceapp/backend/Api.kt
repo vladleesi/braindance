@@ -277,13 +277,17 @@ private suspend fun RoutingContext.respondTrending(
     }
 }
 
+// Compiled once: both patterns run on every matching request.
+private val feedNumberPattern = Regex("[1-9][0-9]{0,2}")
+internal val giveawayIdPath = Regex("^/v1/giveaways/([0-9]+)$")
+
 /** [default] when absent; a positive decimal without sign or leading zeros; otherwise null. */
 private fun feedNumber(
     value: String?,
     default: Int,
 ): Int? {
     if (value == null) return default
-    if (!Regex("[1-9][0-9]{0,2}").matches(value)) return null
+    if (!feedNumberPattern.matches(value)) return null
     return value.toInt()
 }
 
@@ -368,7 +372,7 @@ internal fun isAllowedOrigin(
     }
 
 internal fun validGiveawayId(path: String): Boolean {
-    val digits = Regex("^/v1/giveaways/([0-9]+)$").matchEntire(path)?.groupValues?.get(1) ?: return false
+    val digits = giveawayIdPath.matchEntire(path)?.groupValues?.get(1) ?: return false
     return digits.toLongOrNull()?.let { it in 1..Int.MAX_VALUE.toLong() } == true
 }
 

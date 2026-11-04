@@ -106,6 +106,8 @@ class IgdbService(
         }
     }
 
+    // The lock is held during the token request on purpose: concurrent callers share one Twitch request instead of
+    // each starting their own. The request times out after five seconds, which bounds how long callers wait.
     private suspend fun getToken(rejectedToken: String? = null): String =
         mutex.withLock {
             if (rejectedToken != null && token == rejectedToken) {

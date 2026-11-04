@@ -5,7 +5,7 @@ Version **0.10.1**. This reference covers backend development and optional indep
 using the [experimental Web preview](https://braindance.vladleesi.dev/) does not require backend setup.
 
 Twitch credentials stay on the backend; GamerPower needs no key.
-Use JDK 21 and run commands from the repository root.
+Build with JDK 21 and run commands from the repository root; the container image runs Java 25.
 See the [changelog](CHANGELOG.md), the [project README](../README.md#platforms), and the
 [development guide](../docs/development.md) for client setup.
 
@@ -36,8 +36,9 @@ set -a; . backend/.env; set +a
 ./gradlew :backend:run
 ```
 
-`/health` reports readiness and the version, `/healthz` credential presence. Only a real game request verifies
-IGDB access. For direct IDE launches, set the JVM option `-DbackendVersion=development`.
+`/health` is a dependency-free liveness check that reports the version; `/healthz` reports credential presence.
+Only a real game request verifies IGDB access. For direct IDE launches, set the JVM option
+`-DbackendVersion=development`.
 
 ## Package and host
 
@@ -50,7 +51,7 @@ docker run --env-file backend/.env -p 8080:8080 braindance-api:0.10.1
 The Dockerfile needs the prepared distribution; without Docker, run `backend/build/install/backend/bin/backend`.
 Overriding `JAVA_OPTS` replaces the image's startup-archive options.
 
-Any Java 21 or container host works. Configure HTTPS, runtime secrets, restarts, and abuse controls; set
+Any Java 21 or newer, or container host works. Configure HTTPS, runtime secrets, restarts, and abuse controls; set
 `PUBLIC_BASE_URL` to the external HTTPS origin and `CORS_ALLOWED_ORIGINS` to your website origins, and point the
 clients' `BACKEND_BASE_URL` at it. CORS restricts browsers; it does not authenticate callers, and the API is public.
 Configure [shared rate limiting](#shared-rate-limiting) before adding replicas. Before enabling

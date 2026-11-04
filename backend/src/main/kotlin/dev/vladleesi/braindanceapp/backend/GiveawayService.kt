@@ -47,7 +47,7 @@ class GiveawayService(
                 "https://www.gamerpower.com/api/giveaways"
             } else {
                 val id =
-                    Regex("^/v1/giveaways/(\\d+)$")
+                    giveawayIdPath
                         .matchEntire(path)
                         ?.groupValues
                         ?.get(1)

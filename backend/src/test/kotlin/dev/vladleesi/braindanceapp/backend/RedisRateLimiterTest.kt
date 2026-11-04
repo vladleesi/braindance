@@ -32,4 +32,19 @@ class RedisRateLimiterTest {
                 }
             }
         }
+
+    @Test
+    @EnabledIfEnvironmentVariable(named = "TEST_REDIS_URL", matches = ".+")
+    fun limiterRecoversWhenRedisDropsItsScriptCache() =
+        runBlocking {
+            val url = requireNotNull(System.getenv("TEST_REDIS_URL"))
+            RedisClient.create(url).use { redis ->
+                val limiter = RedisRateLimiter(redis, "braindance:test:${java.util.UUID.randomUUID()}")
+                assertTrue(limiter.takeSlot())
+                // Simulates a Redis restart: the cached SHA no longer names a loaded script.
+                redis.scriptFlush()
+                assertTrue(limiter.takeSlot())
+                assertTrue(limiter.takeSlot())
+            }
+        }
 }
