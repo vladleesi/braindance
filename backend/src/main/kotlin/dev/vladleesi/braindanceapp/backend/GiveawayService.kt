@@ -24,7 +24,7 @@ class GiveawayService(
     maxConcurrentImageFetches: Int = MAX_CONCURRENT_IMAGE_FETCHES,
     private val imagePermitWait: Duration = IMAGE_PERMIT_WAIT,
 ) {
-    // Rewritten links depend on the request base, so it is part of the key; production uses one fixed base.
+    // Rewritten links depend on the configured image base, so it is part of the key.
     private val giveaways = ResponseCache(CACHE_TTL_MILLIS, GIVEAWAY_CACHE_BYTES, MAX_GIVEAWAY_BYTES, clock)
     private val images = ResponseCache(CACHE_TTL_MILLIS, IMAGE_CACHE_BYTES, MAX_IMAGE_BYTES, clock)
 
@@ -40,7 +40,7 @@ class GiveawayService(
 
     suspend fun giveaway(
         path: String,
-        requestBase: String,
+        imageBase: String?,
     ): UpstreamOutcome {
         val url =
             if (path == "/v1/giveaways") {
@@ -56,7 +56,7 @@ class GiveawayService(
                         ?: return UpstreamOutcome.Failed(UpstreamFailure.NOT_FOUND)
                 "https://www.gamerpower.com/api/giveaway?id=$id"
             }
-        val result = giveaways.getOrLoad("$url\n$requestBase") { fetchGiveaway(url, requestBase) }
+        val result = giveaways.getOrLoad("$url\n${imageBase.orEmpty()}") { fetchGiveaway(url, imageBase) }
         return when (result) {
             is ResponseCache.LoadResult.Hit -> UpstreamOutcome.Ok(result.response.body)
             is ResponseCache.LoadResult.Uncached -> UpstreamOutcome.Failed(result.failure)
@@ -65,7 +65,7 @@ class GiveawayService(
 
     private suspend fun fetchGiveaway(
         url: String,
-        requestBase: String,
+        imageBase: String?,
     ): ResponseCache.LoadResult {
         val response = upstream.giveaway(url)
         val status = response.status.value
@@ -78,8 +78,8 @@ class GiveawayService(
             else -> {
                 val rewritten =
                     when (val payload = Json.parseToJsonElement(response.body.decodeToString())) {
-                        is JsonArray -> JsonArray(payload.map { rewrite(it, requestBase) })
-                        else -> rewrite(payload, requestBase)
+                        is JsonArray -> JsonArray(payload.map { rewrite(it, imageBase) })
+                        else -> rewrite(payload, imageBase)
                     }
                 ResponseCache.LoadResult.Hit(CachedResponse(rewritten.toString().encodeToByteArray()))
             }
@@ -135,14 +135,19 @@ class GiveawayService(
         synchronized(failedImages) { failedImages[url] = clock.millis() }
     }
 
+    /**
+     * Points image fields at this API's image proxy under [imageBase], the configured public origin. Without one, they
+     * keep their GamerPower URLs: links are never built from a request's Host header, which a client controls.
+     */
     private fun rewrite(
         element: JsonElement,
-        base: String,
+        imageBase: String?,
     ): JsonElement {
         val obj = element as? JsonObject ?: return element
         return JsonObject(
             obj.toMutableMap().apply {
                 for (field in listOf("image", "thumbnail")) {
+                    val base = imageBase ?: break
                     val original = (obj[field] as? JsonPrimitive)?.contentOrNull ?: continue
                     val validated = validImageUrl(original) ?: continue
                     val encoded = java.net.URLEncoder.encode(validated, Charsets.UTF_8)

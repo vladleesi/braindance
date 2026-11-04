@@ -20,7 +20,7 @@ credentials through environment variables or your host's secret store, never Git
 | `IGDB_RATE_LIMITER` | `in-memory` for one instance; defaults to `redis` |
 | `REDIS_URL` | Shared Redis connection URL, required only in Redis mode |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated exact browser origins, including scheme and port; empty by default |
-| `PUBLIC_BASE_URL` | External API origin for image links; HTTPS behind a production proxy |
+| `PUBLIC_BASE_URL` | External API origin for giveaway image links; HTTPS behind a production proxy. Without it, images keep their GamerPower URLs |
 | `PORT` | Listening port; default `8080`, bound to `0.0.0.0` |
 | `PUBLIC_CACHE_ENABLED` | Default `false`; enables eligible public GET caching |
 | `CLOUDFLARE_ORIGIN_SECRET` | Optional trusted-proxy guard; leave unset for direct hosting and local development |

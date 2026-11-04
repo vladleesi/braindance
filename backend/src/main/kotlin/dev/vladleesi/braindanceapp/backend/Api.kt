@@ -8,10 +8,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
-import io.ktor.server.request.host
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
-import io.ktor.server.request.port
 import io.ktor.server.request.uri
 import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
@@ -121,11 +119,7 @@ private suspend fun RoutingContext.respondGiveaway(
     giveaways: GiveawayService,
     config: BackendConfig,
 ) {
-    val port = call.request.port()
-    val suffix = if (port in listOf(80, 443)) "" else ":$port"
-    val requestBase = "${call.request.local.scheme}://${call.request.host()}$suffix"
-    val base = config.publicBaseUrl ?: requestBase
-    when (val result = giveaways.giveaway(path, base)) {
+    when (val result = giveaways.giveaway(path, config.publicBaseUrl)) {
         is UpstreamOutcome.Ok -> {
             call.attributes.put(publicResponse, Unit)
             respondJson(200, result.body.decodeToString())
