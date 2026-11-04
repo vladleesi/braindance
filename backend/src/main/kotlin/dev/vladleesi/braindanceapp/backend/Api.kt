@@ -345,6 +345,7 @@ private suspend fun RoutingContext.respondImage(
             )
         }
         400 -> respondJson(400, """{"error":"Invalid image URL"}""")
+        503 -> respondJson(503, """{"error":"Image proxy busy"}""")
         else -> respondJson(502, """{"error":"Upstream image unavailable"}""")
     }
 }

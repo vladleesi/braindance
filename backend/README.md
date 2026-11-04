@@ -72,10 +72,11 @@ All endpoints are GET-only and return JSON. Unknown or duplicate query keys are 
 | `/v1/giveaways/image?url=...` | Proxy for JPEG, PNG, WebP, GIF, and AVIF images under `https://www.gamerpower.com/offers/` |
 
 Game cards are `{"id","name","cover":{"url"}}`. Request URLs are limited to 2 KiB; upstream JSON to 1 MiB (IGDB) and
-2 MiB (GamerPower), images to 5 MiB. Upstream requests time out after 8 seconds (token requests after 5), at most
-eight IGDB requests are open at once, and redirects are not followed. Successful game and giveaway responses are
-cached in process for 10 minutes, and identical concurrent requests share one upstream call. Responses default to
-`private, no-store`.
+2 MiB (GamerPower), images to 1 MiB. Upstream requests time out after 8 seconds (token requests after 5), at most
+eight IGDB requests and four image fetches are open at once, and redirects are not followed. An image request that
+waits more than 3 seconds for a fetch slot gets 503, and a failed image URL is not fetched again for a minute.
+Successful game, giveaway, and image responses are cached in process for 10 minutes, and identical concurrent requests
+share one upstream call. Responses default to `private, no-store`.
 
 Failures write one JSON line to standard output: `request_failed` (an unexpected exception, with its class and, for
 Twitch tokens, the reason and upstream status), `upstream_failed` (an unusable IGDB status or content type), or

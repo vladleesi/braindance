@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 private const val JSON_CONTENT_TYPE = "application/json"
+private const val DEFAULT_BUFFER_BYTES = 8192
 
 class BodyTooLarge : Exception()
 
@@ -35,8 +36,12 @@ data class UpstreamResponse(
     val body: ByteArray,
 )
 
-suspend fun HttpResponse.readLimited(limit: Int): ByteArray {
-    val output = ByteArrayOutputStream()
+suspend fun HttpResponse.readLimited(
+    limit: Int,
+    expectedLength: Long? = null,
+): ByteArray {
+    // Sizing the buffer from Content-Length avoids repeated growth copies while reading a large body.
+    val output = ByteArrayOutputStream(expectedLength?.takeIf { it in 1..limit }?.toInt() ?: DEFAULT_BUFFER_BYTES)
     val buffer = ByteArray(8192)
     val channel = bodyAsChannel()
     while (true) {
@@ -149,7 +154,7 @@ class KtorUpstream(
                 .prepareGet(url) {
                     header(HttpHeaders.Accept, "image/*")
                     timeout { requestTimeoutMillis = 8000 }
-                }.bounded(5 * 1024 * 1024, "image/")
+                }.bounded(MAX_IMAGE_BYTES, "image/")
         }
 
     private suspend fun measured(
@@ -187,8 +192,9 @@ private suspend fun HttpStatement.bounded(
             }
         val body =
             if (response.status.value in 200..299 && acceptedType) {
-                if ((response.headers[HttpHeaders.ContentLength]?.toLongOrNull() ?: 0) > limit) throw BodyTooLarge()
-                response.readLimited(limit)
+                val contentLength = response.headers[HttpHeaders.ContentLength]?.toLongOrNull()
+                if ((contentLength ?: 0) > limit) throw BodyTooLarge()
+                response.readLimited(limit, contentLength)
             } else {
                 byteArrayOf()
             }
