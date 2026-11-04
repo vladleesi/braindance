@@ -40,4 +40,9 @@ dependencies {
     implementation(libs.androidx.tests.ext.junit)
     implementation(libs.androidx.tests.uiautomator)
     implementation(libs.androidx.benchmark.macro.junit4)
+    constraints {
+        implementation(libs.wire.runtime) {
+            because("benchmark 1.5.0 brings wire-runtime 6.4.0, affected by GHSA-9rm7-3qhh-h2mc (fixed in 6.4.5)")
+        }
+    }
 }

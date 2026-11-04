@@ -98,6 +98,8 @@ unit-tests-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 # startup performance
 androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
 androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark" }
+# Raises benchmark 1.5.0's transitive Wire runtime past GHSA-9rm7-3qhh-h2mc (fixed in 6.4.5).
+wire-runtime = { module = "com.squareup.wire:wire-runtime", version = "6.4.7" }
 
 # ui-tests
 androidx-tests-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
