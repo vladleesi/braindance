@@ -228,6 +228,9 @@ jobs:
           printf '%s' "$health" | python3 -c \
             'import json, sys; assert json.load(sys.stdin) == {"ok": True, "version": sys.argv[1]}' "$version"
 
+      - name: Install Trivy
+        uses: ./.github/actions/install-trivy
+
       - name: Scan Backend Container
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -239,6 +242,7 @@ jobs:
           exit-code: '1'
           format: table
           cache: false
+          skip-setup-trivy: true
 
   promote-to-master:
     name: Promote Develop to Master
