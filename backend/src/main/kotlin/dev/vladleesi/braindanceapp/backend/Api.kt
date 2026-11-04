@@ -8,7 +8,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.request.host
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
@@ -27,17 +26,15 @@ import kotlinx.serialization.json.JsonPrimitive
 import java.net.URI
 import java.time.Instant
 
-fun Application.api(
+/** Test convenience: builds and owns its own recommendation and trending services. Production uses `Main.kt`. */
+internal fun Application.api(
     config: BackendConfig,
     igdb: IgdbService,
     giveaways: GiveawayService,
 ) {
     val recommendations = RecommendationService(igdb)
     val trending = TrendingService(igdb)
-    monitor.subscribe(ApplicationStopped) {
-        recommendations.close()
-        trending.close()
-    }
+    closeOnStop(recommendations, trending)
     api(config, igdb, giveaways, recommendations, trending)
 }
 

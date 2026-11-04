@@ -4,7 +4,10 @@ package dev.vladleesi.braindanceapp.backend
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.ServerReady
+import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import redis.clients.jedis.RedisClient
@@ -48,29 +51,40 @@ fun main() {
     val trending = TrendingService(igdb)
     val server =
         startup.measure("server_create") {
-            embeddedServer(Netty, port = config.port, host = "0.0.0.0") {
+            embeddedServer(
+                Netty,
+                configure = {
+                    connector {
+                        port = config.port
+                        host = "0.0.0.0"
+                    }
+                    // Ktor's own shutdown hook stops the server with these limits. Requests in flight get two seconds
+                    // to finish, and shutdown completes within Cloud Run's ten-second SIGTERM window.
+                    shutdownGracePeriod = SHUTDOWN_GRACE_MILLIS
+                    shutdownTimeout = SHUTDOWN_TIMEOUT_MILLIS
+                },
+            ) {
                 monitor.subscribe(ServerReady) { startup.checkpoint("server_ready") }
+                // The single owner of shutdown: background work first, then the clients it uses.
+                closeOnStop(recommendations, trending, upstream, redis)
                 startup.measure("application_routes") {
                     api(config, igdb, giveaways, recommendations, trending, failures)
                 }
             }
         }
-    Runtime.getRuntime().addShutdownHook(
-        Thread {
-            server.stop()
-            recommendations.close()
-            trending.close()
-            upstream.close()
-            redis?.close()
-        },
-    )
-    try {
-        startup.checkpoint("server_start")
-        server.start(wait = true)
-    } finally {
-        recommendations.close()
-        trending.close()
-        upstream.close()
-        redis?.close()
+    startup.checkpoint("server_start")
+    server.start(wait = true)
+}
+
+private const val SHUTDOWN_GRACE_MILLIS = 2_000L
+private const val SHUTDOWN_TIMEOUT_MILLIS = 8_000L
+
+/**
+ * Closes [resources] in order when the application stops. A failure to close one does not leave the others open; the
+ * process is exiting, so it is not reported further.
+ */
+internal fun Application.closeOnStop(vararg resources: AutoCloseable?) {
+    monitor.subscribe(ApplicationStopped) {
+        resources.forEach { resource -> runCatching { resource?.close() } }
     }
 }
