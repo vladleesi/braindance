@@ -3,6 +3,23 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.11.0
+
+- Limit game details and recommendations per client behind Cloudflare with `CLOUDFLARE_ORIGIN_SECRET`: bursts of 20
+  and 60 per minute per `CF-Connecting-IP`, answered with 429 and `Retry-After`. Without the origin guard, clients
+  cannot be told apart behind a proxy, so no per-client limit applies and startup logs `per_client_rate_limit` as off.
+- Reserve IGDB capacity for the shared feeds: game details and recommendations use at most three of the four IGDB calls
+  per second, so Popular Right Now and Most Anticipated always keep one. Redis mode adds a second key for this cap.
+- Remember unknown recommendation IDs for an hour instead of two minutes.
+- Allow Cloudflare to revalidate Popular Right Now in the background for up to 10 minutes after a feed window ends
+  (`stale-while-revalidate`), so the first visitor after a boundary does not wait for a cold start.
+- Never build giveaway image links from the request's `Host` header. Without `PUBLIC_BASE_URL`, giveaway images now
+  keep their GamerPower URLs.
+- Shut down within Cloud Run's SIGTERM window: requests in flight get two seconds to finish, and every resource closes
+  once.
+- Declare each route once with its query keys and shared-cache lifetime, and map upstream failures to responses in one
+  place. Statuses and error bodies are unchanged.
+
 ## 0.10.2
 
 - Log unexpected request failures, unusable IGDB answers, and IGDB rate-limit rejections as structured JSON lines,
