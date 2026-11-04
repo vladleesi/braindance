@@ -3,6 +3,8 @@
 @file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 
 import org.gradle.language.jvm.tasks.ProcessResources
+import java.io.StringReader
+import java.net.URI
 import java.util.Properties
 
 plugins {
@@ -19,6 +21,24 @@ val frontendVersionProperties =
     }
 version = frontendVersionProperties.getProperty("MARKETING_VERSION")
 val webBundleName = "webApp-$version.js"
+
+// The page's content security policy may connect only to this backend. Read the same way as the shared module's
+// BACKEND_BASE_URL: a Gradle property in CI, otherwise local.properties.
+val backendBaseUrl: String =
+    providers
+        .gradleProperty("BACKEND_BASE_URL")
+        .orElse(
+            providers.fileContents(rootProject.layout.projectDirectory.file("local.properties")).asText.map {
+                Properties().apply { load(StringReader(it)) }.getProperty("BACKEND_BASE_URL").orEmpty()
+            },
+        ).orNull
+        .orEmpty()
+val backendOrigin: String =
+    backendBaseUrl.takeIf(String::isNotBlank)?.let { url ->
+        val uri = URI(url.trim())
+        require(uri.scheme == "https" && !uri.host.isNullOrEmpty()) { "BACKEND_BASE_URL must be an HTTPS URL" }
+        "https://${uri.host}${if (uri.port == -1) "" else ":${uri.port}"}"
+    } ?: ""
 
 kotlin {
     val bundleName = webBundleName
@@ -42,8 +62,10 @@ kotlin {
 
 tasks.named<ProcessResources>("wasmJsProcessResources") {
     val bundleName = webBundleName
+    val origin = backendOrigin
     inputs.property("webBundleName", bundleName)
+    inputs.property("backendOrigin", origin)
     filesMatching("index.html") {
-        expand("webBundleName" to bundleName)
+        expand("webBundleName" to bundleName, "backendOrigin" to origin)
     }
 }
