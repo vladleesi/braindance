@@ -37,6 +37,7 @@ import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.StoreTypeModel
+import dev.vladleesi.braindanceapp.utils.openExternalUrl
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.stringResource
@@ -87,7 +88,7 @@ fun StoreButton(
     Button(
         modifier = modifier.height(48.dp),
         colors = ButtonDefaults.buttonColors(backgroundColor = secondaryVariant),
-        onClick = { uriHandler.openUri(url) },
+        onClick = { uriHandler.openExternalUrl(url) },
     ) {
         Row(Modifier.align(Alignment.CenterVertically)) {
             Text(text = store, style = MaterialTheme.typography.subtitle1)

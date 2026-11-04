@@ -26,7 +26,8 @@ fun List<Websites>.toStoreTypes(): List<StoreTypeModel> =
         .mapNotNull { it.storeType() }
 
 private fun Websites.storeType(): StoreTypeModel? {
-    val url = url.orEmpty()
+    // A store link that is not a safe HTTPS link gets no button.
+    val url = url.toSafeExternalUrl() ?: return null
     val storeType =
         StoreType.entries.firstOrNull { type ->
             type.websiteType == this.type

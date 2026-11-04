@@ -63,8 +63,10 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
 import dev.vladleesi.braindanceapp.utils.giveawayPlatforms
+import dev.vladleesi.braindanceapp.utils.openExternalUrl
 import dev.vladleesi.braindanceapp.utils.orZero
 import dev.vladleesi.braindanceapp.utils.toContentDescription
+import dev.vladleesi.braindanceapp.utils.toSafeExternalUrl
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -187,7 +189,10 @@ fun GiveawayDetailsScreen(
                 )
             }
             item { Spacer(Modifier.height(Dimens.medium)) }
-            item { OpenGiveawayButton(url = state.giveawayDetails.openGiveawayUrl.orEmpty()) }
+            // Only a safe HTTPS link gets a button; a missing or unsafe link shows none.
+            state.giveawayDetails.openGiveawayUrl.toSafeExternalUrl()?.let { url ->
+                item { OpenGiveawayButton(url = url) }
+            }
             item { Spacer(Modifier.height(Dimens.large)) }
         }
         Column {
@@ -306,7 +311,7 @@ private fun OpenGiveawayButton(
     Button(
         modifier = modifier.height(48.dp),
         colors = ButtonDefaults.buttonColors(backgroundColor = secondaryVariant),
-        onClick = { uriHandler.openUri(url) },
+        onClick = { uriHandler.openExternalUrl(url) },
     ) {
         Row {
             Text(
