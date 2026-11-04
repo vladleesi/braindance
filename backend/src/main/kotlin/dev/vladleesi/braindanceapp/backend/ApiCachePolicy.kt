@@ -40,6 +40,9 @@ private val BROWSER_LIFETIME = 20.minutes
 // stale-if-error next to s-maxage in Cache-Control, so the directive is sent only in its own header.
 private val EDGE_STALE_IF_ERROR = 1.days
 
+// How long after a feed window ends the edge may serve the previous feed while it fetches the next one.
+private val FEED_EDGE_REVALIDATION = 10.minutes
+
 /** Cache-Control and Cloudflare edge directives for a public response on [route] at [nowMillis]. */
 internal data class PublicCacheHeaders(
     val cacheControl: String,
@@ -66,9 +69,17 @@ internal fun publicCacheHeaders(
         } else {
             "public, max-age=${browser.inWholeSeconds}, s-maxage=${edge.inWholeSeconds}"
         }
+    // Every copy of the feed expires at the window boundary. Revalidating in the background lets the edge keep
+    // answering from the previous feed instead of making the first visitor wait for a possibly cold origin.
+    val revalidation =
+        if (ApiRoute.forTemplate(route)?.edgeLifetime == EdgeLifetime.FeedWindow) {
+            ", stale-while-revalidate=${FEED_EDGE_REVALIDATION.inWholeSeconds}"
+        } else {
+            ""
+        }
     return PublicCacheHeaders(
         cacheControl,
-        "public, max-age=${edge.inWholeSeconds}, stale-if-error=${EDGE_STALE_IF_ERROR.inWholeSeconds}",
+        "public, max-age=${edge.inWholeSeconds}, stale-if-error=${EDGE_STALE_IF_ERROR.inWholeSeconds}$revalidation",
     )
 }
 

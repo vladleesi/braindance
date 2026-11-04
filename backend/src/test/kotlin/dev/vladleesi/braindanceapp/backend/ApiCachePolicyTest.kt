@@ -63,8 +63,10 @@ class ApiCachePolicyTest {
             )
         for ((route, value) in expected) {
             val (cacheControl, edge) = value
+            // Only the feed, whose copies all expire at once, revalidates in the background.
+            val revalidation = if (route == TRENDING_PATH) ", stale-while-revalidate=600" else ""
             assertEquals(
-                PublicCacheHeaders(cacheControl, "public, max-age=$edge, stale-if-error=86400"),
+                PublicCacheHeaders(cacheControl, "public, max-age=$edge, stale-if-error=86400$revalidation"),
                 publicCacheHeaders(route, now),
                 route,
             )

@@ -106,7 +106,9 @@ A cache miss makes two IGDB multiqueries. A request waits up to 4.5 seconds; a s
 keeps running for up to 20 seconds and fills the cache for the next request. One ranked feed serves each six-hour UTC
 window (00:00, 06:00, 12:00, 18:00), in process and at the edge, so pages fetched in one window match; separate
 instances can still rank slightly differently. If a refresh fails, the previous feed is served privately for up to 24
-hours.
+hours. The edge header also allows `stale-while-revalidate` for 10 minutes, so right after a window ends Cloudflare can
+keep serving the previous feed while it fetches the next one; pages fetched in those minutes can come from different
+windows.
 IGDB stores no popularity history, so the feed does not measure growth. Signals, weights, and eligibility are
 documented in [`Trending.kt`](src/main/kotlin/dev/vladleesi/braindanceapp/backend/Trending.kt); each cache miss logs a
 `trending` line with candidate counts per stage.
