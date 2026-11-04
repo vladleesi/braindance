@@ -4,6 +4,24 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.8.0
+
+### Android
+
+- Start noticeably faster and download much less: the app is about 2.5 MB instead of 11.6 MB, and its startup and
+  Home code is precompiled on install.
+
+### iOS
+
+- Use the wide layout on iPhone in landscape, as on Android.
+
+### Web
+
+- Use the browser's Back and Forward buttons, and share or bookmark links to games and giveaways, such as
+  `#/game/42`. Reloading keeps your place.
+- Switch between the narrow and wide layouts as you resize the window.
+- Restrict the page to Braindance's own servers, IGDB images, and font downloads with a content security policy.
+
 ## 0.7.2
 
 ### Android, iOS, and Web
