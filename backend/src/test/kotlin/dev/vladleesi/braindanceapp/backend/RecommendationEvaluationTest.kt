@@ -113,7 +113,7 @@ class RecommendationEvaluationTest {
                     )
                 checkNotNull(
                     RecommendationQueries.parseSourceGraph(
-                        RecommendationQueries.parseMultiquery(checkNotNull(response.body)),
+                        RecommendationQueries.parseMultiquery(checkNotNull(response.bodyOrNull())),
                     ),
                 )
             }

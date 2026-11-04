@@ -596,7 +596,7 @@ internal class TrendingService(
     private suspend fun awaitRefresh(): ResponseCache.LoadResult {
         val running = refresh.get()?.takeUnless { it.isCompleted } ?: startRefresh()
         return withTimeoutOrNull(responseBudget) { running.await() }
-            ?: ResponseCache.LoadResult.Uncached(GATEWAY_TIMEOUT)
+            ?: ResponseCache.LoadResult.Uncached(UpstreamFailure.TIMEOUT)
     }
 
     private fun startRefresh(): Deferred<ResponseCache.LoadResult> {
@@ -646,13 +646,19 @@ internal class TrendingService(
                 val nowSeconds = clock.millis() / MILLIS_PER_SECOND
                 val discovery = execute(discoveryQuery(nowSeconds))
                 metrics.igdbRequests++
-                if (discovery.status != OK) return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(discovery.status)
-                val discoveryBody = checkNotNull(discovery.body)
+                val discoveryBody =
+                    when (discovery) {
+                        is UpstreamOutcome.Ok -> discovery.body
+                        is UpstreamOutcome.Failed ->
+                            return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(discovery.failure)
+                    }
                 metrics.discoveryBytes = discoveryBody.size
                 val results = RecommendationQueries.parseMultiquery(discoveryBody)
                 val signals = validPopularitySignals(results, clock.millis(), TrendingRanking.signals)
                 metrics.signals = signals.keys
-                if (signals.isEmpty()) return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(BAD_GATEWAY)
+                if (signals.isEmpty()) {
+                    return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(UpstreamFailure.UNAVAILABLE)
+                }
                 val attention = TrendingRanking.attention(signals)
                 val showcases = TrendingRanking.showcaseAges(events(results, metrics), nowSeconds)
                 val recent = recentReleases(results, metrics)
@@ -668,10 +674,12 @@ internal class TrendingService(
                     } else {
                         val hydration = execute(hydrationQuery)
                         metrics.igdbRequests++
-                        if (hydration.status != OK) {
-                            return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(hydration.status)
-                        }
-                        val hydrationBody = checkNotNull(hydration.body)
+                        val hydrationBody =
+                            when (hydration) {
+                                is UpstreamOutcome.Ok -> hydration.body
+                                is UpstreamOutcome.Failed ->
+                                    return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(hydration.failure)
+                            }
                         metrics.hydrationBytes = hydrationBody.size
                         RecommendationQueries.parseMultiquery(hydrationBody)
                     }
@@ -684,9 +692,11 @@ internal class TrendingService(
                 metrics.funnel = selection.funnel
                 metrics.reasons = selection.games.count { it.reason != null }
                 // An empty feed after valid signals indicates incomplete upstream data; keep serving the previous one.
-                if (selection.games.isEmpty()) return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(BAD_GATEWAY)
+                if (selection.games.isEmpty()) {
+                    return@withTimeoutOrNull ResponseCache.LoadResult.Uncached(UpstreamFailure.UNAVAILABLE)
+                }
                 ResponseCache.LoadResult.Hit(CachedResponse(trendingJson(selection.games).encodeToByteArray()))
-            } ?: ResponseCache.LoadResult.Uncached(GATEWAY_TIMEOUT)
+            } ?: ResponseCache.LoadResult.Uncached(UpstreamFailure.TIMEOUT)
         val outcome = if (result is ResponseCache.LoadResult.Uncached) "failed_${result.status}" else "ok"
         log(metrics.event(outcome))
         return result
@@ -806,9 +816,6 @@ internal class TrendingService(
         private val RESPONSE_BUDGET = 4.5.seconds
         private val LOAD_LIMIT = 20.seconds
         private val SLOT_WAIT = 1.seconds
-        private const val OK = 200
-        private const val BAD_GATEWAY = 502
-        private const val GATEWAY_TIMEOUT = 504
 
         const val RECENT_QUERY_NAME = "recent"
         private const val ATTENTION_QUERY_NAME = "attention"

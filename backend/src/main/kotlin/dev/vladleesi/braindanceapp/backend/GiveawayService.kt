@@ -41,7 +41,7 @@ class GiveawayService(
     suspend fun giveaway(
         path: String,
         requestBase: String,
-    ): ApiResult {
+    ): UpstreamOutcome {
         val url =
             if (path == "/v1/giveaways") {
                 "https://www.gamerpower.com/api/giveaways"
@@ -52,13 +52,14 @@ class GiveawayService(
                         ?.groupValues
                         ?.get(1)
                         ?.toLongOrNull()
-                        ?.takeIf { it in 1..Int.MAX_VALUE.toLong() } ?: return ApiResult(404)
+                        ?.takeIf { it in 1..Int.MAX_VALUE.toLong() }
+                        ?: return UpstreamOutcome.Failed(UpstreamFailure.NOT_FOUND)
                 "https://www.gamerpower.com/api/giveaway?id=$id"
             }
         val result = giveaways.getOrLoad("$url\n$requestBase") { fetchGiveaway(url, requestBase) }
         return when (result) {
-            is ResponseCache.LoadResult.Hit -> ApiResult(200, result.response.body)
-            is ResponseCache.LoadResult.Uncached -> ApiResult(result.status)
+            is ResponseCache.LoadResult.Hit -> UpstreamOutcome.Ok(result.response.body)
+            is ResponseCache.LoadResult.Uncached -> UpstreamOutcome.Failed(result.failure)
         }
     }
 
@@ -70,8 +71,10 @@ class GiveawayService(
         val status = response.status.value
         val contentType = response.headers[HttpHeaders.ContentType].orEmpty()
         return when {
-            status == 404 || status == 429 -> ResponseCache.LoadResult.Uncached(status)
-            status !in 200..299 || !contentType.contains("application/json") -> ResponseCache.LoadResult.Uncached(502)
+            status == 404 -> ResponseCache.LoadResult.Uncached(UpstreamFailure.NOT_FOUND)
+            status == 429 -> ResponseCache.LoadResult.Uncached(UpstreamFailure.RATE_LIMITED)
+            status !in 200..299 || !contentType.contains("application/json") ->
+                ResponseCache.LoadResult.Uncached(UpstreamFailure.UNAVAILABLE)
             else -> {
                 val rewritten =
                     when (val payload = Json.parseToJsonElement(response.body.decodeToString())) {
@@ -83,27 +86,28 @@ class GiveawayService(
         }
     }
 
-    suspend fun image(rawUrl: String?): Pair<ApiResult, String?> {
-        val url = validImageUrl(rawUrl) ?: return ApiResult(400) to null
-        if (recentlyFailed(url)) return ApiResult(BAD_GATEWAY) to null
+    suspend fun image(rawUrl: String?): Pair<UpstreamOutcome, String?> {
+        val url = validImageUrl(rawUrl) ?: return UpstreamOutcome.Failed(UpstreamFailure.BAD_REQUEST) to null
+        if (recentlyFailed(url)) return UpstreamOutcome.Failed(UpstreamFailure.UNAVAILABLE) to null
         return when (val result = images.getOrLoad(url) { fetchImage(url) }) {
-            is ResponseCache.LoadResult.Hit -> ApiResult(200, result.response.body) to result.response.contentType
+            is ResponseCache.LoadResult.Hit -> UpstreamOutcome.Ok(result.response.body) to result.response.contentType
             is ResponseCache.LoadResult.Uncached -> {
                 // A busy proxy is not the link's fault, so only upstream failures are remembered.
-                if (result.status == BAD_GATEWAY) rememberFailure(url)
-                ApiResult(result.status) to null
+                if (result.failure == UpstreamFailure.UNAVAILABLE) rememberFailure(url)
+                UpstreamOutcome.Failed(result.failure) to null
             }
         }
     }
 
     private suspend fun fetchImage(url: String): ResponseCache.LoadResult {
-        withTimeoutOrNull(imagePermitWait) { imageFetches.acquire() } ?: return ResponseCache.LoadResult.Uncached(BUSY)
+        withTimeoutOrNull(imagePermitWait) { imageFetches.acquire() }
+            ?: return ResponseCache.LoadResult.Uncached(UpstreamFailure.BUSY)
         try {
             val response =
                 try {
                     upstream.image(url)
                 } catch (_: BodyTooLarge) {
-                    return ResponseCache.LoadResult.Uncached(BAD_GATEWAY)
+                    return ResponseCache.LoadResult.Uncached(UpstreamFailure.UNAVAILABLE)
                 }
             val contentType = response.headers[HttpHeaders.ContentType]
             val contentLength = response.headers[HttpHeaders.ContentLength]?.toLongOrNull()
@@ -111,7 +115,7 @@ class GiveawayService(
                 !isAllowedImageType(contentType) ||
                 (contentLength != null && contentLength > MAX_IMAGE_BYTES)
             ) {
-                return ResponseCache.LoadResult.Uncached(BAD_GATEWAY)
+                return ResponseCache.LoadResult.Uncached(UpstreamFailure.UNAVAILABLE)
             }
             return ResponseCache.LoadResult.Hit(CachedResponse(response.body, contentType))
         } finally {
@@ -168,8 +172,6 @@ class GiveawayService(
         const val MAX_FAILED_IMAGES = 512
         const val INITIAL_FAILED_CAPACITY = 64
         const val LOAD_FACTOR = 0.75f
-        const val BAD_GATEWAY = 502
-        const val BUSY = 503
     }
 
     internal fun validImageUrl(value: String?): String? =

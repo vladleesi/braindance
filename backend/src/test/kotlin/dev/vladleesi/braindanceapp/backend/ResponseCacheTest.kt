@@ -77,8 +77,13 @@ class ResponseCacheTest {
                 val result =
                     cache.getOrLoad(
                         "key",
-                    ) { ResponseCache.LoadResult.Uncached(502).also { loads.incrementAndGet() } }
-                assertEquals(ResponseCache.LoadResult.Uncached(502), result)
+                    ) {
+                        ResponseCache.LoadResult
+                            .Uncached(
+                                UpstreamFailure.UNAVAILABLE,
+                            ).also { loads.incrementAndGet() }
+                    }
+                assertEquals(ResponseCache.LoadResult.Uncached(UpstreamFailure.UNAVAILABLE), result)
             }
             assertEquals(2, loads.get())
             assertFailsWith<IllegalStateException> { cache.getOrLoad("key") { error("upstream failed") } }

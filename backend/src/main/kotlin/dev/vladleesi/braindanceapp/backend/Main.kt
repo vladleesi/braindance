@@ -24,11 +24,10 @@ fun main() {
                     uri.fragment == null,
             ) { "PUBLIC_BASE_URL must be an HTTP origin" }
         }
-        require(config.rateLimiterMode in setOf("redis", "in-memory")) { "Invalid IGDB_RATE_LIMITER" }
     }
     val redis =
         startup.measure("redis_pool") {
-            if (config.rateLimiterMode == "redis") {
+            if (config.rateLimiterMode == RateLimiterMode.REDIS) {
                 require(!config.redisUrl.isNullOrBlank()) { "REDIS_URL is required for the global IGDB limit" }
                 RedisClient.create(config.redisUrl)
             } else {

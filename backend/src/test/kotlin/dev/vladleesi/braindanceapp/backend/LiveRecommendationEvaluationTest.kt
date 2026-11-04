@@ -131,7 +131,9 @@ class LiveRecommendationEvaluationTest {
     }
 
     private suspend fun verifyGameTypes(igdb: IgdbService) {
-        val body = igdb.execute("/v4/game_types", "fields type;limit 50;", SLOT_WAIT).body ?: error("game_types failed")
+        val body =
+            igdb.execute("/v4/game_types", "fields type;limit 50;", SLOT_WAIT).bodyOrNull()
+                ?: error("game_types failed")
         val types =
             json.parseToJsonElement(body.decodeToString()).jsonArray.associate {
                 it.jsonObject
@@ -153,7 +155,7 @@ class LiveRecommendationEvaluationTest {
         title: String,
     ): Int? {
         val query = "search \"$title\";fields name;where game_type = (0,8,9) & version_parent = null;limit 10;"
-        val body = igdb.execute("/v4/games", query, SLOT_WAIT).body ?: return null
+        val body = igdb.execute("/v4/games", query, SLOT_WAIT).bodyOrNull() ?: return null
         val games = json.parseToJsonElement(body.decodeToString()).jsonArray.map { it.jsonObject }
         val match =
             games.firstOrNull { it["name"]?.jsonPrimitive?.content.equals(title, ignoreCase = true) }
@@ -166,7 +168,7 @@ class LiveRecommendationEvaluationTest {
         val query =
             "fields name;where similar_games = null & keywords = null & game_type = 0 & genres != null " +
                 "& total_rating_count > 3;sort total_rating_count desc;limit 1;"
-        val body = igdb.execute("/v4/games", query, SLOT_WAIT).body ?: return null
+        val body = igdb.execute("/v4/games", query, SLOT_WAIT).bodyOrNull() ?: return null
         return json
             .parseToJsonElement(
                 body.decodeToString(),
@@ -189,7 +191,7 @@ class LiveRecommendationEvaluationTest {
         val sourceBody =
             igdb
                 .execute(RecommendationService.MULTIQUERY_PATH, RecommendationQueries.sourceQuery(id), SLOT_WAIT)
-                .body
+                .bodyOrNull()
         val graph =
             sourceBody?.let {
                 RecommendationQueries.parseSourceGraph(

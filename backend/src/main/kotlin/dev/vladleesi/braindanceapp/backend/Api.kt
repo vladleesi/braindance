@@ -141,15 +141,19 @@ internal fun Application.api(
                                 val suffix = if (port in listOf(80, 443)) "" else ":$port"
                                 val requestBase = "${call.request.local.scheme}://${call.request.host()}$suffix"
                                 val base = config.publicBaseUrl ?: requestBase
-                                val result = giveaways.giveaway(path, base)
-                                when (result.status) {
-                                    200 -> {
+                                when (val result = giveaways.giveaway(path, base)) {
+                                    is UpstreamOutcome.Ok -> {
                                         call.attributes.put(publicResponse, Unit)
-                                        respondJson(200, checkNotNull(result.body).decodeToString())
+                                        respondJson(200, result.body.decodeToString())
                                     }
-                                    404 -> respondJson(404, """{"error":"Giveaway not found"}""")
-                                    429 -> respondJson(429, """{"error":"Rate limit exceeded"}""")
-                                    else -> respondJson(502, """{"error":"Upstream unavailable"}""")
+                                    is UpstreamOutcome.Failed ->
+                                        when (result.failure) {
+                                            UpstreamFailure.NOT_FOUND ->
+                                                respondJson(404, """{"error":"Giveaway not found"}""")
+                                            UpstreamFailure.RATE_LIMITED ->
+                                                respondJson(429, """{"error":"Rate limit exceeded"}""")
+                                            else -> respondJson(502, """{"error":"Upstream unavailable"}""")
+                                        }
                                 }
                             } else {
                                 respondJson(404, """{"error":"Not found"}""")
@@ -189,14 +193,17 @@ private suspend fun RoutingContext.respondGame(
             respondJson(413, """{"error":"Query too large"}""")
             return
         }
-    when (result.status) {
-        200 -> {
+    when (result) {
+        is UpstreamOutcome.Ok -> {
             call.attributes.put(publicResponse, Unit)
-            respondJson(200, checkNotNull(result.body).decodeToString())
+            respondJson(200, result.body.decodeToString())
         }
-        400 -> respondJson(400, """{"error":"Invalid request"}""")
-        429 -> respondJson(429, """{"error":"Rate limit exceeded"}""")
-        else -> respondJson(502, """{"error":"Upstream unavailable"}""")
+        is UpstreamOutcome.Failed ->
+            when (result.failure) {
+                UpstreamFailure.BAD_REQUEST -> respondJson(400, """{"error":"Invalid request"}""")
+                UpstreamFailure.RATE_LIMITED -> respondJson(429, """{"error":"Rate limit exceeded"}""")
+                else -> respondJson(502, """{"error":"Upstream unavailable"}""")
+            }
     }
 }
 
@@ -223,14 +230,14 @@ private suspend fun RoutingContext.respondRecommendations(
         return
     }
     val result = recommendations.recommendations(id)
-    when (result.status) {
-        200 -> {
+    when (result.failure) {
+        null -> {
             // Degraded and stale fallbacks stay private so edge caches do not extend a partial answer.
             if (result.kind == RecommendationResult.Kind.COMPLETE) call.attributes.put(publicResponse, Unit)
             respondJson(200, gameCardsJson(result.games.take(limit)))
         }
-        404 -> respondJson(404, """{"error":"Game not found"}""")
-        429 -> respondJson(429, """{"error":"Rate limit exceeded"}""")
+        UpstreamFailure.NOT_FOUND -> respondJson(404, """{"error":"Game not found"}""")
+        UpstreamFailure.RATE_LIMITED -> respondJson(429, """{"error":"Rate limit exceeded"}""")
         else -> respondJson(502, """{"error":"Upstream unavailable"}""")
     }
 }
@@ -270,8 +277,8 @@ private suspend fun RoutingContext.respondTrending(
             respondJson(200, result.response.body.decodeToString())
         }
         is ResponseCache.LoadResult.Uncached ->
-            when (result.status) {
-                429 -> respondJson(429, """{"error":"Rate limit exceeded"}""")
+            when (result.failure) {
+                UpstreamFailure.RATE_LIMITED -> respondJson(429, """{"error":"Rate limit exceeded"}""")
                 else -> respondJson(502, """{"error":"Upstream unavailable"}""")
             }
     }
@@ -339,18 +346,21 @@ private suspend fun RoutingContext.respondImage(
             return
         }
     val (result, contentType) = imageResult
-    when (result.status) {
-        200 -> {
+    when (result) {
+        is UpstreamOutcome.Ok -> {
             call.attributes.put(publicResponse, Unit)
             call.respondBytes(
-                checkNotNull(result.body),
-                ContentType.parse(checkNotNull(contentType)),
+                result.body,
+                ContentType.parse(checkNotNull(contentType) { "A proxied image always has a content type" }),
                 status = HttpStatusCode.OK,
             )
         }
-        400 -> respondJson(400, """{"error":"Invalid image URL"}""")
-        503 -> respondJson(503, """{"error":"Image proxy busy"}""")
-        else -> respondJson(502, """{"error":"Upstream image unavailable"}""")
+        is UpstreamOutcome.Failed ->
+            when (result.failure) {
+                UpstreamFailure.BAD_REQUEST -> respondJson(400, """{"error":"Invalid image URL"}""")
+                UpstreamFailure.BUSY -> respondJson(503, """{"error":"Image proxy busy"}""")
+                else -> respondJson(502, """{"error":"Upstream image unavailable"}""")
+            }
     }
 }
 

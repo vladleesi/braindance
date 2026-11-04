@@ -614,7 +614,7 @@ class TrendingTest {
             val igdb = IgdbService(stub, RateLimiter { true }, config)
             val service = TrendingService(igdb, MutableClock(now * 1000), log = {}, responseBudget = 50.milliseconds)
             // A cold refresh outlasts the budget: callers time out, and a retry joins the running refresh.
-            repeat(2) { assertEquals(ResponseCache.LoadResult.Uncached(504), service.trending()) }
+            repeat(2) { assertEquals(ResponseCache.LoadResult.Uncached(UpstreamFailure.TIMEOUT), service.trending()) }
             checkNotNull(stub.gate).complete(Unit)
             val served =
                 withTimeout(5.seconds) {
@@ -643,12 +643,18 @@ class TrendingTest {
         runBlocking {
             val clock = MutableClock(now * 1000)
             val noSignals = StubIgdb(primitives = emptyMap())
-            assertEquals(ResponseCache.LoadResult.Uncached(502), service(noSignals, clock).trending())
+            assertEquals(
+                ResponseCache.LoadResult.Uncached(UpstreamFailure.UNAVAILABLE),
+                service(noSignals, clock).trending(),
+            )
             assertEquals(1, noSignals.discoveryCalls.get() + noSignals.hydrationCalls.get())
             // Only an established game far down every list: nothing qualifies, so nothing is cached.
             val weak =
                 StubIgdb(primitives = PopularitySignal.entries.associate { it.typeId to (101..290).toList() + 1 })
-            assertEquals(ResponseCache.LoadResult.Uncached(502), service(weak, clock).trending())
+            assertEquals(
+                ResponseCache.LoadResult.Uncached(UpstreamFailure.UNAVAILABLE),
+                service(weak, clock).trending(),
+            )
         }
 
     @Test
@@ -664,7 +670,7 @@ class TrendingTest {
             assertTrue(stale.stale)
             assertEquals(fresh.response.body.decodeToString(), stale.response.body.decodeToString())
             clock.nowMillis += 25 * 60 * 60 * 1000L
-            assertEquals(ResponseCache.LoadResult.Uncached(429), service.trending())
+            assertEquals(ResponseCache.LoadResult.Uncached(UpstreamFailure.RATE_LIMITED), service.trending())
         }
 
     @Test

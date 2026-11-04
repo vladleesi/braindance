@@ -49,7 +49,7 @@ class LiveTrendingEvaluationTest {
             runBlocking {
                 val nowSeconds = Instant.now().epochSecond
                 val types = igdb.execute("/v4/popularity_types", "fields name,updated_at;sort id asc;limit 50;", 2000)
-                println("popularity_types: ${types.body?.decodeToString()}")
+                println("popularity_types: ${types.bodyOrNull()?.decodeToString()}")
                 val eventNames =
                     igdb.execute(
                         "/v4/events",
@@ -57,7 +57,7 @@ class LiveTrendingEvaluationTest {
                             "sort start_time desc;limit 50;",
                         2000,
                     )
-                println("events (30 days): ${eventNames.body?.decodeToString()?.take(3000)}")
+                println("events (30 days): ${eventNames.bodyOrNull()?.decodeToString()?.take(3000)}")
 
                 val (discovery, discoveryTime) =
                     measureTimedValue {
@@ -67,7 +67,7 @@ class LiveTrendingEvaluationTest {
                             2000,
                         )
                     }
-                val discoveryBody = checkNotNull(discovery.body) { "discovery failed: ${discovery.status}" }
+                val discoveryBody = checkNotNull(discovery.bodyOrNull()) { "discovery failed: ${discovery.status}" }
                 val results = RecommendationQueries.parseMultiquery(discoveryBody)
                 val signals = validPopularitySignals(results, System.currentTimeMillis(), TrendingRanking.signals)
                 println("discovery: ${discoveryBody.size} bytes in $discoveryTime; valid signals ${signals.keys}")
@@ -94,7 +94,7 @@ class LiveTrendingEvaluationTest {
                             2000,
                         )
                     }
-                val hydrationBody = checkNotNull(hydration.body) { "hydration failed: ${hydration.status}" }
+                val hydrationBody = checkNotNull(hydration.bodyOrNull()) { "hydration failed: ${hydration.status}" }
                 val hydrated = RecommendationQueries.parseMultiquery(hydrationBody)
                 println(
                     "hydration: ${hydrationBody.size} bytes in $hydrationTime; returned " +
@@ -265,7 +265,7 @@ class LiveTrendingEvaluationTest {
                 "fields id;where id = (${gameIds.joinToString(",")}) & genres = ($INDIE_GENRE);limit 500;",
                 2000,
             )
-        val body = response.body ?: return emptySet()
+        val body = response.bodyOrNull() ?: return emptySet()
         return json
             .parseToJsonElement(body.decodeToString())
             .jsonArray
@@ -308,7 +308,7 @@ class LiveTrendingEvaluationTest {
                     "release_dates.status.name;where id = (${candidates.joinToString(",")});limit ${candidates.size};",
                 2000,
             )
-        val body = checkNotNull(response.body) { "legacy hydration failed: ${response.status}" }
+        val body = checkNotNull(response.bodyOrNull()) { "legacy hydration failed: ${response.status}" }
         val games = RecommendationQueries.parseGames(json.parseToJsonElement(body.decodeToString()).jsonArray)
         val scored =
             games.mapNotNull { game ->

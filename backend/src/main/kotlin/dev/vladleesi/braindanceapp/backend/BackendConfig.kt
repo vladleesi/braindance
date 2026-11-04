@@ -4,6 +4,20 @@
 
 package dev.vladleesi.braindanceapp.backend
 
+/** How the IGDB rate limit is shared: one Redis key for all replicas, or per process for a single instance. */
+enum class RateLimiterMode(
+    val configValue: String,
+) {
+    REDIS("redis"),
+    IN_MEMORY("in-memory"),
+    ;
+
+    companion object {
+        fun parse(value: String): RateLimiterMode =
+            requireNotNull(entries.firstOrNull { it.configValue == value }) { "Invalid IGDB_RATE_LIMITER" }
+    }
+}
+
 data class BackendConfig(
     val clientId: String?,
     val clientSecret: String?,
@@ -11,7 +25,7 @@ data class BackendConfig(
     val allowedOrigins: Set<String>,
     val port: Int,
     val publicBaseUrl: String? = null,
-    val rateLimiterMode: String = "redis",
+    val rateLimiterMode: RateLimiterMode = RateLimiterMode.REDIS,
     val publicCacheEnabled: Boolean = false,
     val cloudflareOriginSecret: String? = null,
 ) {
@@ -32,7 +46,7 @@ data class BackendConfig(
                         .toSet(),
                 port = env["PORT"]?.toIntOrNull()?.takeIf { it in 1..65535 } ?: 8080,
                 publicBaseUrl = env["PUBLIC_BASE_URL"]?.trimEnd('/')?.takeIf(String::isNotEmpty),
-                rateLimiterMode = env["IGDB_RATE_LIMITER"] ?: "redis",
+                rateLimiterMode = RateLimiterMode.parse(env["IGDB_RATE_LIMITER"] ?: RateLimiterMode.REDIS.configValue),
                 publicCacheEnabled = env["PUBLIC_CACHE_ENABLED"] == "true",
                 cloudflareOriginSecret = env["CLOUDFLARE_ORIGIN_SECRET"],
             )

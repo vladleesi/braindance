@@ -24,12 +24,18 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
+private const val OK_STATUS = 200
+
 /** Outcome of a recommendation request. Only [Kind.COMPLETE] results may be cached publicly. */
 internal data class RecommendationResult(
-    val status: Int,
+    /** Null when recommendations were computed; otherwise why they could not be. */
+    val failure: UpstreamFailure? = null,
     val games: List<Recommendation> = emptyList(),
     val kind: Kind = Kind.COMPLETE,
 ) {
+    /** The HTTP status the API answers with. */
+    val status: Int get() = failure?.status ?: OK_STATUS
+
     enum class Kind {
         /** Full hybrid discovery succeeded. */
         COMPLETE,
@@ -96,13 +102,13 @@ internal class RecommendationService(
             try {
                 compute(gameId, started, metrics)
             } catch (e: CancellationException) {
-                if (e is TimeoutCancellationException) RecommendationResult(GATEWAY_TIMEOUT) else throw e
+                if (e is TimeoutCancellationException) RecommendationResult(UpstreamFailure.TIMEOUT) else throw e
             } catch (e: Exception) {
                 metrics.error = e::class.simpleName
-                RecommendationResult(BAD_GATEWAY)
+                RecommendationResult(UpstreamFailure.UNAVAILABLE)
             }
         val result =
-            if (computed.status !in setOf(OK, NOT_FOUND)) {
+            if (computed.failure != null && computed.failure != UpstreamFailure.NOT_FOUND) {
                 staleFallback(gameId) ?: computed
             } else {
                 computed
@@ -122,11 +128,14 @@ internal class RecommendationService(
                 igdb.execute(MULTIQUERY_PATH, RecommendationQueries.sourceQuery(gameId), SLOT_WAIT.inWholeMilliseconds)
             }
         metrics.record(sourceResponse)
-        if (sourceResponse.status != OK) return RecommendationResult(errorStatus(sourceResponse.status))
+        val sourceBody =
+            when (sourceResponse) {
+                is UpstreamOutcome.Ok -> sourceResponse.body
+                is UpstreamOutcome.Failed -> return RecommendationResult(sourceFailure(sourceResponse.failure))
+            }
         val graph =
-            RecommendationQueries.parseSourceGraph(
-                RecommendationQueries.parseMultiquery(checkNotNull(sourceResponse.body)),
-            ) ?: return RecommendationResult(NOT_FOUND)
+            RecommendationQueries.parseSourceGraph(RecommendationQueries.parseMultiquery(sourceBody))
+                ?: return RecommendationResult(UpstreamFailure.NOT_FOUND)
 
         val discoveryQuery =
             RecommendationQueries.discoveryQuery(graph, RecommendationRanking.retrievalKeywords(graph))
@@ -139,7 +148,7 @@ internal class RecommendationService(
         metrics.scoringMicros = scoringStarted.elapsedNow().inWholeMicroseconds
         metrics.candidates = pool.size
         val kind = if (discovered == null) RecommendationResult.Kind.DEGRADED else RecommendationResult.Kind.COMPLETE
-        return RecommendationResult(OK, ranked, kind)
+        return RecommendationResult(games = ranked, kind = kind)
     }
 
     /** Returns null when discovery fails, so the caller falls back to native graph neighbors. */
@@ -157,13 +166,13 @@ internal class RecommendationService(
             return null
         }
         metrics.record(response)
-        if (response.status != OK) {
+        if (response !is UpstreamOutcome.Ok) {
             metrics.discoveryFailure = response.status.toString()
             return null
         }
         return try {
             RecommendationQueries
-                .parseMultiquery(checkNotNull(response.body))
+                .parseMultiquery(response.body)
                 .values
                 .flatMap(RecommendationQueries::parseGames)
         } catch (e: CancellationException) {
@@ -192,11 +201,11 @@ internal class RecommendationService(
         val now = clock.millis()
         val entry =
             when {
-                result.status == OK && result.kind == RecommendationResult.Kind.COMPLETE ->
+                result.failure == null && result.kind == RecommendationResult.Kind.COMPLETE ->
                     CacheEntry(result, now + FRESH.inWholeMilliseconds, now + STALE_IF_ERROR.inWholeMilliseconds)
-                result.status == OK && result.kind == RecommendationResult.Kind.DEGRADED ->
+                result.failure == null && result.kind == RecommendationResult.Kind.DEGRADED ->
                     CacheEntry(result, now + DEGRADED.inWholeMilliseconds, now + DEGRADED.inWholeMilliseconds)
-                result.status == NOT_FOUND ->
+                result.failure == UpstreamFailure.NOT_FOUND ->
                     CacheEntry(result, now + DEGRADED.inWholeMilliseconds, now + DEGRADED.inWholeMilliseconds)
                 // Keep the expired complete entry for later stale-if-error responses; do not cache failures.
                 else -> return
@@ -204,7 +213,9 @@ internal class RecommendationService(
         synchronized(cache) { cache[gameId] = entry }
     }
 
-    private fun errorStatus(status: Int) = if (status == TOO_MANY_REQUESTS) TOO_MANY_REQUESTS else BAD_GATEWAY
+    // A rate limit is reported as such; any other source failure means IGDB is unavailable.
+    private fun sourceFailure(failure: UpstreamFailure) =
+        if (failure == UpstreamFailure.RATE_LIMITED) failure else UpstreamFailure.UNAVAILABLE
 
     private class Metrics {
         var igdbRequests = 0
@@ -214,9 +225,9 @@ internal class RecommendationService(
         var discoveryFailure: String? = null
         var error: String? = null
 
-        fun record(response: ApiResult) {
+        fun record(response: UpstreamOutcome) {
             igdbRequests++
-            payloadBytes += response.body?.size ?: 0
+            payloadBytes += (response as? UpstreamOutcome.Ok)?.body?.size ?: 0
         }
 
         fun event(
@@ -245,11 +256,5 @@ internal class RecommendationService(
         private val TOTAL_BUDGET = 4.5.seconds
         private val MIN_DISCOVERY = 800.milliseconds
         private val SLOT_WAIT = 1.seconds
-
-        private const val OK = 200
-        private const val NOT_FOUND = 404
-        private const val TOO_MANY_REQUESTS = 429
-        private const val BAD_GATEWAY = 502
-        private const val GATEWAY_TIMEOUT = 504
     }
 }

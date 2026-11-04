@@ -16,11 +16,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import java.time.Clock
 
-data class ApiResult(
-    val status: Int,
-    val body: ByteArray? = null,
-)
-
 class IgdbService(
     private val upstream: Upstream,
     private val rateLimiter: RateLimiter,
@@ -41,20 +36,19 @@ class IgdbService(
     suspend fun query(
         path: String,
         input: JsonObject,
-    ): ApiResult {
-        val (upstreamPath, body) = buildQuery(path, input) ?: return ApiResult(400)
+    ): UpstreamOutcome {
+        val (upstreamPath, body) =
+            buildQuery(path, input) ?: return UpstreamOutcome.Failed(UpstreamFailure.BAD_REQUEST)
         val result =
             responses.getOrLoad("$upstreamPath\n$body") {
-                val response = execute(upstreamPath, body)
-                if (response.status == 200) {
-                    ResponseCache.LoadResult.Hit(CachedResponse(checkNotNull(response.body)))
-                } else {
-                    ResponseCache.LoadResult.Uncached(response.status)
+                when (val response = execute(upstreamPath, body)) {
+                    is UpstreamOutcome.Ok -> ResponseCache.LoadResult.Hit(CachedResponse(response.body))
+                    is UpstreamOutcome.Failed -> ResponseCache.LoadResult.Uncached(response.failure)
                 }
             }
         return when (result) {
-            is ResponseCache.LoadResult.Hit -> ApiResult(200, result.response.body)
-            is ResponseCache.LoadResult.Uncached -> ApiResult(result.status)
+            is ResponseCache.LoadResult.Hit -> UpstreamOutcome.Ok(result.response.body)
+            is ResponseCache.LoadResult.Uncached -> UpstreamOutcome.Failed(result.failure)
         }
     }
 
@@ -66,12 +60,12 @@ class IgdbService(
         path: String,
         body: String,
         slotWaitMillis: Long = 0,
-    ): ApiResult {
+    ): UpstreamOutcome {
         var accessToken = getToken()
         repeat(2) { attempt ->
             if (!takeSlot(slotWaitMillis)) {
                 failures.limiterRejected(IGDB_OPERATION)
-                return ApiResult(429)
+                return UpstreamOutcome.Failed(UpstreamFailure.RATE_LIMITED)
             }
             val response =
                 openRequests.withPermit { upstream.igdb(path, body, checkNotNull(config.clientId), accessToken) }
@@ -81,19 +75,20 @@ class IgdbService(
             } else {
                 if (status !in 200..299) {
                     failures.upstreamFailed(IGDB_OPERATION, status)
-                    return ApiResult(if (status == 429) 429 else 502)
+                    val failure = if (status == 429) UpstreamFailure.RATE_LIMITED else UpstreamFailure.UNAVAILABLE
+                    return UpstreamOutcome.Failed(failure)
                 }
                 val contentType = response.headers[HttpHeaders.ContentType].orEmpty()
                 if (!contentType.contains("application/json")) {
                     failures.upstreamFailed(IGDB_OPERATION, status, reason = "content_type")
-                    return ApiResult(502)
+                    return UpstreamOutcome.Failed(UpstreamFailure.UNAVAILABLE)
                 }
-                return ApiResult(200, response.body)
+                return UpstreamOutcome.Ok(response.body)
             }
         }
         // IGDB rejected a freshly issued token as well.
         failures.upstreamFailed(IGDB_OPERATION, 401, reason = "token_rejected")
-        return ApiResult(502)
+        return UpstreamOutcome.Failed(UpstreamFailure.UNAVAILABLE)
     }
 
     private suspend fun takeSlot(waitMillis: Long): Boolean {

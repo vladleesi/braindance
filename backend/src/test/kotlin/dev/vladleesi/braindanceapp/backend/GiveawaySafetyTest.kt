@@ -48,7 +48,7 @@ class GiveawaySafetyTest {
             val (service, http) = service(giveawaysJson = json)
 
             val result = service.giveaway("/v1/giveaways", "https://api.example")
-            val items = Json.parseToJsonElement(checkNotNull(result.body).decodeToString()).jsonArray
+            val items = Json.parseToJsonElement(checkNotNull(result.bodyOrNull()).decodeToString()).jsonArray
             val first = items[0].jsonObject
             val second = items[1].jsonObject
 

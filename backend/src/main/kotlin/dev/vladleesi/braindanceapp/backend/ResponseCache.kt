@@ -54,8 +54,10 @@ internal class ResponseCache(
         ) : LoadResult
 
         data class Uncached(
-            val status: Int,
-        ) : LoadResult
+            val failure: UpstreamFailure,
+        ) : LoadResult {
+            val status: Int get() = failure.status
+        }
     }
 
     suspend fun getOrLoad(
