@@ -24,5 +24,6 @@ dependencyResolutionManagement {
 rootProject.name = "braindance"
 include(":shared")
 include(":androidApp")
+include(":baselineprofile")
 include(":webApp")
 include(":backend")

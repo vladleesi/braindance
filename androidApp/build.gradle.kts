@@ -12,6 +12,7 @@ val mobileVersionProperties =
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.baselineprofile)
     alias(libs.plugins.kotlin.compose.compiler)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
@@ -44,7 +45,10 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
-            isMinifyEnabled = false
+            // R8 shrinks and optimizes the release build; the baseline profile precompiles startup and browsing code.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {
@@ -72,6 +76,8 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.koin.android)
+    implementation(libs.androidx.profileinstaller)
+    baselineProfile(project(":baselineprofile"))
     debugImplementation(libs.compose.ui.tooling)
     androidTestImplementation(libs.androidx.tests.ext.junit)
     androidTestImplementation(libs.androidx.tests.runner)

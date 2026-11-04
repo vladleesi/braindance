@@ -64,6 +64,7 @@ the full CI environment, including container checks. See [security checks](secur
 | Android build | `./gradlew :androidApp:build` |
 | Android/shared unit tasks | `./gradlew :androidApp:testDebugUnitTest :shared:testAndroidHostTest` |
 | Android device/emulator | `./gradlew :androidApp:connectedCheck` |
+| Android baseline profile | `./gradlew :androidApp:generateReleaseBaselineProfile` (rooted emulator or API 33+ device, backend reachable); commit the regenerated `androidApp/src/release/generated/baselineProfiles/` |
 | Production Web bundle | `./gradlew :webApp:wasmJsBrowserDistribution` |
 | iOS Simulator framework | `./gradlew :shared:linkDebugFrameworkIosSimulatorArm64` |
 | Backend build and distribution | `./gradlew :backend:build :backend:installDist` |
