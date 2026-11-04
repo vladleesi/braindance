@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- GitHub Pages cannot send headers, so the policy is set here. The backend origin is filled in at build time.
+         Compose starts a worker from a blob: URL and downloads fallback fonts from fonts.gstatic.com for glyphs that
+         the bundled fonts lack; IGDB serves game covers. -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://braindance-api.vladleesi.dev https://images.igdb.com https://fonts.gstatic.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+    <meta name="description" content="Braindance helps you discover games: what is popular right now, the most anticipated releases, similar games, and current free giveaways.">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#171717">
     <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
@@ -29,7 +35,8 @@
     </style>
 </head>
 <body>
+    <noscript>Braindance needs JavaScript and a browser with WebAssembly garbage collection, such as current Chrome, Edge, Firefox, or Safari.</noscript>
     <div id="webApp"></div>
-    <script src="webApp-0.7.2.js"></script>
+    <script src="webApp-0.8.0.js"></script>
 </body>
 </html>
