@@ -182,7 +182,7 @@ private suspend fun HttpStatement.bounded(
         val acceptedType =
             when (expectedType) {
                 null -> true
-                "image/" -> contentType.startsWith(expectedType)
+                "image/" -> isAllowedImageType(contentType)
                 else -> contentType.contains(expectedType)
             }
         val body =

@@ -68,8 +68,8 @@ All endpoints are GET-only and return JSON. Unknown or duplicate query keys are 
 | `/v1/games/recommendations?id=42&limit=24` | Similar games, best first; `limit` 1–50 (default 24); 404 if unknown |
 | `/v1/games/trending?page=1&pageSize=20` | [Popular Right Now](#popular-right-now) feed of released games |
 | `/v1/games/anticipated?pageSize=20` | Upcoming games ranked by IGDB hypes; `pageSize` 1–50 |
-| `/v1/giveaways`, `/v1/giveaways/42` | Giveaway list and details |
-| `/v1/giveaways/image?url=...` | Proxy for images under `https://www.gamerpower.com/offers/` |
+| `/v1/giveaways`, `/v1/giveaways/42` | Giveaway list and details; links that are not absolute HTTPS URLs are removed |
+| `/v1/giveaways/image?url=...` | Proxy for JPEG, PNG, WebP, GIF, and AVIF images under `https://www.gamerpower.com/offers/` |
 
 Game cards are `{"id","name","cover":{"url"}}`. Request URLs are limited to 2 KiB; upstream JSON to 1 MiB (IGDB) and
 2 MiB (GamerPower), images to 5 MiB. Upstream requests time out after 8 seconds (token requests after 5), at most

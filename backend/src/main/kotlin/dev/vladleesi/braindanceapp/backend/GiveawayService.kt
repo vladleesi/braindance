@@ -85,7 +85,7 @@ class GiveawayService(
         val contentType = response.headers[HttpHeaders.ContentType]
         val contentLength = response.headers[HttpHeaders.ContentLength]?.toLongOrNull()
         if (response.status.value !in 200..299 ||
-            contentType?.startsWith("image/") != true ||
+            !isAllowedImageType(contentType) ||
             (contentLength != null && contentLength > 5 * 1024 * 1024)
         ) {
             return ResponseCache.LoadResult.Uncached(502)
@@ -106,11 +106,20 @@ class GiveawayService(
                     val encoded = java.net.URLEncoder.encode(validated, Charsets.UTF_8)
                     this[field] = JsonPrimitive("$base/v1/giveaways/image?url=$encoded")
                 }
+                // Clients open these links outside the app, so anything but an absolute HTTPS link is dropped,
+                // including javascript: and data: links from upstream data.
+                for (field in linkFields) {
+                    val original = obj[field] ?: continue
+                    val link = (original as? JsonPrimitive)?.takeIf { it.isString }?.content
+                    if (safeHttpsLink(link) == null) remove(field)
+                }
             },
         )
     }
 
     private companion object {
+        val linkFields = listOf("open_giveaway_url", "open_giveaway", "gamerpower_url")
+        val encodedPathSeparators = Regex("%(2e|2f|5c)", RegexOption.IGNORE_CASE)
         const val CACHE_TTL_MILLIS = 10 * 60 * 1000L
         const val GIVEAWAY_CACHE_BYTES = 8L * 1024 * 1024
         const val MAX_GIVEAWAY_BYTES = 2 * 1024 * 1024
@@ -121,10 +130,14 @@ class GiveawayService(
     internal fun validImageUrl(value: String?): String? =
         try {
             val url = URI(value ?: return null).normalize()
+            // The raw path is what is forwarded, so it is the one checked. Encoded dots and slashes could otherwise
+            // pass as /offers/ here and resolve to another path upstream.
+            val rawPath = url.rawPath.orEmpty()
             if (!url.scheme.equals("https", ignoreCase = true) ||
                 !url.host.equals("www.gamerpower.com", ignoreCase = true) ||
                 url.port !in listOf(-1, 443) ||
-                !url.path.startsWith("/offers/") ||
+                !rawPath.startsWith("/offers/") ||
+                encodedPathSeparators.containsMatchIn(rawPath) ||
                 url.userInfo != null
             ) {
                 null
@@ -135,3 +148,28 @@ class GiveawayService(
             null
         }
 }
+
+/** [value] when it is an absolute HTTPS link with a host and no credentials, otherwise null. */
+internal fun safeHttpsLink(value: String?): String? =
+    try {
+        val url = URI(value?.trim() ?: return null)
+        value.takeIf {
+            url.scheme.equals("https", ignoreCase = true) &&
+                !url.host.isNullOrEmpty() &&
+                url.userInfo == null
+        }
+    } catch (_: Exception) {
+        null
+    }
+
+private val allowedImageTypes = setOf("image/jpeg", "image/png", "image/webp", "image/gif", "image/avif")
+
+/**
+ * Whether [contentType] is a raster image type the proxy may serve. SVG and other scriptable or unusual types are
+ * refused, so the proxy does not depend on response headers to neutralise them.
+ */
+internal fun isAllowedImageType(contentType: String?): Boolean =
+    contentType
+        ?.substringBefore(';')
+        ?.trim()
+        ?.lowercase() in allowedImageTypes
