@@ -119,6 +119,10 @@ kotlin {
             // Network
             implementation(libs.ktor.client.darwin)
         }
+        // Compose UI tests run natively on iOS; Android host tests would need Robolectric.
+        iosTest.dependencies {
+            implementation(libs.compose.ui.test)
+        }
         wasmJsMain.dependencies {
             // Network
             implementation(libs.ktor.client.js)

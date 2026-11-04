@@ -119,8 +119,8 @@ class NavigationState(
 fun NavigationState.toEntries(entryProvider: (NavKey) -> NavEntry<NavKey>): SnapshotStateList<NavEntry<NavKey>> {
     val decoratedEntries =
         backStacks.mapValues { (topLevelRoute, stack) ->
-            // Keyed per tab: both decorators key their storage by composition position, so tabs created in this loop
-            // would otherwise share it, and popping a route in one tab could clear state that another tab still uses.
+            // Keyed per tab, so each tab's saved state and ViewModels stay tied to that tab rather than to its position
+            // in this loop; the same route open in two tabs keeps two ViewModels (see NavEntryViewModelScopeTest).
             key(topLevelRoute) {
                 val decorators =
                     listOf(
