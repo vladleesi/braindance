@@ -4,6 +4,15 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.8.1
+
+### Web
+
+- Use plain addresses such as `/game/42` instead of `/#/game/42`.
+- Make the browser's Back button retrace your steps across tabs: after opening a game and switching tabs, Back
+  returns to the game and then to Home before leaving the site.
+- Open Home's first screen when its address is entered directly.
+
 ## 0.8.0
 
 ### Android
