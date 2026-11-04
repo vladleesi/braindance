@@ -21,11 +21,14 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
+import org.koin.mp.KoinPlatform
 
 fun initKoin(
     androidConfig: KoinAppDeclaration? = null,
     isDebugBuild: Boolean = false,
 ) {
+    // A host can be created more than once per process, such as a second iPad window; Koin may start only once.
+    if (KoinPlatform.getKoinOrNull() != null) return
     // Logs and HTTP logging stay off in release builds.
     if (isDebugBuild) BLogger.enable()
     val application =
