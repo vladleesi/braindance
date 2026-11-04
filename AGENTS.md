@@ -324,6 +324,9 @@ for release/publication workflow changes or recovery.
 - When the user asks to prepare changes for a commit, run `./gradlew ktlintFormat detekt`, fix any findings, and
   review formatter changes before recommending a commit message.
 - Review changed files for accidental edits and stale references.
+- When the ignored `.local-docs/reviews/README.md` exists, follow it for review findings and remediation work: pass
+  its change gate before every code commit, so updates add no findings, and remove fixed findings and finished plan
+  steps from the register.
 - When finishing work that changes repository files, include a concise suggested commit message in the final response.
 - When finishing work, clearly state any action required from the user. Include next steps only when the user
   needs to do something; omit them otherwise.
