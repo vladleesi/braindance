@@ -28,7 +28,6 @@ import dev.vladleesi.braindanceapp.resources.trending_reason_showcased
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith70Alpha
 import dev.vladleesi.braindanceapp.ui.style.white
-import dev.vladleesi.braindanceapp.ui.viewmodels.HomeStateEntity
 import dev.vladleesi.braindanceapp.utils.clickable
 import dev.vladleesi.braindanceapp.utils.rememberCachedImagePainter
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
@@ -113,7 +112,7 @@ data class MiniGameCardModel(
     val title: String,
     val backgroundImageUrl: String,
     val label: MiniGameCardLabel? = null,
-) : HomeStateEntity
+)
 
 /** A short verified fact shown on a card's cover, such as why a game is trending. */
 sealed interface MiniGameCardLabel {

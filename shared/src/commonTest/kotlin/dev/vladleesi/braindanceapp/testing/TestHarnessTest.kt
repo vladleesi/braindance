@@ -6,8 +6,8 @@ import dev.vladleesi.braindanceapp.data.api.remote.GamerPowerRemote
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
-import dev.vladleesi.braindanceapp.ui.viewmodels.HomeState
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
+import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -18,16 +18,15 @@ class TestHarnessTest : ViewModelTest() {
     fun homeViewModelLoadsThroughTheMockBackend() =
         runTest(dispatcher) {
             val client = mockBackendClient(dispatcher) { respondJson("""[{"id":1,"name":"A"}]""") }
-            val manager = startTestKoin(client)
             val viewModel =
                 HomeViewModel(
-                    homeRepo = HomeRepo(GamesRemote(manager)),
-                    gamerPowerRepo = GamerPowerRepo(GamerPowerRemote(manager)),
+                    homeRepo = HomeRepo(GamesRemote(client)),
+                    gamerPowerRepo = GamerPowerRepo(GamerPowerRemote(client)),
                 )
 
             viewModel.load()
             advanceUntilIdle()
 
-            assertIs<HomeState.Success<*>>(viewModel.trendingNow.value)
+            assertIs<SectionState.Success<*>>(viewModel.trendingNow.value)
         }
 }

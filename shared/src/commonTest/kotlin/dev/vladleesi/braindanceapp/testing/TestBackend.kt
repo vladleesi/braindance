@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.testing
 
-import dev.vladleesi.braindanceapp.data.api.KtorClientManager
 import dev.vladleesi.braindanceapp.data.api.clients.BackendClient
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -15,10 +14,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.CoroutineDispatcher
-import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
-import org.koin.core.qualifier.named
-import org.koin.dsl.module
 
 const val TEST_BACKEND_URL = "https://backend.test"
 
@@ -41,18 +36,3 @@ fun MockRequestHandleScope.respondJson(
     json: String,
     status: HttpStatusCode = HttpStatusCode.OK,
 ): HttpResponseData = respond(json, status, headersOf(HttpHeaders.ContentType, "application/json"))
-
-/**
- * Provides [client] the way the app's Koin graph does, so remotes built in a test use it. Call [stopTestKoin] after
- * each test.
- */
-fun startTestKoin(client: HttpClient): KtorClientManager {
-    startKoin {
-        modules(module { single(named(KtorClientManager.BACKEND_HTTP_CLIENT)) { client } })
-    }
-    return KtorClientManager()
-}
-
-fun stopTestKoin() {
-    stopKoin()
-}

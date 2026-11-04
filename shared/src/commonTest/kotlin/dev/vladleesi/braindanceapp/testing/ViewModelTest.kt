@@ -26,7 +26,6 @@ abstract class ViewModelTest {
 
     @AfterTest
     fun tearDownMainDispatcher() {
-        stopTestKoin()
         Dispatchers.resetMain()
     }
 }

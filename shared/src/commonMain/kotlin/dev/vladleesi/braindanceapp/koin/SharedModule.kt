@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.koin
 
-import dev.vladleesi.braindanceapp.data.api.KtorClientManager
 import dev.vladleesi.braindanceapp.data.api.clients.BackendClient
 import dev.vladleesi.braindanceapp.data.api.remote.GamerPowerRemote
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
@@ -13,12 +12,12 @@ import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
+import io.ktor.client.HttpClient
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
-import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
 
@@ -31,16 +30,16 @@ fun initKoin(
             androidConfig?.invoke(this)
             koinModules(debugHttpLogging)
         }
-    warmUpBackend { application.koin.get(named(KtorClientManager.BACKEND_HTTP_CLIENT)) }
+    warmUpBackend { application.koin.get<HttpClient>() }
 }
 
 private fun KoinApplication.koinModules(debugHttpLogging: Boolean) =
-    modules(remoteModule, repositoryModule, viewModelModule, ktorClientManagerModule(debugHttpLogging))
+    modules(remoteModule, repositoryModule, viewModelModule, httpClientModule(debugHttpLogging))
 
-private fun ktorClientManagerModule(debugHttpLogging: Boolean) =
+// The backend client is the only HttpClient in the graph, so remotes receive it by constructor injection.
+private fun httpClientModule(debugHttpLogging: Boolean) =
     module {
-        single(named(KtorClientManager.BACKEND_HTTP_CLIENT)) { BackendClient.build(debugHttpLogging) }
-        singleOf(::KtorClientManager)
+        single<HttpClient> { BackendClient.build(debugHttpLogging) }
     }
 
 private val remoteModule =

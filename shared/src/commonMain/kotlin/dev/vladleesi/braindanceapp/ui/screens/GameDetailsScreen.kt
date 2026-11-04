@@ -90,7 +90,7 @@ fun GameDetailsScreen(
 
     when (val currentState = state) {
         is GameDetailsState.Error ->
-            ErrorScreen(errorMessage = currentState.message, modifier = modifier) {
+            ErrorScreen(modifier = modifier) {
                 viewModel.refresh()
             }
 

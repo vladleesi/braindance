@@ -10,7 +10,6 @@ import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import dev.vladleesi.braindanceapp.testing.ViewModelTest
 import dev.vladleesi.braindanceapp.testing.mockBackendClient
 import dev.vladleesi.braindanceapp.testing.respondJson
-import dev.vladleesi.braindanceapp.testing.startTestKoin
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayItemModel
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -33,14 +32,12 @@ class HomeViewModelTest : ViewModelTest() {
     private fun viewModel(
         handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
     ): HomeViewModel {
-        val manager = startTestKoin(mockBackendClient(dispatcher, handler))
-        return HomeViewModel(HomeRepo(GamesRemote(manager)), GamerPowerRepo(GamerPowerRemote(manager)))
+        val client = mockBackendClient(dispatcher, handler)
+        return HomeViewModel(HomeRepo(GamesRemote(client)), GamerPowerRepo(GamerPowerRemote(client)))
     }
 
-    private fun HomeState.cardTitles() =
-        assertIs<HomeState.Success<*>>(this).entities.map {
-            (it as MiniGameCardModel).title
-        }
+    private fun SectionState<MiniGameCardModel>.cardTitles() =
+        assertIs<SectionState.Success<MiniGameCardModel>>(this).items.map { it.title }
 
     @Test
     fun loadFillsEverySection() =
@@ -58,7 +55,7 @@ class HomeViewModelTest : ViewModelTest() {
 
             assertEquals(listOf("A"), viewModel.trendingNow.value.cardTitles())
             assertEquals(listOf("A"), viewModel.mostAnticipated.value.cardTitles())
-            assertIs<HomeState.Success<*>>(viewModel.giveaways.value)
+            assertIs<SectionState.Success<*>>(viewModel.giveaways.value)
         }
 
     @Test
@@ -76,8 +73,8 @@ class HomeViewModelTest : ViewModelTest() {
             viewModel.load()
             advanceUntilIdle()
 
-            assertIs<HomeState.Error>(viewModel.trendingNow.value)
-            assertIs<HomeState.Success<*>>(viewModel.mostAnticipated.value)
+            assertIs<SectionState.Error>(viewModel.trendingNow.value)
+            assertIs<SectionState.Success<*>>(viewModel.mostAnticipated.value)
         }
 
     @Test
@@ -94,9 +91,9 @@ class HomeViewModelTest : ViewModelTest() {
             viewModel.viewModelScope.cancel()
             advanceUntilIdle()
 
-            assertEquals(HomeState.Loading, viewModel.trendingNow.value)
-            assertEquals(HomeState.Loading, viewModel.mostAnticipated.value)
-            assertEquals(HomeState.Loading, viewModel.giveaways.value)
+            assertEquals(SectionState.Loading, viewModel.trendingNow.value)
+            assertEquals(SectionState.Loading, viewModel.mostAnticipated.value)
+            assertEquals(SectionState.Loading, viewModel.giveaways.value)
         }
 
     @Test
@@ -159,8 +156,8 @@ class HomeViewModelTest : ViewModelTest() {
             viewModel.load()
             advanceUntilIdle()
 
-            fun HomeState.ids() =
-                assertIs<HomeState.Success<*>>(this).entities.map {
+            fun SectionState<*>.ids() =
+                assertIs<SectionState.Success<*>>(this).items.map {
                     when (it) {
                         is MiniGameCardModel -> it.id
                         is GiveawayItemModel -> it.id

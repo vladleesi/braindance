@@ -2,21 +2,24 @@
 
 package dev.vladleesi.braindanceapp.data.repository
 
+import dev.vladleesi.braindanceapp.data.DataError
+import dev.vladleesi.braindanceapp.data.Outcome
 import dev.vladleesi.braindanceapp.data.api.remote.GamerPowerRemote
+import dev.vladleesi.braindanceapp.data.map
 import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
-import io.ktor.client.call.body
+import dev.vladleesi.braindanceapp.data.safeCall
 
 class GamerPowerRepo(
     private val gamerPowerRemote: GamerPowerRemote,
 ) {
-    suspend fun giveaways(pageSize: Int): List<GiveawayResponse>? {
-        val result = gamerPowerRemote.giveaways()
-        // TODO: Add cache and local pagination
-        return result.body<List<GiveawayResponse>?>()?.take(pageSize)
-    }
+    /** The first [pageSize] giveaways; the backend returns the whole list in one response. */
+    suspend fun giveaways(pageSize: Int): Outcome<List<GiveawayResponse>> =
+        safeCall { gamerPowerRemote.giveaways() }.map { it.take(pageSize) }
 
-    suspend fun giveaway(id: Int): GiveawayResponse? {
-        val result = gamerPowerRemote.giveaway(id)
-        return result.body<GiveawayResponse?>()
-    }
+    /** An empty answer for [id] is [DataError.NotFound], like the backend's 404. */
+    suspend fun giveaway(id: Int): Outcome<GiveawayResponse> =
+        when (val outcome = safeCall { gamerPowerRemote.giveaway(id) }) {
+            is Outcome.Success -> outcome.value?.let { Outcome.Success(it) } ?: Outcome.Failure(DataError.NotFound)
+            is Outcome.Failure -> outcome
+        }
 }

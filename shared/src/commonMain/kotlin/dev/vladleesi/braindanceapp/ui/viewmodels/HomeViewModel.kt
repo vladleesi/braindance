@@ -3,6 +3,8 @@
 package dev.vladleesi.braindanceapp.ui.viewmodels
 
 import androidx.lifecycle.viewModelScope
+import dev.vladleesi.braindanceapp.data.Outcome
+import dev.vladleesi.braindanceapp.data.map
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
 import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
@@ -14,7 +16,6 @@ import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
 import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.formatEndDate
 import dev.vladleesi.braindanceapp.utils.giveawayPlatforms
-import dev.vladleesi.braindanceapp.utils.suspendRunCatching
 import dev.vladleesi.braindanceapp.utils.toCoverUrl
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,14 +28,14 @@ class HomeViewModel(
     private val homeRepo: HomeRepo,
     private val gamerPowerRepo: GamerPowerRepo,
 ) : ScreenViewModel() {
-    private val _mostAnticipated = MutableStateFlow<HomeState>(HomeState.Loading)
-    val mostAnticipated: StateFlow<HomeState> = _mostAnticipated.asStateFlow()
+    private val _mostAnticipated = MutableStateFlow<SectionState<MiniGameCardModel>>(SectionState.Loading)
+    val mostAnticipated: StateFlow<SectionState<MiniGameCardModel>> = _mostAnticipated.asStateFlow()
 
-    private val _giveaways = MutableStateFlow<HomeState>(HomeState.Loading)
-    val giveaways: StateFlow<HomeState> = _giveaways.asStateFlow()
+    private val _giveaways = MutableStateFlow<SectionState<GiveawayItemModel>>(SectionState.Loading)
+    val giveaways: StateFlow<SectionState<GiveawayItemModel>> = _giveaways.asStateFlow()
 
-    private val _trendingNow = MutableStateFlow<HomeState>(HomeState.Loading)
-    val trendingNow: StateFlow<HomeState> = _trendingNow.asStateFlow()
+    private val _trendingNow = MutableStateFlow<SectionState<MiniGameCardModel>>(SectionState.Loading)
+    val trendingNow: StateFlow<SectionState<MiniGameCardModel>> = _trendingNow.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
 
@@ -69,37 +70,37 @@ class HomeViewModel(
     fun loadMostAnticipated(pageSize: Int = PAGE_SIZE) {
         mostAnticipatedJob =
             loadSection(mostAnticipatedJob, _mostAnticipated) {
-                homeRepo.mostAnticipated(pageSize = pageSize).orEmpty().mapperMiniGameCardModel()
+                homeRepo.mostAnticipated(pageSize = pageSize).map { it.mapperMiniGameCardModel() }
             }
     }
 
     fun loadGiveaways(pageSize: Int = PAGE_SIZE) {
         giveawaysJob =
             loadSection(giveawaysJob, _giveaways) {
-                gamerPowerRepo.giveaways(pageSize = pageSize).orEmpty().mapperGiveawayModel()
+                gamerPowerRepo.giveaways(pageSize = pageSize).map { it.mapperGiveawayModel() }
             }
     }
 
     fun loadTrendingNow() {
         trendingJob =
             loadSection(trendingJob, _trendingNow) {
-                homeRepo.trendingNow().map { it.toMiniGameCardModel() }.distinctBy { it.id }
+                homeRepo.trendingNow().map { items -> items.map { it.toMiniGameCardModel() }.distinctBy { it.id } }
             }
     }
 
-    private fun loadSection(
+    private fun <T> loadSection(
         previous: Job?,
-        state: MutableStateFlow<HomeState>,
-        load: suspend () -> List<HomeStateEntity>,
+        state: MutableStateFlow<SectionState<T>>,
+        load: suspend () -> Outcome<List<T>>,
     ): Job {
         previous?.cancel()
         return viewModelScope.launch {
-            state.value = HomeState.Loading
+            state.value = SectionState.Loading
             state.value =
-                suspendRunCatching { load() }.fold(
-                    onSuccess = { entities -> HomeState.Success(entities) },
-                    onFailure = { throwable -> HomeState.Error(throwable.message.orEmpty()) },
-                )
+                when (val outcome = load()) {
+                    is Outcome.Success -> SectionState.Success(outcome.value)
+                    is Outcome.Failure -> SectionState.Error(outcome.error)
+                }
         }
     }
 
@@ -152,17 +153,3 @@ internal fun TrendingGameItem.toMiniGameCardModel() =
                 else -> null
             },
     )
-
-sealed interface HomeState {
-    data object Loading : HomeState
-
-    data class Success<T : HomeStateEntity>(
-        val entities: List<T>,
-    ) : HomeState
-
-    data class Error(
-        val message: String,
-    ) : HomeState
-}
-
-interface HomeStateEntity

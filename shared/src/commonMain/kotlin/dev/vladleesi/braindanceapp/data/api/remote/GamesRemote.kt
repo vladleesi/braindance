@@ -2,33 +2,37 @@
 
 package dev.vladleesi.braindanceapp.data.api.remote
 
-import dev.vladleesi.braindanceapp.data.api.KtorClientManager
 import dev.vladleesi.braindanceapp.data.config.ApiConfig
+import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
+import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.statement.HttpResponse
 
 class GamesRemote(
-    ktorClientManager: KtorClientManager,
+    private val backendHttpClient: HttpClient,
 ) {
-    private val backendHttpClient = ktorClientManager.backendHttpClient
-
-    suspend fun gameDetails(id: Int): HttpResponse =
-        backendHttpClient.get(ApiConfig.Endpoints.GAME_DETAILS) {
-            parameter("id", id)
-        }
+    suspend fun gameDetails(id: Int): List<GameItem> =
+        backendHttpClient
+            .get(ApiConfig.Endpoints.GAME_DETAILS) {
+                parameter("id", id)
+            }.body()
 
     /** The backend ranks recommendations; the default limit keeps one shared edge-cache URL per game. */
-    suspend fun recommendations(id: Int): HttpResponse =
-        backendHttpClient.get(ApiConfig.Endpoints.GAME_RECOMMENDATIONS) {
-            parameter("id", id)
-        }
+    suspend fun recommendations(id: Int): List<SimilarGame> =
+        backendHttpClient
+            .get(ApiConfig.Endpoints.GAME_RECOMMENDATIONS) {
+                parameter("id", id)
+            }.body()
 
-    suspend fun mostAnticipated(pageSize: Int): HttpResponse =
-        backendHttpClient.get(ApiConfig.Endpoints.MOST_ANTICIPATED) {
-            parameter("pageSize", pageSize)
-        }
+    suspend fun mostAnticipated(pageSize: Int): List<GameItem> =
+        backendHttpClient
+            .get(ApiConfig.Endpoints.MOST_ANTICIPATED) {
+                parameter("pageSize", pageSize)
+            }.body()
 
     /** The backend ranks and hydrates the whole feed, so one request returns the finished cards. */
-    suspend fun trendingNow(): HttpResponse = backendHttpClient.get(ApiConfig.Endpoints.TRENDING)
+    suspend fun trendingNow(): List<TrendingGameItem> = backendHttpClient.get(ApiConfig.Endpoints.TRENDING).body()
 }

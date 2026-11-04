@@ -2,17 +2,18 @@
 
 package dev.vladleesi.braindanceapp.data.api.remote
 
-import dev.vladleesi.braindanceapp.data.api.KtorClientManager
 import dev.vladleesi.braindanceapp.data.config.ApiConfig
+import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
 
 class GamerPowerRemote(
-    ktorClientManager: KtorClientManager,
+    private val backendHttpClient: HttpClient,
 ) {
-    private val backendHttpClient = ktorClientManager.backendHttpClient
+    suspend fun giveaways(): List<GiveawayResponse> = backendHttpClient.get(ApiConfig.Endpoints.GIVEAWAYS).body()
 
-    suspend fun giveaways(): HttpResponse = backendHttpClient.get(ApiConfig.Endpoints.GIVEAWAYS)
-
-    suspend fun giveaway(id: Int): HttpResponse = backendHttpClient.get("${ApiConfig.Endpoints.GIVEAWAYS}/$id")
+    /** Null when the backend answers with an empty body for this ID. */
+    suspend fun giveaway(id: Int): GiveawayResponse? =
+        backendHttpClient.get("${ApiConfig.Endpoints.GIVEAWAYS}/$id").body()
 }

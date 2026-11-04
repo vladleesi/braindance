@@ -3,6 +3,8 @@
 package dev.vladleesi.braindanceapp.ui.viewmodels
 
 import androidx.lifecycle.viewModelScope
+import dev.vladleesi.braindanceapp.data.DataError
+import dev.vladleesi.braindanceapp.data.Outcome
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
@@ -14,7 +16,6 @@ import dev.vladleesi.braindanceapp.utils.StoreTypeModel
 import dev.vladleesi.braindanceapp.utils.formatDate
 import dev.vladleesi.braindanceapp.utils.orZero
 import dev.vladleesi.braindanceapp.utils.parentPlatformTypes
-import dev.vladleesi.braindanceapp.utils.suspendRunCatching
 import dev.vladleesi.braindanceapp.utils.toCoverUrl
 import dev.vladleesi.braindanceapp.utils.toStoreTypes
 import kotlinx.coroutines.Job
@@ -46,17 +47,16 @@ class GameDetailsViewModel(
                 _gameDetailsState.value = GameDetailsState.Loading
                 loadRecommendations(gameId)
                 _gameDetailsState.value =
-                    suspendRunCatching { gameDetailsRepo.gameDetails(gameId)?.firstOrNull() }.fold(
-                        // An empty answer means the backend knows no such game; it is not an empty success.
-                        onSuccess = { game ->
-                            game?.let { GameDetailsState.Success(it.toGameDetails()) }
-                                ?: GameDetailsState.NotFound
-                        },
-                        onFailure = { throwable ->
-                            BLogger.error(message = throwable.message.orEmpty(), throwable = throwable)
-                            GameDetailsState.Error(throwable.message.orEmpty())
-                        },
-                    )
+                    when (val outcome = gameDetailsRepo.gameDetails(gameId)) {
+                        is Outcome.Success -> GameDetailsState.Success(outcome.value.toGameDetails())
+                        is Outcome.Failure ->
+                            if (outcome.error == DataError.NotFound) {
+                                GameDetailsState.NotFound
+                            } else {
+                                BLogger.error(message = "Game details unavailable", throwable = outcome.cause)
+                                GameDetailsState.Error(outcome.error)
+                            }
+                    }
             }
     }
 
@@ -70,17 +70,14 @@ class GameDetailsViewModel(
         recommendationsJob =
             viewModelScope.launch {
                 _recommendations.value =
-                    suspendRunCatching { gameDetailsRepo.recommendations(gameId) }.fold(
-                        onSuccess = { games -> RecommendationsState.Success(games.toCards()) },
-                        onFailure = { throwable ->
+                    when (val outcome = gameDetailsRepo.recommendations(gameId)) {
+                        is Outcome.Success -> RecommendationsState.Success(outcome.value.toCards())
+                        is Outcome.Failure -> {
                             // The section is optional: keep the details visible and leave it hidden until a refresh.
-                            BLogger.error(
-                                message = "Recommendations unavailable: ${throwable.message.orEmpty()}",
-                                throwable = throwable,
-                            )
+                            BLogger.error(message = "Recommendations unavailable", throwable = outcome.cause)
                             RecommendationsState.Unavailable
-                        },
-                    )
+                        }
+                    }
             }
     }
 }
@@ -145,7 +142,7 @@ sealed class GameDetailsState {
     ) : GameDetailsState()
 
     data class Error(
-        val message: String,
+        val error: DataError,
     ) : GameDetailsState()
 }
 

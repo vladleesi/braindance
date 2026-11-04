@@ -34,7 +34,6 @@ import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith70Alpha
 import dev.vladleesi.braindanceapp.ui.style.overlayWhiteWith80Alpha
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.white
-import dev.vladleesi.braindanceapp.ui.viewmodels.HomeStateEntity
 import dev.vladleesi.braindanceapp.utils.ParentPlatformType
 import dev.vladleesi.braindanceapp.utils.clickable
 import dev.vladleesi.braindanceapp.utils.rememberCachedImagePainter
@@ -200,4 +199,4 @@ data class GiveawayItemModel(
     val endDate: String,
     val platforms: List<ParentPlatformType>,
     val type: String,
-) : HomeStateEntity
+)

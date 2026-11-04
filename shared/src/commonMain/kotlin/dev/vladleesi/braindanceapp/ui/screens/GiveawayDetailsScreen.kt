@@ -62,11 +62,8 @@ import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
-import dev.vladleesi.braindanceapp.utils.giveawayPlatforms
 import dev.vladleesi.braindanceapp.utils.openExternalUrl
-import dev.vladleesi.braindanceapp.utils.orZero
 import dev.vladleesi.braindanceapp.utils.toContentDescription
-import dev.vladleesi.braindanceapp.utils.toSafeExternalUrl
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -95,7 +92,7 @@ fun GiveawayDetailsScreen(
 
     when (val currentState = state) {
         is GiveawayDetailsState.Error ->
-            ErrorScreen(errorMessage = currentState.message, modifier = modifier) {
+            ErrorScreen(modifier = modifier) {
                 viewModel.refresh()
             }
 
@@ -145,7 +142,7 @@ fun GiveawayDetailsScreen(
             item { Spacer(Modifier.height(Dimens.small)) }
             item {
                 Text(
-                    text = state.giveawayDetails.title.orEmpty(),
+                    text = state.giveawayDetails.title,
                     style = MaterialTheme.typography.h2,
                 )
             }
@@ -153,17 +150,14 @@ fun GiveawayDetailsScreen(
             item {
                 WorthInfo(state = state)
             }
-            val claimed = state.giveawayDetails.users.orZero()
+            val claimed = state.giveawayDetails.claimedCount
             if (claimed > 0) {
                 item { Spacer(Modifier.height(Dimens.small)) }
                 item {
                     UsersClaimed(claimed, Modifier.fillParentMaxWidth())
                 }
             }
-            val platforms =
-                state.giveawayDetails.platforms
-                    ?.giveawayPlatforms()
-                    .orEmpty()
+            val platforms = state.giveawayDetails.platforms
             if (platforms.isNotEmpty()) {
                 item { Spacer(Modifier.height(Dimens.small)) }
                 item {
@@ -178,19 +172,19 @@ fun GiveawayDetailsScreen(
             item {
                 SummaryText(
                     title = stringResource(Res.string.giveaway_details_screen_about),
-                    description = state.giveawayDetails.description.orEmpty(),
+                    description = state.giveawayDetails.description,
                 )
             }
             item { Spacer(Modifier.height(Dimens.small)) }
             item {
                 SummaryText(
                     title = stringResource(Res.string.giveaway_details_screen_instruction),
-                    description = state.giveawayDetails.instructions.orEmpty(),
+                    description = state.giveawayDetails.instructions,
                 )
             }
             item { Spacer(Modifier.height(Dimens.medium)) }
             // Only a safe HTTPS link gets a button; a missing or unsafe link shows none.
-            state.giveawayDetails.openGiveawayUrl.toSafeExternalUrl()?.let { url ->
+            state.giveawayDetails.openUrl?.let { url ->
                 item { OpenGiveawayButton(url = url) }
             }
             item { Spacer(Modifier.height(Dimens.large)) }
@@ -220,9 +214,9 @@ private fun GiveawayDetailsImage(
                     .height(Dimens.giveAwayCardDetailsHeight)
                     .width(Dimens.giveAwayCardDetailsWidth)
                     .clip(RoundedCornerShape(Dimens.small)),
-            model = state.giveawayDetails.image,
+            model = state.giveawayDetails.imageUrl,
             contentScale = ContentScale.Crop,
-            contentDescription = state.giveawayDetails.title?.toContentDescription(),
+            contentDescription = state.giveawayDetails.title.toContentDescription(),
         )
     }
 }
@@ -238,10 +232,7 @@ private fun WorthInfo(
             color = white,
             style = MaterialTheme.typography.body2,
         )
-        val worth =
-            state.giveawayDetails.worth
-                .takeIf { it != "N/A" }
-                .orEmpty()
+        val worth = state.giveawayDetails.worth
         if (worth.isNotEmpty()) {
             Spacer(modifier = Modifier.width(Dimens.tiny))
             Text(
