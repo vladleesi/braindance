@@ -37,7 +37,7 @@ import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.game_details_not_found
 import dev.vladleesi.braindanceapp.resources.game_details_screen_similar_games
-import dev.vladleesi.braindanceapp.system.isLargeDevice
+import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.ExpandableText
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
 import dev.vladleesi.braindanceapp.ui.components.PlatformLogoList
@@ -121,7 +121,7 @@ private fun GameDetailsScreen(
     val lazyListState = rememberLazyListState()
     val (topBarColor, backButtonColor, topBarTitleColor) =
         lazyListState.calculateScrollTopBarColors()
-    val isLargeDevice = isLargeDevice()
+    val isLargeWindow = isLargeWindow()
 
     Box(
         modifier =
@@ -134,7 +134,7 @@ private fun GameDetailsScreen(
             modifier = Modifier.fillMaxSize(),
         ) {
             item { SpacerTopBarWithStatusBarInsets() }
-            if (isLargeDevice) {
+            if (isLargeWindow) {
                 gameInfoHeaderLargeScreen(state)
             } else {
                 gameInfoHeaderSmallScreen(state)

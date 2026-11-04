@@ -42,7 +42,7 @@ import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_about
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_free
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_get_giveaway
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_instruction
-import dev.vladleesi.braindanceapp.system.isLargeDevice
+import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
 import dev.vladleesi.braindanceapp.ui.components.PlatformLogoList
 import dev.vladleesi.braindanceapp.ui.components.SpacerTopBarWithStatusBarInsets
@@ -123,7 +123,7 @@ fun GiveawayDetailsScreen(
         val lazyListState = rememberLazyListState()
         val (topBarColor, backButtonColor, topBarTitleColor) =
             lazyListState.calculateScrollTopBarColors()
-        val isLargeDevice = isLargeDevice()
+        val isLargeWindow = isLargeWindow()
 
         // TODO: Rework (wip: large devices, timer, platforms, new ui model data class)
         LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = Dimens.medium)) {

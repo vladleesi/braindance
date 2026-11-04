@@ -9,7 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
-import dev.vladleesi.braindanceapp.system.toPx
+import androidx.compose.ui.platform.LocalDensity
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.navBar
 import dev.vladleesi.braindanceapp.ui.style.white
@@ -17,7 +17,7 @@ import dev.vladleesi.braindanceapp.ui.style.white
 @Composable
 fun LazyListState.calculateScrollTopBarColors(): Triple<Color, Color, Color> {
     val targetColor = navBar
-    val maxScrollOffsetPx = Dimens.topBarHeightWithInsets.toPx()
+    val maxScrollOffsetPx = with(LocalDensity.current) { Dimens.topBarHeightWithInsets.toPx() }
 
     // Derived so callers recompose only while the fraction changes, not on every scroll frame.
     val fraction by remember(this, maxScrollOffsetPx) {

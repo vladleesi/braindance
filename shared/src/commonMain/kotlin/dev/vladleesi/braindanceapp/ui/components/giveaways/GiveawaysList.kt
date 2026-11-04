@@ -23,7 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import dev.vladleesi.braindanceapp.system.isLargeDevice
+import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.HorizontalListControls
 import dev.vladleesi.braindanceapp.ui.components.StaticText
 import dev.vladleesi.braindanceapp.ui.components.home.CarouselErrorState
@@ -99,7 +99,7 @@ private fun GiveawaysListSkeleton(
                 )
             }
         }
-        val skeletonCount = if (isLargeDevice()) GIVEAWAYS_SKELETON_COUNT * 2 else GIVEAWAYS_SKELETON_COUNT
+        val skeletonCount = if (isLargeWindow()) GIVEAWAYS_SKELETON_COUNT * 2 else GIVEAWAYS_SKELETON_COUNT
         LazyRow(
             modifier = Modifier.padding(top = Dimens.small),
             horizontalArrangement = Arrangement.spacedBy(Dimens.small),

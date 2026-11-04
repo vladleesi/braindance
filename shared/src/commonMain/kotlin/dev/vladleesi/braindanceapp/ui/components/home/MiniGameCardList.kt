@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import dev.vladleesi.braindanceapp.system.isLargeDevice
+import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.HorizontalListControls
 import dev.vladleesi.braindanceapp.ui.components.StaticText
 import dev.vladleesi.braindanceapp.ui.components.userMessage
@@ -147,7 +147,7 @@ fun MiniGameCardListSkeleton(
                     null
                 },
         )
-        val skeletonCount = if (isLargeDevice()) MINI_GAME_CARD_SKELETON_COUNT * 2 else MINI_GAME_CARD_SKELETON_COUNT
+        val skeletonCount = if (isLargeWindow()) MINI_GAME_CARD_SKELETON_COUNT * 2 else MINI_GAME_CARD_SKELETON_COUNT
         LazyRow(
             modifier = Modifier.padding(top = Dimens.small),
             horizontalArrangement = Arrangement.spacedBy(Dimens.small),
