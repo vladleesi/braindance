@@ -72,10 +72,8 @@ fun GameDetailsScreen(
     modifier: Modifier,
 ) {
     val viewModel: GameDetailsViewModel =
-        koinViewModel(
-            key = "game_details_$id",
-            parameters = { parametersOf(id) },
-        )
+        // Scoped to this navigation entry, which clears it when the screen is popped.
+        koinViewModel(parameters = { parametersOf(id) })
 
     val navigator = LocalNavigator.current
 

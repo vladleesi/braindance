@@ -37,6 +37,7 @@ compose-lifecycle = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runti
 
 # compose navigation
 compose-navigation3 = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "nav3" }
+compose-navigation3-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle" }
 
 # security
 

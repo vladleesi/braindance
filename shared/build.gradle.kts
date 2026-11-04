@@ -69,6 +69,7 @@ kotlin {
             implementation(libs.compose.components.resources)
             // Navigation
             implementation(libs.compose.navigation3)
+            implementation(libs.compose.navigation3.viewmodel)
             // View Model
             implementation(libs.compose.viewmodel)
             implementation(libs.compose.lifecycle)
