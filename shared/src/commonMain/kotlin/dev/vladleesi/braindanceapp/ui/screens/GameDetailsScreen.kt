@@ -37,6 +37,7 @@ import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
+import dev.vladleesi.braindanceapp.resources.game_details_not_found
 import dev.vladleesi.braindanceapp.resources.game_details_screen_similar_games
 import dev.vladleesi.braindanceapp.system.isLargeDevice
 import dev.vladleesi.braindanceapp.ui.components.ExpandableText
@@ -90,6 +91,11 @@ fun GameDetailsScreen(
     when (val currentState = state) {
         is GameDetailsState.Error ->
             ErrorScreen(errorMessage = currentState.message, modifier = modifier) {
+                viewModel.refresh()
+            }
+
+        GameDetailsState.NotFound ->
+            ErrorScreen(errorMessage = stringResource(Res.string.game_details_not_found), modifier = modifier) {
                 viewModel.refresh()
             }
 

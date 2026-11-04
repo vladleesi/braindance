@@ -116,4 +116,39 @@ class DetailsViewModelTest : ViewModelTest() {
 
             assertEquals(GiveawayDetailsState.Loading, viewModel.giveawayDetailsState.value)
         }
+
+    @Test
+    fun anEmptyDetailsAnswerIsNotFoundAndRecommendationsAreUnique() =
+        runTest(dispatcher) {
+            val manager =
+                startTestKoin(
+                    mockBackendClient(dispatcher) { request ->
+                        when (request.url.encodedPath) {
+                            "/v1/games/details" -> respondJson("[]")
+                            else -> respondJson("""[{"id":5},{"name":"No ID"},{"id":5},{"id":6}]""")
+                        }
+                    },
+                )
+            val viewModel = GameDetailsViewModel(gameId = 42, gameDetailsRepo = GameDetailsRepo(GamesRemote(manager)))
+
+            viewModel.load()
+            advanceUntilIdle()
+
+            assertEquals(GameDetailsState.NotFound, viewModel.gameDetailsState.value)
+            val cards = assertIs<RecommendationsState.Success>(viewModel.recommendations.value).games
+            assertEquals(listOf(5, 6), cards.map { it.id })
+        }
+
+    @Test
+    fun aNullGiveawayIsNotFound() =
+        runTest(dispatcher) {
+            val manager = startTestKoin(mockBackendClient(dispatcher) { respondJson("null") })
+            val viewModel =
+                GiveawayDetailsViewModel(giveawayId = 7, gamerPowerRepo = GamerPowerRepo(GamerPowerRemote(manager)))
+
+            viewModel.load()
+            advanceUntilIdle()
+
+            assertEquals(GiveawayDetailsState.NotFound, viewModel.giveawayDetailsState.value)
+        }
 }

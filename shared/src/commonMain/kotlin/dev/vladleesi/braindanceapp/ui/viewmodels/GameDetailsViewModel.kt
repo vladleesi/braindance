@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class GameDetailsViewModel(
-    private val gameId: Int?,
+    private val gameId: Int,
     private val gameDetailsRepo: GameDetailsRepo,
 ) : ScreenViewModel() {
     private val _gameDetailsState = MutableStateFlow<GameDetailsState>(GameDetailsState.Loading)
@@ -44,14 +44,14 @@ class GameDetailsViewModel(
         detailsJob =
             viewModelScope.launch {
                 _gameDetailsState.value = GameDetailsState.Loading
-                if (gameId == null) {
-                    _gameDetailsState.value = GameDetailsState.Error("Invalid game ID: $gameId")
-                    return@launch
-                }
                 loadRecommendations(gameId)
                 _gameDetailsState.value =
-                    suspendRunCatching { gameDetailsRepo.gameDetails(gameId)?.firstOrNull().toGameDetails() }.fold(
-                        onSuccess = { details -> GameDetailsState.Success(details) },
+                    suspendRunCatching { gameDetailsRepo.gameDetails(gameId)?.firstOrNull() }.fold(
+                        // An empty answer means the backend knows no such game; it is not an empty success.
+                        onSuccess = { game ->
+                            game?.let { GameDetailsState.Success(it.toGameDetails()) }
+                                ?: GameDetailsState.NotFound
+                        },
                         onFailure = { throwable ->
                             BLogger.error(message = throwable.message.orEmpty(), throwable = throwable)
                             GameDetailsState.Error(throwable.message.orEmpty())
@@ -85,23 +85,22 @@ class GameDetailsViewModel(
     }
 }
 
-private fun GameItem?.toGameDetails() =
+private fun GameItem.toGameDetails() =
     GameDetails(
-        id = this?.id.orZero(),
-        name = this?.name.orEmpty(),
-        summary = this?.summary.orEmpty(),
-        storyline = this?.storyline.orEmpty(),
+        id = id.orZero(),
+        name = name.orEmpty(),
+        summary = summary.orEmpty(),
+        storyline = storyline.orEmpty(),
         coverImageUrl =
-            this
-                ?.cover
+            cover
                 ?.url
                 ?.toCoverUrl(CoverSize.ORIGINAL)
                 .orEmpty(),
-        releaseDate = this?.releaseDates?.firstOrNull()?.human ?: this?.firstReleaseDate?.formatDate(),
-        platforms = this?.platforms.orEmpty().parentPlatformTypes(),
-        stores = this?.websites.orEmpty().toStoreTypes(),
+        releaseDate = releaseDates?.firstOrNull()?.human ?: firstReleaseDate?.formatDate(),
+        platforms = platforms.orEmpty().parentPlatformTypes(),
+        stores = websites.orEmpty().toStoreTypes(),
         genres =
-            this?.genres.orEmpty().map { genre ->
+            genres.orEmpty().map { genre ->
                 GenreTag(
                     id = genre.id.orZero(),
                     name = genre.name.orEmpty(),
@@ -109,6 +108,7 @@ private fun GameItem?.toGameDetails() =
             },
     )
 
+// Cards without an ID cannot be opened, and lazy lists need unique keys.
 private fun List<SimilarGame>.toCards() =
     mapNotNull { game ->
         val id = game.id ?: return@mapNotNull null
@@ -121,7 +121,7 @@ private fun List<SimilarGame>.toCards() =
                     ?.toCoverUrl(CoverSize.P_720)
                     .orEmpty(),
         )
-    }
+    }.distinctBy { it.id }
 
 sealed interface RecommendationsState {
     data object Loading : RecommendationsState
@@ -136,6 +136,9 @@ sealed interface RecommendationsState {
 
 sealed class GameDetailsState {
     data object Loading : GameDetailsState()
+
+    /** The backend has no game with this ID. */
+    data object NotFound : GameDetailsState()
 
     data class Success(
         val gameDetails: GameDetails,

@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class GiveawayDetailsViewModel(
-    private val giveawayId: Int?,
+    private val giveawayId: Int,
     private val gamerPowerRepo: GamerPowerRepo,
 ) : ScreenViewModel() {
     private val _giveawayDetailsState = MutableStateFlow<GiveawayDetailsState>(GiveawayDetailsState.Loading)
@@ -28,13 +28,11 @@ class GiveawayDetailsViewModel(
         loadJob =
             viewModelScope.launch {
                 _giveawayDetailsState.value = GiveawayDetailsState.Loading
-                if (giveawayId == null) {
-                    _giveawayDetailsState.value = GiveawayDetailsState.Error("Invalid giveaway ID: $giveawayId")
-                    return@launch
-                }
                 _giveawayDetailsState.value =
-                    suspendRunCatching { requireNotNull(gamerPowerRepo.giveaway(giveawayId)) }.fold(
-                        onSuccess = { giveaway -> GiveawayDetailsState.Success(giveaway) },
+                    suspendRunCatching { gamerPowerRepo.giveaway(giveawayId) }.fold(
+                        onSuccess = { giveaway ->
+                            giveaway?.let { GiveawayDetailsState.Success(it) } ?: GiveawayDetailsState.NotFound
+                        },
                         onFailure = { throwable ->
                             BLogger.error(message = throwable.message.orEmpty(), throwable = throwable)
                             GiveawayDetailsState.Error(throwable.message.orEmpty())
@@ -50,6 +48,9 @@ class GiveawayDetailsViewModel(
 
 sealed class GiveawayDetailsState {
     data object Loading : GiveawayDetailsState()
+
+    /** The backend returned no giveaway for this ID. */
+    data object NotFound : GiveawayDetailsState()
 
     // TODO: Replace GiveawayResponse to GiveawayDetailsModel
     data class Success(

@@ -11,6 +11,7 @@ import dev.vladleesi.braindanceapp.testing.ViewModelTest
 import dev.vladleesi.braindanceapp.testing.mockBackendClient
 import dev.vladleesi.braindanceapp.testing.respondJson
 import dev.vladleesi.braindanceapp.testing.startTestKoin
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayItemModel
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.request.HttpRequestData
@@ -141,5 +142,33 @@ class HomeViewModelTest : ViewModelTest() {
 
             advanceUntilIdle()
             assertFalse(viewModel.isRefreshing.value)
+        }
+
+    @Test
+    fun cardsWithoutIdsAndDuplicateIdsAreDropped() =
+        runTest(dispatcher) {
+            val viewModel =
+                viewModel { request ->
+                    when (request.url.encodedPath) {
+                        "/v1/games/trending" -> respondJson("""[{"id":1,"name":"A"},{"id":1,"name":"A"},{"id":2}]""")
+                        "/v1/games/anticipated" -> respondJson("""[{"name":"No ID"},{"id":3},{"id":3},{"id":4}]""")
+                        else -> respondJson("""[{"title":"No ID"},{"id":9},{"id":9},{"id":10}]""")
+                    }
+                }
+
+            viewModel.load()
+            advanceUntilIdle()
+
+            fun HomeState.ids() =
+                assertIs<HomeState.Success<*>>(this).entities.map {
+                    when (it) {
+                        is MiniGameCardModel -> it.id
+                        is GiveawayItemModel -> it.id
+                        else -> error("unexpected $it")
+                    }
+                }
+            assertEquals(listOf(1, 2), viewModel.trendingNow.value.ids())
+            assertEquals(listOf(3, 4), viewModel.mostAnticipated.value.ids())
+            assertEquals(listOf(9, 10), viewModel.giveaways.value.ids())
         }
 }

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.resources.Res
+import dev.vladleesi.braindanceapp.resources.giveaway_details_not_found
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_about
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_free
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_get_giveaway
@@ -93,6 +94,11 @@ fun GiveawayDetailsScreen(
     when (val currentState = state) {
         is GiveawayDetailsState.Error ->
             ErrorScreen(errorMessage = currentState.message, modifier = modifier) {
+                viewModel.refresh()
+            }
+
+        GiveawayDetailsState.NotFound ->
+            ErrorScreen(errorMessage = stringResource(Res.string.giveaway_details_not_found), modifier = modifier) {
                 viewModel.refresh()
             }
 

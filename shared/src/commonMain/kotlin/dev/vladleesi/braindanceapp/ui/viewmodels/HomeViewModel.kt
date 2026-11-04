@@ -14,7 +14,6 @@ import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
 import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.formatEndDate
 import dev.vladleesi.braindanceapp.utils.giveawayPlatforms
-import dev.vladleesi.braindanceapp.utils.orZero
 import dev.vladleesi.braindanceapp.utils.suspendRunCatching
 import dev.vladleesi.braindanceapp.utils.toCoverUrl
 import kotlinx.coroutines.Job
@@ -84,7 +83,7 @@ class HomeViewModel(
     fun loadTrendingNow() {
         trendingJob =
             loadSection(trendingJob, _trendingNow) {
-                homeRepo.trendingNow().map { it.toMiniGameCardModel() }
+                homeRepo.trendingNow().map { it.toMiniGameCardModel() }.distinctBy { it.id }
             }
     }
 
@@ -104,10 +103,12 @@ class HomeViewModel(
         }
     }
 
+    // Cards without an ID cannot be opened, and lazy lists need unique keys.
     private fun List<GameItem>.mapperMiniGameCardModel() =
-        map { item ->
+        mapNotNull { item ->
+            val id = item.id ?: return@mapNotNull null
             MiniGameCardModel(
-                id = item.id.orZero(),
+                id = id,
                 title = item.name.orEmpty(),
                 backgroundImageUrl =
                     item.cover
@@ -115,12 +116,13 @@ class HomeViewModel(
                         ?.toCoverUrl(CoverSize.P_720)
                         .orEmpty(),
             )
-        }
+        }.distinctBy { it.id }
 
     private fun List<GiveawayResponse>.mapperGiveawayModel() =
-        map { item ->
+        mapNotNull { item ->
+            val id = item.id ?: return@mapNotNull null
             GiveawayItemModel(
-                id = item.id.orZero(),
+                id = id,
                 title = item.title.orEmpty(),
                 image = item.image.orEmpty(),
                 worth = item.worth.takeIf { it != "N/A" }.orEmpty(),
@@ -128,7 +130,7 @@ class HomeViewModel(
                 platforms = item.platforms?.giveawayPlatforms().orEmpty(),
                 type = item.type.orEmpty(),
             )
-        }
+        }.distinctBy { it.id }
 
     private companion object {
         private const val PAGE_SIZE = 20
