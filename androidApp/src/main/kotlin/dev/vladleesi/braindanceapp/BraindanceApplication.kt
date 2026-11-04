@@ -12,12 +12,14 @@ import org.koin.core.logger.Level
 class BraindanceApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        val isDebugBuild = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         initKoin(
             androidConfig = {
-                androidLogger(Level.DEBUG)
+                // Koin's detailed logging is for debugging; release builds report only errors.
+                androidLogger(if (isDebugBuild) Level.DEBUG else Level.ERROR)
                 androidContext(this@BraindanceApplication)
             },
-            isDebugBuild = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0,
+            isDebugBuild = isDebugBuild,
         )
     }
 }

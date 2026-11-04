@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
@@ -27,12 +26,8 @@ import dev.vladleesi.braindanceapp.utils.ImageLoaderInitializer
 
 @Composable
 fun BraindanceApp(modifier: Modifier = Modifier) {
-    // TODO: Refactor
-    val isInitialized = remember { mutableStateOf(false) }
-    if (!isInitialized.value) {
-        ImageLoaderInitializer.initialize()
-        isInitialized.value = true
-    }
+    // Coil documents this as safe to call repeatedly; an image loader that already exists is never replaced.
+    ImageLoaderInitializer.initialize()
 
     val navigationState =
         rememberNavigationState(

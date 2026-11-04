@@ -3,8 +3,10 @@
 package dev.vladleesi.braindanceapp.data.api
 
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import kotlinx.serialization.SerializationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class GameFeedDecodingTest {
@@ -19,5 +21,11 @@ class GameFeedDecodingTest {
         assertEquals("//images.igdb.com/t_thumb/co1.jpg", games.first().cover?.url)
         assertNull(games.first().platforms)
         assertNull(games.last().cover)
+    }
+
+    @Test
+    fun malformedJsonIsRejected() {
+        // Unquoted keys and values were accepted while lenient parsing was on.
+        assertFailsWith<SerializationException> { backendJson.decodeFromString<List<GameItem>>("[{id:1,name:A}]") }
     }
 }

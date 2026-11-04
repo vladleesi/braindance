@@ -23,16 +23,14 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
@@ -77,14 +75,12 @@ fun GameDetailsScreen(
 
     val navigator = LocalNavigator.current
 
-    val gameId by rememberSaveable {
-        mutableStateOf(id)
-    }
-    val state by viewModel.gameDetailsState.collectAsState()
-    val recommendations by viewModel.recommendations.collectAsState()
+    val state by viewModel.gameDetailsState.collectAsStateWithLifecycle()
+    val recommendations by viewModel.recommendations.collectAsStateWithLifecycle()
 
+    // The ViewModel loads once per entry; later calls do nothing until a refresh.
     LaunchedEffect(Unit) {
-        gameId.let { viewModel.load() }
+        viewModel.load()
     }
 
     when (val currentState = state) {

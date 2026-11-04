@@ -24,10 +24,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +33,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.resources.Res
@@ -80,12 +78,10 @@ fun GiveawayDetailsScreen(
 
     val navigator = LocalNavigator.current
 
-    val giveawayId by rememberSaveable {
-        mutableStateOf(id)
-    }
-    val state by viewModel.giveawayDetailsState.collectAsState()
+    val state by viewModel.giveawayDetailsState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(giveawayId) {
+    // The ViewModel loads once per entry; later calls do nothing until a refresh.
+    LaunchedEffect(Unit) {
         viewModel.load()
     }
 

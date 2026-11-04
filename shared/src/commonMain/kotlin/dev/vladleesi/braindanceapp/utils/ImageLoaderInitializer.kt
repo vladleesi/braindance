@@ -7,12 +7,16 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.disk.DiskCache
-import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.util.DebugLogger
 import coil3.util.Logger
+import dev.vladleesi.braindanceapp.data.api.retryConfig
+import dev.vladleesi.braindanceapp.data.api.timeoutConfig
+import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.HttpClientEngine
 import okio.FileSystem
 
 object ImageLoaderInitializer {
@@ -22,30 +26,29 @@ object ImageLoaderInitializer {
     }
 }
 
-// Cache configuration constants
-private const val MEMORY_CACHE_PERCENTAGE = 0.3
-private const val DISK_CACHE_MAX_SIZE_BYTES = 512L * 1024 * 1024
+/**
+ * Image downloads use the same per-attempt timeout and bounded retries as backend requests, so a stalled image cannot
+ * load indefinitely. [engine] is null in the app, which selects the platform engine.
+ */
+internal fun imageHttpClient(engine: HttpClientEngine? = null): HttpClient {
+    val config: HttpClientConfig<*>.() -> Unit = {
+        retryConfig()
+        timeoutConfig()
+    }
+    return if (engine == null) HttpClient(config) else HttpClient(engine, config)
+}
 
-// Builds the ImageLoader with enabled caching policies
+// Coil's defaults size the memory cache for the device and the disk cache at 2% of free space, capped at 250 MB.
 private fun createImageLoader(context: PlatformContext) =
     ImageLoader
         .Builder(context)
-        .components { add(KtorNetworkFetcherFactory()) }
+        .components { add(KtorNetworkFetcherFactory(httpClient = { imageHttpClient() })) }
         .memoryCachePolicy(CachePolicy.ENABLED)
-        .memoryCache { configureMemoryCache(context) }
         .networkCachePolicy(CachePolicy.ENABLED)
         .configurePlatformCache()
         .crossfade(true)
         // Per-request logs are costly on every image load; keep only warnings and failures.
         .logger(DebugLogger(minLevel = Logger.Level.Warn))
-        .build()
-
-// Configures the memory cache with a specific percentage of available memory
-private fun configureMemoryCache(context: PlatformContext) =
-    MemoryCache
-        .Builder()
-        .maxSizePercent(context, MEMORY_CACHE_PERCENTAGE)
-        .strongReferencesEnabled(true)
         .build()
 
 private fun ImageLoader.Builder.configurePlatformCache(): ImageLoader.Builder {
@@ -54,12 +57,12 @@ private fun ImageLoader.Builder.configurePlatformCache(): ImageLoader.Builder {
             .diskCache(null)
     }
 
+    // The directory name is kept so images cached by earlier versions are reused instead of orphaned.
     return diskCachePolicy(CachePolicy.ENABLED)
         .diskCache {
             DiskCache
                 .Builder()
                 .directory(FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "image_cache")
-                .maxSizeBytes(DISK_CACHE_MAX_SIZE_BYTES)
                 .build()
         }
 }

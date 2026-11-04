@@ -40,7 +40,7 @@ fun HttpClientConfig<*>.defaultConfig(debugHttpLogging: Boolean) {
 }
 
 // Only the request timeout: it bounds each attempt on every engine, and the browser engine supports no other.
-private fun HttpClientConfig<*>.timeoutConfig() {
+internal fun HttpClientConfig<*>.timeoutConfig() {
     install(HttpTimeout) {
         requestTimeoutMillis = REQUEST_TIMEOUT_MILLIS
     }
@@ -48,7 +48,7 @@ private fun HttpClientConfig<*>.timeoutConfig() {
 
 // Retries only gateway failures and transport errors, including timeouts. Client errors, including 429, and
 // cancellation are final.
-private fun HttpClientConfig<*>.retryConfig() {
+internal fun HttpClientConfig<*>.retryConfig() {
     install(HttpRequestRetry) {
         retryIf(MAX_RETRIES) { _, response -> response.status in retriedStatuses }
         retryOnExceptionIf(MAX_RETRIES) { _, cause -> cause.isRetriableTransportFailure() }
@@ -84,11 +84,9 @@ private fun HttpClientConfig<*>.loggerConfig(debugHttpLogging: Boolean) {
 /** JSON settings for backend responses; shared with tests so they decode exactly like the app. */
 internal val backendJson =
     Json {
+        // The backend may add fields; missing optional fields decode as null. Malformed JSON is still an error.
         ignoreUnknownKeys = true
-        prettyPrint = true
         explicitNulls = false
-        // Set default value to expected values
-        isLenient = true
     }
 
 private fun HttpClientConfig<*>.jsonConfig() {

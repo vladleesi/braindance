@@ -16,7 +16,6 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
@@ -47,9 +46,9 @@ fun HomeScreen(
 ) {
     val navigator = LocalNavigator.current
 
-    val trendingNow by viewModel.trendingNow.collectAsState()
-    val mostAnticipated by viewModel.mostAnticipated.collectAsState()
-    val giveaways by viewModel.giveaways.collectAsState()
+    val trendingNow by viewModel.trendingNow.collectAsStateWithLifecycle()
+    val mostAnticipated by viewModel.mostAnticipated.collectAsStateWithLifecycle()
+    val giveaways by viewModel.giveaways.collectAsStateWithLifecycle()
 
     // Load the screen only on first navigation
     LaunchedEffect(Unit) {
