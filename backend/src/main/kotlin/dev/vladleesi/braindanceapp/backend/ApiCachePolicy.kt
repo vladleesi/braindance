@@ -20,7 +20,6 @@ import io.ktor.util.AttributeKey
 import java.net.URI
 import java.security.MessageDigest
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 internal val publicResponse = AttributeKey<Unit>("PublicResponse")
@@ -36,18 +35,6 @@ internal const val CLOUDFLARE_CACHE_CONTROL_HEADER = "Cloudflare-CDN-Cache-Contr
 
 // Browsers keep public responses for 20 minutes because they cannot be purged.
 private val BROWSER_LIFETIME = 20.minutes
-
-// Shared caches keep public data longer than browsers so the edge serves it across scaled-to-zero backend instances.
-// IGDB game data and rankings change slowly, giveaways expire within hours, and proxied images never change.
-private val edgeLifetimes =
-    mapOf(
-        "/v1/games/details" to 1.days,
-        "/v1/games/anticipated" to 6.hours,
-        RECOMMENDATIONS_PATH to 1.days,
-        "/v1/giveaways" to 1.hours,
-        GIVEAWAY_DETAILS_ROUTE to 1.hours,
-        "/v1/giveaways/image" to 7.days,
-    )
 
 // When a refresh fails, for example on a cold start, the edge may serve its last copy for a day. Cloudflare ignores
 // stale-if-error next to s-maxage in Cache-Control, so the directive is sent only in its own header.
@@ -65,11 +52,12 @@ internal fun publicCacheHeaders(
 ): PublicCacheHeaders {
     // Popular Right Now pages expire together at the end of the feed window, so pages fetched in one window come
     // from the same feed rather than from feeds ranked hours apart.
+    // Shared caches keep public data longer than browsers, so the edge serves it across scaled-to-zero instances.
     val edge =
-        if (route == TRENDING_PATH) {
-            TrendingService.feedTimeLeft(nowMillis)
-        } else {
-            edgeLifetimes[route] ?: BROWSER_LIFETIME
+        when (val lifetime = ApiRoute.forTemplate(route)?.edgeLifetime) {
+            is EdgeLifetime.Fixed -> lifetime.duration
+            EdgeLifetime.FeedWindow -> TrendingService.feedTimeLeft(nowMillis)
+            EdgeLifetime.None, null -> BROWSER_LIFETIME
         }
     val browser = minOf(BROWSER_LIFETIME, edge)
     val cacheControl =

@@ -27,42 +27,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import java.net.URI
 import java.time.Instant
 
-internal val gameQueryParameters =
-    mapOf(
-        "/v1/games/details" to setOf("id"),
-        "/v1/games/anticipated" to setOf("pageSize"),
-    )
-
-internal const val RECOMMENDATIONS_PATH = "/v1/games/recommendations"
-internal const val TRENDING_PATH = "/v1/games/trending"
-internal const val GIVEAWAY_DETAILS_ROUTE = "/v1/giveaways/{id}"
-
-/**
- * Every route and the query parameters it accepts. Register a new route here once; cache eligibility and timing
- * logs read it through [routeOf]. Paths with an ID are registered under their template.
- */
-internal val routeQueryParameters: Map<String, Set<String>> =
-    gameQueryParameters +
-        mapOf(
-            RECOMMENDATIONS_PATH to setOf("id", "limit"),
-            TRENDING_PATH to setOf("page", "pageSize"),
-            "/v1/giveaways" to emptySet(),
-            GIVEAWAY_DETAILS_ROUTE to emptySet(),
-            "/v1/giveaways/image" to setOf("url"),
-            "/health" to emptySet(),
-            "/healthz" to emptySet(),
-        )
-
-/** The registered route for a request path, or null for unknown paths. */
-internal fun routeOf(path: String): String? =
-    when {
-        validGiveawayId(path) -> GIVEAWAY_DETAILS_ROUTE
-        // The template is a registry key, not a requestable path.
-        path == GIVEAWAY_DETAILS_ROUTE -> null
-        path in routeQueryParameters -> path
-        else -> null
-    }
-
 fun Application.api(
     config: BackendConfig,
     igdb: IgdbService,
@@ -96,7 +60,7 @@ internal fun Application.api(
         route("{...}") {
             handle {
                 if (!call.hasValidOriginSecret(config)) {
-                    respondJson(403, """{"error":"Forbidden"}""")
+                    respondError(403, "Forbidden")
                     return@handle
                 }
                 val path = call.request.path()
@@ -118,57 +82,58 @@ internal fun Application.api(
                     return@handle
                 }
                 if (allowed) cors(origin)
+                val route = ApiRoute.forTemplate(routeOf(path))
+                if (method != "GET" || route == null) {
+                    respondError(404, "Not found")
+                    return@handle
+                }
                 try {
-                    when {
-                        path == "/health" && method == "GET" ->
-                            respondJson(200, """{"ok":true,"version":"$backendVersion"}""")
-                        path == "/healthz" && method == "GET" -> {
+                    when (route) {
+                        ApiRoute.HEALTH ->
+                            respondJson(
+                                200,
+                                JsonObject(
+                                    mapOf("ok" to JsonPrimitive(true), "version" to JsonPrimitive(backendVersion)),
+                                ).toString(),
+                            )
+                        ApiRoute.HEALTHZ ->
                             if (config.credentialsAvailable) {
-                                respondJson(200, """{"ok":true}""")
+                                respondJson(200, JsonObject(mapOf("ok" to JsonPrimitive(true))).toString())
                             } else {
-                                respondJson(503, """{"error":"Backend credentials unavailable"}""")
+                                respondError(503, "Backend credentials unavailable")
                             }
-                        }
-                        path == RECOMMENDATIONS_PATH && method == "GET" ->
-                            respondRecommendations(recommendations, config)
-                        path == TRENDING_PATH && method == "GET" -> respondTrending(trending, config)
-                        path in gameQueryParameters && method == "GET" -> respondGame(path, igdb, config)
-                        path.startsWith("/v1/giveaways") && method == "GET" -> {
-                            if (path == "/v1/giveaways/image") {
-                                respondImage(giveaways, failures)
-                            } else if (path == "/v1/giveaways" || validGiveawayId(path)) {
-                                val port = call.request.port()
-                                val suffix = if (port in listOf(80, 443)) "" else ":$port"
-                                val requestBase = "${call.request.local.scheme}://${call.request.host()}$suffix"
-                                val base = config.publicBaseUrl ?: requestBase
-                                when (val result = giveaways.giveaway(path, base)) {
-                                    is UpstreamOutcome.Ok -> {
-                                        call.attributes.put(publicResponse, Unit)
-                                        respondJson(200, result.body.decodeToString())
-                                    }
-                                    is UpstreamOutcome.Failed ->
-                                        when (result.failure) {
-                                            UpstreamFailure.NOT_FOUND ->
-                                                respondJson(404, """{"error":"Giveaway not found"}""")
-                                            UpstreamFailure.RATE_LIMITED ->
-                                                respondJson(429, """{"error":"Rate limit exceeded"}""")
-                                            else -> respondJson(502, """{"error":"Upstream unavailable"}""")
-                                        }
-                                }
-                            } else {
-                                respondJson(404, """{"error":"Not found"}""")
-                            }
-                        }
-                        else -> respondJson(404, """{"error":"Not found"}""")
+                        ApiRoute.GAME_DETAILS, ApiRoute.ANTICIPATED -> respondGame(route.template, igdb, config)
+                        ApiRoute.RECOMMENDATIONS -> respondRecommendations(recommendations, config)
+                        ApiRoute.TRENDING -> respondTrending(trending, config)
+                        ApiRoute.GIVEAWAYS, ApiRoute.GIVEAWAY_DETAILS -> respondGiveaway(path, giveaways, config)
+                        ApiRoute.GIVEAWAY_IMAGE -> respondImage(giveaways, failures)
                     }
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    failures.requestFailed(routeOf(path) ?: "other", e)
-                    respondJson(502, """{"error":"Upstream unavailable"}""")
+                    failures.requestFailed(route.template, e)
+                    respondError(502, UNAVAILABLE_MESSAGE)
                 }
             }
         }
+    }
+}
+
+private suspend fun RoutingContext.respondGiveaway(
+    path: String,
+    giveaways: GiveawayService,
+    config: BackendConfig,
+) {
+    val port = call.request.port()
+    val suffix = if (port in listOf(80, 443)) "" else ":$port"
+    val requestBase = "${call.request.local.scheme}://${call.request.host()}$suffix"
+    val base = config.publicBaseUrl ?: requestBase
+    when (val result = giveaways.giveaway(path, base)) {
+        is UpstreamOutcome.Ok -> {
+            call.attributes.put(publicResponse, Unit)
+            respondJson(200, result.body.decodeToString())
+        }
+        is UpstreamOutcome.Failed -> respondFailure(result.failure, notFound = "Giveaway not found")
     }
 }
 
@@ -178,19 +143,19 @@ private suspend fun RoutingContext.respondGame(
     config: BackendConfig,
 ) {
     if (!config.credentialsAvailable) {
-        respondJson(503, """{"error":"Backend credentials unavailable"}""")
+        respondError(503, "Backend credentials unavailable")
         return
     }
     val input =
         gameInput(path) ?: run {
-            respondJson(400, """{"error":"Invalid request"}""")
+            respondError(400, "Invalid request")
             return
         }
     val result =
         try {
             igdb.query(path, input)
         } catch (_: BodyTooLarge) {
-            respondJson(413, """{"error":"Query too large"}""")
+            respondError(413, "Query too large")
             return
         }
     when (result) {
@@ -198,12 +163,7 @@ private suspend fun RoutingContext.respondGame(
             call.attributes.put(publicResponse, Unit)
             respondJson(200, result.body.decodeToString())
         }
-        is UpstreamOutcome.Failed ->
-            when (result.failure) {
-                UpstreamFailure.BAD_REQUEST -> respondJson(400, """{"error":"Invalid request"}""")
-                UpstreamFailure.RATE_LIMITED -> respondJson(429, """{"error":"Rate limit exceeded"}""")
-                else -> respondJson(502, """{"error":"Upstream unavailable"}""")
-            }
+        is UpstreamOutcome.Failed -> respondFailure(result.failure)
     }
 }
 
@@ -222,23 +182,21 @@ private suspend fun RoutingContext.respondRecommendations(
             ?.let { value -> value.toIntOrNull()?.takeIf { it in 1..RecommendationRanking.MAX_RESULTS } ?: 0 }
             ?: RecommendationService.DEFAULT_LIMIT
     if (id == null || limit == 0) {
-        respondJson(400, """{"error":"Invalid request"}""")
+        respondError(400, "Invalid request")
         return
     }
     if (!config.credentialsAvailable) {
-        respondJson(503, """{"error":"Backend credentials unavailable"}""")
+        respondError(503, "Backend credentials unavailable")
         return
     }
     val result = recommendations.recommendations(id)
-    when (result.failure) {
+    when (val failure = result.failure) {
         null -> {
             // Degraded and stale fallbacks stay private so edge caches do not extend a partial answer.
             if (result.kind == RecommendationResult.Kind.COMPLETE) call.attributes.put(publicResponse, Unit)
             respondJson(200, gameCardsJson(result.games.take(limit)))
         }
-        UpstreamFailure.NOT_FOUND -> respondJson(404, """{"error":"Game not found"}""")
-        UpstreamFailure.RATE_LIMITED -> respondJson(429, """{"error":"Rate limit exceeded"}""")
-        else -> respondJson(502, """{"error":"Upstream unavailable"}""")
+        else -> respondFailure(failure, notFound = "Game not found")
     }
 }
 
@@ -263,11 +221,11 @@ private suspend fun RoutingContext.respondTrending(
             pageSize <= TrendingService.MAX_PAGE_SIZE &&
             (page - 1).toLong() * pageSize < TrendingRanking.FEED_GAMES
     if (!inRange) {
-        respondJson(400, """{"error":"Invalid request"}""")
+        respondError(400, "Invalid request")
         return
     }
     if (!config.credentialsAvailable) {
-        respondJson(503, """{"error":"Backend credentials unavailable"}""")
+        respondError(503, "Backend credentials unavailable")
         return
     }
     when (val result = trending.trending(page, pageSize)) {
@@ -276,11 +234,7 @@ private suspend fun RoutingContext.respondTrending(
             if (!result.stale) call.attributes.put(publicResponse, Unit)
             respondJson(200, result.response.body.decodeToString())
         }
-        is ResponseCache.LoadResult.Uncached ->
-            when (result.failure) {
-                UpstreamFailure.RATE_LIMITED -> respondJson(429, """{"error":"Rate limit exceeded"}""")
-                else -> respondJson(502, """{"error":"Upstream unavailable"}""")
-            }
+        is ResponseCache.LoadResult.Uncached -> respondFailure(result.failure)
     }
 }
 
@@ -342,7 +296,7 @@ private suspend fun RoutingContext.respondImage(
             throw e
         } catch (e: Exception) {
             failures.requestFailed("/v1/giveaways/image", e)
-            respondJson(502, """{"error":"Upstream image unavailable"}""")
+            respondError(502, IMAGE_UNAVAILABLE_MESSAGE)
             return
         }
     val (result, contentType) = imageResult
@@ -356,11 +310,12 @@ private suspend fun RoutingContext.respondImage(
             )
         }
         is UpstreamOutcome.Failed ->
-            when (result.failure) {
-                UpstreamFailure.BAD_REQUEST -> respondJson(400, """{"error":"Invalid image URL"}""")
-                UpstreamFailure.BUSY -> respondJson(503, """{"error":"Image proxy busy"}""")
-                else -> respondJson(502, """{"error":"Upstream image unavailable"}""")
-            }
+            respondFailure(
+                result.failure,
+                badRequest = "Invalid image URL",
+                busy = "Image proxy busy",
+                unavailable = IMAGE_UNAVAILABLE_MESSAGE,
+            )
     }
 }
 
@@ -391,6 +346,38 @@ private fun RoutingContext.cors(origin: String) {
     call.response.headers.append("Access-Control-Allow-Methods", "GET, OPTIONS")
     call.response.headers.append("Access-Control-Allow-Headers", "Content-Type")
     call.response.headers.append("Access-Control-Max-Age", "86400")
+}
+
+private const val UNAVAILABLE_MESSAGE = "Upstream unavailable"
+private const val IMAGE_UNAVAILABLE_MESSAGE = "Upstream image unavailable"
+
+/**
+ * The one mapping from an upstream failure to the API's status and error body. Routes only name their own items, such
+ * as which thing was not found; statuses never differ between routes.
+ */
+private suspend fun RoutingContext.respondFailure(
+    failure: UpstreamFailure,
+    badRequest: String = "Invalid request",
+    notFound: String = "Not found",
+    busy: String = "Service busy",
+    unavailable: String = UNAVAILABLE_MESSAGE,
+) {
+    when (failure) {
+        UpstreamFailure.BAD_REQUEST -> respondError(400, badRequest)
+        UpstreamFailure.NOT_FOUND -> respondError(404, notFound)
+        UpstreamFailure.RATE_LIMITED -> respondError(429, "Rate limit exceeded")
+        UpstreamFailure.BUSY -> respondError(503, busy)
+        // An upstream that did not answer in time is reported as unavailable, like any other upstream failure.
+        UpstreamFailure.UNAVAILABLE, UpstreamFailure.TIMEOUT -> respondError(502, unavailable)
+    }
+}
+
+/** A `{"error": message}` body, serialized so a message can never break the JSON. */
+private suspend fun RoutingContext.respondError(
+    status: Int,
+    message: String,
+) {
+    respondJson(status, JsonObject(mapOf("error" to JsonPrimitive(message))).toString())
 }
 
 private suspend fun RoutingContext.respondJson(
