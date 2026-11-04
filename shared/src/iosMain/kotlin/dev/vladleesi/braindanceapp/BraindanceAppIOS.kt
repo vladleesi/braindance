@@ -10,6 +10,6 @@ import kotlin.native.Platform
 
 @OptIn(ExperimentalNativeApi::class)
 fun mainViewController(): UIViewController =
-    ComposeUIViewController(configure = { initKoin(debugHttpLogging = Platform.isDebugBinary) }) {
+    ComposeUIViewController(configure = { initKoin(isDebugBuild = Platform.isDebugBinary) }) {
         BraindanceApp()
     }

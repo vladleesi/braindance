@@ -51,6 +51,7 @@ import dev.vladleesi.braindanceapp.ui.components.SpacerTopBarWithStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StaticText
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
+import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
@@ -92,7 +93,7 @@ fun GiveawayDetailsScreen(
 
     when (val currentState = state) {
         is GiveawayDetailsState.Error ->
-            ErrorScreen(modifier = modifier) {
+            ErrorScreen(errorMessage = currentState.error.userMessage(), modifier = modifier) {
                 viewModel.refresh()
             }
 

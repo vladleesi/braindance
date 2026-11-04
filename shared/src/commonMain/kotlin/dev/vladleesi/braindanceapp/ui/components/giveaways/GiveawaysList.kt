@@ -23,16 +23,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import dev.vladleesi.braindanceapp.resources.Res
-import dev.vladleesi.braindanceapp.resources.error_screen_error_message
 import dev.vladleesi.braindanceapp.system.isLargeDevice
 import dev.vladleesi.braindanceapp.ui.components.HorizontalListControls
 import dev.vladleesi.braindanceapp.ui.components.StaticText
 import dev.vladleesi.braindanceapp.ui.components.home.CarouselErrorState
+import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
-import org.jetbrains.compose.resources.stringResource
 
 private const val GIVEAWAYS_SKELETON_COUNT = 3
 private const val GIVEAWAY_ITEM_CONTENT_TYPE = "giveaway_item"
@@ -64,7 +62,7 @@ fun GiveawaysList(
             is SectionState.Error ->
                 CarouselErrorState(
                     title = title,
-                    errorMessage = stringResource(Res.string.error_screen_error_message),
+                    errorMessage = targetState.error.userMessage(),
                     onRefresh = onRefresh,
                 )
         }

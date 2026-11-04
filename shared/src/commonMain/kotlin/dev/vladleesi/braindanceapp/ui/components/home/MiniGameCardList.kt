@@ -25,15 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import dev.vladleesi.braindanceapp.resources.Res
-import dev.vladleesi.braindanceapp.resources.error_screen_error_message
 import dev.vladleesi.braindanceapp.system.isLargeDevice
 import dev.vladleesi.braindanceapp.ui.components.HorizontalListControls
 import dev.vladleesi.braindanceapp.ui.components.StaticText
+import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
-import org.jetbrains.compose.resources.stringResource
 
 private const val MINI_GAME_CARD_SKELETON_COUNT = 4
 private const val MINI_GAME_CARD_CONTENT_TYPE = "mini_game_card"
@@ -68,7 +66,7 @@ fun MiniGameCardList(
             is SectionState.Error ->
                 CarouselErrorState(
                     title = title,
-                    errorMessage = stringResource(Res.string.error_screen_error_message),
+                    errorMessage = targetState.error.userMessage(),
                     onRefresh = onRefresh,
                     modifier = modifier,
                 )

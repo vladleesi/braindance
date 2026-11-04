@@ -51,6 +51,7 @@ import dev.vladleesi.braindanceapp.ui.components.details.ReleaseDateLabel
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardList
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardListSkeleton
+import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
@@ -90,7 +91,7 @@ fun GameDetailsScreen(
 
     when (val currentState = state) {
         is GameDetailsState.Error ->
-            ErrorScreen(modifier = modifier) {
+            ErrorScreen(errorMessage = currentState.error.userMessage(), modifier = modifier) {
                 viewModel.refresh()
             }
 

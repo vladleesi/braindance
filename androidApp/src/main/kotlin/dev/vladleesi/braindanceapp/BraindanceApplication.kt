@@ -17,7 +17,7 @@ class BraindanceApplication : Application() {
                 androidLogger(Level.DEBUG)
                 androidContext(this@BraindanceApplication)
             },
-            debugHttpLogging = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0,
+            isDebugBuild = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0,
         )
     }
 }

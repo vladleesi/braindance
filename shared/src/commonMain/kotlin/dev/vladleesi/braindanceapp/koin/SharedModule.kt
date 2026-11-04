@@ -9,6 +9,7 @@ import dev.vladleesi.braindanceapp.data.api.warmUpBackend
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
+import dev.vladleesi.braindanceapp.logger.BLogger
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
@@ -23,23 +24,25 @@ import org.koin.dsl.module
 
 fun initKoin(
     androidConfig: KoinAppDeclaration? = null,
-    debugHttpLogging: Boolean = false,
+    isDebugBuild: Boolean = false,
 ) {
+    // Logs and HTTP logging stay off in release builds.
+    if (isDebugBuild) BLogger.enable()
     val application =
         startKoin {
             androidConfig?.invoke(this)
-            koinModules(debugHttpLogging)
+            koinModules(isDebugBuild)
         }
     warmUpBackend { application.koin.get<HttpClient>() }
 }
 
-private fun KoinApplication.koinModules(debugHttpLogging: Boolean) =
-    modules(remoteModule, repositoryModule, viewModelModule, httpClientModule(debugHttpLogging))
+private fun KoinApplication.koinModules(isDebugBuild: Boolean) =
+    modules(remoteModule, repositoryModule, viewModelModule, httpClientModule(isDebugBuild))
 
 // The backend client is the only HttpClient in the graph, so remotes receive it by constructor injection.
-private fun httpClientModule(debugHttpLogging: Boolean) =
+private fun httpClientModule(isDebugBuild: Boolean) =
     module {
-        single<HttpClient> { BackendClient.build(debugHttpLogging) }
+        single<HttpClient> { BackendClient.build(debugHttpLogging = isDebugBuild) }
     }
 
 private val remoteModule =

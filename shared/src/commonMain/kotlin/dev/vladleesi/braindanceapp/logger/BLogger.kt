@@ -5,8 +5,16 @@ package dev.vladleesi.braindanceapp.logger
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 
+/**
+ * App logging. Nothing is written until [enable] is called, which only debug builds do, so release builds never put
+ * request URLs or exception details into device or browser logs.
+ */
 object BLogger {
-    init {
+    private var enabled = false
+
+    fun enable() {
+        if (enabled) return
+        enabled = true
         Napier.base(DebugAntilog("Braindance"))
     }
 
