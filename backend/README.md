@@ -155,6 +155,15 @@ replica. The limiter allows four IGDB calls per rolling second and fails closed 
 Redis with TLS and authentication, `noeviction`, and durable persistence; keep its credentials in runtime secrets.
 After state loss, pause IGDB traffic for at least one second, and never use independent primaries during failover.
 
+Per-game calls (game details and recommendations) may use at most three of the four slots, so Popular Right Now and
+Most Anticipated always keep one; in Redis mode this cap is a second key on the same database. Unknown games are
+remembered for an hour.
+
+Behind Cloudflare with `CLOUDFLARE_ORIGIN_SECRET`, each client identified by `CF-Connecting-IP` may also request game
+details and recommendations in bursts of 20 and at 60 per minute; beyond that it gets 429 with `Retry-After`. This
+limit is per instance. Without the origin guard, clients cannot be told apart behind a proxy, so the backend applies
+no per-client limit and logs `per_client_rate_limit` as off at startup; configure an edge rate limit instead.
+
 ## Tests and evaluations
 
 ```sh

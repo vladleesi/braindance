@@ -16,12 +16,17 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import java.time.Clock
 
+/** Which share of the IGDB budget a call uses. Feeds are shown to every visitor; per-game calls follow user input. */
+enum class IgdbLane { FEED, PER_GAME }
+
 class IgdbService(
     private val upstream: Upstream,
     private val rateLimiter: RateLimiter,
     private val config: BackendConfig,
     private val clock: Clock = Clock.systemUTC(),
     private val failures: FailureLog = FailureLog(),
+    // Caps per-game calls below the shared limit; null applies only the shared limit.
+    private val perGameLimiter: RateLimiter? = null,
 ) {
     private val mutex = Mutex()
     private var token: String? = null
@@ -39,9 +44,10 @@ class IgdbService(
     ): UpstreamOutcome {
         val (upstreamPath, body) =
             buildQuery(path, input) ?: return UpstreamOutcome.Failed(UpstreamFailure.BAD_REQUEST)
+        val lane = if (path == ApiRoute.ANTICIPATED.template) IgdbLane.FEED else IgdbLane.PER_GAME
         val result =
             responses.getOrLoad("$upstreamPath\n$body") {
-                when (val response = execute(upstreamPath, body)) {
+                when (val response = execute(upstreamPath, body, lane = lane)) {
                     is UpstreamOutcome.Ok -> ResponseCache.LoadResult.Hit(CachedResponse(response.body))
                     is UpstreamOutcome.Failed -> ResponseCache.LoadResult.Uncached(response.failure)
                 }
@@ -60,11 +66,12 @@ class IgdbService(
         path: String,
         body: String,
         slotWaitMillis: Long = 0,
+        lane: IgdbLane = IgdbLane.PER_GAME,
     ): UpstreamOutcome {
         var accessToken = getToken()
         repeat(2) { attempt ->
-            if (!takeSlot(slotWaitMillis)) {
-                failures.limiterRejected(IGDB_OPERATION)
+            if (!takeSlot(slotWaitMillis, lane)) {
+                failures.limiterRejected(if (lane == IgdbLane.PER_GAME) "igdb_per_game" else IGDB_OPERATION)
                 return UpstreamOutcome.Failed(UpstreamFailure.RATE_LIMITED)
             }
             val response =
@@ -91,10 +98,19 @@ class IgdbService(
         return UpstreamOutcome.Failed(UpstreamFailure.UNAVAILABLE)
     }
 
-    private suspend fun takeSlot(waitMillis: Long): Boolean {
+    /**
+     * A per-game call takes its lane slot first and keeps it while waiting for a shared slot. A lane slot left unused
+     * only lowers per-game throughput, whereas a shared slot taken first and then refused would cost the feeds.
+     */
+    private suspend fun takeSlot(
+        waitMillis: Long,
+        lane: IgdbLane,
+    ): Boolean {
         val deadline = clock.millis() + waitMillis
+        var laneSlot = lane == IgdbLane.FEED || perGameLimiter == null
         while (true) {
-            if (rateLimiter.takeSlot()) return true
+            if (!laneSlot) laneSlot = checkNotNull(perGameLimiter).takeSlot()
+            if (laneSlot && rateLimiter.takeSlot()) return true
             val remaining = deadline - clock.millis()
             if (remaining <= 0) return false
             delay(remaining.coerceAtMost(SLOT_RETRY_MILLIS))

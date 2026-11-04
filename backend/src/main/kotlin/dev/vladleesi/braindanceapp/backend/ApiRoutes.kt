@@ -28,14 +28,21 @@ internal enum class ApiRoute(
     val template: String,
     val queryKeys: Set<String>,
     val edgeLifetime: EdgeLifetime,
+    /** Each distinct ID can miss every cache and cost IGDB calls, so the route is limited per client. */
+    val perClientLimited: Boolean = false,
 ) {
     HEALTH("/health", emptySet(), EdgeLifetime.None),
     HEALTHZ("/healthz", emptySet(), EdgeLifetime.None),
 
     // IGDB game data and rankings change slowly.
-    GAME_DETAILS("/v1/games/details", setOf("id"), EdgeLifetime.Fixed(1.days)),
+    GAME_DETAILS("/v1/games/details", setOf("id"), EdgeLifetime.Fixed(1.days), perClientLimited = true),
     ANTICIPATED("/v1/games/anticipated", setOf("pageSize"), EdgeLifetime.Fixed(6.hours)),
-    RECOMMENDATIONS("/v1/games/recommendations", setOf("id", "limit"), EdgeLifetime.Fixed(1.days)),
+    RECOMMENDATIONS(
+        "/v1/games/recommendations",
+        setOf("id", "limit"),
+        EdgeLifetime.Fixed(1.days),
+        perClientLimited = true,
+    ),
     TRENDING("/v1/games/trending", setOf("page", "pageSize"), EdgeLifetime.FeedWindow),
 
     // Giveaways expire within hours; proxied images never change.

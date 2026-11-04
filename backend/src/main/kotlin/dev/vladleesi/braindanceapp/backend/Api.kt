@@ -45,6 +45,7 @@ internal fun Application.api(
     recommendations: RecommendationService,
     trending: TrendingService,
     failures: FailureLog = FailureLog(),
+    clientLimiter: ClientRateLimiter = ClientRateLimiter(),
 ) {
     val backendVersion =
         BackendConfig::class.java.`package`.implementationVersion
@@ -82,6 +83,12 @@ internal fun Application.api(
                     respondError(404, "Not found")
                     return@handle
                 }
+                val retryAfter = if (route.perClientLimited) clientKey(config)?.let(clientLimiter::take) else null
+                if (retryAfter != null) {
+                    call.response.headers.append(HttpHeaders.RetryAfter, retryAfter.toString())
+                    respondError(429, "Rate limit exceeded")
+                    return@handle
+                }
                 try {
                     when (route) {
                         ApiRoute.HEALTH ->
@@ -112,6 +119,22 @@ internal fun Application.api(
             }
         }
     }
+}
+
+private const val CF_CONNECTING_IP = "CF-Connecting-IP"
+private const val MAX_IP_LENGTH = 45
+
+/**
+ * The client a per-client limit applies to, or null when clients cannot be told apart. Only Cloudflare's own header is
+ * trusted, and only behind the origin guard, which rejects requests that did not pass through Cloudflare. Without the
+ * guard, every visitor behind a proxy would share the proxy's address and therefore one limit, so none is applied.
+ */
+private fun RoutingContext.clientKey(config: BackendConfig): String? {
+    if (config.cloudflareOriginSecret == null) return null
+    return call.request.headers
+        .getAll(CF_CONNECTING_IP)
+        ?.singleOrNull()
+        ?.takeIf { ip -> ip.length <= MAX_IP_LENGTH && ip.all { it.isLetterOrDigit() || it == '.' || it == ':' } }
 }
 
 private suspend fun RoutingContext.respondGiveaway(

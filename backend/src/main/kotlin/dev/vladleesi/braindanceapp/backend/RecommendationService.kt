@@ -205,8 +205,9 @@ internal class RecommendationService(
                     CacheEntry(result, now + FRESH.inWholeMilliseconds, now + STALE_IF_ERROR.inWholeMilliseconds)
                 result.failure == null && result.kind == RecommendationResult.Kind.DEGRADED ->
                     CacheEntry(result, now + DEGRADED.inWholeMilliseconds, now + DEGRADED.inWholeMilliseconds)
+                // An unknown ID stays unknown, so it is remembered longer; random-ID floods then cost IGDB once.
                 result.failure == UpstreamFailure.NOT_FOUND ->
-                    CacheEntry(result, now + DEGRADED.inWholeMilliseconds, now + DEGRADED.inWholeMilliseconds)
+                    CacheEntry(result, now + NOT_FOUND.inWholeMilliseconds, now + NOT_FOUND.inWholeMilliseconds)
                 // Keep the expired complete entry for later stale-if-error responses; do not cache failures.
                 else -> return
             }
@@ -250,6 +251,7 @@ internal class RecommendationService(
         private val FRESH = 24.hours
         private val STALE_IF_ERROR = 7.days
         private val DEGRADED = 2.minutes
+        private val NOT_FOUND = 1.hours
 
         // Clients time out after five seconds, so a complete answer must fit well inside that.
         private val SOURCE_TIMEOUT = 3.5.seconds

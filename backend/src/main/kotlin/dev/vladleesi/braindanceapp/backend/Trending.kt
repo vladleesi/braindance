@@ -736,7 +736,7 @@ internal class TrendingService(
 
     /** Waits briefly for an IGDB rate-limit slot instead of failing at once during a burst. */
     private suspend fun execute(body: String) =
-        igdb.execute(RecommendationService.MULTIQUERY_PATH, body, SLOT_WAIT.inWholeMilliseconds)
+        igdb.execute(RecommendationService.MULTIQUERY_PATH, body, SLOT_WAIT.inWholeMilliseconds, IgdbLane.FEED)
 
     /**
      * One structured log line per cache miss with candidate counts per stage; it contains no request or credential

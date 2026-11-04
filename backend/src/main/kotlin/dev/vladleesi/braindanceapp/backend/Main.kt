@@ -45,7 +45,17 @@ fun main() {
                 HttpClient(CIO) { upstreamDefaults() }
             }
         }
-    val igdb = startup.measure("igdb_service_creation") { IgdbService(upstream, limiter, config, failures = failures) }
+    val perGameLimiter =
+        redis?.let { RedisRateLimiter(it, PER_GAME_RATE_KEY, PER_GAME_REQUESTS_PER_SECOND) }
+            ?: InMemoryRateLimiter(PER_GAME_REQUESTS_PER_SECOND)
+    val igdb =
+        startup.measure("igdb_service_creation") {
+            IgdbService(upstream, limiter, config, failures = failures, perGameLimiter = perGameLimiter)
+        }
+    if (config.cloudflareOriginSecret == null) {
+        // Behind a proxy without the origin guard, clients cannot be told apart; the edge must limit them.
+        println("{\"event\":\"backend_config\",\"per_client_rate_limit\":\"off\",\"reason\":\"no_origin_guard\"}")
+    }
     val giveaways = startup.measure("giveaway_service_creation") { GiveawayService(upstream) }
     val recommendations = startup.measure("recommendation_service_creation") { RecommendationService(igdb) }
     val trending = TrendingService(igdb)
@@ -76,6 +86,7 @@ fun main() {
     server.start(wait = true)
 }
 
+private const val PER_GAME_RATE_KEY = "braindance:igdb:rate:per-game"
 private const val SHUTDOWN_GRACE_MILLIS = 2_000L
 private const val SHUTDOWN_TIMEOUT_MILLIS = 8_000L
 
