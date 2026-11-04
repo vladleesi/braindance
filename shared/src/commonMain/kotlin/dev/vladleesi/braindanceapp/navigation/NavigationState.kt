@@ -32,10 +32,13 @@ fun rememberNavigationState(
     startRoute: NavKey,
     topLevelRoutes: Set<NavKey>,
 ): NavigationState {
-    // Only used as initial values; platform saved state, where it exists, still takes precedence.
+    // Only used as initial values; platform saved state, where it exists, still takes precedence. In a browser, the
+    // address the page opened at wins over the stored navigation, so shared and bookmarked links open their screen.
     val restored =
         remember(topLevelRoutes) {
-            decodeNavigationSnapshot(navigationPersistence?.read(), topLevelRoutes)
+            val stored = decodeNavigationSnapshot(navigationPersistence?.read(), topLevelRoutes)
+            val linked = browserLocation?.let { webPathToRoute(it.read()) }
+            applyDeepLink(stored, linked, startRoute, topLevelRoutes)
         }
 
     val topLevelRoute =

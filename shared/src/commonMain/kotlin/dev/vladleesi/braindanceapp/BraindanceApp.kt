@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import dev.vladleesi.braindanceapp.navigation.BrowserHistorySync
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.Navigator
 import dev.vladleesi.braindanceapp.navigation.rememberNavigationState
@@ -36,6 +37,7 @@ fun BraindanceApp(modifier: Modifier = Modifier) {
         )
 
     val navigator = remember { Navigator(navigationState) }
+    BrowserHistorySync(navigationState, navigator)
 
     CompositionLocalProvider(LocalNavigator provides navigator) {
         BraindanceTheme {
