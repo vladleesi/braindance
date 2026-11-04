@@ -19,6 +19,7 @@ jobs:
   publish-frontend-release:
     name: Publish Android, iOS, and Web Release
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
 

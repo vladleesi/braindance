@@ -5,6 +5,7 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 import java.io.StringReader
 import java.util.Properties
 
@@ -170,6 +171,20 @@ buildkonfig {
 
 tasks.named("detekt") {
     dependsOn("detektAndroidMain")
+}
+
+// CI passes an iPhone simulator that exists on its runner; locally the Kotlin plugin's default device is used.
+providers.gradleProperty("iosTestSimulator").orNull?.let { simulator ->
+    tasks.withType<KotlinNativeSimulatorTest>().configureEach { device.set(simulator) }
+}
+
+// Stability reports for reviewing recomposition: ./gradlew :shared:compileKotlinIosSimulatorArm64
+// -PcomposeCompilerReports=true writes them to shared/build/compose-compiler/.
+if (providers.gradleProperty("composeCompilerReports").orNull == "true") {
+    composeCompiler {
+        reportsDestination.set(layout.buildDirectory.dir("compose-compiler/reports"))
+        metricsDestination.set(layout.buildDirectory.dir("compose-compiler/metrics"))
+    }
 }
 
 tasks.named<Detekt>("detektAndroidMain") {

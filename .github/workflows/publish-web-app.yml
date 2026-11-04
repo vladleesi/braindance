@@ -30,6 +30,7 @@ jobs:
     # Validation calls this after a successful promotion or a validated master push.
     if: inputs.promoted || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       actions: read
       contents: write

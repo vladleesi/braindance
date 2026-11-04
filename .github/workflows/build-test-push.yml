@@ -24,6 +24,7 @@ jobs:
   repository-license-notices:
     name: Repository License Notices
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout Code
@@ -37,6 +38,7 @@ jobs:
   android-build-and-unit-tests:
     name: Android Build and Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 40
 
     steps:
       - name: Checkout Code
@@ -64,12 +66,21 @@ jobs:
       - name: Build Android App
         run: ./gradlew :androidApp:build --stacktrace
 
+      # The baseline profile generator runs only on a device, so CI compiles and lints it to keep it working.
+      - name: Build Baseline Profile Module
+        run: ./gradlew :baselineprofile:assemble :baselineprofile:ktlintCheck :baselineprofile:detekt --stacktrace
+
+      # The shared module holds most app code; :androidApp:build lints only its own module.
+      - name: Lint Shared Module
+        run: ./gradlew :shared:ktlintCheck :shared:detekt --stacktrace
+
       - name: Run Android Unit Tests
         run: ./gradlew :androidApp:testDebugUnitTest :shared:testAndroidHostTest --stacktrace
 
   web-app-build:
     name: Web App Build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       ORG_GRADLE_PROJECT_BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
       # Deep links need the site's base path: the root on a custom domain, the repository name otherwise.
@@ -101,6 +112,10 @@ jobs:
       - name: Build Web App
         run: ./gradlew :webApp:wasmJsBrowserDistribution --stacktrace
 
+      # Runs the common tests in headless Chrome, which the Ubuntu runner provides.
+      - name: Run Shared Web Tests
+        run: ./gradlew :shared:wasmJsBrowserTest --stacktrace
+
       - name: Store Validated Web App
         if: github.event_name == 'push'
         uses: actions/upload-artifact@v7
@@ -112,6 +127,7 @@ jobs:
   android-instrumented-tests:
     name: Android Instrumented Tests (API ${{ matrix.api-level }})
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       matrix:
         # Cover the minimum supported version and a modern Android runtime.
@@ -158,6 +174,7 @@ jobs:
   ios-framework-validation:
     name: iOS Framework Validation
     runs-on: macos-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout Code
@@ -176,6 +193,14 @@ jobs:
 
       - name: Build Shared iOS Framework
         run: ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64 --stacktrace
+
+      # Uses an iPhone simulator that exists on this runner's Xcode, rather than a fixed model name.
+      - name: Run Shared iOS Tests
+        run: |
+          # awk reads the whole list, so xcrun never sees a closed pipe.
+          simulator="$(xcrun simctl list devices available | awk '/iPhone/ && !found { sub(/^ +/, ""); sub(/ \(.*/, ""); print; found = 1 }')"
+          test -n "$simulator"
+          ./gradlew :shared:iosSimulatorArm64Test -PiosTestSimulator="$simulator" --stacktrace
 
   backend-validation:
     name: Backend Validation
@@ -249,6 +274,7 @@ jobs:
   promote-to-master:
     name: Promote Develop to Master
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs:
       - security-checks
       - repository-license-notices

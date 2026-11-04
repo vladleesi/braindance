@@ -33,6 +33,7 @@ jobs:
     name: Check Backend Changes
     if: github.ref == 'refs/heads/master' || (github.event_name == 'push' && github.ref == 'refs/heads/develop')
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       deploy: ${{ steps.changes.outputs.deploy }}
       source_sha: ${{ steps.changes.outputs.source_sha }}
@@ -77,6 +78,7 @@ jobs:
     # ubuntu-26.04 Docker publishes OCI indexes with attestations; Cloud Run then started instances about
     # 5 seconds later than with the single Docker v2 manifest this runner publishes.
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: write
@@ -176,6 +178,7 @@ jobs:
     name: Deploy Published Backend
     needs: [changes, publish]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       id-token: write
