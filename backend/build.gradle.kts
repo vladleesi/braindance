@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "dev.vladleesi.braindanceapp"
-version = "0.10.1"
+version = "0.10.2"
 
 kotlin {
     compilerOptions {

@@ -3,6 +3,21 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.10.2
+
+- Log unexpected request failures, unusable IGDB answers, and IGDB rate-limit rejections as structured JSON lines,
+  at most one per second per route or operation, so failures behind a generic 502 or 429 are diagnosable. Twitch
+  token failures name their reason and upstream status. Lines contain no visitor URLs, queries, headers, or bodies.
+- Remove giveaway `open_giveaway_url`, `open_giveaway`, and `gamerpower_url` links that are not absolute HTTPS URLs,
+  so clients are never handed `javascript:` or `data:` links from upstream data.
+- Proxy only JPEG, PNG, WebP, GIF, and AVIF giveaway images, and reject percent-encoded dots, slashes, and
+  backslashes in image paths.
+- Bound image proxy memory: images are capped at 1 MiB instead of 5 MiB (GamerPower images are well under 100 KB),
+  at most four are fetched at once, a request that waits more than 3 seconds for a fetch slot gets 503, and a failed
+  image URL is not fetched again for a minute. Every image within the cap is now cached.
+- Run the Redis rate-limiter script by its SHA instead of sending it with every request, and reload it after a Redis
+  restart.
+
 ## 0.10.1
 
 - Keep a slow `/v1/games/trending` refresh running after the 4.5-second response budget instead of discarding it.
