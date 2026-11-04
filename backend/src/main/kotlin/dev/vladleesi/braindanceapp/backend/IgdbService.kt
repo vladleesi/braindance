@@ -26,6 +26,7 @@ class IgdbService(
     private val rateLimiter: RateLimiter,
     private val config: BackendConfig,
     private val clock: Clock = Clock.systemUTC(),
+    private val failures: FailureLog = FailureLog(),
 ) {
     private val mutex = Mutex()
     private var token: String? = null
@@ -68,19 +69,30 @@ class IgdbService(
     ): ApiResult {
         var accessToken = getToken()
         repeat(2) { attempt ->
-            if (!takeSlot(slotWaitMillis)) return ApiResult(429)
+            if (!takeSlot(slotWaitMillis)) {
+                failures.limiterRejected(IGDB_OPERATION)
+                return ApiResult(429)
+            }
             val response =
                 openRequests.withPermit { upstream.igdb(path, body, checkNotNull(config.clientId), accessToken) }
-            if (response.status.value == 401 && attempt == 0) {
+            val status = response.status.value
+            if (status == 401 && attempt == 0) {
                 accessToken = getToken(rejectedToken = accessToken)
             } else {
-                if (response.status.value == 429) return ApiResult(429)
-                if (response.status.value !in 200..299) return ApiResult(502)
+                if (status !in 200..299) {
+                    failures.upstreamFailed(IGDB_OPERATION, status)
+                    return ApiResult(if (status == 429) 429 else 502)
+                }
                 val contentType = response.headers[HttpHeaders.ContentType].orEmpty()
-                if (!contentType.contains("application/json")) return ApiResult(502)
+                if (!contentType.contains("application/json")) {
+                    failures.upstreamFailed(IGDB_OPERATION, status, reason = "content_type")
+                    return ApiResult(502)
+                }
                 return ApiResult(200, response.body)
             }
         }
+        // IGDB rejected a freshly issued token as well.
+        failures.upstreamFailed(IGDB_OPERATION, 401, reason = "token_rejected")
         return ApiResult(502)
     }
 
@@ -102,7 +114,9 @@ class IgdbService(
             }
             token?.takeIf { clock.millis() < expiresAt }?.let { return@withLock it }
             val response = upstream.token(checkNotNull(config.clientId), checkNotNull(config.clientSecret))
-            if (response.status.value !in 200..299) error("token_request_failed")
+            if (response.status.value !in 200..299) {
+                throw TokenUnavailable(TokenUnavailable.Reason.REQUEST_FAILED, response.status.value)
+            }
             val payload = Json.parseToJsonElement(response.body.decodeToString()) as? JsonObject
             val newToken =
                 payload
@@ -117,7 +131,9 @@ class IgdbService(
                     ?.jsonPrimitive
                     ?.content
                     ?.toDoubleOrNull()
-            if (newToken == null || expiry == null || !expiry.isFinite() || expiry <= 0) error("token_response_invalid")
+            if (newToken == null || expiry == null || !expiry.isFinite() || expiry <= 0) {
+                throw TokenUnavailable(TokenUnavailable.Reason.RESPONSE_INVALID)
+            }
             token = newToken
             expiresAt = clock.millis() + ((expiry - 60).coerceAtLeast(0.0) * 1000).toLong()
             newToken
@@ -169,5 +185,6 @@ class IgdbService(
         private const val MAX_CACHED_RESPONSE_BYTES = 256 * 1024
         private const val MAX_OPEN_REQUESTS = 8
         private const val SLOT_RETRY_MILLIS = 150L
+        private const val IGDB_OPERATION = "igdb"
     }
 }

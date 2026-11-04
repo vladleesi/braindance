@@ -77,6 +77,12 @@ eight IGDB requests are open at once, and redirects are not followed. Successful
 cached in process for 10 minutes, and identical concurrent requests share one upstream call. Responses default to
 `private, no-store`.
 
+Failures write one JSON line to standard output: `request_failed` (an unexpected exception, with its class and, for
+Twitch tokens, the reason and upstream status), `upstream_failed` (an unusable IGDB status or content type), or
+`limiter_rejected` (no IGDB rate-limit slot). Each event is written at most once per second per route or operation,
+with a `suppressed` count of the skipped repeats. Lines never contain visitor URLs, query strings, headers, bodies,
+or exception messages.
+
 ## Popular Right Now
 
 `/v1/games/trending` returns cards with an optional verified `reason`, strongest first. It ranks current interest in

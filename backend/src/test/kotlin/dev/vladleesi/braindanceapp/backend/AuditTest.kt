@@ -153,9 +153,11 @@ class AuditTest {
         runBlocking {
             val remote = StubUpstream()
             remote.tokenHandler = { response(200, """{"access_token":null,"expires_in":3600}""") }
-            assertFailsWith<IllegalStateException> {
-                IgdbService(remote, RateLimiter { true }, config).query("/v1/games/details", input)
-            }
+            val invalid =
+                assertFailsWith<TokenUnavailable> {
+                    IgdbService(remote, RateLimiter { true }, config).query("/v1/games/details", input)
+                }
+            assertEquals(TokenUnavailable.Reason.RESPONSE_INVALID, invalid.reason)
             var calls = 0
             remote.tokenHandler = {
                 calls++

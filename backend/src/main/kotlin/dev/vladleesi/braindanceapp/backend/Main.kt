@@ -36,13 +36,14 @@ fun main() {
             }
         }
     val limiter = startup.measure("rate_limiter_creation") { redis?.let(::RedisRateLimiter) ?: InMemoryRateLimiter() }
+    val failures = FailureLog()
     val upstream =
         KtorUpstream {
             startup.measure("http_client_initialization") {
                 HttpClient(CIO) { upstreamDefaults() }
             }
         }
-    val igdb = startup.measure("igdb_service_creation") { IgdbService(upstream, limiter, config) }
+    val igdb = startup.measure("igdb_service_creation") { IgdbService(upstream, limiter, config, failures = failures) }
     val giveaways = startup.measure("giveaway_service_creation") { GiveawayService(upstream) }
     val recommendations = startup.measure("recommendation_service_creation") { RecommendationService(igdb) }
     val trending = TrendingService(igdb)
@@ -51,7 +52,7 @@ fun main() {
             embeddedServer(Netty, port = config.port, host = "0.0.0.0") {
                 monitor.subscribe(ServerReady) { startup.checkpoint("server_ready") }
                 startup.measure("application_routes") {
-                    api(config, igdb, giveaways, recommendations, trending)
+                    api(config, igdb, giveaways, recommendations, trending, failures)
                 }
             }
         }

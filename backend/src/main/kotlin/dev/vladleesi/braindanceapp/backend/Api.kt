@@ -85,6 +85,7 @@ internal fun Application.api(
     giveaways: GiveawayService,
     recommendations: RecommendationService,
     trending: TrendingService,
+    failures: FailureLog = FailureLog(),
 ) {
     val backendVersion =
         BackendConfig::class.java.`package`.implementationVersion
@@ -134,7 +135,7 @@ internal fun Application.api(
                         path in gameQueryParameters && method == "GET" -> respondGame(path, igdb, config)
                         path.startsWith("/v1/giveaways") && method == "GET" -> {
                             if (path == "/v1/giveaways/image") {
-                                respondImage(giveaways)
+                                respondImage(giveaways, failures)
                             } else if (path == "/v1/giveaways" || validGiveawayId(path)) {
                                 val port = call.request.port()
                                 val suffix = if (port in listOf(80, 443)) "" else ":$port"
@@ -158,7 +159,8 @@ internal fun Application.api(
                     }
                 } catch (e: CancellationException) {
                     throw e
-                } catch (_: Exception) {
+                } catch (e: Exception) {
+                    failures.requestFailed(routeOf(path) ?: "other", e)
                     respondJson(502, """{"error":"Upstream unavailable"}""")
                 }
             }
@@ -318,13 +320,17 @@ private fun RoutingContext.gameInput(path: String): JsonObject? {
     return JsonObject(input)
 }
 
-private suspend fun RoutingContext.respondImage(giveaways: GiveawayService) {
+private suspend fun RoutingContext.respondImage(
+    giveaways: GiveawayService,
+    failures: FailureLog,
+) {
     val imageResult =
         try {
             giveaways.image(call.request.queryParameters["url"])
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            failures.requestFailed("/v1/giveaways/image", e)
             respondJson(502, """{"error":"Upstream image unavailable"}""")
             return
         }
