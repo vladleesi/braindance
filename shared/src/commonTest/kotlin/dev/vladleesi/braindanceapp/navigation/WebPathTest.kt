@@ -58,4 +58,11 @@ class WebPathTest {
         assertEquals(BottomBarRoute.ProfileRoute, linked?.topLevelRoute)
         assertEquals(listOf(BottomBarRoute.ProfileRoute), linked?.backStack(BottomBarRoute.ProfileRoute))
     }
+
+    @Test
+    fun aTabAddressOpensThatTabAtItsRoot() {
+        val restored = NavigationSnapshot(NavigationSnapshot.VERSION, home, listOf(listOf(home, GameDetailsRoute(1))))
+        val linked = applyDeepLink(restored, home, home, tabs)
+        assertEquals(listOf<NavKey>(home), linked?.backStack(home))
+    }
 }

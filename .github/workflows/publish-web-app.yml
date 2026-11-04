@@ -35,6 +35,8 @@ jobs:
       contents: write
     env:
       ORG_GRADLE_PROJECT_BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+      # Deep links need the site's base path: the root on a custom domain, the repository name otherwise.
+      ORG_GRADLE_PROJECT_WEB_BASE_PATH: ${{ vars.WEB_CUSTOM_DOMAIN != '' && '/' || format('/{0}/', github.event.repository.name) }}
       WEB_CUSTOM_DOMAIN: ${{ vars.WEB_CUSTOM_DOMAIN }}
 
     steps:

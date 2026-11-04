@@ -90,6 +90,19 @@ class NavigationState(
     val backStacks: Map<NavKey, NavBackStack<NavKey>>,
 ) {
     var topLevelRoute: NavKey by topLevelRoute
+
+    /** Shows [snapshot] exactly: every tab's back stack and the selected tab, as Back and Forward in a browser need. */
+    internal fun restore(snapshot: NavigationSnapshot) {
+        for ((tab, stack) in backStacks) {
+            val target = snapshot.backStack(tab) ?: listOf(tab)
+            if (stack.toList() != target) {
+                stack.clear()
+                stack.addAll(target)
+            }
+        }
+        topLevelRoute = snapshot.topLevelRoute
+    }
+
     val stacksInUse: List<NavKey>
         get() =
             if (topLevelRoute == startRoute) {

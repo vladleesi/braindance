@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Resolves the page's files from the site root even when a deep link such as /game/42 is opened directly. -->
+    <base href="${webBasePath}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- GitHub Pages cannot send headers, so the policy is set here. The backend origin is filled in at build time.
          Compose starts a worker from a blob: URL and downloads fallback fonts from fonts.gstatic.com for glyphs that
          the bundled fonts lack; IGDB serves game covers. -->
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ${backendOrigin} https://images.igdb.com https://fonts.gstatic.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+          content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ${backendOrigin} https://images.igdb.com https://fonts.gstatic.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
     <meta name="description" content="Braindance helps you discover games: what is popular right now, the most anticipated releases, similar games, and current free giveaways.">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#171717">

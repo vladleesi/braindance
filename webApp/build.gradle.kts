@@ -33,6 +33,15 @@ val backendBaseUrl: String =
             },
         ).orNull
         .orEmpty()
+// Where the site is served: `/` on a custom domain, `/<repository>/` on a default GitHub Pages address.
+val webBasePath: String =
+    providers
+        .gradleProperty("WEB_BASE_PATH")
+        .orNull
+        ?.takeIf(String::isNotBlank)
+        ?.let { path -> "/" + path.trim('/') + "/" }
+        ?.replace("//", "/")
+        ?: "/"
 val backendOrigin: String =
     backendBaseUrl.takeIf(String::isNotBlank)?.let { url ->
         val uri = URI(url.trim())
@@ -63,9 +72,17 @@ kotlin {
 tasks.named<ProcessResources>("wasmJsProcessResources") {
     val bundleName = webBundleName
     val origin = backendOrigin
+    val basePath = webBasePath
     inputs.property("webBundleName", bundleName)
     inputs.property("backendOrigin", origin)
+    inputs.property("webBasePath", basePath)
+    val placeholders = mapOf("webBundleName" to bundleName, "backendOrigin" to origin, "webBasePath" to basePath)
     filesMatching("index.html") {
-        expand("webBundleName" to bundleName, "backendOrigin" to origin)
+        expand(placeholders)
+    }
+    // GitHub Pages serves 404.html for any unknown path, so deep links such as /game/42 load the same page.
+    from("src/wasmJsMain/resources/index.html") {
+        rename { "404.html" }
+        expand(placeholders)
     }
 }
