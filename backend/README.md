@@ -1,7 +1,7 @@
 # Braindance API
 
 The Kotlin/JVM Ktor backend serves game and giveaway data from IGDB and GamerPower to Braindance.
-Version **0.11.0**. This reference covers backend development and optional independent hosting;
+Version **0.11.1**. This reference covers backend development and optional independent hosting;
 using the [experimental Web preview](https://app.braindancegg.com/) does not require backend setup.
 
 Twitch credentials stay on the backend; GamerPower needs no key.
@@ -44,8 +44,8 @@ Only a real game request verifies IGDB access. For direct IDE launches, set the 
 
 ```sh
 ./gradlew :backend:test :backend:installDist
-docker build -f backend/Dockerfile -t braindance-api:0.11.0 backend
-docker run --env-file backend/.env -p 8080:8080 braindance-api:0.11.0
+docker build -f backend/Dockerfile -t braindance-api:0.11.1 backend
+docker run --env-file backend/.env -p 8080:8080 braindance-api:0.11.1
 ```
 
 The Dockerfile needs the prepared distribution; without Docker, run `backend/build/install/backend/bin/backend`.
@@ -64,7 +64,7 @@ All endpoints are GET-only and return JSON. Unknown or duplicate query keys are 
 
 | Endpoint | Returns |
 | --- | --- |
-| `/health`, `/healthz` | `{"ok":true,"version":"0.11.0"}`; `/healthz` returns 503 without Twitch credentials |
+| `/health`, `/healthz` | `{"ok":true,"version":"0.11.1"}`; `/healthz` returns 503 without Twitch credentials |
 | `/v1/games/details?id=42` | Game details |
 | `/v1/games/recommendations?id=42&limit=24` | Similar games, best first; `limit` 1–50 (default 24); 404 if unknown |
 | `/v1/games/trending?page=1&pageSize=20` | [Popular Right Now](#popular-right-now) feed of released games |

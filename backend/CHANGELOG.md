@@ -3,6 +3,11 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.11.1
+
+- Update the container image's `apt` packages to the Ubuntu security release for CVE-2026-109518. API behavior is
+  unchanged.
+
 ## 0.11.0
 
 - Limit game details and recommendations per client behind Cloudflare with `CLOUDFLARE_ORIGIN_SECRET`: bursts of 20
