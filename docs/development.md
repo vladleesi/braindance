@@ -1,7 +1,7 @@
 # Developing Braindance
 
 This guide is for contributors building and debugging Braindance locally, or running an independent instance.
-To use Braindance, [open the experimental Web preview](https://braindance.vladleesi.dev/);
+To use Braindance, [open the experimental Web preview](https://app.braindancegg.com/);
 see the [README](../README.md#platforms) for platform availability and
 [CONTRIBUTING.md](../CONTRIBUTING.md) for feedback and pull requests.
 Install only the tooling you need and run commands from the repository root.

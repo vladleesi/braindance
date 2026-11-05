@@ -2,7 +2,7 @@
 
 You can help improve Braindance by reporting bugs, suggesting features, sharing usability feedback,
 or contributing code and documentation. You do not need to build the app or run a backend to give feedback;
-you can use the [experimental Web preview](https://braindance.vladleesi.dev/).
+you can use the [experimental Web preview](https://app.braindancegg.com/).
 Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Report a bug

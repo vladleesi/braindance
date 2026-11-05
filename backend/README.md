@@ -2,7 +2,7 @@
 
 The Kotlin/JVM Ktor backend serves game and giveaway data from IGDB and GamerPower to Braindance.
 Version **0.11.0**. This reference covers backend development and optional independent hosting;
-using the [experimental Web preview](https://braindance.vladleesi.dev/) does not require backend setup.
+using the [experimental Web preview](https://app.braindancegg.com/) does not require backend setup.
 
 Twitch credentials stay on the backend; GamerPower needs no key.
 Build with JDK 21 and run commands from the repository root; the container image runs Java 25.

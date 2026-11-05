@@ -4,7 +4,7 @@
 Braindance is a game discovery service to help you find what to play next.
 Browse popular and upcoming games, explore similar titles, and find giveaways in one place.
 
-**[Try the experimental Web preview](https://braindance.vladleesi.dev/)** — open it in your browser;
+**[Try the experimental Web preview](https://app.braindancegg.com/)** — open it in your browser;
 no installation or technical setup is needed.
 
 ![Braindance vibe](https://github.com/vladleesi/braindance/assets/30999008/cdb06536-ecbf-43ae-9336-3833a89a3718)
@@ -22,7 +22,7 @@ Game data comes from IGDB, and giveaways from GamerPower.
 
 | Platform | Availability |
 | --- | --- |
-| **Web (experimental)** | [Preview available now](https://braindance.vladleesi.dev/) in a modern browser with WasmGC support. |
+| **Web (experimental)** | [Preview available now](https://app.braindancegg.com/) in a modern browser with WasmGC support. |
 | Android and iOS | Official releases are planned; store downloads are not available yet. |
 
 Braindance is actively developed toward a public launch, with no confirmed release date.
