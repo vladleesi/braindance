@@ -4,6 +4,13 @@
     <string name="horizontal_list_previous">Previous items</string>
     <string name="horizontal_list_next">Next items</string>
 
+    <!-- Shared bottom navigation and rail labels -->
+    <string name="navigation_home">Home</string>
+    <string name="navigation_news">News</string>
+    <string name="navigation_search">Search</string>
+    <string name="navigation_collections">Collections</string>
+    <string name="navigation_profile">Profile</string>
+
     <!-- Profile screen -->
     <string name="profile_screen_title">Profile</string>
     <string name="profile_screen_version">v%1$s</string>

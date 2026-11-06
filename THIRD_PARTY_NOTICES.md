@@ -29,6 +29,13 @@ copyright, license, and NOTICE material for the exact components shipped, includ
 native libraries, and container base software. The files above do not constitute a complete binary-release notice
 bundle. Generated license comments alone may omit required full license texts.
 
+Adaptive navigation uses JetBrains' Compose Multiplatform Material 3 and navigation suite
+(`org.jetbrains.compose.material3:material3` and `material3-adaptive-navigation-suite`, `1.12.0-alpha03`),
+with Material 3 Adaptive, WindowManager, Graphics Shapes, and annotation transitive components, under
+[Apache-2.0](LICENSES/Apache-2.0.txt).
+See the [Compose 1.12.2 component versions](https://kotlinlang.org/docs/multiplatform/whats-new-compose-112.html#dependencies).
+Retain the copyright, license, and any NOTICE material in the published artifacts when distributing them.
+
 Profile sharing uses [ShareKit 0.2.0](https://github.com/vladleesi/kmp-sharekit/tree/v0.2.0)
 (`dev.vladleesi:kmp-sharekit`) under [Apache-2.0](LICENSES/Apache-2.0.txt). Its only declared runtime dependency is
 the Kotlin standard library, already used by the application. Preserve any notices in the published artifacts.

@@ -66,6 +66,8 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.material3.navigation.suite)
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.compose.components.resources)
             // Navigation

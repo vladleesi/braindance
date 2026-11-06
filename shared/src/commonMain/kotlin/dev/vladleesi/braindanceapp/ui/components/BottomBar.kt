@@ -2,56 +2,133 @@
 
 package dev.vladleesi.braindanceapp.ui.components
 
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.ShortNavigationBarItemDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.WideNavigationRailDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.Navigator
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.registerNestedRoute
 import dev.vladleesi.braindanceapp.navigation.routes.registerTopLevelRoute
 import dev.vladleesi.braindanceapp.navigation.toEntries
+import dev.vladleesi.braindanceapp.system.isLargeWindow
+import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.navBar
+import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.white
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun BottomBar() {
+internal fun NavigationScaffold(
+    modifier: Modifier = Modifier,
+    content: @Composable (Modifier) -> Unit,
+) {
+    val useRail = isLargeWindow()
     val navigator = LocalNavigator.current
-    BottomNavigation(
-        backgroundColor = navBar,
-        modifier = Modifier.navigationBarsPadding(),
-        elevation = 0.dp,
-    ) {
+    // The scaffold and items share the width-only policy; defaults also consider height and posture.
+    val navigationSuiteType =
+        if (useRail) NavigationSuiteType.WideNavigationRailCollapsed else NavigationSuiteType.ShortNavigationBarCompact
+    val itemColors =
+        ShortNavigationBarItemDefaults.colors(
+            selectedIconColor = white,
+            selectedTextColor = white,
+            selectedIndicatorColor = secondary,
+            unselectedIconColor = secondaryText,
+            unselectedTextColor = secondaryText,
+        )
+    val labelStyle = MaterialTheme.typography.caption
+    val items: @Composable () -> Unit = {
         BottomBarRoute.routes.forEach { route ->
-            val isSelected = route == navigator.state.topLevelRoute
-            BottomNavigationItem(
-                icon = {
-                    Icon(
-                        imageVector = route.imageVector,
-                        contentDescription = null,
+            NavigationSuiteItem(
+                navigationSuiteType = navigationSuiteType,
+                icon = { Icon(imageVector = route.imageVector, contentDescription = null) },
+                label = {
+                    Text(
+                        text = stringResource(route.label),
+                        style = labelStyle,
+                        color = LocalContentColor.current,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 },
-                selected = isSelected,
-                selectedContentColor = white,
-                unselectedContentColor = secondaryText,
-                onClick = {
-                    // Handle double click on search tab
-                    if (isSelected && route is BottomBarRoute.SearchRoute) {
-                        navigator.setResult(BottomBarRoute.SearchRoute.RESULT_KEY, true)
-                    } else {
-                        navigator.navigate(route)
-                    }
-                },
+                selected = route == navigator.state.topLevelRoute,
+                colors = itemColors,
+                onClick = { navigator.selectTab(route) },
             )
         }
+    }
+    NavigationSuiteScaffold(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(navBar)
+                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
+        navigationSuiteType = navigationSuiteType,
+        navigationSuiteColors =
+            NavigationSuiteDefaults.colors(
+                shortNavigationBarContainerColor = navBar,
+                shortNavigationBarContentColor = white,
+                wideNavigationRailColors =
+                    WideNavigationRailDefaults.colors(containerColor = navBar, contentColor = white),
+            ),
+        containerColor = navBar,
+        contentColor = white,
+        navigationItems = {
+            if (useRail) {
+                // Keep every destination reachable in short landscape windows and with enlarged text.
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.small),
+                ) {
+                    items()
+                }
+            } else {
+                items()
+            }
+        },
+    ) {
+        content(
+            Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+                ),
+        )
+    }
+}
+
+private fun Navigator.selectTab(route: BottomBarRoute) {
+    if (route == state.topLevelRoute && route is BottomBarRoute.SearchRoute) {
+        setResult(BottomBarRoute.SearchRoute.RESULT_KEY, true)
+    } else {
+        navigate(route)
     }
 }
 

@@ -4,6 +4,13 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.9.0
+
+### Android, iOS, and Web
+
+- Show labeled bottom navigation in compact windows and a left navigation rail at widths of 600 dp and above.
+- Keep the current screen and navigation history when resizing, rotating, or entering split-screen.
+
 ## 0.8.1
 
 ### Web
