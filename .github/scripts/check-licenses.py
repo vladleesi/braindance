@@ -12,8 +12,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 ICON_DIR = Path("shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui/style/icons")
 LUCIDE_ICONS = {
-    "IconAlbum.kt", "IconCalendarRange.kt", "IconChevronLeft.kt", "IconCircleUserRound.kt", "IconCodeXml.kt",
-    "IconGithub.kt", "IconHouse.kt", "IconNewspaper.kt", "IconSearch.kt", "IconUsers.kt",
+    "IconBell.kt", "IconCalendarDays.kt", "IconChevronLeft.kt", "IconCircleUserRound.kt", "IconCompass.kt",
+    "IconGithub.kt", "IconHouse.kt", "IconLibrary.kt", "IconNewspaper.kt", "IconPlus.kt", "IconRss.kt",
+    "IconSearch.kt", "IconSlidersHorizontal.kt", "IconUsers.kt",
 }
 SOURCE_SUFFIXES = {".kt", ".kts", ".swift", ".py", ".sh"}
 # Official Mozilla plain text and the upstream copies linked in THIRD_PARTY_NOTICES.md.

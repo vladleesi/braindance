@@ -277,6 +277,9 @@ for release/publication workflow changes or recovery.
 - Use `THIRD_PARTY_NOTICES.md` for third-party provenance, permissions, and notices, including dependencies.
   Never claim MPL coverage for external API data, trademarks, or assets with unverified rights. Review native
   and transitive components before distribution.
+- When adding, renaming, or removing a file with a third-party license header, such as an adapted icon in
+  `ui/style/icons`, update its record in `.github/scripts/check-licenses.py` (for example `LUCIDE_ICONS`) and
+  `THIRD_PARTY_NOTICES.md` in the same change. Otherwise CI's license check fails and blocks promotion.
 - Distributed applications, Web executables, and backend bundles need corresponding-source disclosures for the
   shipped revision and their required third-party notices. Executable EULAs must preserve MPL source rights.
 - Keep audit reports, ownership confirmations, verification history, and commercial risk assessments in the
@@ -321,8 +324,9 @@ for release/publication workflow changes or recovery.
 ## Verification and completion
 - For routine documentation and instruction changes, use static diff, link, and accuracy checks. Do not benchmark
   Web performance without an explicit verification request.
-- When the user asks to prepare changes for a commit, run `./gradlew ktlintFormat detekt`, fix any findings, and
-  review formatter changes before recommending a commit message.
+- When the user asks to prepare changes for a commit, run `./gradlew ktlintFormat detekt` and
+  `python3 .github/scripts/check-licenses.py`, fix any findings, and review formatter changes before recommending
+  a commit message.
 - Review changed files for accidental edits and stale references.
 - When the ignored `.local-docs/reviews/README.md` exists, follow it for review findings and remediation work: pass
   its change gate before every code commit, so updates add no findings, and remove fixed findings and finished plan
