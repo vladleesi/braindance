@@ -4,6 +4,12 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.10.1
+
+### Web
+
+- Fix garbled or missing text shortly after an update, when a cache still held the previous version's text.
+
 ## 0.10.0
 
 ### Android, iOS, and Web
