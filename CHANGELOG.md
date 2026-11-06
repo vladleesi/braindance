@@ -4,6 +4,22 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.10.0
+
+### Android, iOS, and Web
+
+- Reorganize navigation into Home, Discover, Releases, News, and Library. Discover replaces Search, Library replaces
+  Collections, and Releases is new.
+- Open Profile from the profile button at the top of each main screen instead of from its own tab.
+- Preview planned features, each marked as coming soon: recommendations, a release calendar, news categories and
+  sources, game statuses and custom lists, and account features in Profile.
+- Fade between tabs, and fade and shift sideways when opening or leaving a screen, instead of sliding a new screen
+  over the previous one.
+
+### Web
+
+- Open the new screens at `/discover`, `/releases`, and `/library`; Profile stays at `/profile`.
+
 ## 0.9.0
 
 ### Android, iOS, and Web

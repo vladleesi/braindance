@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
+import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -72,5 +73,18 @@ class NavigationPersistenceTest {
                 stacks + (BottomBarRoute.HomeRoute to listOf(BottomBarRoute.HomeRoute, BottomBarRoute.NewsRoute)),
             )
         assertNull(decodeNavigationSnapshot(tabInsideStack, tabSet))
+    }
+
+    @Test
+    fun profileOpenedOnATabIsRestored() {
+        val withProfile = stacks + (BottomBarRoute.LibraryRoute to listOf(BottomBarRoute.LibraryRoute, ProfileRoute))
+        val snapshotJson = encodeNavigationSnapshot(BottomBarRoute.LibraryRoute, tabs, withProfile)
+
+        val snapshot = decodeNavigationSnapshot(snapshotJson, tabSet)
+
+        assertEquals(
+            withProfile.getValue(BottomBarRoute.LibraryRoute),
+            snapshot?.backStack(BottomBarRoute.LibraryRoute),
+        )
     }
 }

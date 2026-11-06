@@ -121,7 +121,7 @@ class HistoryMirrorTest {
         val state =
             NavigationState(
                 startRoute = BottomBarRoute.HomeRoute,
-                topLevelRoute = mutableStateOf(BottomBarRoute.ProfileRoute),
+                topLevelRoute = mutableStateOf(BottomBarRoute.LibraryRoute),
                 backStacks = tabs.associateWith { NavBackStack(it) },
             )
 
@@ -139,8 +139,8 @@ class HistoryMirrorTest {
             state.backStacks.getValue(BottomBarRoute.HomeRoute).toList(),
         )
         assertEquals(
-            listOf<NavKey>(BottomBarRoute.ProfileRoute),
-            state.backStacks.getValue(BottomBarRoute.ProfileRoute).toList(),
+            listOf<NavKey>(BottomBarRoute.LibraryRoute),
+            state.backStacks.getValue(BottomBarRoute.LibraryRoute).toList(),
         )
     }
 }

@@ -12,6 +12,8 @@ import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
+import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
+import dev.vladleesi.braindanceapp.navigation.routes.SingleInstanceRoute
 
 /**
  * The browser address bar and session history, where one exists. Paths are app routes such as `/game/42`, relative
@@ -53,13 +55,14 @@ internal expect val browserLocation: BrowserLocation?
 
 private const val GAME_PREFIX = "/game/"
 private const val GIVEAWAY_PREFIX = "/giveaway/"
-private val topLevelPaths =
+private val fixedPaths =
     mapOf<NavKey, String>(
         BottomBarRoute.HomeRoute to "/",
+        BottomBarRoute.DiscoverRoute to "/discover",
+        BottomBarRoute.ReleasesRoute to "/releases",
         BottomBarRoute.NewsRoute to "/news",
-        BottomBarRoute.SearchRoute to "/search",
-        BottomBarRoute.CollectionsRoute to "/collections",
-        BottomBarRoute.ProfileRoute to "/profile",
+        BottomBarRoute.LibraryRoute to "/library",
+        ProfileRoute to "/profile",
     )
 
 /** The address of [this] route; equal routes always produce the same path. Unknown routes map to Home. */
@@ -67,13 +70,13 @@ internal fun NavKey.toWebPath(): String =
     when (this) {
         is GameDetailsRoute -> "$GAME_PREFIX$id"
         is GiveawayDetailsRoute -> "$GIVEAWAY_PREFIX$id"
-        else -> topLevelPaths[this] ?: "/"
+        else -> fixedPaths[this] ?: "/"
     }
 
 /** The route at [path], or null for an address this app does not serve, such as an invalid or non-positive ID. */
 internal fun webPathToRoute(path: String?): NavKey? {
     val normalized = path?.takeIf { it.isNotEmpty() } ?: return BottomBarRoute.HomeRoute
-    topLevelPaths.entries.firstOrNull { it.value == normalized }?.let { return it.key }
+    fixedPaths.entries.firstOrNull { it.value == normalized }?.let { return it.key }
 
     fun id(prefix: String) =
         normalized
@@ -88,8 +91,8 @@ internal fun webPathToRoute(path: String?): NavKey? {
 
 /**
  * The navigation to start with when the page opens at [linked]. A reload keeps the restored [snapshot] if its current
- * screen is already [linked]; a tab's address opens that tab at its root; a detail screen is opened on top of the
- * current tab. Without a link, or for an unknown one, [snapshot] is used as it is.
+ * screen is already [linked]; a tab's address opens that tab at its root; any other screen, such as a game or
+ * Profile, is opened on top of the current tab. Without a link, or for an unknown one, [snapshot] is used as it is.
  */
 internal fun applyDeepLink(
     snapshot: NavigationSnapshot?,
@@ -107,7 +110,9 @@ internal fun applyDeepLink(
         val withTab = stacks.filterNot { it.first() == linked } + listOf(listOf(linked))
         return NavigationSnapshot(NavigationSnapshot.VERSION, linked, withTab)
     }
-    val opened = stacks.map { if (it.first() == topLevel) it + linked else it }
+    // A single-instance screen open in another tab moves to the current one.
+    val others = if (linked is SingleInstanceRoute) stacks.map { stack -> stack.filterNot { it == linked } } else stacks
+    val opened = others.map { if (it.first() == topLevel) it + linked else it }
     val withCurrent = if (opened.any { it.first() == topLevel }) opened else opened + listOf(current + linked)
     return NavigationSnapshot(NavigationSnapshot.VERSION, topLevel, withCurrent)
 }

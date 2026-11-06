@@ -34,6 +34,7 @@ import dev.vladleesi.braindanceapp.navigation.Navigator
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
+import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.navigation.routes.registerNestedRoute
 import dev.vladleesi.braindanceapp.navigation.routes.registerTopLevelRoute
 import dev.vladleesi.braindanceapp.navigation.toEntries
@@ -125,8 +126,8 @@ internal fun NavigationScaffold(
 }
 
 private fun Navigator.selectTab(route: BottomBarRoute) {
-    if (route == state.topLevelRoute && route is BottomBarRoute.SearchRoute) {
-        setResult(BottomBarRoute.SearchRoute.RESULT_KEY, true)
+    if (route == state.topLevelRoute && route is BottomBarRoute.DiscoverRoute) {
+        setResult(BottomBarRoute.DiscoverRoute.RESULT_KEY, true)
     } else {
         navigate(route)
     }
@@ -142,11 +143,12 @@ fun NavigationGraph(modifier: Modifier) {
                     entryProvider {
                         // Bottom bar
                         registerTopLevelRoute<BottomBarRoute.HomeRoute>()
+                        registerTopLevelRoute<BottomBarRoute.DiscoverRoute>()
+                        registerTopLevelRoute<BottomBarRoute.ReleasesRoute>()
                         registerTopLevelRoute<BottomBarRoute.NewsRoute>()
-                        registerTopLevelRoute<BottomBarRoute.SearchRoute>()
-                        registerTopLevelRoute<BottomBarRoute.CollectionsRoute>()
-                        registerTopLevelRoute<BottomBarRoute.ProfileRoute>()
+                        registerTopLevelRoute<BottomBarRoute.LibraryRoute>()
                         // Nested routes
+                        registerNestedRoute<ProfileRoute>()
                         registerNestedRoute<GameDetailsRoute>()
                         registerNestedRoute<GiveawayDetailsRoute>()
                     },

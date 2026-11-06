@@ -10,15 +10,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val Album: ImageVector
+val Rss: ImageVector
     get() {
-        if (album != null) {
-            return album!!
+        if (rss != null) {
+            return rss!!
         }
-        album =
+        rss =
             ImageVector
                 .Builder(
-                    name = "Album",
+                    name = "Rss",
                     defaultWidth = 24.dp,
                     defaultHeight = 24.dp,
                     viewportWidth = 24f,
@@ -35,16 +35,8 @@ val Album: ImageVector
                         strokeLineMiter = 1.0f,
                         pathFillType = PathFillType.NonZero,
                     ) {
-                        moveTo(5f, 3f)
-                        horizontalLineTo(19f)
-                        arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, 21f, 5f)
-                        verticalLineTo(19f)
-                        arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, 19f, 21f)
-                        horizontalLineTo(5f)
-                        arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, 3f, 19f)
-                        verticalLineTo(5f)
-                        arcTo(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, 5f, 3f)
-                        close()
+                        moveTo(4f, 11f)
+                        arcToRelative(9f, 9f, 0f, isMoreThanHalf = false, isPositiveArc = true, 9f, 9f)
                     }
                     path(
                         fill = null,
@@ -57,14 +49,28 @@ val Album: ImageVector
                         strokeLineMiter = 1.0f,
                         pathFillType = PathFillType.NonZero,
                     ) {
-                        moveTo(11f, 3f)
-                        lineTo(11f, 11f)
-                        lineTo(14f, 8f)
-                        lineTo(17f, 11f)
-                        lineTo(17f, 3f)
+                        moveTo(4f, 4f)
+                        arcToRelative(16f, 16f, 0f, isMoreThanHalf = false, isPositiveArc = true, 16f, 16f)
+                    }
+                    path(
+                        fill = null,
+                        fillAlpha = 1.0f,
+                        stroke = SolidColor(Color(0xFF000000)),
+                        strokeAlpha = 1.0f,
+                        strokeLineWidth = 2f,
+                        strokeLineCap = StrokeCap.Round,
+                        strokeLineJoin = StrokeJoin.Round,
+                        strokeLineMiter = 1.0f,
+                        pathFillType = PathFillType.NonZero,
+                    ) {
+                        moveTo(6f, 19f)
+                        arcTo(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 5f, 20f)
+                        arcTo(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 4f, 19f)
+                        arcTo(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 6f, 19f)
+                        close()
                     }
                 }.build()
-        return album!!
+        return rss!!
     }
 
-private var album: ImageVector? = null
+private var rss: ImageVector? = null

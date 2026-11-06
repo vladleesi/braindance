@@ -4,12 +4,14 @@
     <string name="horizontal_list_previous">Previous items</string>
     <string name="horizontal_list_next">Next items</string>
 
-    <!-- Shared bottom navigation and rail labels -->
+    <string name="coming_soon">Coming soon</string>
+
+    <!-- Shared bottom navigation and rail labels, also used as the screen titles -->
     <string name="navigation_home">Home</string>
+    <string name="navigation_discover">Discover</string>
+    <string name="navigation_releases">Releases</string>
     <string name="navigation_news">News</string>
-    <string name="navigation_search">Search</string>
-    <string name="navigation_collections">Collections</string>
-    <string name="navigation_profile">Profile</string>
+    <string name="navigation_library">Library</string>
 
     <!-- Profile screen -->
     <string name="profile_screen_title">Profile</string>
@@ -19,11 +21,67 @@
     <string name="profile_support_star">Star on GitHub</string>
     <string name="profile_support_share">Share</string>
     <string name="profile_support_copy">Copy link</string>
+    <string name="profile_sign_in">Sign in</string>
+    <string name="profile_statistics">Gaming statistics</string>
+    <string name="profile_activity">Activity</string>
+    <string name="profile_reviews">Reviews</string>
+    <string name="profile_settings">Settings</string>
 
     <!-- Home screen -->
     <string name="home_screen_popular_right_now">Popular Right Now</string>
     <string name="home_screen_popular_most_anticipated">Most Anticipated</string>
     <string name="home_screen_popular_latest_giveaways">Latest Giveaways</string>
+    <string name="home_notifications_coming_soon">Notifications, coming soon</string>
+    <string name="home_recommendations_title">Find your next game</string>
+    <string name="home_recommendations_description">Recommendations based on the games you play and like.</string>
+    <string name="home_upcoming_releases_description">A preview of your release calendar will appear here.</string>
+    <string name="home_open_releases">Open Releases</string>
+    <string name="home_latest_news_title">Latest news</string>
+    <string name="home_latest_news_description">Top stories from your news feed will appear here.</string>
+    <string name="home_open_news">Open News</string>
+    <string name="home_events_title">Gaming events</string>
+    <string name="home_events_description">Showcases, festivals, and live events in one place.</string>
+
+    <!-- Discover screen -->
+    <string name="discover_advanced_filters_coming_soon">Advanced filters, coming soon</string>
+    <string name="discover_filter_platform">Platform</string>
+    <string name="discover_filter_genre">Genre</string>
+    <string name="discover_filter_release_date">Release date</string>
+    <string name="discover_recommendations_title">What should I play next?</string>
+    <string name="discover_recommendations_description">Describe your mood and get game suggestions.</string>
+    <string name="discover_genres_title">Explore by genre</string>
+    <string name="discover_genres_description">Browse games by genre, from role-playing to puzzle games.</string>
+
+    <!-- Releases screen -->
+    <string name="releases_filter_coming_soon">Filter releases, coming soon</string>
+    <string name="releases_previous_month_coming_soon">Previous month, coming soon</string>
+    <string name="releases_next_month_coming_soon">Next month, coming soon</string>
+    <string name="releases_this_month">This month</string>
+    <string name="releases_filter_all">All Games</string>
+    <string name="releases_filter_wishlist">Wishlist</string>
+    <string name="releases_filter_events">Events</string>
+    <string name="releases_upcoming_title">Upcoming releases</string>
+    <string name="releases_upcoming_description">Upcoming games and events will appear here by date.</string>
+
+    <!-- News screen -->
+    <string name="news_sources_coming_soon">Customize sources, coming soon</string>
+    <string name="news_category_for_you">For You</string>
+    <string name="news_category_latest">Latest</string>
+    <string name="news_category_saved">Saved</string>
+    <string name="news_feed_title">Your news feed</string>
+    <string name="news_feed_description">Gaming news from the sources you choose will appear here.</string>
+
+    <!-- Library screen -->
+    <string name="library_search_coming_soon">Search your library, coming soon</string>
+    <string name="library_statuses_title">Your games</string>
+    <string name="library_statuses_description">Track what you are playing, have finished, and plan to play.</string>
+    <string name="library_status_playing">Playing</string>
+    <string name="library_status_completed">Completed</string>
+    <string name="library_status_backlog">Backlog</string>
+    <string name="library_status_wishlist">Wishlist</string>
+    <string name="library_custom_lists_title">Custom lists</string>
+    <string name="library_custom_lists_description">Group games your way, such as co-op nights or favorites.</string>
+    <string name="library_create_list_coming_soon">Create a custom list, coming soon</string>
 
     <!-- Trending reasons shown on game cards -->
     <string name="trending_reason_new_release">New release</string>

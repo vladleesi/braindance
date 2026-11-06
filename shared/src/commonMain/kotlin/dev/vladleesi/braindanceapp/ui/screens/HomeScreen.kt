@@ -2,15 +2,19 @@
 
 package dev.vladleesi.braindanceapp.ui.screens
 
+import Bell
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -21,20 +25,39 @@ import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
+import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.resources.Res
+import dev.vladleesi.braindanceapp.resources.home_events_description
+import dev.vladleesi.braindanceapp.resources.home_events_title
+import dev.vladleesi.braindanceapp.resources.home_latest_news_description
+import dev.vladleesi.braindanceapp.resources.home_latest_news_title
+import dev.vladleesi.braindanceapp.resources.home_notifications_coming_soon
+import dev.vladleesi.braindanceapp.resources.home_open_news
+import dev.vladleesi.braindanceapp.resources.home_open_releases
+import dev.vladleesi.braindanceapp.resources.home_recommendations_description
+import dev.vladleesi.braindanceapp.resources.home_recommendations_title
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_latest_giveaways
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_most_anticipated
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_right_now
+import dev.vladleesi.braindanceapp.resources.home_upcoming_releases_description
+import dev.vladleesi.braindanceapp.resources.navigation_home
+import dev.vladleesi.braindanceapp.resources.releases_upcoming_title
+import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
+import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
+import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawaysList
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardList
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith80Alpha
+import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -76,7 +99,7 @@ fun HomeScreen(
                     .pullRefresh(pullState, enabled = true),
             verticalArrangement = Arrangement.spacedBy(Dimens.large),
         ) {
-            item { SpacerStatusBarInsets() }
+            item { HomeTopBar(onProfileClick = { navigator.navigate(ProfileRoute) }) }
             item {
                 MiniGameCardList(
                     title = stringResource(Res.string.home_screen_popular_right_now),
@@ -85,12 +108,21 @@ fun HomeScreen(
                     onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
                 )
             }
+            item { HomePreviewCard(Res.string.home_recommendations_title, Res.string.home_recommendations_description) }
             item {
                 MiniGameCardList(
                     title = stringResource(Res.string.home_screen_popular_most_anticipated),
                     state = mostAnticipated,
                     onRefresh = { viewModel.loadMostAnticipated() },
                     onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
+                )
+            }
+            item {
+                HomePreviewCard(
+                    title = Res.string.releases_upcoming_title,
+                    description = Res.string.home_upcoming_releases_description,
+                    link = Res.string.home_open_releases,
+                    onLinkClick = { navigator.navigate(BottomBarRoute.ReleasesRoute) },
                 )
             }
             item {
@@ -101,6 +133,15 @@ fun HomeScreen(
                     onItemClick = { id -> navigator.navigate(GiveawayDetailsRoute(id)) },
                 )
             }
+            item {
+                HomePreviewCard(
+                    title = Res.string.home_latest_news_title,
+                    description = Res.string.home_latest_news_description,
+                    link = Res.string.home_open_news,
+                    onLinkClick = { navigator.navigate(BottomBarRoute.NewsRoute) },
+                )
+            }
+            item { HomePreviewCard(Res.string.home_events_title, Res.string.home_events_description) }
             item { Spacer(Modifier.height(Dimens.large)) }
         }
         StatusBarOverlay(backgroundColor = overlayBlackWith80Alpha)
@@ -113,4 +154,47 @@ fun HomeScreen(
                     .align(TopCenter),
         )
     }
+}
+
+@Composable
+private fun HomeTopBar(onProfileClick: () -> Unit) {
+    // One list item, so the list spacing starts below the bar rather than between it and the status bar.
+    Column {
+        SpacerStatusBarInsets()
+        TopLevelTopAppBar(
+            title = stringResource(Res.string.navigation_home),
+            onProfileClick = onProfileClick,
+            actions = {
+                ComingSoonAction(
+                    imageVector = Bell,
+                    label = stringResource(Res.string.home_notifications_coming_soon),
+                )
+            },
+        )
+    }
+}
+
+/** A planned Home section; [link], when given, opens the destination that will host it through [onLinkClick]. */
+@Composable
+private fun HomePreviewCard(
+    title: StringResource,
+    description: StringResource,
+    link: StringResource? = null,
+    onLinkClick: (() -> Unit)? = null,
+) {
+    ComingSoonCard(
+        title = stringResource(title),
+        description = stringResource(description),
+        modifier = Modifier.padding(horizontal = Dimens.medium),
+        action =
+            if (link != null && onLinkClick != null) {
+                {
+                    TextButton(onClick = onLinkClick) {
+                        Text(stringResource(link), color = white)
+                    }
+                }
+            } else {
+                null
+            },
+    )
 }

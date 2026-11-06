@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
+import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -17,17 +18,31 @@ class WebPathTest {
 
     @Test
     fun everyRouteRoundTripsThroughItsPath() {
-        val routes = tabs + listOf(GameDetailsRoute(42), GiveawayDetailsRoute(7))
+        val routes = tabs + listOf(ProfileRoute, GameDetailsRoute(42), GiveawayDetailsRoute(7))
         for (route in routes) {
             assertEquals(route, webPathToRoute(route.toWebPath()), route.toWebPath())
         }
+        assertEquals(
+            listOf("/", "/discover", "/releases", "/news", "/library", "/profile"),
+            (BottomBarRoute.routes + ProfileRoute).map { it.toWebPath() },
+        )
         assertEquals("/game/42", GameDetailsRoute(42).toWebPath())
-        assertEquals("/", home.toWebPath())
+        assertEquals("/giveaway/7", GiveawayDetailsRoute(7).toWebPath())
     }
 
     @Test
     fun unknownOrInvalidAddressesAreRejected() {
-        for (path in listOf("/game/0", "/game/-1", "/game/abc", "/game/", "/game/42/x", "/giveaway/1e3", "/unknown")) {
+        for (path in listOf(
+            "/search",
+            "/collections",
+            "/game/0",
+            "/game/-1",
+            "/game/abc",
+            "/game/",
+            "/game/42/x",
+            "/giveaway/1e3",
+            "/unknown",
+        )) {
             assertNull(webPathToRoute(path), path)
         }
         assertEquals(home, webPathToRoute(null))
@@ -54,9 +69,35 @@ class WebPathTest {
 
     @Test
     fun aLinkedTabOpensThatTab() {
-        val linked = applyDeepLink(null, BottomBarRoute.ProfileRoute, home, tabs)
-        assertEquals(BottomBarRoute.ProfileRoute, linked?.topLevelRoute)
-        assertEquals(listOf(BottomBarRoute.ProfileRoute), linked?.backStack(BottomBarRoute.ProfileRoute))
+        val linked = applyDeepLink(null, BottomBarRoute.LibraryRoute, home, tabs)
+        assertEquals(BottomBarRoute.LibraryRoute, linked?.topLevelRoute)
+        assertEquals(listOf(BottomBarRoute.LibraryRoute), linked?.backStack(BottomBarRoute.LibraryRoute))
+    }
+
+    @Test
+    fun aLinkedProfileOpensOnTopOfTheCurrentTab() {
+        val restored =
+            NavigationSnapshot(
+                NavigationSnapshot.VERSION,
+                BottomBarRoute.NewsRoute,
+                listOf(listOf(home), listOf(BottomBarRoute.NewsRoute)),
+            )
+        val linked = applyDeepLink(restored, webPathToRoute("/profile"), home, tabs)
+        assertEquals(BottomBarRoute.NewsRoute, linked?.topLevelRoute)
+        assertEquals(listOf(BottomBarRoute.NewsRoute, ProfileRoute), linked?.backStack(BottomBarRoute.NewsRoute))
+    }
+
+    @Test
+    fun aLinkedProfileOpenInAnotherTabMovesToTheCurrentTab() {
+        val restored =
+            NavigationSnapshot(
+                NavigationSnapshot.VERSION,
+                BottomBarRoute.NewsRoute,
+                listOf(listOf(home, ProfileRoute), listOf(BottomBarRoute.NewsRoute)),
+            )
+        val linked = applyDeepLink(restored, ProfileRoute, home, tabs)
+        assertEquals(listOf<NavKey>(home), linked?.backStack(home))
+        assertEquals(listOf(BottomBarRoute.NewsRoute, ProfileRoute), linked?.backStack(BottomBarRoute.NewsRoute))
     }
 
     @Test

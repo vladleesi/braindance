@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
+import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -30,12 +31,13 @@ internal val navSerializersModule =
         polymorphic(NavKey::class) {
             // Bottom bar
             subclass(BottomBarRoute.HomeRoute::class)
+            subclass(BottomBarRoute.DiscoverRoute::class)
+            subclass(BottomBarRoute.ReleasesRoute::class)
             subclass(BottomBarRoute.NewsRoute::class)
-            subclass(BottomBarRoute.SearchRoute::class)
-            subclass(BottomBarRoute.CollectionsRoute::class)
-            subclass(BottomBarRoute.ProfileRoute::class)
+            subclass(BottomBarRoute.LibraryRoute::class)
 
             // Other routes
+            subclass(ProfileRoute::class)
             subclass(GameDetailsRoute::class)
             subclass(GiveawayDetailsRoute::class)
         }

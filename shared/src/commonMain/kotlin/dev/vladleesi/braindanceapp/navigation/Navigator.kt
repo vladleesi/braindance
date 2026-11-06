@@ -5,6 +5,7 @@ package dev.vladleesi.braindanceapp.navigation
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.logger.BLogger
+import dev.vladleesi.braindanceapp.navigation.routes.SingleInstanceRoute
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.mapNotNull
@@ -20,8 +21,8 @@ class Navigator(
         val backStacks = state.backStacks
         val currentTopLevel = state.topLevelRoute
 
-        when {
-            route in backStacks.keys -> {
+        when (route) {
+            in backStacks.keys -> {
                 if (route == currentTopLevel) {
                     // Double-tap on current tab, reset to root (only keep the tab's root route)
                     backStacks[route]?.clear()
@@ -32,7 +33,13 @@ class Navigator(
                 }
             }
 
+            // Already showing it; a single-instance screen is never stacked on itself.
+            is SingleInstanceRoute if backStacks[currentTopLevel]?.lastOrNull() == route -> Unit
             else -> {
+                if (route is SingleInstanceRoute) {
+                    // Opening it from another tab moves it here rather than keeping a second copy.
+                    backStacks.values.forEach { stack -> stack.removeAll { it == route } }
+                }
                 // Navigate deeper in current tab
                 backStacks[currentTopLevel]?.add(route)
             }

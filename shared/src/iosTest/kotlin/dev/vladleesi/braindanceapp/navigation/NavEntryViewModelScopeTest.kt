@@ -167,7 +167,7 @@ class NavEntryViewModelScopeTest {
 
             runOnIdle { recorder.navigator.navigate(GameDetailsRoute(1)) }
             waitForIdle()
-            runOnIdle { recorder.navigator.navigate(BottomBarRoute.SearchRoute) }
+            runOnIdle { recorder.navigator.navigate(BottomBarRoute.DiscoverRoute) }
             waitForIdle()
             runOnIdle { recorder.navigator.navigate(GameDetailsRoute(1)) }
             waitForIdle()
@@ -175,7 +175,7 @@ class NavEntryViewModelScopeTest {
             assertEquals(2, games.size)
             assertNotSame(games[0], games[1])
 
-            // Popping the game in Search must not clear the one still open in Home.
+            // Popping the game in Discover must not clear the one still open in Home.
             runOnIdle { recorder.navigator.goBack() }
             waitForIdle()
             assertEquals(listOf("game:1"), recorder.cleared)
@@ -264,22 +264,22 @@ class NavEntryViewModelScopeTest {
                     )
                 }
 
-                onNodeWithText("Search").performClick()
+                onNodeWithText("Discover").performClick()
                 runOnIdle {
-                    recorder.navigator.setResult(BottomBarRoute.SearchRoute.RESULT_KEY, false)
+                    recorder.navigator.setResult(BottomBarRoute.DiscoverRoute.RESULT_KEY, false)
                     recorder.navigator.navigate(GameDetailsRoute(2))
                 }
                 waitForIdle()
-                onNodeWithText("Search").performClick()
+                onNodeWithText("Discover").performClick()
                 runOnIdle {
                     assertEquals(
                         GameDetailsRoute(2),
-                        recorder.navigator.state.backStacks[BottomBarRoute.SearchRoute]
+                        recorder.navigator.state.backStacks[BottomBarRoute.DiscoverRoute]
                             ?.last(),
                     )
                     assertEquals(
                         true,
-                        runBlocking { recorder.navigator.resultsFlow(BottomBarRoute.SearchRoute.RESULT_KEY).first() },
+                        runBlocking { recorder.navigator.resultsFlow(BottomBarRoute.DiscoverRoute.RESULT_KEY).first() },
                     )
                 }
             }

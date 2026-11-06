@@ -10,15 +10,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val CodeXml: ImageVector
+val Bell: ImageVector
     get() {
-        if (codeXml != null) {
-            return codeXml!!
+        if (bell != null) {
+            return bell!!
         }
-        codeXml =
+        bell =
             ImageVector
                 .Builder(
-                    name = "CodeXml",
+                    name = "Bell",
                     defaultWidth = 24.dp,
                     defaultHeight = 24.dp,
                     viewportWidth = 24f,
@@ -35,9 +35,8 @@ val CodeXml: ImageVector
                         strokeLineMiter = 1.0f,
                         pathFillType = PathFillType.NonZero,
                     ) {
-                        moveTo(18f, 16f)
-                        lineToRelative(4f, -4f)
-                        lineToRelative(-4f, -4f)
+                        moveTo(10.268f, 21f)
+                        arcToRelative(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, 3.464f, 0f)
                     }
                     path(
                         fill = null,
@@ -50,26 +49,16 @@ val CodeXml: ImageVector
                         strokeLineMiter = 1.0f,
                         pathFillType = PathFillType.NonZero,
                     ) {
-                        moveTo(6f, 8f)
-                        lineToRelative(-4f, 4f)
-                        lineToRelative(4f, 4f)
-                    }
-                    path(
-                        fill = null,
-                        fillAlpha = 1.0f,
-                        stroke = SolidColor(Color(0xFF000000)),
-                        strokeAlpha = 1.0f,
-                        strokeLineWidth = 2f,
-                        strokeLineCap = StrokeCap.Round,
-                        strokeLineJoin = StrokeJoin.Round,
-                        strokeLineMiter = 1.0f,
-                        pathFillType = PathFillType.NonZero,
-                    ) {
-                        moveTo(14.5f, 4f)
-                        lineToRelative(-5f, 16f)
+                        moveTo(3.262f, 15.326f)
+                        arcTo(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = false, 4f, 17f)
+                        horizontalLineToRelative(16f)
+                        arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = false, 0.74f, -1.673f)
+                        curveTo(19.41f, 13.956f, 18f, 12.499f, 18f, 8f)
+                        arcTo(6f, 6f, 0f, isMoreThanHalf = false, isPositiveArc = false, 6f, 8f)
+                        curveToRelative(0f, 4.499f, -1.411f, 5.956f, -2.738f, 7.326f)
                     }
                 }.build()
-        return codeXml!!
+        return bell!!
     }
 
-private var codeXml: ImageVector? = null
+private var bell: ImageVector? = null

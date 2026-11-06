@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.utils
 
-import io.ktor.util.date.GMTDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
@@ -16,12 +15,6 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 private const val DAYS_OF_MONTH = 30
-
-val currentYear: Int
-    get() = GMTDate().year
-
-val lastYear: Int
-    get() = GMTDate().year.dec()
 
 // TODO: Add reusable formats
 @OptIn(ExperimentalTime::class)
