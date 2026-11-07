@@ -19,6 +19,12 @@
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
     <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180.png">
+    <!-- Text needs these, but the app requests them only after the Wasm bundle starts; preloading downloads them in
+         parallel with it. Each URL matches the app's request exactly, including its version query. -->
+    <link rel="preload" href="composeResources/dev.vladleesi.braindanceapp.resources/font/poppins_regular.ttf?v=0.11.1" as="fetch" crossorigin>
+    <link rel="preload" href="composeResources/dev.vladleesi.braindanceapp.resources/font/poppins_medium.ttf?v=0.11.1" as="fetch" crossorigin>
+    <link rel="preload" href="composeResources/dev.vladleesi.braindanceapp.resources/font/poppins_semibold.ttf?v=0.11.1" as="fetch" crossorigin>
+    <link rel="preload" href="composeResources/dev.vladleesi.braindanceapp.resources/values/strings.commonMain.cvr?v=0.11.1" as="fetch" crossorigin>
     <title>Braindance</title>
     <style>
         html,
@@ -39,11 +45,56 @@
             padding: 0;
             overflow: hidden;
         }
+
+        /* Matches the app's own loading indicator, so the hand-off to the first Compose frame is seamless. */
+        .boot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .boot-spinner {
+            box-sizing: border-box;
+            width: 64px;
+            height: 64px;
+            border: 4px solid #2f2f2f;
+            border-top-color: #efefef;
+            border-radius: 50%;
+            animation: boot-spin 1s linear infinite;
+        }
+
+        @keyframes boot-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .boot-spinner {
+                animation-duration: 3s;
+            }
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
     <noscript>Braindance needs JavaScript and a browser with WebAssembly garbage collection, such as current Chrome, Edge, Firefox, or Safari.</noscript>
-    <div id="webApp"></div>
-    <script src="webApp-0.11.0.js"></script>
+    <div id="webApp">
+        <!-- Shown while the Wasm bundle downloads; Compose clears this container when it starts. -->
+        <div class="boot" role="status">
+            <div class="boot-spinner"></div>
+            <span class="visually-hidden">Loading Braindance…</span>
+        </div>
+    </div>
+    <script src="webApp-0.11.1.js"></script>
 </body>
 </html>
