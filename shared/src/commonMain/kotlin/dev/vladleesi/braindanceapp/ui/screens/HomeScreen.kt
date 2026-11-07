@@ -21,8 +21,14 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
@@ -85,6 +91,9 @@ fun HomeScreen(
             refreshing = isRefreshing,
             onRefresh = viewModel::refresh,
         )
+    // A mouse wheel or trackpad overscroll has no release that ends the pull, so it would leave the indicator stuck
+    // part-way down. Pull-to-refresh therefore follows the most recent pointer: it works for touch only.
+    var isMousePointer by remember { mutableStateOf(false) }
 
     Box(
         modifier =
@@ -96,7 +105,8 @@ fun HomeScreen(
             modifier =
                 modifier
                     .fillMaxSize()
-                    .pullRefresh(pullState, enabled = true),
+                    .observePointerType { isMouse -> isMousePointer = isMouse }
+                    .pullRefresh(pullState, enabled = !isMousePointer),
             verticalArrangement = Arrangement.spacedBy(Dimens.large),
         ) {
             item { HomeTopBar(onProfileClick = { navigator.navigate(ProfileRoute) }) }
@@ -155,6 +165,20 @@ fun HomeScreen(
         )
     }
 }
+
+/**
+ * Reports whether each pointer event, including wheel scrolls, comes from a mouse or trackpad. It observes events
+ * before its children without consuming them.
+ */
+private fun Modifier.observePointerType(onPointerType: (isMouse: Boolean) -> Unit): Modifier =
+    pointerInput(Unit) {
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                onPointerType(event.changes.any { change -> change.type == PointerType.Mouse })
+            }
+        }
+    }
 
 @Composable
 private fun HomeTopBar(onProfileClick: () -> Unit) {

@@ -15,8 +15,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import dev.vladleesi.braindanceapp.resources.Res
-import dev.vladleesi.braindanceapp.resources.poppins_bold
-import dev.vladleesi.braindanceapp.resources.poppins_light
 import dev.vladleesi.braindanceapp.resources.poppins_medium
 import dev.vladleesi.braindanceapp.resources.poppins_regular
 import dev.vladleesi.braindanceapp.resources.poppins_semibold
@@ -36,13 +34,12 @@ fun BraindanceTheme(
             medium = RoundedCornerShape(Dimens.small),
             large = RoundedCornerShape(Dimens.compact),
         )
+    // Only the weights the typography uses: the Web app downloads every listed font before it can show text.
     val fonts =
         FontFamily(
-            Font(Res.font.poppins_light, FontWeight.Light),
             Font(Res.font.poppins_regular, FontWeight.Normal),
             Font(Res.font.poppins_medium, FontWeight.Medium),
             Font(Res.font.poppins_semibold, FontWeight.SemiBold),
-            Font(Res.font.poppins_bold, FontWeight.Bold),
         )
 
     MaterialTheme(

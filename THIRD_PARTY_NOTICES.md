@@ -19,7 +19,7 @@ requires an explicit user request.
 
 | Material | Location | License and attribution |
 | --- | --- | --- |
-| Poppins 4.004, five font weights | `shared/src/commonMain/composeResources/font/poppins_*.ttf` | Copyright 2020 The Poppins Project Authors. [SIL OFL 1.1](LICENSES/Poppins-OFL-1.1.txt), retained for the fonts and their modifications. [Upstream](https://github.com/google/fonts/tree/main/ofl/poppins). |
+| Poppins 4.004, three font weights | `shared/src/commonMain/composeResources/font/poppins_*.ttf` | Copyright 2020 The Poppins Project Authors. [SIL OFL 1.1](LICENSES/Poppins-OFL-1.1.txt), retained for the fonts and their modifications. [Upstream](https://github.com/google/fonts/tree/main/ofl/poppins). |
 | Lucide/Feather icon adaptations | `shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui/style/icons/Icon*.kt`, except `IconOpenInNew.kt`, `IconShare.kt`, and `IconStar.kt` | [Lucide ISC](LICENSES/Lucide-ISC.txt) and [Feather MIT](LICENSES/Feather-MIT.txt); both sets of notices are retained through SPDX `ISC AND MIT`. [Upstream artwork](https://github.com/lucide-icons/lucide/tree/0.468.0/icons). |
 | Google Material open-in-new icon adaptation | Same directory, `IconOpenInNew.kt` | [Apache-2.0](LICENSES/Apache-2.0.txt). [Upstream artwork](https://github.com/google/material-design-icons/blob/master/symbols/web/open_in_new/materialsymbolsoutlined/open_in_new_24px.svg). |
 | Gradle wrapper | `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar` | [Apache-2.0](LICENSES/Apache-2.0.txt). Existing script copyright and license headers are preserved. |

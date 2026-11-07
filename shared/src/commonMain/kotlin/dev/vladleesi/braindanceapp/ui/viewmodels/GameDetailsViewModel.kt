@@ -88,10 +88,12 @@ private fun GameItem.toGameDetails() =
         name = name.orEmpty(),
         summary = summary.orEmpty(),
         storyline = storyline.orEmpty(),
+        // The header shows the cover at card size, so it uses the cards' size: the image is usually already cached
+        // from the card that opened the screen, and the original (about 9x the bytes) is never downloaded or decoded.
         coverImageUrl =
             cover
                 ?.url
-                ?.toCoverUrl(CoverSize.ORIGINAL)
+                ?.toCoverUrl(CoverSize.P_720)
                 .orEmpty(),
         releaseDate = releaseDates?.firstOrNull()?.human ?: firstReleaseDate?.formatDate(),
         platforms = platforms.orEmpty().parentPlatformTypes(),

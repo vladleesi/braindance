@@ -41,6 +41,29 @@ class DetailsViewModelTest : ViewModelTest() {
         }
 
     @Test
+    fun gameDetailsCoverUsesTheCardImageSize() =
+        runTest(dispatcher) {
+            val client =
+                mockBackendClient(dispatcher) { request ->
+                    when (request.url.encodedPath) {
+                        "/v1/games/details" ->
+                            respondJson(
+                                """[{"id":42,"name":"Game",""" +
+                                    """"cover":{"url":"//images.igdb.com/igdb/image/upload/t_thumb/co1.jpg"}}]""",
+                            )
+                        else -> respondJson("{}", HttpStatusCode.InternalServerError)
+                    }
+                }
+            val viewModel = GameDetailsViewModel(gameId = 42, gameDetailsRepo = GameDetailsRepo(GamesRemote(client)))
+
+            viewModel.load()
+            advanceUntilIdle()
+
+            val details = assertIs<GameDetailsState.Success>(viewModel.gameDetailsState.value).gameDetails
+            assertEquals("https://images.igdb.com/igdb/image/upload/t_720p/co1.jpg", details.coverImageUrl)
+        }
+
+    @Test
     fun aGameDetailsRefreshWinsOverASlowerFirstLoad() =
         runTest(dispatcher) {
             var detailCalls = 0

@@ -4,6 +4,20 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.11.1
+
+### Android, iOS, and Web
+
+- Open game details faster by reusing the cover image already loaded for the game's card.
+- Ship two fewer font files, so the app is smaller.
+
+### Web
+
+- Show a loading indicator instead of a blank page while the app downloads.
+- Show text in the app's font from the first frame instead of switching fonts after start.
+- Stop the pull-to-refresh indicator getting stuck when scrolling past the top with a mouse wheel or trackpad.
+- Show the hand cursor over clickable game and giveaway cards.
+
 ## 0.11.0
 
 ### Android, iOS, and Web
