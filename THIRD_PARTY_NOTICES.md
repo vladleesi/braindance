@@ -56,13 +56,16 @@ modifications, and applicable brand guidelines before redistributing them.
 - `shared/src/commonMain/composeResources/drawable/ic_platform_logo_*.xml` (Android, iOS, Linux, macOS,
   PlayStation, Switch, Windows, Xbox).
 - `shared/src/commonMain/composeResources/drawable/ic_store_logo_*.xml` (Epic Games, GOG, Steam).
-- `shared/src/commonMain/composeResources/drawable/ic_launcher_background.xml`.
-- `androidApp/src/main/ic_launcher-playstore.png`, `androidApp/src/main/res/drawable/ic_launcher_background.xml`,
-  `androidApp/src/main/res/mipmap-*/ic_launcher*.png`, and launcher XML files in `mipmap-anydpi-v26`.
-- `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/*.png`, `iosApp/iosApp/appstore.png`, and
-  `iosApp/iosApp/playstore.png`.
-- `webApp/src/wasmJsMain/resources/favicon.png`.
-- The externally hosted “Braindance vibe” image linked in `README.md`.
+- The Braindance kit in `docs/branding/`, supplied by the repository owner as `brand-kit (1).zip`, including
+  outlined Outfit Regular/SemiBold lettering, logos, marks, banners, and icons. No separate asset license or font
+  files were supplied. See the [brand usage guide](docs/branding/README.md).
+- Copies of that kit in `androidApp/src/main/ic_launcher-playstore.png`, launcher PNGs and adaptive XML in
+  `androidApp/src/main/res/mipmap-*`, vectors in `androidApp/src/main/res/drawable/ic_launcher_*.xml`, and
+  `androidApp/src/main/res/values/ic_launcher_background.xml`.
+- Copies and resized exports in `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/*.png`,
+  `iosApp/iosApp/appstore.png`, and `iosApp/iosApp/playstore.png`.
+- Copies in `webApp/src/wasmJsMain/resources/favicon*` and `apple-touch-icon-180.png` in the same directory.
+- The root README banner, copied from the kit and stored in `docs/branding/banner/readme-banner.png`.
 
 A copyright license for an icon does not grant general rights to its trademark. Platform software licenses also
 do not determine the licenses of platform logos or mascot artwork.

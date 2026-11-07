@@ -4,6 +4,24 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.11.0
+
+### Android, iOS, and Web
+
+- Introduce the new Braindance app icon.
+
+### Android
+
+- Support themed launcher icons and refresh round and adaptive icons.
+
+### iOS
+
+- Include home-screen icon sizes for iPad.
+
+### Web
+
+- Refresh browser and home-screen icons.
+
 ## 0.10.1
 
 ### Web

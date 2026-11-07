@@ -6,6 +6,14 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.darkColors
 import androidx.compose.ui.graphics.Color
 
+// Brand colors are available independently of the app theme.
+val void = Color(0xFF0B0E14)
+val neonCyan = Color(0xFF22E4FF)
+val hotMagenta = Color(0xFFFF2E88)
+val signalYellow = Color(0xFFFCEE0A)
+val slate = Color(0xFF2E3650)
+val ghost = Color(0xFFF4F6FA)
+
 val white = Color(0xFFEFEFEF)
 val overlayWhiteWith45Alpha = Color(0x73FFFFFF)
 val overlayWhiteWith80Alpha = Color(0xCCFFFFFF)

@@ -1,15 +1,16 @@
 # Braindance
 [![Development status: in development](https://img.shields.io/badge/status-in%20development-D97706?style=flat-square)](#platforms) [![Platforms: Android, iOS, and experimental Web](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web%20%28experimental%29-0D9488?style=flat-square)](#platforms) [![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square)](https://kotlinlang.org/docs/multiplatform.html) [![App source release](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=source&color=2563EB&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![Backend version](https://img.shields.io/badge/backend-0.11.1-475569?style=flat-square)](backend/CHANGELOG.md) [![CI checks on develop](https://img.shields.io/github/actions/workflow/status/vladleesi/braindance/build-test-push.yml?branch=develop&event=push&label=CI&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![Web publication checks on master](https://img.shields.io/github/check-runs/vladleesi/braindance/master?nameFilter=Publish%20Promoted%20Web%20App%20%2F%20Publish%20Web%20App%20Branch&label=Web%20publication&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![Backend deployment checks on master](https://img.shields.io/github/check-runs/vladleesi/braindance/master?nameFilter=Publish%20and%20Deploy%20Promoted%20Backend%20%2F%20Deploy%20Published%20Backend&label=backend%20publication&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![License](https://img.shields.io/badge/license-MPL--2.0-B45309?style=flat-square)](#license)
 
-Braindance is a game discovery service to help you find what to play next.
-Browse popular and upcoming games, explore similar titles, and find giveaways in one place.
+![Braindance — games, backlog, what’s next](docs/branding/banner/readme-banner.png)
 
-**[Try the experimental Web preview](https://app.braindancegg.com/)** — open it in your browser;
-no installation or technical setup is needed.
+Find what to play next. Braindance brings popular games, upcoming releases, similar titles, and free giveaways
+together in one place.
 
-![Braindance vibe](https://github.com/vladleesi/braindance/assets/30999008/cdb06536-ecbf-43ae-9336-3833a89a3718)
+**[Open the experimental Web preview](https://app.braindancegg.com/)** ·
+[Report a bug](https://github.com/vladleesi/braindance/issues/new?template=bug_report.md) ·
+[Contribute](CONTRIBUTING.md)
 
-## What you can do
+## Discover your next game
 
 - Explore **Popular Right Now** and **Most Anticipated** to find released and upcoming games.
 - View game details and discover similar games.
@@ -31,14 +32,11 @@ See [CHANGELOG.md](CHANGELOG.md) for updates across Android, iOS, and Web.
 
 ## Help improve Braindance
 
-Your feedback helps shape Braindance:
-
 - [Report a bug](https://github.com/vladleesi/braindance/issues/new?template=bug_report.md).
 - [Suggest a feature or share usability feedback](https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md).
 - [Contribute code or documentation](CONTRIBUTING.md).
 
-You do not need to build the app or run a backend to participate. Feedback from the Web preview is welcome.
-Braindance is open source; the [contribution guide](CONTRIBUTING.md) covers both feedback and pull requests.
+Feedback from the Web preview is welcome; you do not need to build the app or run a backend to participate.
 
 ## For developers
 
@@ -49,9 +47,10 @@ Its independent version is `0.11.1`. See the [backend changelog](backend/CHANGEL
 - [Development guide](docs/development.md): requirements, project layout, local builds, debugging, and validation.
 - [Backend reference](backend/README.md): server configuration, API, packaging, and optional independent hosting.
 - [Release guide](docs/releases.md): versioning and publication workflows.
+- [Brand assets](docs/branding/README.md): logos, icons, banners, palette, and usage guidance.
 
 The current frontend source version is
-[0.10.1](https://github.com/vladleesi/braindance/releases/tag/app-v0.10.1).
+[0.11.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.11.0).
 GitHub releases provide source code, not store-ready mobile downloads.
 Developer builds for Android, iOS, and Web are supported; see the development guide for backend configuration.
 
