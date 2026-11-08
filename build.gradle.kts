@@ -5,6 +5,18 @@ import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.jetbrains.kotlin.gradle.targets.wasm.yarn.WasmYarnPlugin
 import org.jetbrains.kotlin.gradle.targets.wasm.yarn.WasmYarnRootExtension
 
+// The Android Gradle Plugin and other build plugins bring library versions with published advisories into the build
+// classpath. Constraints only raise versions that are present; the catalog's bundle explains each floor.
+buildscript {
+    dependencies {
+        constraints {
+            libs.bundles.tool.security.floors
+                .get()
+                .forEach { floor -> classpath(floor) }
+        }
+    }
+}
+
 plugins {
     base
     alias(libs.plugins.android.application) apply false
@@ -30,7 +42,16 @@ plugins.withType<WasmYarnPlugin> {
     }
 }
 
+// Android lint, ktlint, and Kotlin's Swift export resolve their own tool classpaths with the same kinds of libraries.
+// None of these classpaths ships in an app or the backend.
+val toolClasspaths = setOf("androidLintTool", "ktlint", "swiftExportClasspath")
+
 allprojects {
+    configurations.matching { it.name in toolClasspaths }.configureEach {
+        libs.bundles.tool.security.floors.get().forEach { floor ->
+            dependencyConstraints.add(project.dependencies.constraints.create(floor))
+        }
+    }
     pluginManager.withPlugin("io.gitlab.arturbosch.detekt") {
         extensions.configure<DetektExtension> {
             config.setFrom(rootProject.files("config/detekt-config.yml"))
