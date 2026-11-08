@@ -75,9 +75,12 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # A deploying job never restores caches that other runs could have written.
       - name: Set up Gradle
         if: inputs.artifact_name == ''
         uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-disabled: true
 
       - name: Build Production Web App
         if: inputs.artifact_name == ''
