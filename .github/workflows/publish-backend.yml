@@ -57,11 +57,11 @@ jobs:
           fi
 
           git fetch --no-tags --depth=1 origin "$BEFORE_SHA"
-          # These root inputs also affect backend compilation and build checks.
+          # These root inputs also affect backend compilation and build checks; Markdown never does.
           if git diff --quiet "$BEFORE_SHA" HEAD -- backend/ \
             build.gradle.kts settings.gradle.kts gradle.properties gradlew gradlew.bat \
             gradle/wrapper/ gradle/libs.versions.toml .editorconfig config/detekt-config.yml \
-            config/detekt-nullability.yml; then
+            config/detekt-nullability.yml ':(exclude,glob)**/*.md'; then
             echo "deploy=false" >> "$GITHUB_OUTPUT"
           else
             status=$?

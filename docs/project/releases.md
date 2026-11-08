@@ -12,6 +12,8 @@
 ## Publication and recovery
 
 CI validates `develop` and `master`; successful `develop` pushes fast-forward `master` without force pushes.
+The backend deploys only when its inputs changed since the previous `master` revision; Markdown never counts. To
+deploy it anyway, for example after changing a secret, run the backend publication workflow manually on `master`.
 Web deploys the validated distribution to Cloudflare Pages with Wrangler. The workflow needs the repository secrets
 `CLOUDFLARE_API_TOKEN` (an account token with only Cloudflare Pages edit access) and `CLOUDFLARE_ACCOUNT_ID`, and the
 repository variable `CLOUDFLARE_PAGES_PROJECT`. The JavaScript bundle and Wasm files are named by their content, so
