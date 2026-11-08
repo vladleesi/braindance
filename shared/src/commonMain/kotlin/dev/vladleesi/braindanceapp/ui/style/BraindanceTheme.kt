@@ -57,70 +57,26 @@ fun BraindanceTheme(
     }
 }
 
-@Composable
-private fun buildTypography(fonts: FontFamily): Typography =
-    Typography(
-        h1 =
-            TextStyle(
-                color = white,
-                fontFamily = fonts,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 32.sp,
-            ),
-        h2 =
-            TextStyle(
-                color = white,
-                fontFamily = fonts,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 22.sp,
-            ),
-        h3 =
-            TextStyle(
-                color = white,
-                fontFamily = fonts,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-            ),
-        body1 =
-            TextStyle(
-                color = white,
-                fontFamily = fonts,
-                fontWeight = FontWeight.Normal,
-                fontSize = 18.sp,
-            ),
-        body2 =
-            TextStyle(
-                color = secondaryText,
-                fontFamily = fonts,
-                fontWeight = FontWeight.Medium,
-                fontSize = 16.sp,
-            ),
-        subtitle1 =
-            TextStyle(
-                color = white,
-                fontFamily = fonts,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp,
-            ),
-        subtitle2 =
-            TextStyle(
-                color = secondaryText,
-                fontFamily = fonts,
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp,
-            ),
-        caption =
-            TextStyle(
-                color = secondaryText,
-                fontFamily = fonts,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-            ),
-        button =
-            TextStyle(
-                color = white,
-                fontFamily = fonts,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp,
-            ),
+/** Compact headings and readable body styles, using only the three bundled Poppins weights. */
+private fun buildTypography(fonts: FontFamily): Typography {
+    val heading = TextStyle(color = white, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp)
+    val body = TextStyle(color = white, fontWeight = FontWeight.Normal, letterSpacing = 0.sp)
+    val label = TextStyle(color = secondaryText, fontWeight = FontWeight.Medium, letterSpacing = 0.1.sp)
+
+    return Typography(
+        defaultFontFamily = fonts,
+        h1 = heading.copy(fontSize = 32.sp, lineHeight = 40.sp, letterSpacing = (-0.5).sp),
+        h2 = heading.copy(fontSize = 24.sp, lineHeight = 32.sp, letterSpacing = (-0.25).sp),
+        h3 = heading.copy(fontSize = 20.sp, lineHeight = 28.sp),
+        h4 = heading.copy(fontSize = 18.sp, lineHeight = 24.sp),
+        h5 = heading.copy(fontSize = 16.sp, lineHeight = 24.sp),
+        h6 = heading.copy(fontSize = 14.sp, lineHeight = 20.sp, letterSpacing = 0.1.sp),
+        body1 = body.copy(fontSize = 18.sp, lineHeight = 28.sp),
+        body2 = body.copy(fontSize = 16.sp, lineHeight = 24.sp),
+        subtitle1 = heading.copy(fontSize = 14.sp, lineHeight = 20.sp, letterSpacing = 0.1.sp),
+        subtitle2 = label.copy(fontSize = 14.sp, lineHeight = 20.sp),
+        caption = label.copy(fontSize = 12.sp, lineHeight = 16.sp),
+        button = heading.copy(fontSize = 14.sp, lineHeight = 20.sp, letterSpacing = 0.1.sp),
+        overline = label.copy(fontSize = 12.sp, lineHeight = 16.sp, letterSpacing = 0.5.sp),
     )
+}

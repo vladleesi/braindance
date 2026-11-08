@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.secondary
+import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.white
 
 @Composable
@@ -45,6 +46,7 @@ fun SearchBar(
             Text(
                 text = placeholder,
                 style = MaterialTheme.typography.body2,
+                color = secondaryText,
             )
         },
         shape = CircleShape,

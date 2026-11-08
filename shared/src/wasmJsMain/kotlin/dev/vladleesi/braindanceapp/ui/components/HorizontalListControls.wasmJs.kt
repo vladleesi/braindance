@@ -20,7 +20,7 @@ import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +50,8 @@ actual fun HorizontalListControls(
     listState: LazyListState,
     modifier: Modifier,
 ) {
+    if (remember { hasTouchScreen() }) return
+
     val coroutineScope = rememberCoroutineScope()
 
     Row(modifier = modifier.padding(end = Dimens.small)) {
@@ -89,6 +91,9 @@ actual fun HorizontalListControls(
     }
 }
 
+@OptIn(ExperimentalWasmJsInterop::class)
+private fun hasTouchScreen(): Boolean = js("navigator.maxTouchPoints > 0")
+
 /**
  * Keeps a full-size touch target while drawing hover, focus, and press feedback only inside the visible circle,
  * so the ripple neither overflows into the neighboring button nor gets cut by it.
@@ -109,24 +114,30 @@ private fun HorizontalListButton(
                     enabled = enabled,
                     role = Role.Button,
                     interactionSource = null,
-                    indication = ripple(bounded = false, radius = ButtonCircleSize / 2),
+                    indication =
+                        ripple(
+                            bounded = false,
+                            radius = ButtonCircleSize / 2,
+                            color = MaterialTheme.colors.onSurface,
+                        ),
                     onClick = onClick,
                 ),
         contentAlignment = Alignment.Center,
     ) {
         val contentAlpha = if (enabled) LocalContentAlpha.current else ContentAlpha.disabled
-        CompositionLocalProvider(LocalContentAlpha provides contentAlpha) {
-            Icon(
-                imageVector = ChevronLeft,
-                contentDescription = contentDescription,
-                modifier =
-                    Modifier
-                        .size(ButtonCircleSize)
-                        .background(color = MaterialTheme.colors.secondary, shape = CircleShape)
-                        .padding(Dimens.tiny)
-                        .then(if (rotateIcon) Modifier.rotate(REVERSE_ICON_ROTATION_DEGREES) else Modifier),
-            )
-        }
+        Icon(
+            imageVector = ChevronLeft,
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colors.onSurface.copy(alpha = contentAlpha),
+            modifier =
+                Modifier
+                    .size(ButtonCircleSize)
+                    .background(
+                        color = MaterialTheme.colors.secondary.copy(alpha = contentAlpha),
+                        shape = CircleShape,
+                    ).padding(Dimens.tiny)
+                    .then(if (rotateIcon) Modifier.rotate(REVERSE_ICON_ROTATION_DEGREES) else Modifier),
+        )
     }
 }
 

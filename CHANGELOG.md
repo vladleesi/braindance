@@ -4,6 +4,17 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.11.3
+
+### Android, iOS, and Web
+
+- Improve heading hierarchy, paragraph spacing, and supporting-text contrast while keeping the Poppins fonts.
+
+### Web
+
+- Hide horizontal list arrow controls on devices with a touchscreen; swipe to browse instead.
+- Make enabled list arrows brighter and easier to distinguish from disabled arrows.
+
 ## 0.11.2
 
 ### Web
