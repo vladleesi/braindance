@@ -57,6 +57,7 @@
       --cyan: #22e4ff;
       --magenta: #ff2e88;
             --slate: #2e3650;
+      --link-line: #6b6b6b; /* underline of links in text: about 3:1 against --bg, so they never rely on color alone */
       --r-lg: 24px;
       --r-md: 16px;
     }
@@ -71,8 +72,10 @@
     }
     img, svg { max-width: 100%; display: block; }
     a { color: inherit; }
-    p a, .sub a { text-decoration-color: var(--line); text-underline-offset: 3px; }
-    p a:hover, .sub a:hover { text-decoration-color: var(--cyan); }
+    /* One style for every link inside running text: always underlined, and on hover the text turns white and the
+       underline turns cyan. Navigation lists, buttons, cards, and chips have their own hover styles. */
+    p a, .sub a, .more, .foot p a, .legal a { text-decoration: underline; text-decoration-color: var(--link-line); text-underline-offset: 3px; }
+    p a:hover, .sub a:hover, .more:hover, .foot p a:hover, .legal a:hover { color: var(--ink); text-decoration-color: var(--cyan); }
     :focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; border-radius: 8px; }
     .skip { position: absolute; left: -999px; top: 8px; background: var(--cyan); color: var(--void); padding: 10px 16px; border-radius: 10px; font-weight: 600; z-index: 50; }
     .skip:focus { left: 8px; }
@@ -179,8 +182,7 @@
     .tag.live { background: rgba(34,228,255,.14); color: var(--cyan); }
     .tag.wip { background: rgba(255,46,136,.14); color: #ff6fa8; }
     .plat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .more { display: inline-block; margin-top: 16px; font-weight: 500; font-size: .9rem; color: var(--ink); text-decoration: underline; text-decoration-color: #5a5a5a; text-underline-offset: 4px; }
-    .more:hover { text-decoration-color: var(--ink); }
+    .more { display: inline-block; margin-top: 16px; font-weight: 500; font-size: .9rem; color: #c9c9c9; }
     .oss-group + .oss-group { margin-top: 32px; }
     .oss-group h3 { font-size: .95rem; color: var(--muted); font-weight: 500; margin: 0 0 12px; }
     .tech { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
@@ -206,14 +208,11 @@
     .foot { display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: space-between; align-items: flex-start; }
     .foot ul { display: flex; flex-wrap: wrap; gap: 6px 20px; list-style: none; margin: 0; padding: 0; }
     .foot a { text-decoration: none; }
-    .foot a:hover { color: var(--ink); text-decoration: underline; }
+    .foot a:hover { color: var(--ink); text-decoration: underline var(--cyan); text-underline-offset: 3px; }
     .foot p { margin: 12px 0 0; max-width: 36em; }
-    .foot p a { text-decoration: underline; text-decoration-color: var(--line); }
-    .foot .powered a { color: var(--ink); font-weight: 600; }
+    .foot .powered a { color: #c9c9c9; font-weight: 600; }
     .legal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); font-size: .8rem; }
     .legal p { margin: 0 0 6px; max-width: 64em; }
-    .legal a { text-decoration: underline; text-decoration-color: var(--line); }
-    .legal a:hover { color: var(--ink); }
 
     @media (max-width: 880px) {
       .grid3, .plat, .dev { grid-template-columns: 1fr; }
