@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>Braindance: find what to play next | Game discovery app (in development)</title>
+  <meta name="description" content="Braindance is an open-source game discovery app for Android, iOS and Web, built with Compose Multiplatform. Browse popular and upcoming games, explore similar titles and find giveaways. In development.">
+  <meta name="keywords" content="game discovery, what to play next, upcoming games, popular games, similar games, game giveaways, free game giveaways, game release tracker, Kotlin Multiplatform, Compose Multiplatform, Android, iOS, web app, open source">
+  <meta name="author" content="vladleesi">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#171717">
+  <meta name="color-scheme" content="dark">
+  <link rel="canonical" href="https://braindancegg.com/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Braindance">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Braindance: find what to play next">
+  <meta property="og:description" content="Browse popular and upcoming games, explore similar titles and find giveaways in one place. Open source, for Android, iOS and Web. In development.">
+  <meta property="og:url" content="https://braindancegg.com/">
+  <meta property="og:image" content="https://braindancegg.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Braindance logo on a dark background">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Braindance: find what to play next">
+  <meta name="twitter:description" content="Open-source game discovery app for Android, iOS and Web. In development.">
+  <meta name="twitter:image" content="https://braindancegg.com/og-image.png">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
+  <link rel="preload" as="image" href="/img/wall-1.webp" imagesrcset="/img/wall-1.webp 1x, /img/wall-1@2x.webp 2x" fetchpriority="high">
+  <link rel="preload" as="image" href="/mark.svg">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      /* App palette (Colors.kt) */
+      --bg: #171717;        /* app background */
+      --nav: #101010;       /* app nav bar */
+      --card: #1f1f1f;
+      --line: #2f2f2f;      /* app secondary */
+      --chip: #2d3037;      /* app secondaryVariant */
+      --ink: #efefef;       /* app white */
+      --muted: #969696;     /* app secondaryText */
+      /* Brand colors: accents only */
+      --void: #0b0e14;
+      --cyan: #22e4ff;
+      --magenta: #ff2e88;
+            --slate: #2e3650;
+      --r-lg: 24px;
+      --r-md: 16px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; background: var(--bg); }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.65; -webkit-font-smoothing: antialiased;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    img, svg { max-width: 100%; display: block; }
+    a { color: inherit; }
+    p a, .sub a { text-decoration-color: var(--line); text-underline-offset: 3px; }
+    p a:hover, .sub a:hover { text-decoration-color: var(--cyan); }
+    :focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; border-radius: 8px; }
+    .skip { position: absolute; left: -999px; top: 8px; background: var(--cyan); color: var(--void); padding: 10px 16px; border-radius: 10px; font-weight: 600; z-index: 50; }
+    .skip:focus { left: 8px; }
+    .wrap { width: min(1080px, 100% - 40px); margin-inline: auto; }
+
+    /* Header */
+    header.top { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--nav) 86%, transparent); backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+    .bar { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .brand { display: inline-flex; align-items: center; }
+    .brand img { height: 30px; width: auto; }
+    nav.links { display: flex; align-items: center; gap: 6px; }
+    nav.links a { text-decoration: none; color: var(--muted); font-size: .9rem; font-weight: 500; padding: 8px 12px; border-radius: 999px; }
+    nav.links a:hover { color: var(--ink); background: var(--chip); }
+    section[id] { scroll-margin-top: 76px; }
+
+    /* Mobile menu */
+    .menu-btn { display: none; align-items: center; justify-content: center; width: 44px; height: 44px; margin-right: -8px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; }
+    .menu-btn:hover { background: var(--chip); }
+    .menu-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+    .menu-btn .i-close { display: none; }
+    .menu-btn[aria-expanded="true"] .i-open { display: none; }
+    .menu-btn[aria-expanded="true"] .i-close { display: block; }
+    .mobile-menu { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--nav); border-bottom: 1px solid var(--line); box-shadow: 0 24px 40px -20px rgba(0,0,0,.7); max-height: calc(100vh - 72px); max-height: calc(100dvh - 72px); overflow-y: auto; }
+    .mobile-menu ul { list-style: none; margin: 0; padding: 4px 0 0; }
+    .mobile-menu li a { display: block; padding: 15px 4px; font-size: 1.05rem; font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--line); }
+    .mobile-menu li a:hover { color: var(--cyan); }
+    .mobile-menu .btn { width: 100%; margin: 20px 0 24px; }
+    @media (max-width: 720px) {
+      nav.links { display: none; }
+      .menu-btn { display: inline-flex; }
+      .mobile-menu { display: block; }
+    }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 24px; border-radius: 999px; font: inherit; font-weight: 600; font-size: .95rem; text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, background .15s ease; }
+    .btn:active { transform: scale(.98); }
+    .btn svg { width: 18px; height: 18px; }
+    .btn-primary { background: var(--cyan); color: var(--void); }
+    .btn-primary:hover { background: color-mix(in srgb, var(--cyan) 86%, #fff); }
+    .btn-ghost { background: var(--card); color: var(--ink); border-color: var(--line); }
+    .btn-ghost:hover { background: var(--chip); }
+
+    /* Status pill */
+    .status { display: inline-flex; align-items: center; gap: 10px; padding: 7px 16px 7px 12px; border-radius: 999px; background: color-mix(in srgb, var(--card) 88%, transparent); border: 1px solid var(--line); font-size: .85rem; font-weight: 500; color: var(--muted); backdrop-filter: blur(6px); }
+    .status b { color: var(--ink); font-weight: 600; }
+    .dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--magenta); animation: pulse 2.4s ease-out infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,46,136,.55); } 70%,100% { box-shadow: 0 0 0 9px rgba(255,46,136,0); } }
+
+    /* Hero with game wall */
+    .hero { position: relative; overflow: hidden; isolation: isolate; border-bottom: 1px solid var(--line); }
+    .wall { position: absolute; z-index: -2; inset: 0; display: flex; flex-direction: column; gap: 8px; padding: 8px 0; overflow: hidden; opacity: .55; -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 55%, transparent 98%); mask-image: linear-gradient(to bottom, #000 0, #000 55%, transparent 98%); }
+    .wall-row { flex: none; height: 192px; overflow: hidden; contain: strict; }
+    /* Each row is one strip of --n distinct covers (150px pitch at 192px tall) repeated 5 times, so moving by 20% is
+       exactly one strip: a seamless loop. Speed is about 22px/s. 1x and 2x files are chosen by pixel density. */
+    .wall-track { width: calc(var(--n) * 750px); height: 100%; background-repeat: repeat-x; background-size: auto 192px; will-change: transform; animation: wall-left 60s linear infinite; }
+    .wall-row:nth-child(even) .wall-track { animation-name: wall-right; }
+    .wall-row:nth-child(1) .wall-track { --n: 11; background-image: url(/img/wall-1.webp); background-image: image-set(url(/img/wall-1.webp) 1x, url(/img/wall-1@2x.webp) 2x); animation-duration: 75s; animation-delay: -12s; }
+    .wall-row:nth-child(2) .wall-track { --n: 10; background-image: url(/img/wall-2.webp); background-image: image-set(url(/img/wall-2.webp) 1x, url(/img/wall-2@2x.webp) 2x); animation-duration: 70s; animation-delay: -30s; }
+    .wall-row:nth-child(3) .wall-track { --n: 10; background-image: url(/img/wall-3.webp); background-image: image-set(url(/img/wall-3.webp) 1x, url(/img/wall-3@2x.webp) 2x); animation-duration: 62s; animation-delay: -20s; }
+    .wall-row:nth-child(4) .wall-track { --n: 10; background-image: url(/img/wall-4.webp); background-image: image-set(url(/img/wall-4.webp) 1x, url(/img/wall-4@2x.webp) 2x); animation-duration: 77s; animation-delay: -45s; }
+    @keyframes wall-left { from { transform: translate3d(0,0,0); } to { transform: translate3d(-20%,0,0); } }
+    @keyframes wall-right { from { transform: translate3d(-20%,0,0); } to { transform: translate3d(0,0,0); } }
+    .scrim { position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse 60% 72% at 50% 46%, rgba(23,23,23,.94) 30%, rgba(23,23,23,.5) 64%, rgba(23,23,23,.08) 100%), linear-gradient(to bottom, rgba(23,23,23,0) 60%, var(--bg)); }
+    .hero-inner { text-align: center; padding: 96px 0 162px; display: flex; flex-direction: column; align-items: center; }
+    .hero-logo { width: 88px; height: 88px; margin: 0 auto 26px; }
+    h1 { font-size: clamp(2.4rem, 6.2vw, 4.25rem); line-height: 1.04; letter-spacing: -.035em; font-weight: 700; margin: 22px 0 20px; max-width: 14em; }
+    .lead { font-size: clamp(1.05rem, 2vw, 1.2rem); color: #c9c9c9; max-width: 34em; margin: 0 auto 32px; }
+    .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+    .hero .cta { justify-content: center; }
+    .fine { margin: 20px 0 0; font-size: .85rem; color: var(--muted); }
+
+    /* Sections */
+    section { padding: 84px 0; }
+    section + section { border-top: 1px solid var(--line); }
+    h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.12; letter-spacing: -.025em; font-weight: 700; margin: 0 0 14px; }
+    .sub { color: var(--muted); max-width: 38em; margin: 0 0 40px; }
+    h3 { font-size: 1.1rem; font-weight: 600; letter-spacing: -.01em; margin: 0 0 8px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 26px; }
+    .card p { margin: 0; color: var(--muted); font-size: .95rem; }
+    .ico { width: 44px; height: 44px; border-radius: 14px; background: var(--chip); display: grid; place-items: center; margin-bottom: 18px; }
+    .ico svg { width: 22px; height: 22px; stroke: var(--ink); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Live rails (shown only when real data loads) */
+    .rail + .rail { margin-top: 36px; }
+    .rail h3 { margin-bottom: 14px; }
+    .scroller { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+    .game { flex: 0 0 144px; scroll-snap-align: start; text-decoration: none; }
+    .game img { width: 144px; height: 192px; object-fit: cover; border-radius: 14px; background: var(--chip); border: 1px solid var(--line); }
+    .game span { display: block; margin-top: 8px; font-size: .82rem; font-weight: 500; line-height: 1.35; color: var(--ink); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .credit { margin: 22px 0 0; color: var(--muted); font-size: .85rem; }
+
+    /* Development status */
+    .dev { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px; }
+    .panel h3 { font-size: 1.25rem; margin: 0; }
+    .panel .tag { margin-bottom: 12px; }
+    .plain { list-style: none; margin: 20px 0 0; padding: 0; }
+    .plain li { padding: 16px 0; border-top: 1px solid var(--line); }
+    .plain li:first-child { border-top: 0; padding-top: 4px; }
+    .plain strong { display: block; font-weight: 600; font-size: 1rem; }
+    .plain span { display: block; color: var(--muted); font-size: .92rem; margin-top: 2px; }
+    .tag { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: .75rem; font-weight: 600; background: var(--chip); color: var(--muted); margin-bottom: 14px; }
+    .tag.live { background: rgba(34,228,255,.14); color: var(--cyan); }
+    .tag.wip { background: rgba(255,46,136,.14); color: #ff6fa8; }
+    .plat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .more { display: inline-block; margin-top: 16px; font-weight: 500; font-size: .9rem; color: var(--ink); text-decoration: underline; text-decoration-color: #5a5a5a; text-underline-offset: 4px; }
+    .more:hover { text-decoration-color: var(--ink); }
+    .oss-group + .oss-group { margin-top: 32px; }
+    .oss-group h3 { font-size: .95rem; color: var(--muted); font-weight: 500; margin: 0 0 12px; }
+    .tech { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .tech a { display: inline-block; padding: 5px 10px; border-radius: 6px; background: var(--chip); color: #c9c9c9; font-size: .8rem; font-weight: 500; text-decoration: none; }
+    .tech a:hover { color: var(--ink); background: #3a3e48; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn-line { background: transparent; color: var(--ink); border-color: #4a4a4a; }
+    .btn-line:hover { border-color: var(--magenta); background: rgba(255,46,136,.08); }
+
+    details { border-bottom: 1px solid var(--line); padding: 4px 0; }
+    details:first-of-type { border-top: 1px solid var(--line); }
+    summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 18px 0; font-weight: 600; font-size: 1.02rem; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font-weight: 500; font-size: 1.5rem; line-height: 1; color: var(--muted); transition: transform .2s ease; }
+    details[open] summary::after { transform: rotate(45deg); color: var(--cyan); }
+    details p { margin: 0 0 20px; color: var(--muted); max-width: 46em; }
+
+    .closing { text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 64px 24px; }
+    .closing .cta { justify-content: center; }
+    .closing .sub { margin-inline: auto; }
+
+    footer { background: var(--nav); padding: 40px 0 56px; border-top: 1px solid var(--line); color: var(--muted); font-size: .88rem; }
+    .foot { display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: space-between; align-items: flex-start; }
+    .foot ul { display: flex; flex-wrap: wrap; gap: 6px 20px; list-style: none; margin: 0; padding: 0; }
+    .foot a { text-decoration: none; }
+    .foot a:hover { color: var(--ink); text-decoration: underline; }
+    .foot p { margin: 12px 0 0; max-width: 36em; }
+    .foot p a { text-decoration: underline; text-decoration-color: var(--line); }
+    .foot .powered a { color: var(--ink); font-weight: 600; }
+    .legal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); font-size: .8rem; }
+    .legal p { margin: 0 0 6px; max-width: 64em; }
+    .legal a { text-decoration: underline; text-decoration-color: var(--line); }
+    .legal a:hover { color: var(--ink); }
+
+    @media (max-width: 880px) {
+      .grid3, .plat, .dev { grid-template-columns: 1fr; }
+      section { padding: 56px 0; }
+      .panel { padding: 26px; }
+      .hero-inner { padding: 60px 0 126px; }
+      .scrim { background: radial-gradient(ellipse 90% 70% at 50% 46%, rgba(23,23,23,.95) 35%, rgba(23,23,23,.6) 70%, rgba(23,23,23,.25) 100%), linear-gradient(to bottom, rgba(23,23,23,0) 60%, var(--bg)); }
+    }
+    .wall.paused .wall-track, .wall.paused ~ * .dot { animation-play-state: paused; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .dot, .wall-track { animation: none; } .btn { transition: none; } }
+  </style>
+
+  <noscript><style>.menu-btn{display:none!important}.mobile-menu[hidden]{display:block!important;position:static}</style></noscript>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://braindancegg.com/#website",
+        "url": "https://braindancegg.com/",
+        "name": "Braindance",
+        "description": "Open-source game discovery app: popular and upcoming games, similar titles and giveaways.",
+        "inLanguage": "en"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://braindancegg.com/#app",
+        "name": "Braindance",
+        "url": "https://app.braindancegg.com/",
+        "image": "https://braindancegg.com/og-image.png",
+        "description": "Braindance is a game discovery service that helps you find what to play next. Browse popular and upcoming games, explore similar titles and find giveaways. Built with Compose Multiplatform for Android, iOS and Web. Currently in development; the web app is experimental and the Android and iOS apps are available by building from source.",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Android, iOS, Web",
+        "browserRequirements": "The web app requires a modern browser with WebAssembly GC (WasmGC) support",
+        "softwareVersion": "0.7.2",
+        "license": "https://www.mozilla.org/MPL/2.0/",
+        "isAccessibleForFree": true,
+        "codeRepository": "https://github.com/vladleesi/braindance",
+        "author": { "@type": "Person", "name": "vladleesi", "url": "https://github.com/vladleesi" },
+        "featureList": [
+          "Popular Right Now and Most Anticipated games",
+          "Game details and similar games",
+          "Giveaways with instructions and claim links"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "What is Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is a game discovery service that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place." } },
+          { "@type": "Question", "name": "Is Braindance available yet?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is in development. The web app is available now as an experimental version. The Android and iOS apps are built with Compose Multiplatform and are available by building them from source. Store downloads are not available yet and there is no confirmed release date." } },
+          { "@type": "Question", "name": "How do I run the Android or iOS app?", "acceptedAnswer": { "@type": "Answer", "text": "Build it from source by following the development guide in the GitHub repository, which covers requirements, project layout and local builds." } },
+          { "@type": "Question", "name": "Which browsers does the web app support?", "acceptedAnswer": { "@type": "Answer", "text": "The web app needs a modern browser with WasmGC support. Because Web support is experimental, browser behavior, performance and features may change." } },
+          { "@type": "Question", "name": "Where does the game and giveaway data come from?", "acceptedAnswer": { "@type": "Answer", "text": "Game data is powered by IGDB and giveaways come from GamerPower." } },
+          { "@type": "Question", "name": "Is Braindance open source?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Braindance is open source under the MPL-2.0 license and built with Kotlin Multiplatform, Compose Multiplatform and a Kotlin/Ktor backend. The source is on GitHub." } },
+          { "@type": "Question", "name": "How can I help improve Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "You can report a bug, suggest a feature or share usability feedback through GitHub issues, or contribute code and documentation. You do not need to build the app to give feedback." } }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <div class="wrap bar">
+      <a class="brand" href="/" aria-label="Braindance home"><img src="/lockup-dark.svg" alt="Braindance" width="114" height="30"></a>
+      <nav class="links" aria-label="Primary">
+        <a class="hide-sm" href="#features">Features</a>
+        <a class="hide-sm" href="#status">Status</a>
+        <a class="hide-sm" href="#faq">FAQ</a>
+        <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>
+      </nav>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+        <svg class="i-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg class="i-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu" hidden>
+      <div class="wrap">
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#status">Status</a></li>
+          <li><a href="#platforms">Platforms</a></li>
+          <li><a href="#open-source">Open source</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a></li>
+        </ul>
+        <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="hero">
+      <div class="wall" aria-hidden="true">
+        <div class="wall-row"><div class="wall-track"></div></div>
+        <div class="wall-row"><div class="wall-track"></div></div>
+        <div class="wall-row"><div class="wall-track"></div></div>
+        <div class="wall-row"><div class="wall-track"></div></div>
+      </div>
+      <div class="scrim" aria-hidden="true"></div>
+
+      <div class="wrap hero-inner">
+        <img class="hero-logo" src="/mark.svg" alt="Braindance mark" width="88" height="88" fetchpriority="high">
+        <p class="status" role="status"><span class="dot" aria-hidden="true"></span><span><b>In development</b> &middot; Android, iOS and Web</span></p>
+        <h1>Find what to play next.</h1>
+        <p class="lead">Braindance is an open-source game discovery app for Android, iOS and Web. Browse popular and upcoming games, explore similar titles and find giveaways in one place.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">
+            Open the web app
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+            View on GitHub
+          </a>
+        </div>
+        <p class="fine">Built with Compose Multiplatform. Android and iOS apps are available to build from source; store releases are not available yet.</p>
+      </div>
+    </div>
+
+    <section id="features" aria-labelledby="features-title">
+      <div class="wrap">
+        <h2 id="features-title">What you can do today</h2>
+        <p class="sub">The current version focuses on discovery. Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>.</p>
+        <div class="grid3">
+          <article class="card">
+            <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1.5 3.2 4.3 4.5 4.3 8.2A4.3 4.3 0 0 1 12 15.5a4.3 4.3 0 0 1-4.3-4.3c0-1.4.6-2.4 1.4-3.3.3 1.2 1 1.9 1.9 2.2C11 8 10.8 5.3 12 3z"/><path d="M8 20h8"/></svg></div>
+            <h3>Popular and upcoming games</h3>
+            <p>See what everyone is playing in Popular Right Now, and what to look forward to in Most Anticipated.</p>
+          </article>
+          <article class="card">
+            <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="11" rx="2"/><rect x="13" y="9" width="8" height="11" rx="2"/></svg></div>
+            <h3>Game details and similar games</h3>
+            <p>Open any game for its details, then jump to similar titles when you want more of the same.</p>
+          </article>
+          <article class="card">
+            <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16v4H4zM12 9v11M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6M8.5 9a2.5 2.5 0 1 1 0-5C11 4 12 9 12 9s1-5 3.5-5a2.5 2.5 0 1 1 0 5"/></svg></div>
+            <h3>Game giveaways</h3>
+            <p>Browse current giveaways from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>, read the instructions and follow the link to claim.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real game covers. Hidden until BACKEND_URL (see script below) returns data. -->
+    <section id="live" aria-labelledby="live-title" hidden>
+      <div class="wrap">
+        <h2 id="live-title">Right now in Braindance</h2>
+        <p class="sub">A live look at the two feeds you see when you open the app.</p>
+        <div class="rail" hidden><h3>Popular right now</h3><div class="scroller" id="rail-popular"></div></div>
+        <div class="rail" hidden><h3>Most anticipated</h3><div class="scroller" id="rail-anticipated"></div></div>
+        <p class="credit">Game data powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>.</p>
+      </div>
+    </section>
+
+    <section id="status" aria-labelledby="status-title">
+      <div class="wrap">
+        <h2 id="status-title">Braindance is in development</h2>
+        <p class="sub">It is actively built toward a public launch, with no confirmed release date. The web app is experimental, and the Android and iOS apps are available only by building from source, so behavior and features may change. Updates are tracked in the <a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">changelog</a>.</p>
+        <div class="dev">
+          <div class="panel">
+            <span class="tag live">Available now</span>
+            <h3>In the app today</h3>
+            <ul class="plain">
+              <li><strong>Popular and upcoming games</strong><span>Popular Right Now and Most Anticipated lists</span></li>
+              <li><strong>Game details</strong><span>Open a game and discover similar titles</span></li>
+              <li><strong>Giveaways</strong><span>Instructions and links to claim them</span></li>
+            </ul>
+          </div>
+          <div class="panel">
+            <span class="tag wip">Not available yet</span>
+            <h3>Still to come</h3>
+            <ul class="plain">
+              <li><strong>Personal tracking and collections</strong><span>Save and organize games</span></li>
+              <li><strong>Search results</strong><span>Look up a specific game</span></li>
+              <li><strong>News</strong><span>Updates from the game world</span></li>
+              <li><strong>Account management</strong><span>Sign in and manage your profile</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="platforms" aria-labelledby="platforms-title">
+      <div class="wrap">
+        <h2 id="platforms-title">Android, iOS and Web</h2>
+        <p class="sub">All three apps share one <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a> codebase.</p>
+        <div class="plat">
+          <article class="card">
+            <span class="tag live">Available now</span>
+            <h3>Web (experimental)</h3>
+            <p>Open it in your browser, no installation needed. Requires a modern browser with WasmGC support.</p>
+            <a class="more" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
+          </article>
+          <article class="card">
+            <span class="tag wip">Build from source</span>
+            <h3>Android</h3>
+            <p>The Android app is available by building it yourself. Store downloads are not available yet.</p>
+            <a class="more" href="https://github.com/vladleesi/braindance/blob/master/docs/project/development.md" rel="noopener" target="_blank">Read the development guide</a>
+          </article>
+          <article class="card">
+            <span class="tag wip">Build from source</span>
+            <h3>iOS</h3>
+            <p>The iOS app is available by building it yourself. Store downloads are not available yet.</p>
+            <a class="more" href="https://github.com/vladleesi/braindance/blob/master/docs/project/development.md" rel="noopener" target="_blank">Read the development guide</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="open-source" aria-labelledby="oss-title">
+      <div class="wrap">
+        <h2 id="oss-title">Open source, built in the open</h2>
+        <p class="sub">Android, iOS and Web share UI and logic through <a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a> and <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a>. A <a href="https://ktor.io/" rel="noopener" target="_blank">Ktor</a> backend serves game and giveaway data and keeps API credentials server-side.</p>
+        <div class="oss-group">
+          <h3>Built with</h3>
+          <ul class="tech" aria-label="Technology">
+            <li><a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a></li>
+            <li><a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a></li>
+            <li><a href="https://ktor.io/" rel="noopener" target="_blank">Ktor</a></li>
+            <li><a href="https://insert-koin.io/" rel="noopener" target="_blank">Koin</a></li>
+            <li><a href="https://kotlinlang.org/docs/wasm-overview.html" rel="noopener" target="_blank">Kotlin/Wasm</a></li>
+            <li><a href="https://www.swift.org/" rel="noopener" target="_blank">Swift</a></li>
+            <li><a href="https://www.docker.com/" rel="noopener" target="_blank">Docker</a></li>
+            <li><a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a></li>
+          </ul>
+        </div>
+        <div class="oss-group">
+          <h3>Get involved</h3>
+          <div class="actions">
+            <a class="btn btn-primary" href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="9" r="2.5"/><path d="M6 8.5v7M18 11.5v1a3 3 0 0 1-3 3H9"/></svg>
+              Contribute code
+            </a>
+            <a class="btn btn-line" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+              Share feedback
+            </a>
+            <a class="btn btn-line" href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5M12 16.5v.5"/><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+              Report a bug
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" aria-labelledby="faq-title">
+      <div class="wrap">
+        <h2 id="faq-title">Frequently asked questions</h2>
+        <p class="sub">Short answers about Braindance and where it stands.</p>
+        <details><summary>What is Braindance?</summary><p>Braindance is a game discovery service that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place.</p></details>
+        <details><summary>Is Braindance available yet?</summary><p>Braindance is in development. The web app is available now at <a href="https://app.braindancegg.com/" rel="noopener" target="_blank">app.braindancegg.com</a> as an experimental version. The Android and iOS apps are built with Compose Multiplatform and are available by building them from source. Store downloads are not available yet and there is no confirmed release date.</p></details>
+        <details><summary>How do I run the Android or iOS app?</summary><p>Build it from source by following the <a href="https://github.com/vladleesi/braindance/blob/master/docs/project/development.md" rel="noopener" target="_blank">development guide</a>, which covers requirements, project layout and local builds.</p></details>
+        <details><summary>Which browsers does the web app support?</summary><p>The web app needs a modern browser with WasmGC support. Because Web support is experimental, browser behavior, performance and features may change.</p></details>
+        <details><summary>Where does the game and giveaway data come from?</summary><p>Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>, and giveaways come from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>.</p></details>
+        <details><summary>Is Braindance open source?</summary><p>Yes. Braindance is open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license and built with <a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a>, <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a> and a <a href="https://ktor.io/" rel="noopener" target="_blank">Ktor</a> backend. The source is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>.</p></details>
+        <details><summary>How can I help improve Braindance?</summary><p><a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">Report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">suggest a feature or share usability feedback</a> through GitHub issues, or <a href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">contribute code and documentation</a>. You do not need to build the app to give feedback.</p></details>
+      </div>
+    </section>
+
+    <section aria-labelledby="cta-title" style="border-top:0">
+      <div class="wrap">
+        <div class="closing">
+          <h2 id="cta-title">Try it while it is still taking shape</h2>
+          <p class="sub">Open the web app, then tell us what you would change.</p>
+          <div class="cta">
+            <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
+            <a class="btn btn-ghost" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">Star on GitHub</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <div>
+        <a class="brand" href="/" aria-label="Braindance home"><img src="/lockup-dark.svg" alt="Braindance" width="114" height="30" loading="lazy"></a>
+        <p>Game discovery app for Android, iOS and Web, in development.</p>
+        <p class="powered">Powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a></p>
+      </div>
+      <nav aria-label="Footer">
+        <ul>
+          <li><a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a></li>
+          <li><a href="https://app.braindancegg.com/" rel="noopener" target="_blank">Web app</a></li>
+          <li><a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">Changelog</a></li>
+          <li><a href="https://github.com/vladleesi/braindance/blob/master/LICENSE" rel="noopener" target="_blank">License</a></li>
+          <li><a href="https://github.com/vladleesi/braindance/blob/master/THIRD_PARTY_NOTICES.md" rel="noopener" target="_blank">Third-party notices</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="wrap legal">
+      <p>Game data and cover art provided by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>; giveaways from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>. Game titles, cover art and trademarks belong to their respective owners. Braindance is not affiliated with or endorsed by IGDB, Twitch or GamerPower.</p>
+      <p>&copy; 2026 Braindance. Source code under <a href="https://github.com/vladleesi/braindance/blob/master/LICENSE" rel="noopener" target="_blank">MPL-2.0</a>; third-party terms are listed in the <a href="https://github.com/vladleesi/braindance/blob/master/THIRD_PARTY_NOTICES.md" rel="noopener" target="_blank">notices</a>.</p>
+    </div>
+  </footer>
+
+  <script>
+    /* Mobile navigation menu */
+    (function () {
+      var btn = document.getElementById("menu-btn");
+      var menu = document.getElementById("mobile-menu");
+      var header = document.querySelector("header.top");
+      if (!btn || !menu) return;
+      function setOpen(open) {
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+        menu.hidden = !open;
+      }
+      btn.addEventListener("click", function () { setOpen(btn.getAttribute("aria-expanded") !== "true"); });
+      menu.addEventListener("click", function (e) { if (e.target.closest("a")) setOpen(false); });
+      document.addEventListener("click", function (e) { if (!header.contains(e.target)) setOpen(false); });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") { setOpen(false); btn.focus(); }
+      });
+      var mq = window.matchMedia("(min-width: 721px)");
+      var onChange = function (e) { if (e.matches) setOpen(false); };
+      if (mq.addEventListener) mq.addEventListener("change", onChange); else mq.addListener(onChange);
+    })();
+  </script>
+
+  <script>
+    (function(){var w=document.querySelector(".wall");if(!w||!("IntersectionObserver" in window))return;new IntersectionObserver(function(e){w.classList.toggle("paused",!e[0].isIntersecting)}).observe(w.parentNode)})();
+  </script>
+
+  <script>
+    /* Optional: show real game covers from your Braindance backend.
+       1. Set BACKEND_URL to your backend origin, e.g. "https://api.example.com".
+       2. Add this site's origin (https://braindancegg.com) to the backend's CORS_ALLOWED_ORIGINS.
+       Leave empty to keep the section hidden; nothing is faked. */
+    var BACKEND_URL = "";
+
+    (function () {
+      if (!BACKEND_URL) return;
+      var base = BACKEND_URL.replace(/\/$/, "");
+      var APP = "https://app.braindancegg.com/";
+      var feeds = [
+        ["rail-popular", "/v1/games/trending?page=1&pageSize=20"],
+        ["rail-anticipated", "/v1/games/anticipated?pageSize=20"]
+      ];
+      function coverUrl(g) {
+        var u = (g.cover && g.cover.url) || g.coverUrl || g.imageUrl;
+        if (typeof u !== "string") return null;
+        if (u.indexOf("//") === 0) u = "https:" + u;
+        try {
+          var parsed = new URL(u);
+          if (parsed.hostname !== "images.igdb.com") return null;
+          return u.replace(/\/t_[a-z0-9_]+\//, "/t_cover_big/");
+        } catch (e) { return null; }
+      }
+      var shown = 0;
+      Promise.all(feeds.map(function (f) {
+        return fetch(base + f[1], { headers: { Accept: "application/json" } })
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (data) {
+            var list = document.getElementById(f[0]);
+            var count = 0;
+            (Array.isArray(data) ? data : []).forEach(function (g) {
+              var name = g && (g.name || g.title), src = g && coverUrl(g);
+              if (!name || !src || count >= 14) return;
+              var a = document.createElement("a");
+              a.className = "game"; a.href = APP; a.target = "_blank"; a.rel = "noopener";
+              var img = document.createElement("img");
+              img.src = src; img.alt = name; img.width = 144; img.height = 192; img.loading = "lazy";
+              var label = document.createElement("span");
+              label.textContent = name;
+              a.appendChild(img); a.appendChild(label); list.appendChild(a); count++;
+            });
+            if (count) { list.parentNode.hidden = false; shown += count; }
+          })
+          .catch(function () {});
+      })).then(function () {
+        if (shown) document.getElementById("live").hidden = false;
+      });
+    })();
+  </script>
+</body>
+</html>

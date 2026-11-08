@@ -18,4 +18,4 @@ Editable SVGs live in `logo/`, `mark/`, `lockup/`, and `icons/`. `banner/` holds
 - Lettering uses outlined Outfit SemiBold and Regular; no font files are required.
 
 The colors are separate values in shared `Colors.kt`; the app retains its existing color scheme.
-Source and permissions are recorded in [artwork and branding notices](../../THIRD_PARTY_NOTICES.md#artwork-and-branding).
+Source and permissions are recorded in [artwork and branding notices](../../../THIRD_PARTY_NOTICES.md#artwork-and-branding).

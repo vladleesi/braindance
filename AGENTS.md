@@ -26,20 +26,20 @@ before acting; reading a guide grants no additional authorization.
 
 | Work | Read first |
 | --- | --- |
-| Code, configuration, dependency, or documentation changes/review | `docs/agent-guidance/general.md` |
-| Investigation, planning, or tool use | `docs/agent-guidance/agent-workflow.md` |
-| Changes needing validation, test work, CI fixes, or release preparation | `docs/agent-guidance/testing.md` |
-| Kotlin, Gradle, Android, or Multiplatform | `docs/agent-guidance/kotlin.md` |
-| Compose UI or its platform integration | `docs/agent-guidance/compose.md` |
-| Python code, packaging, or interpreter/dependency changes (`.github/scripts`) | `docs/agent-guidance/python.md` |
-| Services, APIs, persistence, or backend concurrency (`backend`) | `docs/agent-guidance/backend.md` |
-| Browser UI, navigation, assets, or public web content | `docs/agent-guidance/frontend.md` |
-| CI status/failures, workflows, actions, or workflow-triggering operations | `docs/agent-guidance/ci.md` |
-| Versions, changelogs, tags, release artifacts, or publication | `docs/agent-guidance/release.md` |
+| Code, configuration, dependency, or documentation changes/review | `docs/project/agent-guidance/general.md` |
+| Investigation, planning, or tool use | `docs/project/agent-guidance/agent-workflow.md` |
+| Changes needing validation, test work, CI fixes, or release preparation | `docs/project/agent-guidance/testing.md` |
+| Kotlin, Gradle, Android, or Multiplatform | `docs/project/agent-guidance/kotlin.md` |
+| Compose UI or its platform integration | `docs/project/agent-guidance/compose.md` |
+| Python code, packaging, or interpreter/dependency changes (`.github/scripts`) | `docs/project/agent-guidance/python.md` |
+| Services, APIs, persistence, or backend concurrency (`backend`) | `docs/project/agent-guidance/backend.md` |
+| Browser UI, navigation, assets, or public web content | `docs/project/agent-guidance/frontend.md` |
+| CI status/failures, workflows, actions, or workflow-triggering operations | `docs/project/agent-guidance/ci.md` |
+| Versions, changelogs, tags, release artifacts, or publication | `docs/project/agent-guidance/release.md` |
 
 Routes include shared browser code, documentation, pushes, and CI promotion with indirect publication effects.
-Read `docs/security.md` for existing security-check coverage or Android backup policy, and `docs/releases.md`
-for release/publication workflow changes or recovery.
+Read `docs/project/security.md` for existing security-check coverage or Android backup policy, and
+`docs/project/releases.md` for release/publication workflow changes or recovery.
 
 ## Imported core rules
 
@@ -215,6 +215,8 @@ for release/publication workflow changes or recovery.
 - `androidApp` owns the Android host; `iosApp` owns the SwiftUI host; `webApp` owns the browser host,
   HTML shell, and web entry point; `shared` owns shared UI/logic and platform implementations. Keep module
   boundaries simple.
+- `docs` holds only the static landing site published to `braindancegg.com` with GitHub Pages. Project
+  documentation, agent guidance, and brand assets live in `docs/project`, which is not published.
 - Follow `.editorconfig` and neighboring code: four-space indentation, 120-character lines, and trailing commas.
 - Use explicit imports and short names in Kotlin code instead of fully qualified references.
   Use import aliases when names conflict.

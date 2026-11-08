@@ -7,7 +7,7 @@ using the [experimental Web preview](https://app.braindancegg.com/) does not req
 Twitch credentials stay on the backend; GamerPower needs no key.
 Build with JDK 21 and run commands from the repository root; the container image runs Java 25.
 See the [changelog](CHANGELOG.md), the [project README](../README.md#platforms), and the
-[development guide](../docs/development.md) for client setup.
+[development guide](../docs/project/development.md) for client setup.
 
 ## Configuration
 

@@ -1,0 +1,57 @@
+name: Landing Site Publication
+
+on:
+  # Deploys only from master. Promotion pushes master with GITHUB_TOKEN, which starts no new run, so validation
+  # dispatches this workflow on master after promoting; a direct master push calls it from its own validated run.
+  workflow_dispatch:
+  workflow_call:
+
+permissions: {}
+
+# Pages deployments must not be cancelled midway; a newer run waits for the current one instead.
+concurrency:
+  group: landing-publication
+  cancel-in-progress: false
+
+jobs:
+  publish-landing:
+    name: Deploy Landing Site to GitHub Pages
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check Landing Site
+        run: python3 .github/scripts/check-landing.py
+
+      # docs/project holds repository documentation; only the site itself is published.
+      - name: Collect Site Files
+        run: |
+          site_dir="$RUNNER_TEMP/landing-site"
+          mkdir -p "$site_dir"
+          rsync -a --exclude '/project/' docs/ "$site_dir/"
+          if [ -e "$site_dir/project" ]; then
+            echo "docs/project must not be published." >&2
+            exit 1
+          fi
+
+      - name: Upload Site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ runner.temp }}/landing-site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v5

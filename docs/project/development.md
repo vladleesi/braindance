@@ -2,8 +2,8 @@
 
 This guide is for contributors building and debugging Braindance locally, or running an independent instance.
 To use Braindance, [open the experimental Web preview](https://app.braindancegg.com/);
-see the [README](../README.md#platforms) for platform availability and
-[CONTRIBUTING.md](../CONTRIBUTING.md) for feedback and pull requests.
+see the [README](../../README.md#platforms) for platform availability and
+[CONTRIBUTING.md](../../CONTRIBUTING.md) for feedback and pull requests.
 Install only the tooling you need and run commands from the repository root.
 
 ## Requirements
@@ -24,7 +24,7 @@ Keep platform APIs in platform source sets or hosts and Twitch credentials on th
 ## Configure client builds
 
 Data screens need a reachable backend. Use one available for development or follow the
-[backend setup](../backend/README.md#run-locally), including its Twitch credential configuration.
+[backend setup](../../backend/README.md#run-locally), including its Twitch credential configuration.
 GamerPower needs no key. Keep credentials out of Git, client builds, container images, and `local.properties`.
 
 Create an ignored root `local.properties`:
@@ -56,7 +56,7 @@ or distribution. Allow the Web development server's exact origin in backend CORS
 
 ## Validation
 
-Run checks relevant to the change. The [validation workflow](../.github/workflows/build-test-push.yml) defines
+Run checks relevant to the change. The [validation workflow](../../.github/workflows/build-test-push.yml) defines
 the full CI environment, including container checks. See [security checks](security.md) for coverage and limitations.
 
 | Check | Command |
@@ -92,7 +92,7 @@ Serve `index.html` for any path that is not a file, so deep links such as `/game
 assets (`*.wasm`, `webApp.*`) immutably; keep HTML revalidatable. The distribution's `_headers` file sets these
 lifetimes and the security headers on Cloudflare Pages; mirror them on other hosts. Allow the exact website origin
 in backend CORS; allowlist changes need no client rebuild. For the server, see
-[backend hosting](../backend/README.md#package-and-host).
+[backend hosting](../../backend/README.md#package-and-host).
 
 Before enabling publication workflows for your own infrastructure, replace or disable their existing deployment
 steps; they do not configure a new host automatically.
@@ -102,6 +102,6 @@ steps; they do not configure a new host automatically.
 Ship an exact-revision source link and required third-party notices with apps, browser executables, backend bundles,
 and containers, including transitive, native, and base-image components. Keep corresponding source accessible and
 preserve MPL source rights in executable EULAs. External data, trademarks, and excluded assets have separate terms:
-see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md). Verify API commercial and attribution permissions before
+see [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md). Verify API commercial and attribution permissions before
 monetization and review the final package's notices and source disclosure. See the
 [Mozilla FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/).

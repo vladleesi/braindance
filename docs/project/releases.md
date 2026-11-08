@@ -3,10 +3,10 @@
 ## Version changes
 
 - Frontend: update the shared Android/iOS/Web version and positive Android/iOS build number in `version.xcconfig`.
-  Add matching user-visible notes in [CHANGELOG.md](../CHANGELOG.md); group identical notes and omit unchanged platforms.
-  Update the README version/release link.
-- Backend: update `backend/build.gradle.kts`, [backend/CHANGELOG.md](../backend/CHANGELOG.md), and README/backend guide
-  versions and examples.
+  Add matching user-visible notes in [CHANGELOG.md](../../CHANGELOG.md); group identical notes and omit unchanged
+  platforms. Update the README version/release link.
+- Backend: update `backend/build.gradle.kts`, [backend/CHANGELOG.md](../../backend/CHANGELOG.md), and README/backend
+  guide versions and examples.
 - Use one increment per affected product for runtime changes. Docs, tests, formatting, and CI-only changes need none.
 
 ## Publication and recovery
@@ -17,9 +17,13 @@ Web deploys the validated distribution to Cloudflare Pages with Wrangler. The wo
 repository variable `CLOUDFLARE_PAGES_PROJECT`. The JavaScript bundle and Wasm files are named by their content, so
 browsers cache them for a year, while the page always revalidates. Each deployment replaces the previous one as a whole;
 earlier deployments stay listed in Cloudflare Pages and can be rolled back there.
+The landing site in `docs` deploys to GitHub Pages from `master` only, through the `github-pages` environment: after
+promotion, validation dispatches [publish-landing.yml](../../.github/workflows/publish-landing.yml) on `master`, and a
+direct `master` push calls it. `docs/project` is never published. `.github/scripts/check-landing.py` checks the site
+before every promotion and again before each deployment.
 
 Frontend version changes create one `app-vMAJOR.MINOR.PATCH` source release after all checks pass for that commit
-on `master`. The [release workflow](../.github/workflows/release-frontend.yml) uses its matching changelog entry.
+on `master`. The [release workflow](../../.github/workflows/release-frontend.yml) uses its matching changelog entry.
 Preserve existing releases. PRs and manual validation do not publish releases; source releases are separate from
 mobile store downloads.
 

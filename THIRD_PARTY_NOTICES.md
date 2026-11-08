@@ -5,7 +5,7 @@ converting, bundling, or distributing them. Include the full applicable license 
 
 ## Agent guidelines
 
-The imported rules in `AGENTS.md` and `docs/agent-guidance/*.md` come from
+The imported rules in `AGENTS.md` and `docs/project/agent-guidance/*.md` come from
 [vladleesi/agent-guidelines v1.7.0](https://github.com/vladleesi/agent-guidelines/tree/v1.7.0),
 commit `7503de04bca27019b14123187634130f78d8e0d2`.
 Selected modules: general, agent-workflow, testing, security, git, ci, release, deployment, kotlin, compose,
@@ -56,16 +56,20 @@ modifications, and applicable brand guidelines before redistributing them.
 - `shared/src/commonMain/composeResources/drawable/ic_platform_logo_*.xml` (Android, iOS, Linux, macOS,
   PlayStation, Switch, Windows, Xbox).
 - `shared/src/commonMain/composeResources/drawable/ic_store_logo_*.xml` (Epic Games, GOG, Steam).
-- The Braindance kit in `docs/branding/`, supplied by the repository owner as `brand-kit (1).zip`, including
+- The Braindance kit in `docs/project/branding/`, supplied by the repository owner as `brand-kit (1).zip`, including
   outlined Outfit Regular/SemiBold lettering, logos, marks, banners, and icons. No separate asset license or font
-  files were supplied. See the [brand usage guide](docs/branding/README.md).
+  files were supplied. See the [brand usage guide](docs/project/branding/README.md).
 - Copies of that kit in `androidApp/src/main/ic_launcher-playstore.png`, launcher PNGs and adaptive XML in
   `androidApp/src/main/res/mipmap-*`, vectors in `androidApp/src/main/res/drawable/ic_launcher_*.xml`, and
   `androidApp/src/main/res/values/ic_launcher_background.xml`.
 - Copies and resized exports in `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/*.png`,
   `iosApp/iosApp/appstore.png`, and `iosApp/iosApp/playstore.png`.
 - Copies in `webApp/src/wasmJsMain/resources/favicon*` and `apple-touch-icon-180.png` in the same directory.
-- The root README banner, copied from the kit and stored in `docs/branding/banner/readme-banner.png`.
+- The root README banner, copied from the kit and stored in `docs/project/branding/banner/readme-banner.png`.
+- Copies of the kit on the landing site: `docs/favicon*`, `docs/apple-touch-icon.png`, `docs/mark.svg`,
+  `docs/lockup-dark.svg`, and `docs/og-image.png`.
+- `docs/img/wall-*.webp`: the landing site's hero wall, a collage of game covers from IGDB, resized and re-encoded.
+  Each cover remains the property of its game's rights holders; see External data below.
 
 A copyright license for an icon does not grant general rights to its trademark. Platform software licenses also
 do not determine the licenses of platform logos or mascot artwork.

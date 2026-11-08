@@ -35,6 +35,20 @@ jobs:
       - name: Check Repository License Notices
         run: python3 .github/scripts/check-licenses.py
 
+  landing-site-checks:
+    name: Landing Site Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check Landing Site
+        run: python3 .github/scripts/check-landing.py
+
   android-build-and-unit-tests:
     name: Android Build and Unit Tests
     runs-on: ubuntu-latest
@@ -276,6 +290,7 @@ jobs:
     needs:
       - security-checks
       - repository-license-notices
+      - landing-site-checks
       - android-build-and-unit-tests
       - android-instrumented-tests
       - web-app-build
@@ -330,6 +345,7 @@ jobs:
     needs:
       - security-checks
       - repository-license-notices
+      - landing-site-checks
       - android-build-and-unit-tests
       - android-instrumented-tests
       - web-app-build
@@ -365,6 +381,7 @@ jobs:
     needs:
       - security-checks
       - repository-license-notices
+      - landing-site-checks
       - android-build-and-unit-tests
       - android-instrumented-tests
       - web-app-build
@@ -400,6 +417,7 @@ jobs:
     needs:
       - security-checks
       - repository-license-notices
+      - landing-site-checks
       - android-build-and-unit-tests
       - android-instrumented-tests
       - web-app-build
@@ -416,3 +434,40 @@ jobs:
       BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  publish-promoted-landing:
+    name: Publish Promoted Landing Site
+    needs:
+      - promote-to-master
+      - landing-site-checks
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+
+    steps:
+      # The promotion push starts no master run, but a dispatch does, so the site deploys from master.
+      - name: Dispatch Landing Deployment on Master
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh workflow run publish-landing.yml --ref master
+
+  publish-master-landing:
+    name: Publish Validated Master Landing Site
+    needs:
+      - security-checks
+      - repository-license-notices
+      - landing-site-checks
+      - android-build-and-unit-tests
+      - android-instrumented-tests
+      - web-app-build
+      - ios-framework-validation
+      - backend-validation
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/publish-landing.yml
