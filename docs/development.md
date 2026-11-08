@@ -88,8 +88,11 @@ See [release conventions and publication](releases.md) for the full workflow and
 
 For Web, configure the backend URL, run `./gradlew :webApp:wasmJsBrowserDistribution`, and serve
 `webApp/build/dist/wasmJs/productionExecutable` over HTTPS with compression and the `application/wasm` MIME type.
-Cache fingerprinted assets immutably; keep HTML revalidatable. Allow the exact website origin in backend CORS;
-allowlist changes need no client rebuild. For the server, see [backend hosting](../backend/README.md#package-and-host).
+Serve `index.html` for any path that is not a file, so deep links such as `/game/42` load the app. Cache fingerprinted
+assets (`*.wasm`, `webApp.*`) immutably; keep HTML revalidatable. The distribution's `_headers` file sets these
+lifetimes and the security headers on Cloudflare Pages; mirror them on other hosts. Allow the exact website origin
+in backend CORS; allowlist changes need no client rebuild. For the server, see
+[backend hosting](../backend/README.md#package-and-host).
 
 Before enabling publication workflows for your own infrastructure, replace or disable their existing deployment
 steps; they do not configure a new host automatically.

@@ -4,6 +4,14 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.11.2
+
+### Web
+
+- Show the Braindance icon above the loading indicator while the app downloads.
+- Mark the app as the page's main content, so screen readers can jump straight to it.
+- Download less on the first visit, and load the app from the browser's cache on later visits.
+
 ## 0.11.1
 
 ### Android, iOS, and Web

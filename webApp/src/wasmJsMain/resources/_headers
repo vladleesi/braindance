@@ -1,0 +1,24 @@
+# Response headers for Cloudflare Pages. Pages reads this file at deploy time and does not serve it.
+# The content security policy itself is in index.html, so the development server enforces it too. A meta tag cannot
+# set frame-ancestors, so that part is sent here.
+
+/*
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000
+
+# Webpack names these files by their content, so a changed file always gets a new name and browsers can keep them.
+# Everything else, including the page and the version-queried Compose resources, keeps Pages' default of revalidating.
+/*.wasm
+  Cache-Control: public, max-age=31536000, immutable
+
+/webApp.*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Only the custom domain should be indexed, not the project's pages.dev address.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex

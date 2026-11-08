@@ -22,7 +22,12 @@ val frontendVersionProperties =
         rootProject.file("version.xcconfig").inputStream().use(::load)
     }
 version = frontendVersionProperties.getProperty("MARKETING_VERSION")
-val webBundleName = "webApp-$version.js"
+
+// The page loads the bundle under this name in development. Production bundles are named by their content instead
+// (webApp.<hash>.js), so browsers can cache them forever and a new build never reuses an old name.
+val webBundleName = "webApp.js"
+val hashedWebBundleName = "webApp.[contenthash].js"
+val hashedWebBundlePattern = Regex("""webApp\.[0-9a-f]+\.js""")
 
 // The page's content security policy may connect only to this backend. Read the same way as the shared module's
 // BACKEND_BASE_URL: a Gradle property in CI, otherwise local.properties.
@@ -35,7 +40,7 @@ val backendBaseUrl: String =
             },
         ).orNull
         .orEmpty()
-// Where the site is served: `/` on a custom domain, `/<repository>/` on a default GitHub Pages address.
+// Where the site is served: `/` at the root of a domain (the default), or a sub-path such as `/braindance/`.
 val webBasePath: String =
     providers
         .gradleProperty("WEB_BASE_PATH")
@@ -73,10 +78,11 @@ val resourcePreloads: String =
 
 kotlin {
     val bundleName = webBundleName
+    val hashedBundleName = hashedWebBundleName
     wasmJs {
         browser {
             commonWebpackConfig {
-                outputFileName = bundleName
+                outputFileName = if (mode == KotlinWebpackConfig.Mode.PRODUCTION) hashedBundleName else bundleName
                 // The default development source maps wrap each module in eval(), which the page's content security
                 // policy blocks, so the dev server's app would never start. Separate .map files need no eval.
                 // Production already uses them.
@@ -116,9 +122,22 @@ tasks.named<ProcessResources>("wasmJsProcessResources") {
     filesMatching("index.html") {
         expand(placeholders)
     }
-    // GitHub Pages serves 404.html for any unknown path, so deep links such as /game/42 load the same page.
-    from("src/wasmJsMain/resources/index.html") {
-        rename { "404.html" }
-        expand(placeholders)
+}
+
+// The page is written before webpack names the production bundle, so the distribution swaps in the hashed name.
+// The build fails unless exactly one hashed bundle exists and the page loads the development name it replaces.
+tasks.named<Sync>("wasmJsBrowserDistribution") {
+    val bundleName = webBundleName
+    val hashedBundlePattern = hashedWebBundlePattern
+    doLast {
+        val bundles = destinationDir.listFiles { file -> hashedBundlePattern.matches(file.name) }.orEmpty()
+        val bundle =
+            bundles.singleOrNull()
+                ?: error("Expected one hashed web bundle in $destinationDir, found ${bundles.map { it.name }}")
+        val page = destinationDir.resolve("index.html")
+        val reference = """src="$bundleName""""
+        val html = page.readText()
+        check(html.contains(reference)) { "index.html does not load $bundleName" }
+        page.writeText(html.replace(reference, """src="${bundle.name}""""))
     }
 }

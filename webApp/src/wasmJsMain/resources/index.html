@@ -5,7 +5,8 @@
     <!-- Resolves the page's files from the site root even when a deep link such as /game/42 is opened directly. -->
     <base href="${webBasePath}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- GitHub Pages cannot send headers, so the policy is set here. The backend origin is filled in at build time.
+    <!-- The policy is set here so the development server enforces it too; _headers adds frame-ancestors, which a meta
+         tag cannot set. The backend origin is filled in at build time.
          Compose starts a worker from a blob: URL and downloads fallback fonts from fonts.gstatic.com for glyphs that
          the bundled fonts lack; IGDB serves game covers. -->
     <meta http-equiv="Content-Security-Policy"
@@ -51,6 +52,19 @@ ${resourcePreloads}
             height: 100%;
         }
 
+        /* The icon sits above the spinner without moving it off-center. As an image it also gives browsers and
+           Lighthouse a contentful first paint to measure, since everything Compose draws is inside a canvas. */
+        .boot-indicator {
+            position: relative;
+        }
+
+        .boot-icon {
+            position: absolute;
+            bottom: calc(100% + 32px);
+            left: 50%;
+            margin-left: -36px;
+        }
+
         .boot-spinner {
             box-sizing: border-box;
             width: 64px;
@@ -85,13 +99,16 @@ ${resourcePreloads}
 </head>
 <body>
     <noscript>Braindance needs JavaScript and a browser with WebAssembly garbage collection, such as current Chrome, Edge, Firefox, or Safari.</noscript>
-    <div id="webApp">
+    <main id="webApp">
         <!-- Shown while the Wasm bundle downloads; Compose clears this container when it starts. -->
         <div class="boot" role="status">
-            <div class="boot-spinner"></div>
+            <div class="boot-indicator">
+                <img class="boot-icon" src="favicon.svg" alt="" width="72" height="72" fetchpriority="high">
+                <div class="boot-spinner"></div>
+            </div>
             <span class="visually-hidden">Loading Braindance…</span>
         </div>
-    </div>
+    </main>
     <script src="${webBundleName}"></script>
 </body>
 </html>

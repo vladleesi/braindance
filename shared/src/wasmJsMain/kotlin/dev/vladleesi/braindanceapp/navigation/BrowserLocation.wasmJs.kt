@@ -9,8 +9,8 @@ import org.w3c.dom.url.URL
 
 /**
  * Real paths such as `/game/42` under the page's base path (`<base href>`), for example `/` or `/braindance/`.
- * GitHub Pages serves `404.html`, a copy of the page, for any other path, so a reload or a shared link still loads
- * the app.
+ * The host serves the page for any path that is not a file (Cloudflare Pages does this when the site has no
+ * `404.html`), so a reload or a shared link still loads the app.
  */
 @OptIn(ExperimentalWasmJsInterop::class)
 internal actual val browserLocation: BrowserLocation? =

@@ -17,6 +17,10 @@ on:
     secrets:
       BACKEND_BASE_URL:
         required: false
+      CLOUDFLARE_API_TOKEN:
+        required: false
+      CLOUDFLARE_ACCOUNT_ID:
+        required: false
 
 permissions: {}
 
@@ -26,26 +30,43 @@ concurrency:
 
 jobs:
   publish-web-app:
-    name: Publish Web App Branch
+    name: Deploy Web App to Cloudflare Pages
     # Validation calls this after a successful promotion or a validated master push.
     if: inputs.promoted || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       actions: read
-      contents: write
+      contents: read
     env:
       ORG_GRADLE_PROJECT_BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
-      # Deep links need the site's base path: the root on a custom domain, the repository name otherwise.
-      ORG_GRADLE_PROJECT_WEB_BASE_PATH: ${{ vars.WEB_CUSTOM_DOMAIN != '' && '/' || format('/{0}/', github.event.repository.name) }}
-      WEB_CUSTOM_DOMAIN: ${{ vars.WEB_CUSTOM_DOMAIN }}
+      DIST_DIR: webApp/build/dist/wasmJs/productionExecutable
 
     steps:
-      # This trusted publication job needs Git authentication to fetch and push the web-app branch.
-      - name: Checkout Master # zizmor: ignore[artipacked]
+      - name: Checkout Master
         uses: actions/checkout@v7
         with:
           ref: master
+          persist-credentials: false
+
+      - name: Validate Web Configuration
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+        run: |
+          missing=0
+          for name in ORG_GRADLE_PROJECT_BACKEND_BASE_URL CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "Repository secret ${name#ORG_GRADLE_PROJECT_} is required." >&2
+              missing=1
+            fi
+          done
+          if [ -z "$CLOUDFLARE_PAGES_PROJECT" ]; then
+            echo "Repository variable CLOUDFLARE_PAGES_PROJECT is required." >&2
+            missing=1
+          fi
+          exit "$missing"
 
       - name: Set up JDK 21
         if: inputs.artifact_name == ''
@@ -58,13 +79,6 @@ jobs:
         if: inputs.artifact_name == ''
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Validate Web Configuration
-        run: |
-          if [ -z "$ORG_GRADLE_PROJECT_BACKEND_BASE_URL" ]; then
-            echo "Repository secret BACKEND_BASE_URL is required." >&2
-            exit 1
-          fi
-
       - name: Build Production Web App
         if: inputs.artifact_name == ''
         run: ./gradlew :webApp:wasmJsBrowserDistribution --stacktrace
@@ -74,61 +88,34 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.artifact_name }}
-          path: webApp/build/dist/wasmJs/productionExecutable
+          path: ${{ env.DIST_DIR }}
 
-      - name: Publish Web App Branch
-        env:
-          SOURCE_SHA: ${{ github.sha }}
+      # Cloudflare Pages serves index.html for unknown paths only when the site has no top-level 404.html, and the page
+      # must load the content-hashed bundle that _headers lets browsers cache forever.
+      - name: Check Web App Files
         run: |
-          publish_dir="$RUNNER_TEMP/web-app"
-          previous_dir="$RUNNER_TEMP/previous-web-bootstrap"
-          mkdir -p "$publish_dir"
-          mkdir -p "$previous_dir"
-          cp -R webApp/build/dist/wasmJs/productionExecutable/. "$publish_dir/"
-          find "$publish_dir" -maxdepth 1 -type f ! -name index.html ! -name .web-bootstrap-files \
-            -exec basename {} \; \
-            | sort > "$publish_dir/.web-bootstrap-files"
-
-          web_app_ref="$(git ls-remote --heads origin refs/heads/web-app)"
-          if [ -n "$web_app_ref" ]; then
-            git fetch --no-tags --depth=1 origin refs/heads/web-app:refs/remotes/origin/web-app
-            git switch --create web-app origin/web-app
-            # Retain the current publication; identical reruns must also preserve its previous assets.
-            publication_changes="$(rsync -rcni "$publish_dir/" ./)"
-            if [ -f .web-bootstrap-files ] && [ -n "$publication_changes" ]; then
-              while IFS= read -r asset; do
-                case "$asset" in
-                  ''|.*|*/*) echo "Invalid bootstrap asset filename" >&2; exit 1 ;;
-                esac
-                if [ ! -f "$asset" ] || [ -L "$asset" ]; then
-                  echo "Missing or invalid bootstrap asset" >&2
-                  exit 1
-                fi
-                cp -- "$asset" "$previous_dir/"
-              done < .web-bootstrap-files
-            else
-              # Preserve legacy bootstrap assets and all retained assets on an identical rerun.
-              find . -maxdepth 1 -type f \( -name '*.wasm' -o -name 'webApp*.js*' \) \
-                -exec cp -- {} "$previous_dir/" \;
-            fi
-            git rm -r --ignore-unmatch .
-          else
-            git switch --orphan web-app
+          cd "$DIST_DIR"
+          test -f index.html || { echo "index.html is missing." >&2; exit 1; }
+          test -f _headers || { echo "_headers is missing." >&2; exit 1; }
+          if [ -e 404.html ]; then
+            echo "404.html would turn off single-page routing on Cloudflare Pages." >&2
+            exit 1
           fi
-          git clean -fdx
-          cp -R "$previous_dir/." .
-          cp -R "$publish_dir/." .
-          touch .nojekyll
-          if [ -n "$WEB_CUSTOM_DOMAIN" ]; then
-            printf '%s\n' "$WEB_CUSTOM_DOMAIN" > CNAME
+          bundle="$(grep -o 'src="webApp\.[0-9a-f]*\.js"' index.html | sed 's/^src="//; s/"$//')"
+          if [ -z "$bundle" ] || [ ! -f "$bundle" ]; then
+            echo "index.html must load an existing content-hashed webApp bundle." >&2
+            exit 1
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add --all
-          if git diff --cached --quiet; then
-            echo "::notice::Web app branch already contains this publication."
-            exit 0
-          fi
-          git commit -m "deploy(web): publish $SOURCE_SHA"
-          git push origin HEAD:refs/heads/web-app
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.158.0'
+          command: >-
+            pages deploy ${{ env.DIST_DIR }}
+            --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+            --branch=master
+            --commit-hash=${{ github.sha }}
+            --commit-dirty=true

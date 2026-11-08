@@ -83,8 +83,6 @@ jobs:
     timeout-minutes: 30
     env:
       ORG_GRADLE_PROJECT_BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
-      # Deep links need the site's base path: the root on a custom domain, the repository name otherwise.
-      ORG_GRADLE_PROJECT_WEB_BASE_PATH: ${{ vars.WEB_CUSTOM_DOMAIN != '' && '/' || format('/{0}/', github.event.repository.name) }}
 
     steps:
       - name: Checkout Code
@@ -387,13 +385,15 @@ jobs:
     if: github.event_name == 'push'
     permissions:
       actions: read
-      contents: write
+      contents: read
     uses: ./.github/workflows/publish-web-app.yml
     with:
       promoted: true
       artifact_name: web-app-production
     secrets:
       BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   publish-master-web-app:
     name: Publish Validated Master Web App
@@ -408,9 +408,11 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     permissions:
       actions: read
-      contents: write
+      contents: read
     uses: ./.github/workflows/publish-web-app.yml
     with:
       artifact_name: web-app-production
     secrets:
       BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
