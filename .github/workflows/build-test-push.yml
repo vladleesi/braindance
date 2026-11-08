@@ -124,6 +124,31 @@ jobs:
       - name: Build Web App
         run: ./gradlew :webApp:wasmJsBrowserDistribution --stacktrace
 
+      # The page's content security policy and the Cloudflare Pages headers are the browser's main defenses. Fail when
+      # a change weakens them; a deliberate change updates this check together with the policy.
+      - name: Check Web Security Policy
+        working-directory: webApp/build/dist/wasmJs/productionExecutable
+        run: |
+          fail() { echo "$1" >&2; exit 1; }
+          policies="$(tr '\n' ' ' < index.html \
+            | grep -o 'http-equiv="Content-Security-Policy"[[:space:]]*content="[^"]*"' \
+            | sed 's/.*content="//; s/"$//')"
+          [ "$(printf '%s\n' "$policies" | grep -c .)" -eq 1 ] \
+            || fail "index.html must set exactly one content security policy."
+          directive() { printf '%s' "$policies" | tr ';' '\n' | sed -n "s/^ *$1 //p"; }
+          [ "$(directive script-src)" = "'self' 'wasm-unsafe-eval'" ] \
+            || fail "script-src must stay 'self' 'wasm-unsafe-eval'."
+          [ "$(directive default-src)" = "'self'" ] || fail "default-src must stay 'self'."
+          [ "$(directive object-src)" = "'none'" ] || fail "object-src must stay 'none'."
+          [ "$(directive base-uri)" = "'self'" ] || fail "base-uri must stay 'self'."
+          if printf '%s' "$policies" | grep -Eq "'unsafe-eval'|(^| )(\*|https?:|https?://\*[^ ;]*)( |;|$)"; then
+            fail "The content security policy must not allow eval or wildcard sources."
+          fi
+          for header in "Content-Security-Policy: frame-ancestors 'none'" "X-Frame-Options: DENY" \
+            "X-Content-Type-Options: nosniff" "Strict-Transport-Security: max-age=31536000"; do
+            grep -qxF "  $header" _headers || fail "_headers must send $header for every page."
+          done
+
       # Runs the common tests in headless Chrome, which the Ubuntu runner provides.
       - name: Run Shared Web Tests
         run: ./gradlew :shared:wasmJsBrowserTest --stacktrace
