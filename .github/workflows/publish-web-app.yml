@@ -109,6 +109,19 @@ jobs:
             echo "index.html must load an existing content-hashed webApp bundle." >&2
             exit 1
           fi
+          # _worker.js serves Brotli copies of the Wasm modules. Every request it handles counts against the
+          # Functions quota, so _routes.json must limit it to existing modules that have a copy.
+          test -f _worker.js || { echo "_worker.js is missing." >&2; exit 1; }
+          routes="$(jq -r '.include[]' _routes.json)" || { echo "_routes.json is missing or invalid." >&2; exit 1; }
+          [ -n "$routes" ] || { echo "_routes.json must include the Wasm modules." >&2; exit 1; }
+          while IFS= read -r route; do
+            module="${route#/}"
+            if ! printf '%s' "$module" | grep -Eqx '[0-9a-f]+\.wasm' \
+              || [ ! -f "$module" ] || [ ! -f "$module.br" ]; then
+              echo "_routes.json may only include existing Wasm modules with Brotli copies: $route" >&2
+              exit 1
+            fi
+          done <<< "$routes"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4

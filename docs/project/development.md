@@ -90,7 +90,10 @@ For Web, configure the backend URL, run `./gradlew :webApp:wasmJsBrowserDistribu
 `webApp/build/dist/wasmJs/productionExecutable` over HTTPS with compression and the `application/wasm` MIME type.
 Serve `index.html` for any path that is not a file, so deep links such as `/game/42` load the app. Cache fingerprinted
 assets (`*.wasm`, `webApp.*`) immutably; keep HTML revalidatable. The distribution's `_headers` file sets these
-lifetimes and the security headers on Cloudflare Pages; mirror them on other hosts. Allow the exact website origin
+lifetimes and the security headers on Cloudflare Pages; mirror them on other hosts. The build also writes a
+maximum-quality Brotli copy of each Wasm module (`*.wasm.br`); on Pages, `_worker.js` serves them for only the
+module paths listed in `_routes.json`. Other hosts can serve those copies with `Content-Encoding: br` or ignore them,
+along with both Pages files. Allow the exact website origin
 in backend CORS; allowlist changes need no client rebuild. For the server, see
 [backend hosting](../../backend/README.md#package-and-host).
 

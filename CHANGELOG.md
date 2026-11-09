@@ -4,6 +4,15 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.11.4
+
+### Web
+
+- Start downloading the app together with the page, so it opens sooner.
+- Download about a fifth less on the first visit.
+- Show the loading icon immediately, without waiting for a separate download.
+- Publish a robots.txt file so search engines can read the app's crawling rules.
+
 ## 0.11.3
 
 ### Android, iOS, and Web

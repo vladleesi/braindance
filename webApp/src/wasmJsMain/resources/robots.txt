@@ -1,0 +1,4 @@
+# Crawlers may read the whole app. The pages.dev preview address stays out of search results through the
+# X-Robots-Tag header in _headers.
+User-agent: *
+Allow: /

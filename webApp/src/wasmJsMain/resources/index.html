@@ -20,6 +20,9 @@
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
     <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180.png">
+    <!-- The Wasm modules are the largest startup downloads, and the bundle requests them only after it has loaded and
+         run. The production build replaces the marker below with preloads of their content-hashed files. -->
+    <!-- wasm-preloads -->
     <!-- Text needs these, but the app requests them only after the Wasm bundle starts; preloading downloads them in
          parallel with it. Each URL matches the app's request exactly, including its version query. -->
 ${resourcePreloads}
@@ -53,7 +56,8 @@ ${resourcePreloads}
         }
 
         /* The icon sits above the spinner without moving it off-center. As an image it also gives browsers and
-           Lighthouse a contentful first paint to measure, since everything Compose draws is inside a canvas. */
+           Lighthouse a contentful first paint to measure, since everything Compose draws is inside a canvas. The
+           build inlines favicon.svg as its source, so it paints with the page instead of after another request. */
         .boot-indicator {
             position: relative;
         }
@@ -103,7 +107,7 @@ ${resourcePreloads}
         <!-- Shown while the Wasm bundle downloads; Compose clears this container when it starts. -->
         <div class="boot" role="status">
             <div class="boot-indicator">
-                <img class="boot-icon" src="favicon.svg" alt="" width="72" height="72" fetchpriority="high">
+                <img class="boot-icon" src="${bootIconDataUri}" alt="" width="72" height="72">
                 <div class="boot-spinner"></div>
             </div>
             <span class="visually-hidden">Loading Braindance…</span>

@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 import org.jetbrains.kotlin.gradle.targets.js.webpack.WebpackDevtool
 import java.io.StringReader
 import java.net.URI
+import java.util.Base64
 import java.util.Properties
 
 plugins {
@@ -76,6 +77,17 @@ val resourcePreloads: String =
             """    <link rel="preload" href="$href" as="fetch" crossorigin>"""
         }.joinToString("\n")
 
+// The boot screen's icon, inlined into the page so it paints without waiting for another request.
+val bootIconDataUri: String =
+    file("src/wasmJsMain/resources/favicon.svg").let { icon ->
+        require(icon.isFile) { "Boot icon source is missing: $icon" }
+        "data:image/svg+xml;base64," + Base64.getEncoder().encodeToString(icon.readBytes())
+    }
+
+// The page marks where the production distribution adds preloads of the content-hashed Wasm modules.
+val wasmPreloadMarker = "<!-- wasm-preloads -->"
+val hashedWasmPattern = Regex("""[0-9a-f]+\.wasm""")
+
 kotlin {
     val bundleName = webBundleName
     val hashedBundleName = hashedWebBundleName
@@ -108,36 +120,68 @@ tasks.named<ProcessResources>("wasmJsProcessResources") {
     val origin = backendOrigin
     val basePath = webBasePath
     val preloads = resourcePreloads
+    val bootIcon = bootIconDataUri
     inputs.property("webBundleName", bundleName)
     inputs.property("backendOrigin", origin)
     inputs.property("webBasePath", basePath)
     inputs.property("resourcePreloads", preloads)
+    inputs.property("bootIconDataUri", bootIcon)
     val placeholders =
         mapOf(
             "webBundleName" to bundleName,
             "backendOrigin" to origin,
             "webBasePath" to basePath,
             "resourcePreloads" to preloads,
+            "bootIconDataUri" to bootIcon,
         )
     filesMatching("index.html") {
         expand(placeholders)
     }
 }
 
-// The page is written before webpack names the production bundle, so the distribution swaps in the hashed name.
-// The build fails unless exactly one hashed bundle exists and the page loads the development name it replaces.
+// The page is written before webpack names the production bundle and Wasm modules, so the distribution swaps in the
+// hashed bundle name, preloads every hashed module, and limits the Pages worker to those modules. The build fails
+// unless exactly one hashed bundle and at least one module with its Brotli copy exist, and the page has the
+// development bundle name and the preload marker that they replace.
 tasks.named<Sync>("wasmJsBrowserDistribution") {
     val bundleName = webBundleName
     val hashedBundlePattern = hashedWebBundlePattern
+    val preloadMarker = wasmPreloadMarker
+    val wasmPattern = hashedWasmPattern
+    val basePath = webBasePath
     doLast {
         val bundles = destinationDir.listFiles { file -> hashedBundlePattern.matches(file.name) }.orEmpty()
         val bundle =
             bundles.singleOrNull()
                 ?: error("Expected one hashed web bundle in $destinationDir, found ${bundles.map { it.name }}")
+        val modules =
+            destinationDir
+                .listFiles { file -> wasmPattern.matches(file.name) }
+                .orEmpty()
+                .map { it.name }
+                .sorted()
+        check(modules.isNotEmpty()) { "Expected hashed Wasm modules in $destinationDir" }
+        // webpack.config.d/brotli-wasm.js writes these copies; the Pages worker serves them.
+        val uncompressed = modules.filterNot { module -> destinationDir.resolve("$module.br").isFile }
+        check(uncompressed.isEmpty()) { "Expected Brotli copies of $uncompressed in $destinationDir" }
+        // Pages runs _worker.js only for these exact paths, so every other request stays a free static asset.
+        val workerRoutes = modules.joinToString(", ") { module -> "\"$basePath$module\"" }
+        val routes = """{"version": 1, "include": [$workerRoutes], "exclude": []}"""
+        destinationDir.resolve("_routes.json").writeText(routes + "\n")
         val page = destinationDir.resolve("index.html")
         val reference = """src="$bundleName""""
         val html = page.readText()
         check(html.contains(reference)) { "index.html does not load $bundleName" }
-        page.writeText(html.replace(reference, """src="${bundle.name}""""))
+        check(html.contains(preloadMarker)) { "index.html has no $preloadMarker marker" }
+        // The bundle fetches each module in CORS mode with same-origin credentials, which `crossorigin` matches.
+        val modulePreloads =
+            modules.joinToString("\n    ") { module ->
+                """<link rel="preload" href="$module" as="fetch" crossorigin>"""
+            }
+        page.writeText(
+            html
+                .replace(reference, """src="${bundle.name}"""")
+                .replace(preloadMarker, modulePreloads),
+        )
     }
 }

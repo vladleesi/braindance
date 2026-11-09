@@ -17,8 +17,11 @@ deploy it anyway, for example after changing a secret, run the backend publicati
 Web deploys the validated distribution to Cloudflare Pages with Wrangler. The workflow needs the repository secrets
 `CLOUDFLARE_API_TOKEN` (an account token with only Cloudflare Pages edit access) and `CLOUDFLARE_ACCOUNT_ID`, and the
 repository variable `CLOUDFLARE_PAGES_PROJECT`. The JavaScript bundle and Wasm files are named by their content, so
-browsers cache them for a year, while the page always revalidates. Each deployment replaces the previous one as a whole;
-earlier deployments stay listed in Cloudflare Pages and can be rolled back there.
+browsers cache them for a year, while the page always revalidates. A small Pages worker serves the build's
+maximum-quality Brotli copies of the Wasm modules. It runs only for those paths, so a first visit uses two Workers Free
+requests of the daily allowance. Keep the Pages project on **Fail open** (Settings > Runtime, the default) so that,
+when the allowance runs out, Pages serves the plain modules instead of an error. Each deployment replaces the previous one as
+a whole; earlier deployments stay listed in Cloudflare Pages and can be rolled back there.
 The landing site in `docs` deploys to GitHub Pages from `master` only, through the `github-pages` environment: after
 promotion, validation dispatches [publish-landing.yml](../../.github/workflows/publish-landing.yml) on `master`, and a
 direct `master` push calls it. `docs/project` is never published. `.github/scripts/check-landing.py` checks the site
