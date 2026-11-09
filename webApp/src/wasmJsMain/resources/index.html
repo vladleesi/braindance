@@ -20,9 +20,6 @@
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
     <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180.png">
-    <!-- The Wasm modules are the largest startup downloads, and the bundle requests them only after it has loaded and
-         run. The production build replaces the marker below with preloads of their content-hashed files. -->
-    <!-- wasm-preloads -->
     <!-- Text needs these, but the app requests them only after the Wasm bundle starts; preloading downloads them in
          parallel with it. Each URL matches the app's request exactly, including its version query. -->
 ${resourcePreloads}

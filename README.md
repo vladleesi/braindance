@@ -71,7 +71,7 @@ Its independent version is `0.11.1`. See the [backend changelog](backend/CHANGEL
 | 🌐 **[Landing site](docs/)** | The static page served at [braindancegg.com](https://braindancegg.com/). |
 
 The current frontend source version is
-[0.11.4](https://github.com/vladleesi/braindance/releases/tag/app-v0.11.4).
+[0.11.5](https://github.com/vladleesi/braindance/releases/tag/app-v0.11.5).
 GitHub releases provide source code, not store-ready mobile downloads.
 Developer builds for Android, iOS, and Web are supported; see the development guide for backend configuration.
 
