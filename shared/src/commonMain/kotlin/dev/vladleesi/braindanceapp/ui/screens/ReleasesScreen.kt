@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -41,6 +40,7 @@ import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.PlaceholderChips
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
+import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import org.jetbrains.compose.resources.stringResource
@@ -125,7 +125,7 @@ private fun WeekStrip() {
                     Modifier
                         .weight(1f)
                         .height(Dimens.extraLarge)
-                        .background(secondary, RoundedCornerShape(Dimens.small)),
+                        .background(secondary, CornerShapes.small),
             )
         }
     }

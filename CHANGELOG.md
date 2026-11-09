@@ -4,6 +4,14 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.11.6
+
+### Android, iOS, and Web
+
+- Scroll Home more smoothly: sections are prepared before they scroll into view and stay ready when you scroll back.
+- Paint the screen background fewer times per frame, which lightens scrolling on the GPU.
+- Fill the giveaway details top bar with color as you scroll, as on game details.
+
 ## 0.11.5
 
 ### Web

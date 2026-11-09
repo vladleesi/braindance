@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -44,6 +43,7 @@ import dev.vladleesi.braindanceapp.ui.components.OpenSourceSectionTexts
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
+import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.kmpsharekit.ShareKit
 import org.jetbrains.compose.resources.stringResource
@@ -120,7 +120,7 @@ fun ProfileScreen(
 private fun ProfileComingSoon(modifier: Modifier) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(Dimens.medium),
+        shape = CornerShapes.medium,
         color = MaterialTheme.colors.primary,
     ) {
         Column(modifier = Modifier.padding(vertical = Dimens.small)) {

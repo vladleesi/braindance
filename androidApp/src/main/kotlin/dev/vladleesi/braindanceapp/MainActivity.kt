@@ -21,6 +21,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             BraindanceApp()
         }
+        // The Compose root paints every pixel opaque, so the theme's window background would be one more hidden
+        // full-screen fill each frame. The starting window still shows the theme background during launch.
+        window.setBackgroundDrawable(null)
     }
 
     override fun onResume() {

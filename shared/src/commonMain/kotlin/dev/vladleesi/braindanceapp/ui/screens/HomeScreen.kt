@@ -63,6 +63,7 @@ import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith80Alpha
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
+import dev.vladleesi.braindanceapp.utils.rememberCachedLazyListState
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -94,6 +95,8 @@ fun HomeScreen(
     // A mouse wheel or trackpad overscroll has no release that ends the pull, so it would leave the indicator stuck
     // part-way down. Pull-to-refresh therefore follows the most recent pointer: it works for touch only.
     var isMousePointer by remember { mutableStateOf(false) }
+    // Each Home item is a whole section, such as a carousel with its images, so composing one costs a frame.
+    val listState = rememberCachedLazyListState()
 
     Box(
         modifier =
@@ -102,6 +105,7 @@ fun HomeScreen(
                 .background(background),
     ) {
         LazyColumn(
+            state = listState,
             modifier =
                 modifier
                     .fillMaxSize()

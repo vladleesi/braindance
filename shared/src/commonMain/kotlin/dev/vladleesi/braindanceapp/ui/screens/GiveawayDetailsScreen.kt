@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -50,6 +49,7 @@ import dev.vladleesi.braindanceapp.ui.components.StaticText
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.userMessage
+import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
@@ -126,7 +126,10 @@ fun GiveawayDetailsScreen(
         val isLargeWindow = isLargeWindow()
 
         // TODO: Rework (wip: large devices, timer, platforms, new ui model data class)
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = Dimens.medium)) {
+        LazyColumn(
+            state = lazyListState,
+            modifier = Modifier.fillMaxSize().padding(horizontal = Dimens.medium),
+        ) {
             item { SpacerTopBarWithStatusBarInsets() }
             item {
                 GiveawayDetailsImage(
@@ -208,7 +211,7 @@ private fun GiveawayDetailsImage(
                 Modifier
                     .height(Dimens.giveAwayCardDetailsHeight)
                     .width(Dimens.giveAwayCardDetailsWidth)
-                    .clip(RoundedCornerShape(Dimens.small)),
+                    .clip(CornerShapes.small),
             model = state.giveawayDetails.imageUrl,
             contentScale = ContentScale.Crop,
             contentDescription = state.giveawayDetails.title.toContentDescription(),

@@ -3,7 +3,6 @@
 package dev.vladleesi.braindanceapp.ui.style
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Shapes
@@ -30,9 +29,9 @@ fun BraindanceTheme(
     }
     val shapes =
         Shapes(
-            small = RoundedCornerShape(Dimens.tiny),
-            medium = RoundedCornerShape(Dimens.small),
-            large = RoundedCornerShape(Dimens.compact),
+            small = CornerShapes.tiny,
+            medium = CornerShapes.small,
+            large = CornerShapes.compact,
         )
     // Only the weights the typography uses: the Web app downloads every listed font before it can show text.
     val fonts =

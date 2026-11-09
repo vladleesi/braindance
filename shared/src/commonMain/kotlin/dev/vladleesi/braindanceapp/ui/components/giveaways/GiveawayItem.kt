@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_free
+import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith70Alpha
@@ -96,7 +96,7 @@ private fun GiveawayItemCard(
             modifier
                 .height(Dimens.giveAwayCardHeight)
                 .width(Dimens.giveAwayCardWidth)
-                .clip(RoundedCornerShape(Dimens.small))
+                .clip(CornerShapes.small)
                 .clickable { onClick(item.id) },
     ) {
         Image(
@@ -116,7 +116,7 @@ private fun GiveawayItemCard(
                         .padding(Dimens.tiny)
                         .background(
                             color = overlayBlackWith70Alpha,
-                            shape = RoundedCornerShape(Dimens.small),
+                            shape = CornerShapes.small,
                         ).padding(horizontal = Dimens.tiny, vertical = Dimens.micro),
             )
         }
@@ -127,7 +127,7 @@ private fun GiveawayItemCard(
                     .padding(Dimens.tiny)
                     .background(
                         color = overlayBlackWith70Alpha,
-                        shape = RoundedCornerShape(Dimens.small),
+                        shape = CornerShapes.small,
                     ).padding(Dimens.tiny),
             horizontalArrangement = Arrangement.spacedBy(Dimens.micro),
         ) {
@@ -151,7 +151,7 @@ private fun GiveawayItemCard(
                     .padding(Dimens.tiny)
                     .background(
                         color = overlayWhiteWith80Alpha,
-                        shape = RoundedCornerShape(Dimens.small),
+                        shape = CornerShapes.small,
                     ).padding(horizontal = Dimens.tiny),
         )
     }
@@ -165,7 +165,7 @@ fun GiveawayItemSkeleton(modifier: Modifier = Modifier) {
                 Modifier
                     .height(Dimens.giveAwayCardHeight)
                     .width(Dimens.giveAwayCardWidth)
-                    .clip(RoundedCornerShape(Dimens.small))
+                    .clip(CornerShapes.small)
                     .shimmerEffect(),
         )
         Spacer(modifier = Modifier.height(Dimens.small))
@@ -175,7 +175,7 @@ fun GiveawayItemSkeleton(modifier: Modifier = Modifier) {
             modifier =
                 Modifier
                     .width(Dimens.giveAwayCardWidth)
-                    .clip(RoundedCornerShape(Dimens.small))
+                    .clip(CornerShapes.small)
                     .shimmerEffect(),
         )
         Spacer(modifier = Modifier.height(Dimens.micro))
@@ -185,7 +185,7 @@ fun GiveawayItemSkeleton(modifier: Modifier = Modifier) {
             modifier =
                 Modifier
                     .width(128.dp)
-                    .clip(RoundedCornerShape(Dimens.small))
+                    .clip(CornerShapes.small)
                     .shimmerEffect(),
         )
     }

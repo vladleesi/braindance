@@ -224,9 +224,41 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
   build files. Keep the catalog's existing grouping and naming style. Do not remove unused dependencies.
 - Use existing `Dimens` values for Compose padding and spacing instead of raw `dp` values when an appropriate value
   already exists. Add a new shared dimension only when it represents a reusable design-system value.
+- Use `CornerShapes` (`ui/style/CornerShapes.kt`, named after the `Dimens` radius) for rounded corners instead of
+  creating `RoundedCornerShape` in composables. Add a shape there only for a reusable design-system value.
 - Use constructor injection for business dependencies.
 - In suspending code, rethrow `CancellationException` with either `try`/`catch` or `runCatching`.
 - Consider Android and iOS implications of shared or platform changes.
+
+## Compose screen performance
+- Apply these rules to every screen and shared component you create or change, old and new. Fix violations in the
+  code you touch; do not add new ones. Smooth scrolling on all platforms is a requirement, not a later optimization.
+- Paint each pixel once. `NavigationScaffold` already paints the app background; a screen adds one opaque background
+  only when its color differs. Do not stack backgrounds, `Surface` fills, or container colors that repeat a parent
+  fill. On Android the window background is removed because Compose paints every pixel.
+- Show scrollable collections in lazy layouts with stable `key`s and `contentType`. For a list whose items are
+  expensive to compose, such as sections with carousels or images, use `rememberCachedLazyListState()`
+  (`utils/LazyListStateExtensions.kt`) instead of the default state.
+- Keep composition cheap. Do not allocate in composable bodies: shapes, brushes, colors, lists, and lambdas that
+  could be constants or remembered. Do no sorting, mapping, formatting, or parsing in composables; prepare UI models
+  in the ViewModel. Pass immutable UI models with stable types.
+- Read fast-changing state such as scroll offsets, animations, and pointer positions in layout or draw phases
+  (`Modifier.offset { }`, `graphicsLayer { }`, `drawBehind { }`), or reduce it with `derivedStateOf`. Never read it
+  in a composition that it would recompose every frame.
+- Keep layout trees flat: no wrapper `Box`, `Column`, or `Row` without a layout purpose. Size image containers
+  explicitly so images decode at display size, and load images with `rememberCachedImagePainter` and a stable cache
+  key.
+- Write custom modifiers as `Modifier.Node` implementations, not `Modifier.composed`. Avoid offscreen work on
+  scrolling content: `alpha` below 1 on large layers, blur, shadows, and `CompositingStrategy.Offscreen`.
+- Experimental Compose performance APIs are allowed behind small project helpers like `rememberCachedLazyListState`,
+  with the opt-in kept inside the helper.
+- Judge Android rendering on a physical device with a release or `benchmarkRelease` build. Debug builds and
+  emulators inflate the GPU rendering bars (emulator bars mostly measure the host compositor). Check overdraw with
+  Debug GPU overdraw; content areas should stay at 1-2x. For timing, compare `adb shell dumpsys gfxinfo <package>
+  framestats` before and after, separating UI-thread time from RenderThread time. Repeat interleaved runs, because
+  emulator timing is noisy.
+- When a change adds a primary screen or alters the Home browsing path, extend `BaselineProfileGenerator` as needed
+  and remind the user to regenerate the baseline profile with a reachable backend.
 
 ## Web application
 - Keep the browser target on Kotlin/Wasm with `browser()` and executable binaries. Use `ComposeViewport` with an

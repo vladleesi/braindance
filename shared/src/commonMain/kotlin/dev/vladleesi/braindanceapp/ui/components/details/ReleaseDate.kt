@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +15,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
+import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.black
 import dev.vladleesi.braindanceapp.ui.style.white
@@ -27,7 +27,7 @@ fun ReleaseDateLabel(
     backgroundColor: Color = white,
     textColor: Color = black,
     textStyle: TextStyle = MaterialTheme.typography.subtitle1,
-    shape: Shape = RoundedCornerShape(Dimens.small),
+    shape: Shape = CornerShapes.small,
     paddingValues: PaddingValues = PaddingValues(start = Dimens.small, end = Dimens.small),
 ) {
     Box(

@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +49,7 @@ import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardList
 import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardListSkeleton
 import dev.vladleesi.braindanceapp.ui.components.userMessage
+import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
@@ -232,7 +232,7 @@ private fun LazyListScope.gameInfoHeaderLargeScreen(state: GameDetailsState.Succ
                     Modifier
                         .width(Dimens.miniGameCardWidth)
                         .height(Dimens.miniGameCardHeight)
-                        .clip(RoundedCornerShape(Dimens.small)),
+                        .clip(CornerShapes.small),
                 model = state.gameDetails.coverImageUrl,
                 contentScale = ContentScale.Crop,
                 contentDescription = state.gameDetails.name.toContentDescription(),
@@ -259,7 +259,7 @@ private fun LazyListScope.gameInfoHeaderSmallScreen(state: GameDetailsState.Succ
                     Modifier
                         .width(Dimens.miniGameCardWidth)
                         .height(Dimens.miniGameCardHeight)
-                        .clip(RoundedCornerShape(Dimens.small)),
+                        .clip(CornerShapes.small),
                 model = state.gameDetails.coverImageUrl,
                 contentScale = ContentScale.Crop,
                 contentDescription = state.gameDetails.name.toContentDescription(),

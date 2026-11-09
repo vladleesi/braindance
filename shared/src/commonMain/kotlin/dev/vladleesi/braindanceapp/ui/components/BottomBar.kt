@@ -26,6 +26,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -99,7 +100,9 @@ internal fun NavigationScaffold(
                 wideNavigationRailColors =
                     WideNavigationRailDefaults.colors(containerColor = navBar, contentColor = white),
             ),
-        containerColor = navBar,
+        // The modifier's navBar background already fills this area, including the display-cutout padding. A second
+        // opaque container fill would only repaint every screen pixel once more each frame.
+        containerColor = Color.Transparent,
         contentColor = white,
         navigationItems = {
             if (useRail) {
