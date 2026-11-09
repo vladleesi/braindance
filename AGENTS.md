@@ -5,8 +5,8 @@
 These instructions apply to this repository and its descendants. Project-specific requirements and recorded
 decisions take precedence over imported defaults. Explicit user instructions remain authoritative.
 
-One-time import from [vladleesi/agent-guidelines](https://github.com/vladleesi/agent-guidelines/tree/v1.7.0),
-release **v1.7.0**, commit **7503de04bca27019b14123187634130f78d8e0d2**.
+One-time import from [vladleesi/agent-guidelines](https://github.com/vladleesi/agent-guidelines/tree/v1.8.0),
+release **v1.8.0**, commit **3951202798c0cb5604cc0f9c0c00412a894f3154**.
 Selected modules: `general`, `agent-workflow`, `testing`, `security`, `git`, `ci`, `release`, `deployment`,
 `kotlin`, `compose`, `backend`, `python`, and `frontend`. Imported rules retain their
 [MIT notice](LICENSES/Agent-guidelines-MIT.txt); see [third-party notices](THIRD_PARTY_NOTICES.md#agent-guidelines).
@@ -30,7 +30,7 @@ before acting; reading a guide grants no additional authorization.
 | Investigation, planning, or tool use | `docs/project/agent-guidance/agent-workflow.md` |
 | Changes needing validation, test work, CI fixes, or release preparation | `docs/project/agent-guidance/testing.md` |
 | Kotlin, Gradle, Android, or Multiplatform | `docs/project/agent-guidance/kotlin.md` |
-| Compose UI or its platform integration | `docs/project/agent-guidance/compose.md` |
+| Compose UI, scrolling/rendering performance, Baseline Profiles, or platform integration | `docs/project/agent-guidance/compose.md` |
 | Python code, packaging, or interpreter/dependency changes (`.github/scripts`) | `docs/project/agent-guidance/python.md` |
 | Services, APIs, persistence, or backend concurrency (`backend`) | `docs/project/agent-guidance/backend.md` |
 | Browser UI, navigation, assets, or public web content | `docs/project/agent-guidance/frontend.md` |
@@ -58,6 +58,10 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
   approval already given for that scope. If correctness requires broader changes,
   explain the limitation and propose the smallest alternative before editing;
   obtain approval for the expanded scope.
+- Suggest rewrites, cleanups, or performance investigations such as profiling,
+  tracing, or benchmarks beyond the requested change when evidence shows a
+  need; explain the reason and expected scope, and start them only with
+  explicit approval.
 - When asked to revert an optimization, restore the prior design and behavior,
   remove additions introduced solely by that optimization, and validate the
   restored state. Preserve unrelated changes.
@@ -210,6 +214,23 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
   higher recurring costs. Resolve unknown billing impact before applying a
   potentially cost-increasing change.
 
+### Compose UI
+
+- Apply these rules to code the task changes. Suggest broader UI cleanups or
+  rendering investigations, such as profiling, tracing, overdraw inspection, or
+  device benchmarks, when needed; start them only with explicit approval.
+- Check affected transitions, interactions, and scrolling beyond previews on
+  every target platform; validate platform hosts when integration changes.
+  Treat new dropped frames or jank in affected journeys as regressions.
+- Base Android rendering-performance claims on a physical device with a release
+  or equivalently optimized build, comparing before and after with the same
+  journeys, device, and build settings. Debug builds and emulator timings do not
+  establish production performance; state when effects are unmeasured.
+- When adding an Android primary screen or changing a main browsing journey,
+  update existing Baseline Profile generator coverage as needed and remind the
+  user to regenerate the profile. Report missing profile infrastructure rather
+  than assuming Compose's library profile covers application journeys.
+
 ## Project conventions
 - Kotlin Multiplatform for Android/iOS, shared Compose UI, Clean Architecture, and MVVM.
 - `androidApp` owns the Android host; `iosApp` owns the SwiftUI host; `webApp` owns the browser host,
@@ -230,35 +251,14 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
 - In suspending code, rethrow `CancellationException` with either `try`/`catch` or `runCatching`.
 - Consider Android and iOS implications of shared or platform changes.
 
-## Compose screen performance
-- Apply these rules to every screen and shared component you create or change, old and new. Fix violations in the
-  code you touch; do not add new ones. Smooth scrolling on all platforms is a requirement, not a later optimization.
-- Paint each pixel once. `NavigationScaffold` already paints the app background; a screen adds one opaque background
-  only when its color differs. Do not stack backgrounds, `Surface` fills, or container colors that repeat a parent
-  fill. On Android the window background is removed because Compose paints every pixel.
-- Show scrollable collections in lazy layouts with stable `key`s and `contentType`. For a list whose items are
-  expensive to compose, such as sections with carousels or images, use `rememberCachedLazyListState()`
-  (`utils/LazyListStateExtensions.kt`) instead of the default state.
-- Keep composition cheap. Do not allocate in composable bodies: shapes, brushes, colors, lists, and lambdas that
-  could be constants or remembered. Do no sorting, mapping, formatting, or parsing in composables; prepare UI models
-  in the ViewModel. Pass immutable UI models with stable types.
-- Read fast-changing state such as scroll offsets, animations, and pointer positions in layout or draw phases
-  (`Modifier.offset { }`, `graphicsLayer { }`, `drawBehind { }`), or reduce it with `derivedStateOf`. Never read it
-  in a composition that it would recompose every frame.
-- Keep layout trees flat: no wrapper `Box`, `Column`, or `Row` without a layout purpose. Size image containers
-  explicitly so images decode at display size, and load images with `rememberCachedImagePainter` and a stable cache
-  key.
-- Write custom modifiers as `Modifier.Node` implementations, not `Modifier.composed`. Avoid offscreen work on
-  scrolling content: `alpha` below 1 on large layers, blur, shadows, and `CompositingStrategy.Offscreen`.
-- Experimental Compose performance APIs are allowed behind small project helpers like `rememberCachedLazyListState`,
-  with the opt-in kept inside the helper.
-- Judge Android rendering on a physical device with a release or `benchmarkRelease` build. Debug builds and
-  emulators inflate the GPU rendering bars (emulator bars mostly measure the host compositor). Check overdraw with
-  Debug GPU overdraw; content areas should stay at 1-2x. For timing, compare `adb shell dumpsys gfxinfo <package>
-  framestats` before and after, separating UI-thread time from RenderThread time. Repeat interleaved runs, because
-  emulator timing is noisy.
-- When a change adds a primary screen or alters the Home browsing path, extend `BaselineProfileGenerator` as needed
-  and remind the user to regenerate the baseline profile with a reachable backend.
+## Compose rendering
+- `NavigationScaffold` owns the app background, and `MainActivity` removes the redundant Android window background;
+  keep both when changing the root composable or the hosts.
+- The cache-window helper is `rememberCachedLazyListState()` in `utils/LazyListStateExtensions.kt`; it works on every
+  target. The image loader is `rememberCachedImagePainter`.
+- Measure Android rendering with the `benchmarkRelease` build or a release build. Baseline Profile coverage lives in
+  `BaselineProfileGenerator` (`baselineprofile`). Regenerate the profile on a connected device with the backend
+  reachable: `./gradlew :androidApp:generateReleaseBaselineProfile`.
 
 ## Web application
 - Keep the browser target on Kotlin/Wasm with `browser()` and executable binaries. Use `ComposeViewport` with an
@@ -284,8 +284,8 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
 - Preload only measured, startup-critical fonts or images. Prefer browser `<link rel="preload">` for fetching and the
   Compose resource preload APIs when decoding also causes visible first-render flicker; do not preload entire screens.
 - In Web recomposition, use `derivedStateOf` only for rapidly changing state with coarser UI needs; defer state reads.
-- Load long collections lazily. Add Web caches, stability annotations, or custom Webpack tuning only with profiling
-  evidence and a clear invalidation or rollback strategy.
+- Add Web caches, stability annotations, or custom Webpack tuning only with profiling evidence and a clear
+  invalidation or rollback strategy.
 - Use suspend APIs for browser network and decoding work.
 - Keep verbose HTTP logging and development diagnostics out of production builds. Preserve source maps only according
   to the deployment's debugging and exposure policy.
@@ -356,8 +356,7 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
   Publication badges show job checks for that revision; skipped backend jobs do not indicate a fresh deployment.
 
 ## Verification and completion
-- For routine documentation and instruction changes, use static diff, link, and accuracy checks. Do not benchmark
-  Web performance without an explicit verification request.
+- For routine documentation and instruction changes, use static diff, link, and accuracy checks.
 - When the user asks to prepare changes for a commit, run `./gradlew ktlintFormat detekt` and
   `python3 .github/scripts/check-licenses.py`, fix any findings, and review formatter changes before recommending
   a commit message.

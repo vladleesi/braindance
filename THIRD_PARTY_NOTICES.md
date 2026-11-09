@@ -6,8 +6,8 @@ converting, bundling, or distributing them. Include the full applicable license 
 ## Agent guidelines
 
 The imported rules in `AGENTS.md` and `docs/project/agent-guidance/*.md` come from
-[vladleesi/agent-guidelines v1.7.0](https://github.com/vladleesi/agent-guidelines/tree/v1.7.0),
-commit `7503de04bca27019b14123187634130f78d8e0d2`.
+[vladleesi/agent-guidelines v1.8.0](https://github.com/vladleesi/agent-guidelines/tree/v1.8.0),
+commit `3951202798c0cb5604cc0f9c0c00412a894f3154`.
 Selected modules: general, agent-workflow, testing, security, git, ci, release, deployment, kotlin, compose,
 backend, python, and frontend. Placement and headings were adapted for local task loading; imported bullets
 remain verbatim. The copyright and permission notice is retained in the
