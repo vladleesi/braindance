@@ -4,6 +4,13 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.11.7
+
+### Android and Web
+
+- Keep Home game and giveaway images at the size they are shown instead of their full download size, which uses
+  less memory and graphics work while scrolling without lowering image quality.
+
 ## 0.11.6
 
 ### Android, iOS, and Web

@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.ui.components.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.trending_reason_full_release
 import dev.vladleesi.braindanceapp.resources.trending_reason_new_platform
@@ -28,7 +28,7 @@ import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith70Alpha
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.clickable
-import dev.vladleesi.braindanceapp.utils.rememberCachedImagePainter
+import dev.vladleesi.braindanceapp.utils.rememberCachedImageRequest
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 import org.jetbrains.compose.resources.stringResource
@@ -39,8 +39,8 @@ fun MiniGameCard(
     modifier: Modifier = Modifier,
     onClick: (id: Int) -> Unit,
 ) {
-    val imagePainter =
-        rememberCachedImagePainter(
+    val imageRequest =
+        rememberCachedImageRequest(
             data = card.backgroundImageUrl,
             imageCacheKey = "mgc-${card.id}",
         )
@@ -52,8 +52,8 @@ fun MiniGameCard(
                 .clip(CornerShapes.small)
                 .clickable { onClick(card.id) },
     ) {
-        Image(
-            painter = imagePainter,
+        AsyncImage(
+            model = imageRequest,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
             contentDescription = card.title.toContentDescription(),
