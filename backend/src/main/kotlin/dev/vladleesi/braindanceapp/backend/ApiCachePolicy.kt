@@ -40,8 +40,10 @@ private val BROWSER_LIFETIME = 20.minutes
 // stale-if-error next to s-maxage in Cache-Control, so the directive is sent only in its own header.
 private val EDGE_STALE_IF_ERROR = 1.days
 
-// How long after a feed window ends the edge may serve the previous feed while it fetches the next one.
-private val FEED_EDGE_REVALIDATION = 10.minutes
+// How long after an edge copy expires Cloudflare may keep serving it while it fetches a fresh one in the background, so
+// the first visitor after a quiet period does not wait for a scaled-to-zero origin to start. This requires the cache
+// rule's "Serve stale content while revalidating" setting to be enabled; disabling it overrides this directive.
+private val EDGE_STALE_WHILE_REVALIDATE = 1.days
 
 /** Cache-Control and Cloudflare edge directives for a public response on [route] at [nowMillis]. */
 internal data class PublicCacheHeaders(
@@ -69,18 +71,12 @@ internal fun publicCacheHeaders(
         } else {
             "public, max-age=${browser.inWholeSeconds}, s-maxage=${edge.inWholeSeconds}"
         }
-    // Every copy of the feed expires at the window boundary. Revalidating in the background lets the edge keep
-    // answering from the previous feed instead of making the first visitor wait for a possibly cold origin.
-    val revalidation =
-        if (ApiRoute.forTemplate(route)?.edgeLifetime == EdgeLifetime.FeedWindow) {
-            ", stale-while-revalidate=${FEED_EDGE_REVALIDATION.inWholeSeconds}"
-        } else {
-            ""
-        }
-    return PublicCacheHeaders(
-        cacheControl,
-        "public, max-age=${edge.inWholeSeconds}, stale-if-error=${EDGE_STALE_IF_ERROR.inWholeSeconds}$revalidation",
-    )
+    // After the feed window ends, the first page served can come from the previous window while later pages are
+    // refreshed, until the background refresh lands.
+    val cloudflareCacheControl =
+        "public, max-age=${edge.inWholeSeconds}, stale-if-error=${EDGE_STALE_IF_ERROR.inWholeSeconds}, " +
+            "stale-while-revalidate=${EDGE_STALE_WHILE_REVALIDATE.inWholeSeconds}"
+    return PublicCacheHeaders(cacheControl, cloudflareCacheControl)
 }
 
 internal const val ORIGIN_SECRET_HEADER = "X-Origin-Verify"

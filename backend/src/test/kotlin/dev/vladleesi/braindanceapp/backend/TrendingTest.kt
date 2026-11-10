@@ -510,7 +510,7 @@ class TrendingTest {
         val (browser, edge) = match.destructured.toList().map(String::toInt)
         assertTrue(edge in 1..21_600 && browser == minOf(1200, edge), cacheControl)
         assertEquals(
-            "public, max-age=$edge, stale-if-error=86400, stale-while-revalidate=600",
+            "public, max-age=$edge, stale-if-error=86400, stale-while-revalidate=86400",
             headers[CLOUDFLARE_CACHE_CONTROL_HEADER],
         )
     }

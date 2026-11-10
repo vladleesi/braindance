@@ -3,6 +3,13 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.11.2
+
+- Allow Cloudflare to keep serving every public response for up to a day after it expires while it fetches a fresh
+  copy in the background (`stale-while-revalidate`), instead of only Popular Right Now for 10 minutes. The first
+  visitor after a quiet period no longer waits for the backend to start. Requires the API cache rule's "Serve stale
+  content while revalidating" setting to be enabled.
+
 ## 0.11.1
 
 - Update the container image's `apt` packages to the Ubuntu security release for CVE-2026-109518. API behavior is

@@ -1,7 +1,7 @@
 # Braindance API
 
 The Kotlin/JVM Ktor backend serves game and giveaway data from IGDB and GamerPower to Braindance.
-Version **0.11.1**. This reference covers backend development and optional independent hosting;
+Version **0.11.2**. This reference covers backend development and optional independent hosting;
 using the [experimental Web preview](https://app.braindancegg.com/) does not require backend setup.
 
 Twitch credentials stay on the backend; GamerPower needs no key.
@@ -44,8 +44,8 @@ Only a real game request verifies IGDB access. For direct IDE launches, set the 
 
 ```sh
 ./gradlew :backend:test :backend:installDist
-docker build -f backend/Dockerfile -t braindance-api:0.11.1 backend
-docker run --env-file backend/.env -p 8080:8080 braindance-api:0.11.1
+docker build -f backend/Dockerfile -t braindance-api:0.11.2 backend
+docker run --env-file backend/.env -p 8080:8080 braindance-api:0.11.2
 ```
 
 The Dockerfile needs the prepared distribution; without Docker, run `backend/build/install/backend/bin/backend`.
@@ -64,7 +64,7 @@ All endpoints are GET-only and return JSON. Unknown or duplicate query keys are 
 
 | Endpoint | Returns |
 | --- | --- |
-| `/health`, `/healthz` | `{"ok":true,"version":"0.11.1"}`; `/healthz` returns 503 without Twitch credentials |
+| `/health`, `/healthz` | `{"ok":true,"version":"0.11.2"}`; `/healthz` returns 503 without Twitch credentials |
 | `/v1/games/details?id=42` | Game details |
 | `/v1/games/recommendations?id=42&limit=24` | Similar games, best first; `limit` 1–50 (default 24); 404 if unknown |
 | `/v1/games/trending?page=1&pageSize=20` | [Popular Right Now](#popular-right-now) feed of released games |
@@ -106,9 +106,8 @@ A cache miss makes two IGDB multiqueries. A request waits up to 4.5 seconds; a s
 keeps running for up to 20 seconds and fills the cache for the next request. One ranked feed serves each six-hour UTC
 window (00:00, 06:00, 12:00, 18:00), in process and at the edge, so pages fetched in one window match; separate
 instances can still rank slightly differently. If a refresh fails, the previous feed is served privately for up to 24
-hours. The edge header also allows `stale-while-revalidate` for 10 minutes, so right after a window ends Cloudflare can
-keep serving the previous feed while it fetches the next one; pages fetched in those minutes can come from different
-windows.
+hours. Like every public route, the feed allows Cloudflare to serve an expired copy for up to a day while it fetches a
+fresh one, so right after a window ends pages can come from different windows until that refresh lands.
 IGDB stores no popularity history, so the feed does not measure growth. Signals, weights, and eligibility are
 documented in [`Trending.kt`](src/main/kotlin/dev/vladleesi/braindanceapp/backend/Trending.kt); each cache miss logs a
 `trending` line with candidate counts per stage.

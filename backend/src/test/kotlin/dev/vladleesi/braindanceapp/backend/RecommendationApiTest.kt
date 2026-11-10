@@ -43,7 +43,7 @@ class RecommendationApiTest {
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("public, max-age=1200, s-maxage=86400", response.headers[HttpHeaders.CacheControl])
             assertEquals(
-                "public, max-age=86400, stale-if-error=86400",
+                "public, max-age=86400, stale-if-error=86400, stale-while-revalidate=86400",
                 response.headers[CLOUDFLARE_CACHE_CONTROL_HEADER],
             )
             val games = Json.parseToJsonElement(response.bodyAsText()).jsonArray
