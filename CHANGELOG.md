@@ -4,6 +4,12 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.13.2
+
+### Android, iOS, and Web
+
+- Show Nintendo Store links on game details when provided by IGDB.
+
 ## 0.13.1
 
 ### Android

@@ -8,6 +8,7 @@ import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.ic_platform_logo_android
 import dev.vladleesi.braindanceapp.resources.ic_platform_logo_ios
 import dev.vladleesi.braindanceapp.resources.ic_platform_logo_playstation
+import dev.vladleesi.braindanceapp.resources.ic_platform_logo_switch
 import dev.vladleesi.braindanceapp.resources.ic_platform_logo_xbox
 import dev.vladleesi.braindanceapp.resources.ic_store_logo_epic_games
 import dev.vladleesi.braindanceapp.resources.ic_store_logo_gog
@@ -49,6 +50,11 @@ private enum class StoreType(
         websiteType = WebsiteType.XBOX,
         storeName = "Xbox Store",
         image = Res.drawable.ic_platform_logo_xbox,
+    ),
+    NintendoStore(
+        websiteType = WebsiteType.NINTENDO,
+        storeName = "Nintendo Store",
+        image = Res.drawable.ic_platform_logo_switch,
     ),
     AppStore(
         websiteType = WebsiteType.IPHONE,

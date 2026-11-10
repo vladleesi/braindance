@@ -41,6 +41,7 @@ enum class WebsiteType(
     BLUESKY(19),
     XBOX(22),
     PLAYSTATION(23),
+    NINTENDO(24),
     UNKNOWN(-1),
     ;
 
