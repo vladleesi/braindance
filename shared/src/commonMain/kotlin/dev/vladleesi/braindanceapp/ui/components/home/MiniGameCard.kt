@@ -78,7 +78,7 @@ fun MiniGameCard(
 }
 
 @Composable
-private fun MiniGameCardLabel.text(): String =
+internal fun MiniGameCardLabel.text(): String =
     when (this) {
         MiniGameCardLabel.NewRelease -> stringResource(Res.string.trending_reason_new_release)
         MiniGameCardLabel.FullRelease -> stringResource(Res.string.trending_reason_full_release)

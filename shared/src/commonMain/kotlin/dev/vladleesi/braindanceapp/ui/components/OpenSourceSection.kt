@@ -178,7 +178,7 @@ internal fun OpenSourceSectionPreview() {
                 OpenSourceSectionTexts(
                     title = "Braindance is open source",
                     description = "Like the project? Support it on GitHub.",
-                    starLabel = "Star on GitHub",
+                    starLabel = "Star",
                     shareLabel = "Share",
                     versionLabel = "v1.0.0",
                 ),

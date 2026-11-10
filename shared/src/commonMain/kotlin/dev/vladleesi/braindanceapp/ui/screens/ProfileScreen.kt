@@ -18,10 +18,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.BuildKonfig
 import dev.vladleesi.braindanceapp.resources.Res
@@ -33,34 +30,28 @@ import dev.vladleesi.braindanceapp.resources.profile_screen_version
 import dev.vladleesi.braindanceapp.resources.profile_settings
 import dev.vladleesi.braindanceapp.resources.profile_sign_in
 import dev.vladleesi.braindanceapp.resources.profile_statistics
-import dev.vladleesi.braindanceapp.resources.profile_support_copy
 import dev.vladleesi.braindanceapp.resources.profile_support_description
-import dev.vladleesi.braindanceapp.resources.profile_support_share
 import dev.vladleesi.braindanceapp.resources.profile_support_star
+import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.OpenSourceSection
 import dev.vladleesi.braindanceapp.ui.components.OpenSourceSectionTexts
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
+import dev.vladleesi.braindanceapp.ui.components.rememberRepositoryLinks
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.kmpsharekit.ShareKit
 import org.jetbrains.compose.resources.stringResource
-
-private const val GITHUB_URL = "https://github.com/vladleesi/braindance"
 
 @Composable
 fun ProfileScreen(
     onBackButtonPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val uriHandler = LocalUriHandler.current
-    val nativeSharingSupported = ShareKit.isSupported()
-
-    // Compose's common Clipboard API does not yet expose a plain-text ClipEntry factory.
-    @Suppress("DEPRECATION")
-    val clipboard = LocalClipboardManager.current
+    val repositoryLinks = rememberRepositoryLinks()
+    // The desktop sidebar shows the project links and version, so Profile omits them there.
+    val showOpenSource = desktopLayout()?.hasSidebar != true
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         Column(
@@ -82,35 +73,24 @@ fun ProfileScreen(
                 )
                 ProfileComingSoon(modifier = Modifier.padding(horizontal = Dimens.medium))
             }
-            OpenSourceSection(
-                texts =
-                    OpenSourceSectionTexts(
-                        title = stringResource(Res.string.profile_open_source_title),
-                        description = stringResource(Res.string.profile_support_description),
-                        starLabel = stringResource(Res.string.profile_support_star),
-                        shareLabel =
-                            stringResource(
-                                if (nativeSharingSupported) {
-                                    Res.string.profile_support_share
-                                } else {
-                                    Res.string.profile_support_copy
-                                },
-                            ),
-                        versionLabel = stringResource(Res.string.profile_screen_version, BuildKonfig.APP_VERSION),
-                    ),
-                onOpenRepository = { uriHandler.openUri(GITHUB_URL) },
-                onShare = {
-                    if (nativeSharingSupported) {
-                        ShareKit.shareText(GITHUB_URL)
-                    } else {
-                        clipboard.setText(AnnotatedString(GITHUB_URL))
-                    }
-                },
-                modifier =
-                    Modifier
-                        .padding(horizontal = Dimens.medium)
-                        .padding(top = Dimens.large),
-            )
+            if (showOpenSource) {
+                OpenSourceSection(
+                    texts =
+                        OpenSourceSectionTexts(
+                            title = stringResource(Res.string.profile_open_source_title),
+                            description = stringResource(Res.string.profile_support_description),
+                            starLabel = stringResource(Res.string.profile_support_star),
+                            shareLabel = stringResource(repositoryLinks.shareLabel),
+                            versionLabel = stringResource(Res.string.profile_screen_version, BuildKonfig.APP_VERSION),
+                        ),
+                    onOpenRepository = repositoryLinks.openRepository,
+                    onShare = repositoryLinks.share,
+                    modifier =
+                        Modifier
+                            .padding(horizontal = Dimens.medium)
+                            .padding(top = Dimens.large),
+                )
+            }
         }
     }
 }

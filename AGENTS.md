@@ -247,6 +247,9 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
   already exists. Add a new shared dimension only when it represents a reusable design-system value.
 - Use `CornerShapes` (`ui/style/CornerShapes.kt`, named after the `Dimens` radius) for rounded corners instead of
   creating `RoundedCornerShape` in composables. Add a shape there only for a reusable design-system value.
+- Add a `@Preview` for every new UI component, in the same file: an `internal fun <Name>Preview()` wrapped in
+  `BraindanceTheme` with static sample data and no-op callbacks. Pass navigation and data in as parameters so the
+  component previews without a `Navigator` or ViewModel.
 - Use constructor injection for business dependencies.
 - In suspending code, rethrow `CancellationException` with either `try`/`catch` or `runCatching`.
 - Consider Android and iOS implications of shared or platform changes.

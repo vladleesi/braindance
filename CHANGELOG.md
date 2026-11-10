@@ -4,6 +4,22 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.12.0
+
+### Android, iOS, and Web
+
+- Mark the selected tab in the navigation bar and rail with a short cyan line under its label.
+- Shorten Profile's "Star on GitHub" button to "Star", so it stays on one row with Share on narrow screens.
+
+### Web
+
+- Add a desktop layout for wide browser windows: a navigation sidebar, a Home header and discovery banner, and
+  Popular Right Now, Most Anticipated, and Latest Giveaways as fixed card rows instead of carousels.
+- Show Upcoming releases and Recommended for you as Coming soon previews beside Home content in the widest windows.
+- Move the GitHub links and the app version from Profile to the bottom of the sidebar.
+- Support hover and keyboard focus on desktop cards and navigation. Narrow windows and mobile browsers keep the
+  current layout.
+
 ## 0.11.7
 
 ### Android and Web

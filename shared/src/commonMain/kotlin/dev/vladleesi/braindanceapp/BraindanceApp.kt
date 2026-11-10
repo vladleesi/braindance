@@ -11,13 +11,18 @@ import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.Navigator
 import dev.vladleesi.braindanceapp.navigation.rememberNavigationState
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
+import dev.vladleesi.braindanceapp.system.LocalDesktopLayoutEnabled
 import dev.vladleesi.braindanceapp.ui.components.NavigationGraph
 import dev.vladleesi.braindanceapp.ui.components.NavigationScaffold
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.utils.ImageLoaderInitializer
 
+/** [desktopLayoutEnabled] lets wide windows use the desktop presentation; only the Web host enables it. */
 @Composable
-fun BraindanceApp(modifier: Modifier = Modifier) {
+fun BraindanceApp(
+    modifier: Modifier = Modifier,
+    desktopLayoutEnabled: Boolean = false,
+) {
     // Coil documents this as safe to call repeatedly; an image loader that already exists is never replaced.
     ImageLoaderInitializer.initialize()
 
@@ -30,7 +35,10 @@ fun BraindanceApp(modifier: Modifier = Modifier) {
     val navigator = remember { Navigator(navigationState) }
     BrowserHistorySync(navigationState, navigator)
 
-    CompositionLocalProvider(LocalNavigator provides navigator) {
+    CompositionLocalProvider(
+        LocalNavigator provides navigator,
+        LocalDesktopLayoutEnabled provides desktopLayoutEnabled,
+    ) {
         BraindanceTheme {
             NavigationScaffold(modifier = modifier) { contentModifier ->
                 NavigationGraph(modifier = contentModifier)

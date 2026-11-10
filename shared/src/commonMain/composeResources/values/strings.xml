@@ -18,7 +18,7 @@
     <string name="profile_screen_version">v%1$s</string>
     <string name="profile_open_source_title">Braindance is open source</string>
     <string name="profile_support_description">Like the project? Support it on GitHub.</string>
-    <string name="profile_support_star">Star on GitHub</string>
+    <string name="profile_support_star">Star</string>
     <string name="profile_support_share">Share</string>
     <string name="profile_support_copy">Copy link</string>
     <string name="profile_sign_in">Sign in</string>
@@ -41,6 +41,16 @@
     <string name="home_open_news">Open News</string>
     <string name="home_events_title">Gaming events</string>
     <string name="home_events_description">Showcases, festivals, and live events in one place.</string>
+    <string name="home_section_empty">Nothing to show here right now.</string>
+
+    <!-- Desktop Web Home and navigation -->
+    <string name="app_name">Braindance</string>
+    <string name="desktop_tagline">Find what to play next.</string>
+    <string name="desktop_development_status">In development</string>
+    <string name="desktop_hero_title">Discover your next obsession.</string>
+    <string name="desktop_hero_description">Popular and upcoming games, similar titles, and free giveaways in one place.</string>
+    <string name="desktop_hero_action">Explore games</string>
+    <string name="desktop_recommended_title">Recommended for you</string>
 
     <!-- Discover screen -->
     <string name="discover_advanced_filters_coming_soon">Advanced filters, coming soon</string>

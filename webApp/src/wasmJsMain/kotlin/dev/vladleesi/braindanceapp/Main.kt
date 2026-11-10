@@ -12,6 +12,6 @@ fun main() {
     configureVersionedWebResources()
     initKoin()
     ComposeViewport(viewportContainerId = "webApp") {
-        BraindanceApp()
+        BraindanceApp(desktopLayoutEnabled = true)
     }
 }

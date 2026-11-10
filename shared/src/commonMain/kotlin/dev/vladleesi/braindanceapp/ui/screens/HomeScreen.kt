@@ -51,6 +51,7 @@ import dev.vladleesi.braindanceapp.resources.home_screen_popular_right_now
 import dev.vladleesi.braindanceapp.resources.home_upcoming_releases_description
 import dev.vladleesi.braindanceapp.resources.navigation_home
 import dev.vladleesi.braindanceapp.resources.releases_upcoming_title
+import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
@@ -69,10 +70,24 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class)
 fun HomeScreen(
     modifier: Modifier,
     viewModel: HomeViewModel = koinViewModel(),
+) {
+    // Wide Web windows show the desktop layout of the same state; Android and iOS never enable it.
+    val desktopLayout = desktopLayout()
+    if (desktopLayout != null) {
+        DesktopHomeScreen(layout = desktopLayout, viewModel = viewModel, modifier = modifier)
+    } else {
+        StandardHomeScreen(modifier = modifier, viewModel = viewModel)
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterialApi::class)
+private fun StandardHomeScreen(
+    modifier: Modifier,
+    viewModel: HomeViewModel,
 ) {
     val navigator = LocalNavigator.current
 
