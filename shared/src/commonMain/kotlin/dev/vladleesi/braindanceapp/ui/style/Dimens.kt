@@ -19,11 +19,10 @@ object Dimens {
     val large = 32.dp
     val extraLarge = 64.dp
 
-    val miniGameCardWidth = 144.dp
-    val miniGameCardHeight = 192.dp
+    val gameCardWidth = 144.dp
+    val gameCardHeight = 192.dp
 
     val giveAwayCardWidth = 200.dp
-    val giveAwayCardHeight = 94.dp
 
     val giveAwayCardDetailsWidth = 300.dp
     val giveAwayCardDetailsHeight = 141.dp

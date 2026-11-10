@@ -131,9 +131,13 @@ internal fun NavigationScaffold(
         contentColor = white,
         navigationItems = {
             if (useRail) {
-                // Keep every destination reachable in short landscape windows and with enlarged text.
+                // Keep every destination reachable in short landscape windows and with enlarged text. The scroll
+                // container clips to its content, so the bottom padding keeps the last item's selected line inside it.
                 Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    modifier =
+                        Modifier
+                            .verticalScroll(rememberScrollState())
+                            .padding(bottom = SelectedLineGap + SelectedLineThickness),
                     verticalArrangement = Arrangement.spacedBy(Dimens.small),
                 ) {
                     items()
@@ -174,7 +178,7 @@ private fun NavigationSidebar(
         modifier = modifier,
         footer = {
             DesktopProjectLinks(
-                links = rememberRepositoryLinks(),
+                links = rememberProjectLinks(),
                 versionLabel = stringResource(Res.string.profile_screen_version, BuildKonfig.APP_VERSION),
             )
         },

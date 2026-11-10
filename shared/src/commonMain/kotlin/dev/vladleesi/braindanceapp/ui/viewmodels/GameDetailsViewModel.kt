@@ -9,7 +9,7 @@ import dev.vladleesi.braindanceapp.data.models.games.GameItem
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.ParentPlatformType
 import dev.vladleesi.braindanceapp.utils.StoreTypeModel
@@ -111,7 +111,7 @@ private fun GameItem.toGameDetails() =
 private fun List<SimilarGame>.toCards() =
     mapNotNull { game ->
         val id = game.id ?: return@mapNotNull null
-        MiniGameCardModel(
+        GameCardModel(
             id = id,
             title = game.name.orEmpty(),
             backgroundImageUrl =
@@ -126,7 +126,7 @@ sealed interface RecommendationsState {
     data object Loading : RecommendationsState
 
     data class Success(
-        val games: List<MiniGameCardModel>,
+        val games: List<GameCardModel>,
     ) : RecommendationsState
 
     /** The request failed; the optional section stays hidden until a refresh. */

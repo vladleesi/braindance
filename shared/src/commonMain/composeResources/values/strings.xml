@@ -18,9 +18,10 @@
     <string name="profile_screen_version">v%1$s</string>
     <string name="profile_open_source_title">Braindance is open source</string>
     <string name="profile_support_description">Like the project? Support it on GitHub.</string>
-    <string name="profile_support_star">Star</string>
+    <string name="profile_support_star">Star us</string>
     <string name="profile_support_share">Share</string>
-    <string name="profile_support_copy">Copy link</string>
+    <string name="profile_support_copy">Copy invite</string>
+    <string name="share_app_message">I'm checking out Braindance — a new place to discover trending games, upcoming releases, and free game giveaways. Check it out: %1$s</string>
     <string name="profile_sign_in">Sign in</string>
     <string name="profile_statistics">Gaming statistics</string>
     <string name="profile_activity">Activity</string>

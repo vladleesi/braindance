@@ -38,7 +38,7 @@ import dev.vladleesi.braindanceapp.ui.components.OpenSourceSection
 import dev.vladleesi.braindanceapp.ui.components.OpenSourceSectionTexts
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
-import dev.vladleesi.braindanceapp.ui.components.rememberRepositoryLinks
+import dev.vladleesi.braindanceapp.ui.components.rememberProjectLinks
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -49,7 +49,7 @@ fun ProfileScreen(
     onBackButtonPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val repositoryLinks = rememberRepositoryLinks()
+    val projectLinks = rememberProjectLinks()
     // The desktop sidebar shows the project links and version, so Profile omits them there.
     val showOpenSource = desktopLayout()?.hasSidebar != true
 
@@ -80,11 +80,11 @@ fun ProfileScreen(
                             title = stringResource(Res.string.profile_open_source_title),
                             description = stringResource(Res.string.profile_support_description),
                             starLabel = stringResource(Res.string.profile_support_star),
-                            shareLabel = stringResource(repositoryLinks.shareLabel),
+                            shareLabel = stringResource(projectLinks.shareLabel),
                             versionLabel = stringResource(Res.string.profile_screen_version, BuildKonfig.APP_VERSION),
                         ),
-                    onOpenRepository = repositoryLinks.openRepository,
-                    onShare = repositoryLinks.share,
+                    onOpenRepository = projectLinks.openRepository,
+                    onShare = projectLinks.share,
                     modifier =
                         Modifier
                             .padding(horizontal = Dimens.medium)

@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -52,18 +54,24 @@ import dev.vladleesi.braindanceapp.resources.home_upcoming_releases_description
 import dev.vladleesi.braindanceapp.resources.navigation_home
 import dev.vladleesi.braindanceapp.resources.releases_upcoming_title
 import dev.vladleesi.braindanceapp.system.desktopLayout
+import dev.vladleesi.braindanceapp.ui.components.CarouselSection
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
-import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawaysList
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardList
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCard
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayItemModel
+import dev.vladleesi.braindanceapp.ui.components.home.GameCard
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith80Alpha
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
+import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.utils.rememberCachedLazyListState
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -130,20 +138,22 @@ private fun StandardHomeScreen(
         ) {
             item { HomeTopBar(onProfileClick = { navigator.navigate(ProfileRoute) }) }
             item {
-                MiniGameCardList(
+                GamesCarousel(
                     title = stringResource(Res.string.home_screen_popular_right_now),
                     state = trendingNow,
-                    onRefresh = { viewModel.loadTrendingNow() },
-                    onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
+                    onRetry = viewModel::loadTrendingNow,
+                    showTitles = true,
+                    onGameClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
                 )
             }
             item { HomePreviewCard(Res.string.home_recommendations_title, Res.string.home_recommendations_description) }
             item {
-                MiniGameCardList(
+                GamesCarousel(
                     title = stringResource(Res.string.home_screen_popular_most_anticipated),
                     state = mostAnticipated,
-                    onRefresh = { viewModel.loadMostAnticipated() },
-                    onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
+                    onRetry = { viewModel.loadMostAnticipated() },
+                    showTitles = false,
+                    onGameClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
                 )
             }
             item {
@@ -155,11 +165,11 @@ private fun StandardHomeScreen(
                 )
             }
             item {
-                GiveawaysList(
+                GiveawaysCarousel(
                     title = stringResource(Res.string.home_screen_popular_latest_giveaways),
                     state = giveaways,
-                    onRefresh = { viewModel.loadGiveaways() },
-                    onItemClick = { id -> navigator.navigate(GiveawayDetailsRoute(id)) },
+                    onRetry = { viewModel.loadGiveaways() },
+                    onGiveawayClick = { id -> navigator.navigate(GiveawayDetailsRoute(id)) },
                 )
             }
             item {
@@ -182,6 +192,51 @@ private fun StandardHomeScreen(
                     .padding(top = Dimens.statusBarInsets)
                     .align(TopCenter),
         )
+    }
+}
+
+private const val GAME_CARD_CONTENT_TYPE = "game_card"
+private const val GIVEAWAY_CARD_CONTENT_TYPE = "giveaway_card"
+
+/** A carousel of game cards; [showTitles] adds each game's title and trending reason below its cover. */
+@Composable
+private fun GamesCarousel(
+    title: String,
+    state: SectionState<GameCardModel>,
+    onRetry: () -> Unit,
+    showTitles: Boolean,
+    onGameClick: (id: Int) -> Unit,
+) {
+    val cardModifier = Modifier.width(Dimens.gameCardWidth)
+    CarouselSection(
+        title = title,
+        state = state,
+        onRetry = onRetry,
+        skeleton = { GameCardSkeleton(showTitle = showTitles, modifier = cardModifier) },
+    ) { games ->
+        items(games, key = { game -> game.id }, contentType = { GAME_CARD_CONTENT_TYPE }) { game ->
+            GameCard(card = game, onClick = onGameClick, showTitle = showTitles, modifier = cardModifier)
+        }
+    }
+}
+
+@Composable
+private fun GiveawaysCarousel(
+    title: String,
+    state: SectionState<GiveawayItemModel>,
+    onRetry: () -> Unit,
+    onGiveawayClick: (id: Int) -> Unit,
+) {
+    val cardModifier = Modifier.width(Dimens.giveAwayCardWidth)
+    CarouselSection(
+        title = title,
+        state = state,
+        onRetry = onRetry,
+        skeleton = { GiveawayCardSkeleton(modifier = cardModifier) },
+    ) { giveaways ->
+        items(giveaways, key = { giveaway -> giveaway.id }, contentType = { GIVEAWAY_CARD_CONTENT_TYPE }) { giveaway ->
+            GiveawayCard(item = giveaway, onClick = onGiveawayClick, modifier = cardModifier)
+        }
     }
 }
 

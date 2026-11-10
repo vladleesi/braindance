@@ -4,7 +4,7 @@ package dev.vladleesi.braindanceapp.ui.viewmodels
 
 import dev.vladleesi.braindanceapp.data.api.backendJson
 import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardLabel
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardLabel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -18,14 +18,14 @@ class TrendingCardMappingTest {
                 """{"id":3,"name":"C","reason":"new_platform"},{"id":4,"name":"D","reason":"showcased"},""" +
                 """{"id":5,"name":"E","reason":"full_release"},{"id":6,"name":"F","reason":"future_reason"},""" +
                 """{"id":7,"name":"G"}]"""
-        val cards = backendJson.decodeFromString<List<TrendingGameItem>>(feedJson).map { it.toMiniGameCardModel() }
+        val cards = backendJson.decodeFromString<List<TrendingGameItem>>(feedJson).map { it.toGameCardModel() }
         assertEquals(
             listOf(
-                MiniGameCardLabel.NewRelease,
-                MiniGameCardLabel.NewPlatform("PS5"),
-                MiniGameCardLabel.NewPlatform(null),
-                MiniGameCardLabel.Showcased,
-                MiniGameCardLabel.FullRelease,
+                GameCardLabel.NewRelease,
+                GameCardLabel.NewPlatform("PS5"),
+                GameCardLabel.NewPlatform(null),
+                GameCardLabel.Showcased,
+                GameCardLabel.FullRelease,
                 null,
                 null,
             ),

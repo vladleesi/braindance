@@ -4,6 +4,25 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.13.0
+
+### Android, iOS, and Web
+
+- Show each game's title and why it is trending below its cover in Popular Right Now and Similar games.
+- Use the same game and giveaway cards everywhere, with the same loading, empty, and Retry states.
+- Share now recommends the Braindance Web app with a short message and its link instead of the GitHub repository;
+  where sharing isn't available, Copy invite copies the same text.
+- Remove the "See all" buttons that did nothing.
+- Show the selected tab's line under the last item of the navigation rail, such as Library in landscape.
+
+### Web
+
+- Show Most Anticipated as covers only on desktop.
+- Show the focus outline and focus highlight only for keyboard navigation, not after a click or tap, and drop the
+  mobile tap flash.
+- Give the Open Releases and Open News buttons on desktop Home a background, so they look like buttons before hover.
+- Rename the Star button to "Star us", still on one row with Share in the sidebar and on Profile.
+
 ## 0.12.0
 
 ### Android, iOS, and Web

@@ -32,6 +32,12 @@ ${resourcePreloads}
             height: 100%;
         }
 
+        /* The app draws its own press and keyboard-focus feedback inside its canvas. Mobile browsers would also flash
+           a tap highlight over the whole app on every tap, which says nothing about what was tapped. */
+        #webApp {
+            -webkit-tap-highlight-color: transparent;
+        }
+
         /* Matches the app background so no white page shows before the Wasm bundle renders. */
         html,
         body {

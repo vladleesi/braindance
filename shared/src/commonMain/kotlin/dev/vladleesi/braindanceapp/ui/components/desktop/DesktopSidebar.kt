@@ -7,10 +7,8 @@ import Github
 import Share
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,7 +47,7 @@ import dev.vladleesi.braindanceapp.resources.app_name
 import dev.vladleesi.braindanceapp.resources.profile_screen_title
 import dev.vladleesi.braindanceapp.resources.profile_support_share
 import dev.vladleesi.braindanceapp.resources.profile_support_star
-import dev.vladleesi.braindanceapp.ui.components.RepositoryLinks
+import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -60,6 +58,8 @@ import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.signalYellow
 import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.utils.focusRing
+import dev.vladleesi.braindanceapp.utils.isFocusVisible
 import org.jetbrains.compose.resources.stringResource
 
 /** The width of [DesktopSidebar]; the navigation scaffold insets its content by it. */
@@ -126,10 +126,10 @@ fun DesktopSidebar(
     }
 }
 
-/** A minimal open-source footer for the sidebar: the repository links and the app version. */
+/** A minimal footer for the sidebar: starring the GitHub repository, sharing the app, and the app version. */
 @Composable
 fun DesktopProjectLinks(
-    links: RepositoryLinks,
+    links: ProjectLinks,
     versionLabel: String,
     modifier: Modifier = Modifier,
 ) {
@@ -173,13 +173,12 @@ private fun SidebarLink(
     modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val focused by interactionSource.collectIsFocusedAsState()
     Row(
         modifier =
             modifier
                 .heightIn(min = LinkMinHeight)
                 .clip(CornerShapes.small)
-                .border(Dimens.one, if (focused) neonCyan else Color.Transparent, CornerShapes.small)
+                .focusRing(interactionSource.isFocusVisible(), CornerShapes.small)
                 .pointerHoverIcon(PointerIcon.Hand)
                 .clickable(
                     interactionSource = interactionSource,
@@ -234,7 +233,7 @@ fun BrandAccentStrip(modifier: Modifier = Modifier) {
 
 /**
  * One destination row. The selected row has a contrasting surface and a thin cyan indicator; hover and press use the
- * theme ripple, and keyboard focus draws an outline.
+ * theme ripple, and keyboard focus draws an outline that a click does not leave behind.
  */
 @Composable
 private fun SidebarItem(
@@ -245,7 +244,6 @@ private fun SidebarItem(
     modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val focused by interactionSource.collectIsFocusedAsState()
     val contentColor = if (selected) white else secondaryText
     Row(
         modifier =
@@ -254,7 +252,7 @@ private fun SidebarItem(
                 .heightIn(min = ItemMinHeight)
                 .clip(CornerShapes.small)
                 .background(if (selected) secondary else Color.Transparent)
-                .border(Dimens.one, if (focused) neonCyan else Color.Transparent, CornerShapes.small)
+                .focusRing(interactionSource.isFocusVisible(), CornerShapes.small)
                 .pointerHoverIcon(PointerIcon.Hand)
                 .selectable(
                     selected = selected,
@@ -303,7 +301,7 @@ internal fun DesktopSidebarPreview() {
             footer = {
                 DesktopProjectLinks(
                     links =
-                        RepositoryLinks(
+                        ProjectLinks(
                             shareLabel = Res.string.profile_support_share,
                             openRepository = {},
                             share = {},
@@ -328,7 +326,7 @@ internal fun BrandAccentStripPreview() {
 internal fun DesktopProjectLinksPreview() {
     BraindanceTheme {
         DesktopProjectLinks(
-            links = RepositoryLinks(shareLabel = Res.string.profile_support_share, openRepository = {}, share = {}),
+            links = ProjectLinks(shareLabel = Res.string.profile_support_share, openRepository = {}, share = {}),
             versionLabel = "v1.0.0",
             modifier = Modifier.width(DesktopSidebarWidth).background(navBar).padding(Dimens.medium),
         )

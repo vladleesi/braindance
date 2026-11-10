@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.ui.screens
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +38,7 @@ import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.game_details_not_found
 import dev.vladleesi.braindanceapp.resources.game_details_screen_similar_games
 import dev.vladleesi.braindanceapp.system.isLargeWindow
+import dev.vladleesi.braindanceapp.ui.components.CarouselSection
 import dev.vladleesi.braindanceapp.ui.components.ExpandableText
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
 import dev.vladleesi.braindanceapp.ui.components.PlatformLogoList
@@ -46,8 +48,8 @@ import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.details.GenreTags
 import dev.vladleesi.braindanceapp.ui.components.details.ReleaseDateLabel
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardList
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardListSkeleton
+import dev.vladleesi.braindanceapp.ui.components.home.GameCard
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -56,6 +58,7 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.RecommendationsState
+import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 import org.jetbrains.compose.resources.stringResource
@@ -63,6 +66,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 private const val SIMILAR_GAMES_KEY = "similar_games"
+private const val SIMILAR_GAME_CONTENT_TYPE = "similar_game"
 
 @Composable
 fun GameDetailsScreen(
@@ -159,24 +163,30 @@ private fun GameDetailsScreen(
                 item { Spacer(modifier = Modifier.size(Dimens.large)) }
                 item(key = SIMILAR_GAMES_KEY) {
                     val title = stringResource(Res.string.game_details_screen_similar_games)
-                    Crossfade(targetState = recommendations) { target ->
-                        when (target) {
-                            RecommendationsState.Loading ->
-                                MiniGameCardListSkeleton(
-                                    title = title,
-                                    titleTextStyle = MaterialTheme.typography.h3,
-                                    showExpandPlaceholder = false,
-                                )
-
-                            is RecommendationsState.Success ->
-                                MiniGameCardList(
-                                    title = title,
-                                    titleTextStyle = MaterialTheme.typography.h3,
-                                    games = target.games,
-                                    onItemClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
-                                )
-
-                            RecommendationsState.Unavailable -> Unit
+                    // Only loading and loaded recommendations reach this item; a failure hides the section instead.
+                    val sectionState =
+                        remember(recommendations) {
+                            when (recommendations) {
+                                is RecommendationsState.Success -> SectionState.Success(recommendations.games)
+                                else -> SectionState.Loading
+                            }
+                        }
+                    val cardModifier = Modifier.width(Dimens.gameCardWidth)
+                    CarouselSection(
+                        title = title,
+                        state = sectionState,
+                        // Never shown: the section has no error state.
+                        onRetry = {},
+                        skeleton = { GameCardSkeleton(showTitle = true, modifier = cardModifier) },
+                        titleStyle = MaterialTheme.typography.h3,
+                    ) { games ->
+                        items(games, key = { game -> game.id }, contentType = { SIMILAR_GAME_CONTENT_TYPE }) { game ->
+                            GameCard(
+                                card = game,
+                                onClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
+                                showTitle = true,
+                                modifier = cardModifier,
+                            )
                         }
                     }
                 }
@@ -230,8 +240,8 @@ private fun LazyListScope.gameInfoHeaderLargeScreen(state: GameDetailsState.Succ
             AsyncImage(
                 modifier =
                     Modifier
-                        .width(Dimens.miniGameCardWidth)
-                        .height(Dimens.miniGameCardHeight)
+                        .width(Dimens.gameCardWidth)
+                        .height(Dimens.gameCardHeight)
                         .clip(CornerShapes.small),
                 model = state.gameDetails.coverImageUrl,
                 contentScale = ContentScale.Crop,
@@ -257,8 +267,8 @@ private fun LazyListScope.gameInfoHeaderSmallScreen(state: GameDetailsState.Succ
             AsyncImage(
                 modifier =
                     Modifier
-                        .width(Dimens.miniGameCardWidth)
-                        .height(Dimens.miniGameCardHeight)
+                        .width(Dimens.gameCardWidth)
+                        .height(Dimens.gameCardHeight)
                         .clip(CornerShapes.small),
                 model = state.gameDetails.coverImageUrl,
                 contentScale = ContentScale.Crop,

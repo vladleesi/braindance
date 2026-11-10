@@ -11,7 +11,7 @@ import dev.vladleesi.braindanceapp.testing.ViewModelTest
 import dev.vladleesi.braindanceapp.testing.mockBackendClient
 import dev.vladleesi.braindanceapp.testing.respondJson
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayItemModel
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
@@ -36,8 +36,8 @@ class HomeViewModelTest : ViewModelTest() {
         return HomeViewModel(HomeRepo(GamesRemote(client)), GamerPowerRepo(GamerPowerRemote(client)))
     }
 
-    private fun SectionState<MiniGameCardModel>.cardTitles() =
-        assertIs<SectionState.Success<MiniGameCardModel>>(this).items.map { it.title }
+    private fun SectionState<GameCardModel>.cardTitles() =
+        assertIs<SectionState.Success<GameCardModel>>(this).items.map { it.title }
 
     @Test
     fun loadFillsEverySection() =
@@ -159,7 +159,7 @@ class HomeViewModelTest : ViewModelTest() {
             fun SectionState<*>.ids() =
                 assertIs<SectionState.Success<*>>(this).items.map {
                     when (it) {
-                        is MiniGameCardModel -> it.id
+                        is GameCardModel -> it.id
                         is GiveawayItemModel -> it.id
                         else -> error("unexpected $it")
                     }

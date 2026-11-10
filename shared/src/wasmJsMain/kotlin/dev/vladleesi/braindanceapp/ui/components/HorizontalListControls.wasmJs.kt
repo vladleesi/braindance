@@ -33,6 +33,7 @@ import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.horizontal_list_next
 import dev.vladleesi.braindanceapp.resources.horizontal_list_previous
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.FocusVisibleIndication
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
@@ -114,11 +115,14 @@ private fun HorizontalListButton(
                     enabled = enabled,
                     role = Role.Button,
                     interactionSource = null,
+                    // Like the theme indication, the focus highlight shows only for keyboard focus.
                     indication =
-                        ripple(
-                            bounded = false,
-                            radius = ButtonCircleSize / 2,
-                            color = MaterialTheme.colors.onSurface,
+                        FocusVisibleIndication(
+                            ripple(
+                                bounded = false,
+                                radius = ButtonCircleSize / 2,
+                                color = MaterialTheme.colors.onSurface,
+                            ),
                         ),
                     onClick = onClick,
                 ),

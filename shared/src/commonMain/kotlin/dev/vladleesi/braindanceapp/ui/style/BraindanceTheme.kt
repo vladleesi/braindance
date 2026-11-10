@@ -2,11 +2,13 @@
 
 package dev.vladleesi.braindanceapp.ui.style
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.text.TextStyle
@@ -50,11 +52,16 @@ fun BraindanceTheme(
             values =
                 arrayOf(
                     LocalTextSelectionColors provides DarkTextSelectionColors,
+                    // Compose Web focuses a component on every click, so the ripple's focus highlight would stay on
+                    // whatever was clicked last. It shows only for keyboard focus instead, like the focus ring.
+                    LocalIndication provides AppIndication,
                 ),
             content = content,
         )
     }
 }
+
+private val AppIndication = FocusVisibleIndication(ripple())
 
 /** Compact headings and readable body styles, using only the three bundled Poppins weights. */
 private fun buildTypography(fonts: FontFamily): Typography {

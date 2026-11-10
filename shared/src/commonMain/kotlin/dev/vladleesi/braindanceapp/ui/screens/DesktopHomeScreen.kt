@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -80,21 +81,19 @@ import dev.vladleesi.braindanceapp.resources.home_upcoming_releases_description
 import dev.vladleesi.braindanceapp.resources.profile_screen_title
 import dev.vladleesi.braindanceapp.resources.releases_upcoming_title
 import dev.vladleesi.braindanceapp.system.DesktopLayout
+import dev.vladleesi.braindanceapp.ui.components.COVER_ASPECT_RATIO
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.desktop.BrandAccentStrip
-import dev.vladleesi.braindanceapp.ui.components.desktop.COVER_ASPECT_RATIO
-import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopAnticipatedCard
-import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopAnticipatedCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopCardRow
-import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopGameCard
-import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopGameCardSkeleton
-import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopGiveawayCard
-import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopGiveawayCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopGridColumns
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopSection
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCard
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.home.GameCard
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -218,9 +217,9 @@ private fun DesktopHomeMainColumn(
                 state = trendingNow,
                 columns = columns.games,
                 onRetry = viewModel::loadTrendingNow,
-                skeleton = { itemModifier -> DesktopGameCardSkeleton(itemModifier) },
+                skeleton = { itemModifier -> GameCardSkeleton(showTitle = true, modifier = itemModifier) },
             ) { card, itemModifier ->
-                DesktopGameCard(card = card, onClick = onGameClick, modifier = itemModifier)
+                GameCard(card = card, onClick = onGameClick, showTitle = true, modifier = itemModifier)
             }
         }
         DesktopSection(title = stringResource(Res.string.home_screen_popular_most_anticipated)) {
@@ -228,9 +227,9 @@ private fun DesktopHomeMainColumn(
                 state = mostAnticipated,
                 columns = columns.anticipated,
                 onRetry = { viewModel.loadMostAnticipated() },
-                skeleton = { itemModifier -> DesktopAnticipatedCardSkeleton(itemModifier) },
+                skeleton = { itemModifier -> GameCardSkeleton(showTitle = false, modifier = itemModifier) },
             ) { card, itemModifier ->
-                DesktopAnticipatedCard(card = card, onClick = onGameClick, modifier = itemModifier)
+                GameCard(card = card, onClick = onGameClick, showTitle = false, modifier = itemModifier)
             }
         }
         DesktopSection(title = stringResource(Res.string.home_screen_popular_latest_giveaways)) {
@@ -238,9 +237,9 @@ private fun DesktopHomeMainColumn(
                 state = giveaways,
                 columns = columns.giveaways,
                 onRetry = { viewModel.loadGiveaways() },
-                skeleton = { itemModifier -> DesktopGiveawayCardSkeleton(itemModifier) },
+                skeleton = { itemModifier -> GiveawayCardSkeleton(modifier = itemModifier) },
             ) { item, itemModifier ->
-                DesktopGiveawayCard(
+                GiveawayCard(
                     item = item,
                     onClick = { id -> navigator.navigate(GiveawayDetailsRoute(id)) },
                     modifier = itemModifier,
@@ -295,7 +294,7 @@ private fun DesktopHomeHeader(onProfileClick: () -> Unit) {
  */
 @Composable
 private fun DesktopHero(
-    trendingNow: SectionState<MiniGameCardModel>,
+    trendingNow: SectionState<GameCardModel>,
     visibleTrendingCount: Int,
     onExploreClick: () -> Unit,
 ) {
@@ -429,9 +428,7 @@ private fun ContextCard(
             )
             Text(text = description, style = MaterialTheme.typography.caption, color = secondaryText)
             if (link != null && onLinkClick != null) {
-                TextButton(onClick = onLinkClick, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)) {
-                    Text(text = stringResource(link), color = white)
-                }
+                DesktopLinkButton(text = stringResource(link), onClick = onLinkClick)
             }
         }
     }
@@ -505,14 +502,39 @@ private fun PreviewCard(
         action =
             if (link != null && onLinkClick != null) {
                 {
-                    TextButton(onClick = onLinkClick, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)) {
-                        Text(stringResource(link), color = white)
-                    }
+                    DesktopLinkButton(text = stringResource(link), onClick = onLinkClick)
                 }
             } else {
                 null
             },
     )
+}
+
+/** A preview card's link to its destination, filled so it reads as a button before it is hovered. */
+@Composable
+private fun DesktopLinkButton(
+    text: String,
+    onClick: () -> Unit,
+) {
+    TextButton(
+        onClick = onClick,
+        shape = CornerShapes.small,
+        colors = ButtonDefaults.textButtonColors(backgroundColor = background, contentColor = white),
+        contentPadding = PaddingValues(horizontal = Dimens.compact, vertical = Dimens.small),
+        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+    ) {
+        Text(text = text, color = white)
+    }
+}
+
+@Preview
+@Composable
+internal fun DesktopLinkButtonPreview() {
+    BraindanceTheme {
+        Box(modifier = Modifier.background(secondary).padding(Dimens.medium)) {
+            DesktopLinkButton(text = "Open Releases", onClick = {})
+        }
+    }
 }
 
 @Preview

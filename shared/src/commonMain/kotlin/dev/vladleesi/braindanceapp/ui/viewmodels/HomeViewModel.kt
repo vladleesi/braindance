@@ -11,8 +11,8 @@ import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayItemModel
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardLabel
-import dev.vladleesi.braindanceapp.ui.components.home.MiniGameCardModel
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardLabel
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.formatEndDate
 import dev.vladleesi.braindanceapp.utils.giveawayPlatforms
@@ -28,14 +28,14 @@ class HomeViewModel(
     private val homeRepo: HomeRepo,
     private val gamerPowerRepo: GamerPowerRepo,
 ) : ScreenViewModel() {
-    private val _mostAnticipated = MutableStateFlow<SectionState<MiniGameCardModel>>(SectionState.Loading)
-    val mostAnticipated: StateFlow<SectionState<MiniGameCardModel>> = _mostAnticipated.asStateFlow()
+    private val _mostAnticipated = MutableStateFlow<SectionState<GameCardModel>>(SectionState.Loading)
+    val mostAnticipated: StateFlow<SectionState<GameCardModel>> = _mostAnticipated.asStateFlow()
 
     private val _giveaways = MutableStateFlow<SectionState<GiveawayItemModel>>(SectionState.Loading)
     val giveaways: StateFlow<SectionState<GiveawayItemModel>> = _giveaways.asStateFlow()
 
-    private val _trendingNow = MutableStateFlow<SectionState<MiniGameCardModel>>(SectionState.Loading)
-    val trendingNow: StateFlow<SectionState<MiniGameCardModel>> = _trendingNow.asStateFlow()
+    private val _trendingNow = MutableStateFlow<SectionState<GameCardModel>>(SectionState.Loading)
+    val trendingNow: StateFlow<SectionState<GameCardModel>> = _trendingNow.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
 
@@ -70,7 +70,7 @@ class HomeViewModel(
     fun loadMostAnticipated(pageSize: Int = PAGE_SIZE) {
         mostAnticipatedJob =
             loadSection(mostAnticipatedJob, _mostAnticipated) {
-                homeRepo.mostAnticipated(pageSize = pageSize).map { it.mapperMiniGameCardModel() }
+                homeRepo.mostAnticipated(pageSize = pageSize).map { it.toGameCardModels() }
             }
     }
 
@@ -84,7 +84,7 @@ class HomeViewModel(
     fun loadTrendingNow() {
         trendingJob =
             loadSection(trendingJob, _trendingNow) {
-                homeRepo.trendingNow().map { items -> items.map { it.toMiniGameCardModel() }.distinctBy { it.id } }
+                homeRepo.trendingNow().map { items -> items.map { it.toGameCardModel() }.distinctBy { it.id } }
             }
     }
 
@@ -105,10 +105,10 @@ class HomeViewModel(
     }
 
     // Cards without an ID cannot be opened, and lazy lists need unique keys.
-    private fun List<GameItem>.mapperMiniGameCardModel() =
+    private fun List<GameItem>.toGameCardModels() =
         mapNotNull { item ->
             val id = item.id ?: return@mapNotNull null
-            MiniGameCardModel(
+            GameCardModel(
                 id = id,
                 title = item.name.orEmpty(),
                 backgroundImageUrl =
@@ -139,17 +139,17 @@ class HomeViewModel(
 }
 
 /** Maps a trending card; a reason this client does not know is omitted rather than shown generically. */
-internal fun TrendingGameItem.toMiniGameCardModel() =
-    MiniGameCardModel(
+internal fun TrendingGameItem.toGameCardModel() =
+    GameCardModel(
         id = id,
         title = name.orEmpty(),
         backgroundImageUrl = cover?.url?.toCoverUrl(CoverSize.P_720).orEmpty(),
         label =
             when (reason) {
-                "new_release" -> MiniGameCardLabel.NewRelease
-                "full_release" -> MiniGameCardLabel.FullRelease
-                "showcased" -> MiniGameCardLabel.Showcased
-                "new_platform" -> MiniGameCardLabel.NewPlatform(platform?.takeIf(String::isNotBlank))
+                "new_release" -> GameCardLabel.NewRelease
+                "full_release" -> GameCardLabel.FullRelease
+                "showcased" -> GameCardLabel.Showcased
+                "new_platform" -> GameCardLabel.NewPlatform(platform?.takeIf(String::isNotBlank))
                 else -> null
             },
     )
