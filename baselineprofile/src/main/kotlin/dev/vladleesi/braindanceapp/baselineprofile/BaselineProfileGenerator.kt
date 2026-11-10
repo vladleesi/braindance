@@ -26,12 +26,14 @@ class BaselineProfileGenerator {
             pressHome()
             startActivityAndWait()
             device.wait(Until.hasObject(By.scrollable(true)), CONTENT_TIMEOUT_MILLIS)
-            val home = device.findObject(By.scrollable(true)) ?: return@collect
-            // Vertical scrolling renders every Home carousel and their image cards.
-            home.fling(Direction.DOWN)
-            device.waitForIdle()
-            home.fling(Direction.UP)
-            device.waitForIdle()
+            // Vertical scrolling renders every Home carousel and their image cards. The first scrollable is the Home
+            // list; it is looked up again before each fling, because a reference to a Compose accessibility node can
+            // go stale once the list has scrolled.
+            for (direction in listOf(Direction.DOWN, Direction.UP)) {
+                val home = device.findObject(By.scrollable(true)) ?: return@collect
+                home.fling(direction)
+                device.waitForIdle()
+            }
         }
 
     private companion object {
