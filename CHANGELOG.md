@@ -4,6 +4,13 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.13.3
+
+### Android, iOS, and Web
+
+- Open a giveaway from Home instantly, using the details already loaded with the list instead of waiting for
+  another request. Direct links and Retry still load it from the server.
+
 ## 0.13.2
 
 ### Android, iOS, and Web

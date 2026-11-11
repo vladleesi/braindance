@@ -22,13 +22,27 @@ class GiveawayDetailsViewModel(
     private val giveawayId: Int,
     private val gamerPowerRepo: GamerPowerRepo,
 ) : ScreenViewModel() {
-    private val _giveawayDetailsState = MutableStateFlow<GiveawayDetailsState>(GiveawayDetailsState.Loading)
+    // A giveaway opened from the list starts as listed, so the screen's first frame shows it without a request or a
+    // loading frame. Direct links and giveaways outside the list start loading and ask the backend.
+    private val _giveawayDetailsState =
+        MutableStateFlow(
+            gamerPowerRepo.listedGiveaway(giveawayId)?.let { GiveawayDetailsState.Success(it.toGiveawayDetails()) }
+                ?: GiveawayDetailsState.Loading,
+        )
     val giveawayDetailsState: StateFlow<GiveawayDetailsState> = _giveawayDetailsState.asStateFlow()
 
     // One running load: a refresh cancels the previous one, so an older response can never replace a newer one.
     private var loadJob: Job? = null
 
     override fun onLoad() {
+        if (_giveawayDetailsState.value == GiveawayDetailsState.Loading) fetch()
+    }
+
+    override fun onRefresh() {
+        fetch()
+    }
+
+    private fun fetch() {
         loadJob?.cancel()
         loadJob =
             viewModelScope.launch {
@@ -45,10 +59,6 @@ class GiveawayDetailsViewModel(
                             }
                     }
             }
-    }
-
-    override fun onRefresh() {
-        onLoad()
     }
 }
 

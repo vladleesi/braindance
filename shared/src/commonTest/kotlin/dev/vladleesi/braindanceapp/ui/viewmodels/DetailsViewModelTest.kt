@@ -113,6 +113,46 @@ class DetailsViewModelTest : ViewModelTest() {
         }
 
     @Test
+    fun aListedGiveawayOpensWithoutARequestUntilRefreshed() =
+        runTest(dispatcher) {
+            val requests = mutableListOf<String>()
+            val client =
+                mockBackendClient(dispatcher) { request ->
+                    requests += request.url.encodedPath
+                    when (request.url.encodedPath) {
+                        "/v1/giveaways" -> respondJson("""[{"id":7,"title":"Listed"},{"title":"No ID"}]""")
+                        "/v1/giveaways/7" -> respondJson("""{"id":7,"title":"Fetched"}""")
+                        "/v1/giveaways/8" -> respondJson("""{"id":8,"title":"Direct link"}""")
+                        else -> respondJson("{}", HttpStatusCode.InternalServerError)
+                    }
+                }
+            val repo = GamerPowerRepo(GamerPowerRemote(client))
+            repo.giveaways(pageSize = 20)
+            requests.clear()
+
+            fun GiveawayDetailsViewModel.title() =
+                assertIs<GiveawayDetailsState.Success>(giveawayDetailsState.value).giveawayDetails.title
+
+            val listed = GiveawayDetailsViewModel(giveawayId = 7, gamerPowerRepo = repo)
+            val unlisted = GiveawayDetailsViewModel(giveawayId = 8, gamerPowerRepo = repo)
+            // The screen's first frame reads this before load() runs, so a listed giveaway never shows Loading.
+            assertEquals("Listed", listed.title())
+            assertEquals(GiveawayDetailsState.Loading, unlisted.giveawayDetailsState.value)
+            listed.load()
+            unlisted.load()
+            advanceUntilIdle()
+
+            assertEquals("Listed", listed.title())
+            assertEquals("Direct link", unlisted.title())
+            assertEquals(listOf("/v1/giveaways/8"), requests)
+
+            listed.refresh()
+            advanceUntilIdle()
+
+            assertEquals("Fetched", listed.title())
+        }
+
+    @Test
     fun giveawayCancellationIsNotReportedAsAnError() =
         runTest(dispatcher) {
             val client =
