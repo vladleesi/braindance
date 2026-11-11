@@ -26,6 +26,9 @@ internal data class Recommendation(
 internal object RecommendationRanking {
     const val MAX_RESULTS = 50
 
+    /** Ranked before edition preference, which can merge an original into its successor's entry. */
+    const val RANKED_RESULTS = MAX_RESULTS + 10
+
     // Metadata family weights; families the source lacks are dropped and the rest renormalized.
     private const val KEYWORD_WEIGHT = 0.37
     private const val THEME_WEIGHT = 0.22
@@ -107,7 +110,10 @@ internal object RecommendationRanking {
             .sorted()
     }
 
-    /** Ranks a pool produced by [candidatePool]; returns at most [limit] games above the relevance threshold. */
+    /**
+     * Ranks a pool produced by [candidatePool]; returns at most [limit] games, up to [RANKED_RESULTS], above the
+     * relevance threshold.
+     */
     fun rank(
         graph: SourceGraph,
         candidates: List<IgdbGame>,
@@ -139,7 +145,7 @@ internal object RecommendationRanking {
             }
         val best = scored.maxOfOrNull { it.second } ?: return emptyList()
         val threshold = maxOf(ABSOLUTE_MIN_SCORE, RELATIVE_MIN_SCORE * best)
-        return diversify(scored.filter { it.second >= threshold }, limit.coerceIn(1, MAX_RESULTS))
+        return diversify(scored.filter { it.second >= threshold }, limit.coerceIn(1, RANKED_RESULTS))
     }
 
     /**
@@ -150,23 +156,45 @@ internal object RecommendationRanking {
         graph: SourceGraph,
         discovered: List<IgdbGame>,
     ): List<IgdbGame> {
-        val source = graph.source
-        val excludedIds = setOfNotNull(source.id, source.versionParent, source.parentGame)
-        val allowErotic = RecommendationQueries.EROTIC_THEME in source.themes
         val unique = (graph.direct + graph.reverse + discovered).distinctBy { it.id }.sortedBy { it.id }
         val seenTitles = mutableSetOf<String>()
         return unique.filter { game ->
             val title = normalizedTitle(game.name.orEmpty())
             val year = game.firstReleaseDate?.let { (it / SECONDS_PER_YEAR).toInt() }
-            game.id !in excludedIds &&
-                title.isNotEmpty() &&
-                game.versionParent == null &&
-                (game.gameType == null || game.gameType in RecommendationQueries.recommendableGameTypes) &&
-                game.gameStatus !in cancelledOrRumored &&
-                (allowErotic || RecommendationQueries.EROTIC_THEME !in game.themes) &&
-                seenTitles.add("$title:$year")
+            isCandidate(graph.source, game) && seenTitles.add("$title:$year")
         }
     }
+
+    /** Whether [game] may be recommended for [source]: not the source or its parent, and recommendable content. */
+    internal fun isCandidate(
+        source: IgdbGame,
+        game: IgdbGame,
+    ): Boolean {
+        val excludedIds = setOfNotNull(source.id, source.versionParent, source.parentGame)
+        val allowErotic = RecommendationQueries.EROTIC_THEME in source.themes
+        return game.id !in excludedIds &&
+            normalizedTitle(game.name.orEmpty()).isNotEmpty() &&
+            game.versionParent == null &&
+            (game.gameType == null || game.gameType in RecommendationQueries.recommendableGameTypes) &&
+            game.gameStatus !in cancelledOrRumored &&
+            (allowErotic || RecommendationQueries.EROTIC_THEME !in game.themes)
+    }
+
+    /**
+     * Puts each replaced original's successor in the original's place with its score. A successor that was also
+     * ranked keeps only its first place, so the list stays free of duplicates; [ranked] carries spare entries
+     * ([RANKED_RESULTS]) so the result still fills [MAX_RESULTS].
+     */
+    fun preferEditions(
+        ranked: List<Recommendation>,
+        replacements: Map<Int, IgdbGame>,
+    ): List<Recommendation> =
+        ranked
+            .map { entry ->
+                val successor = replacements[entry.id] ?: return@map entry
+                Recommendation(successor.id, checkNotNull(successor.name), successor.cover?.url, entry.score)
+            }.distinctBy { it.id }
+            .take(MAX_RESULTS)
 
     internal fun normalizedTitle(name: String): String =
         name

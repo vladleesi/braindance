@@ -50,7 +50,9 @@ internal data class RecommendationResult(
 
 /**
  * Owns recommendation discovery, ranking, and caching. A cache miss costs two IGDB requests: one multiquery for the
- * source game and its graph neighbors, then one multiquery for bounded candidate searches. Concurrent requests for the
+ * source game and its graph neighbors, then one multiquery for bounded candidate searches. A third, bounded multiquery
+ * runs only when ranked games have remasters or expanded editions, to prefer a sold successor over a withdrawn
+ * original ([EditionPreference]); when it fails or time runs out, the originals stay. Concurrent requests for the
  * same game share one computation. The cache is process-local; shared reuse across instances comes from the edge cache.
  */
 internal class RecommendationService(
@@ -144,11 +146,62 @@ internal class RecommendationService(
         val discovered = if (discoveryQuery == null) emptyList() else discover(discoveryQuery, budget, metrics)
         val scoringStarted = TimeSource.Monotonic.markNow()
         val pool = RecommendationRanking.candidatePool(graph, discovered.orEmpty())
-        val ranked = RecommendationRanking.rank(graph, pool)
+        val ranked = RecommendationRanking.rank(graph, pool, RecommendationRanking.RANKED_RESULTS)
         metrics.scoringMicros = scoringStarted.elapsedNow().inWholeMicroseconds
         metrics.candidates = pool.size
+        val games = preferEditions(graph.source, pool, ranked, started, metrics)
         val kind = if (discovered == null) RecommendationResult.Kind.DEGRADED else RecommendationResult.Kind.COMPLETE
-        return RecommendationResult(games = ranked, kind = kind)
+        return RecommendationResult(games = games, kind = kind)
+    }
+
+    /**
+     * Replaces ranked originals that IGDB shows are withdrawn with their sold successors. The lookup is best effort: it
+     * runs only within the response budget, and any failure keeps the ranked originals.
+     */
+    private suspend fun preferEditions(
+        source: IgdbGame,
+        pool: List<IgdbGame>,
+        ranked: List<Recommendation>,
+        started: TimeMark,
+        metrics: Metrics,
+    ): List<Recommendation> {
+        val unchanged = ranked.take(RecommendationRanking.MAX_RESULTS)
+        val poolById = pool.associateBy { it.id }
+        val originals = ranked.mapNotNull { poolById[it.id] }
+        val query = EditionPreference.query(originals, RecommendationQueries.SUCCESSOR_FIELDS) ?: return unchanged
+        val budget = TOTAL_BUDGET - started.elapsedNow()
+        if (budget < MIN_EDITIONS) {
+            metrics.editionFailure = "budget"
+            return unchanged
+        }
+        val response =
+            withTimeoutOrNull(budget) {
+                igdb.execute(MULTIQUERY_PATH, query, minOf(SLOT_WAIT, budget / 2).inWholeMilliseconds)
+            }
+        if (response == null) {
+            metrics.editionFailure = "timeout"
+            return unchanged
+        }
+        metrics.record(response)
+        if (response !is UpstreamOutcome.Ok) {
+            metrics.editionFailure = response.status.toString()
+            return unchanged
+        }
+        val replacements =
+            try {
+                EditionPreference.replacements(
+                    originals,
+                    RecommendationQueries.parseMultiquery(response.body),
+                    clock.millis() / MILLIS_PER_SECOND,
+                ) { RecommendationRanking.isCandidate(source, it) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                metrics.editionFailure = "malformed"
+                return unchanged
+            }
+        metrics.editions = replacements.size
+        return RecommendationRanking.preferEditions(ranked, replacements)
     }
 
     /** Returns null when discovery fails, so the caller falls back to native graph neighbors. */
@@ -224,6 +277,8 @@ internal class RecommendationService(
         var candidates = 0
         var scoringMicros = 0L
         var discoveryFailure: String? = null
+        var editions = 0
+        var editionFailure: String? = null
         var error: String? = null
 
         fun record(response: UpstreamOutcome) {
@@ -238,8 +293,9 @@ internal class RecommendationService(
         ) = "{\"event\":\"recommendations\",\"game_id\":$gameId,\"status\":${result.status}," +
             "\"kind\":\"${result.kind.name.lowercase()}\",\"igdb_requests\":$igdbRequests," +
             "\"payload_bytes\":$payloadBytes,\"candidates\":$candidates,\"results\":${result.games.size}," +
-            "\"scoring_us\":$scoringMicros,\"duration_ms\":$durationMillis" +
+            "\"scoring_us\":$scoringMicros,\"editions\":$editions,\"duration_ms\":$durationMillis" +
             (discoveryFailure?.let { ",\"discovery_failure\":\"$it\"" } ?: "") +
+            (editionFailure?.let { ",\"edition_failure\":\"$it\"" } ?: "") +
             (error?.let { ",\"error\":\"$it\"" } ?: "") + "}"
     }
 
@@ -257,6 +313,10 @@ internal class RecommendationService(
         private val SOURCE_TIMEOUT = 3.5.seconds
         private val TOTAL_BUDGET = 4.5.seconds
         private val MIN_DISCOVERY = 800.milliseconds
+
+        // Below this, the optional edition lookup is skipped rather than risk the client timeout.
+        private val MIN_EDITIONS = 500.milliseconds
+        private const val MILLIS_PER_SECOND = 1000
         private val SLOT_WAIT = 1.seconds
     }
 }

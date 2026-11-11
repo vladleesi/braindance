@@ -45,6 +45,11 @@ internal data class IgdbGame(
     @SerialName("age_ratings") val ageRatings: List<IgdbAgeRating> = emptyList(),
     // Only the trending hydration query expands release dates with their platform and status.
     @SerialName("release_dates") val releaseDates: List<IgdbReleaseDate> = emptyList(),
+    // Successor IDs that edition preference checks; see EditionPreference.
+    val remasters: List<Int> = emptyList(),
+    @SerialName("expanded_games") val expandedGames: List<Int> = emptyList(),
+    // Only edition lookups expand websites.
+    val websites: List<IgdbWebsite> = emptyList(),
 )
 
 /** One platform and region release; [date] is in Unix seconds and missing for undated entries. */
@@ -106,6 +111,8 @@ internal object RecommendationQueries {
             "total_rating_count",
             "hypes",
             "similar_games",
+            "remasters",
+            "expanded_games",
         )
     private val candidateFields = metadataFields.joinToString(",")
     private val sourceFields =
@@ -121,6 +128,10 @@ internal object RecommendationQueries {
      * and updates are not recommended. Missing types are kept so incomplete entries are not silently dropped.
      */
     val recommendableGameTypes = setOf(0, 4, 8, 9, 10)
+
+    /** Fields a recommended successor needs besides those [EditionPreference.query] always requests. */
+    const val SUCCESSOR_FIELDS = "cover.url,themes"
+
     val gameTypeFilter = "(game_type = (${recommendableGameTypes.joinToString(",")}) | game_type = null)"
     const val EROTIC_THEME = 42
 

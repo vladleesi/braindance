@@ -3,6 +3,15 @@
 Release notes for the independently versioned Braindance API, including its original Cloudflare Worker implementation.
 Frontend releases are tracked in the [frontend changelog](../CHANGELOG.md).
 
+## 0.12.0
+
+- Recommend a remaster or expanded edition that is still sold in place of an original that is no longer sold; for
+  example, Darksiders II: Deathinitive Edition replaces Darksiders II. An original is replaced only when IGDB marks it
+  delisted or offline, or all of its store links point to closed stores, and only by a successor that IGDB links to it
+  and that has a current store link. Originals that are still sold stay next to their remasters, Popular Right Now is
+  unchanged, and game details still open every original. A cache miss makes one extra IGDB request only when ranked
+  games have remasters or expanded editions; if it fails, the originals are kept.
+
 ## 0.11.2
 
 - Allow Cloudflare to keep serving every public response for up to a day after it expires while it fetches a fresh

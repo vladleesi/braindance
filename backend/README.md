@@ -115,11 +115,30 @@ documented in [`Trending.kt`](src/main/kotlin/dev/vladleesi/braindanceapp/backen
 ## Recommendations
 
 A cache miss makes two IGDB [multiqueries](https://api-docs.igdb.com/#multi-query): the source game's graph, then
-bounded searches for related series, metadata profiles, and keywords. Only main games, standalone expansions,
+bounded searches for related series, metadata profiles, and keywords; a third runs only for
+[preferred editions](#preferred-editions). Only main games, standalone expansions,
 remakes, remasters, and expanded games are returned. Complete rankings are cached for 24 hours and served for up to
 7 more days if a refresh fails; partial rankings after a failed second request are private and cached for 2 minutes.
 Scoring is documented in
 [`RecommendationRanking.kt`](src/main/kotlin/dev/vladleesi/braindanceapp/backend/RecommendationRanking.kt).
+
+## Preferred editions
+
+Recommendations show a sold remaster or expanded edition instead of an original that is no longer sold. Popular Right
+Now is unchanged: it ranks the edition people are paying attention to. An original is replaced only when IGDB marks
+it delisted or offline, or all of its storefront links point to closed stores (the Xbox 360 Marketplace, Wii U and 3DS
+eShops). Without storefront links, availability is unknown
+and the original stays. The successor must appear in the original's `remasters` or `expanded_games` with a
+`parent_game` pointing back, must not be a version entry, must be released, and needs a current storefront link.
+Remakes, ports, sequels, DLC, bundles, and similarly named games never replace a game. Originals that are still sold
+stay next to their remasters, and game details are never redirected.
+
+The successor takes the original's place and score. Duplicates are merged, and spare ranked games keep the list full.
+When ranked games have successors, a cache miss makes one more bounded multiquery for up to 30 originals, skipped when
+less than 0.5 seconds of the response budget remain. If it fails, the originals are kept and the `recommendations` log
+line reports `edition_failure`. Store links are matched by URL and never fetched, so a store that delists a game
+without IGDB reflecting it is not detected. The rules are documented in
+[`Editions.kt`](src/main/kotlin/dev/vladleesi/braindanceapp/backend/Editions.kt).
 
 ## Caching and proxy guard
 
