@@ -4,6 +4,13 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.14.1
+
+### Android, iOS, and Web
+
+- Credit the data providers next to the app version as "Game data by IGDB" and "Giveaways by GamerPower", with each
+  provider name linking to its site.
+
 ## 0.14.0
 
 ### Android, iOS, and Web

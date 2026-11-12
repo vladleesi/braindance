@@ -16,7 +16,8 @@
     <!-- Profile screen -->
     <string name="profile_screen_title">Profile</string>
     <string name="profile_screen_version">v%1$s</string>
-    <string name="data_attribution_igdb">Powered by IGDB</string>
+    <string name="data_attribution_igdb">Game data by %1$s</string>
+    <string name="data_attribution_gamerpower">Giveaways by %1$s</string>
     <string name="profile_open_source_title">Braindance is open source</string>
     <string name="profile_support_description">Like the project? Support it on GitHub.</string>
     <string name="profile_support_star">Star us</string>

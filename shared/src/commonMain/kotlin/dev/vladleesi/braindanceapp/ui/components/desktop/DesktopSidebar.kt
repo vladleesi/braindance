@@ -44,12 +44,12 @@ import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.app_name
-import dev.vladleesi.braindanceapp.resources.data_attribution_igdb
 import dev.vladleesi.braindanceapp.resources.profile_screen_title
 import dev.vladleesi.braindanceapp.resources.profile_support_share
 import dev.vladleesi.braindanceapp.resources.profile_support_star
 import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.VersionAttribution
+import dev.vladleesi.braindanceapp.ui.components.rememberDataAttributions
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -130,7 +130,7 @@ fun DesktopSidebar(
 
 /**
  * A minimal footer for the sidebar: starring the GitHub repository, sharing the app, the app version, and the IGDB
- * data attribution.
+ * and GamerPower data attributions.
  */
 @Composable
 fun DesktopProjectLinks(
@@ -162,8 +162,7 @@ fun DesktopProjectLinks(
         }
         VersionAttribution(
             versionLabel = versionLabel,
-            attributionLabel = stringResource(Res.string.data_attribution_igdb),
-            onOpenDataSource = links.openDataSource,
+            attributions = links.rememberDataAttributions(),
             modifier = Modifier.padding(horizontal = Dimens.small, vertical = Dimens.tiny),
         )
     }
@@ -310,7 +309,8 @@ internal fun DesktopSidebarPreview() {
                             shareLabel = Res.string.profile_support_share,
                             openRepository = {},
                             share = {},
-                            openDataSource = {},
+                            openIgdb = {},
+                            openGamerPower = {},
                         ),
                     versionLabel = "v1.0.0",
                 )
@@ -337,7 +337,8 @@ internal fun DesktopProjectLinksPreview() {
                     shareLabel = Res.string.profile_support_share,
                     openRepository = {},
                     share = {},
-                    openDataSource = {},
+                    openIgdb = {},
+                    openGamerPower = {},
                 ),
             versionLabel = "v1.0.0",
             modifier = Modifier.width(DesktopSidebarWidth).background(navBar).padding(Dimens.medium),

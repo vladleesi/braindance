@@ -49,7 +49,6 @@ data class OpenSourceSectionTexts(
     val starLabel: String,
     val shareLabel: String,
     val versionLabel: String,
-    val dataAttributionLabel: String,
 )
 
 @Composable
@@ -57,7 +56,7 @@ fun OpenSourceSection(
     texts: OpenSourceSectionTexts,
     onOpenRepository: () -> Unit,
     onShare: () -> Unit,
-    onOpenDataSource: () -> Unit,
+    attributions: List<DataAttribution>,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -88,8 +87,7 @@ fun OpenSourceSection(
 
             VersionAttribution(
                 versionLabel = texts.versionLabel,
-                attributionLabel = texts.dataAttributionLabel,
-                onOpenDataSource = onOpenDataSource,
+                attributions = attributions,
             )
         }
     }
@@ -187,11 +185,14 @@ internal fun OpenSourceSectionPreview() {
                     starLabel = "Star",
                     shareLabel = "Share",
                     versionLabel = "v1.0.0",
-                    dataAttributionLabel = "Powered by IGDB",
                 ),
             onOpenRepository = {},
             onShare = {},
-            onOpenDataSource = {},
+            attributions =
+                listOf(
+                    DataAttribution(label = "Game data by IGDB", linkText = "IGDB", onOpen = {}),
+                    DataAttribution(label = "Giveaways by GamerPower", linkText = "GamerPower", onOpen = {}),
+                ),
         )
     }
 }
