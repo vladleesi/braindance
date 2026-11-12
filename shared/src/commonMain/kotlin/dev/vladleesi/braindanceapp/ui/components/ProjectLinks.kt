@@ -9,8 +9,6 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import dev.vladleesi.braindanceapp.resources.Res
-import dev.vladleesi.braindanceapp.resources.data_attribution_gamerpower
-import dev.vladleesi.braindanceapp.resources.data_attribution_igdb
 import dev.vladleesi.braindanceapp.resources.profile_support_copy
 import dev.vladleesi.braindanceapp.resources.profile_support_share
 import dev.vladleesi.braindanceapp.resources.share_app_message
@@ -23,10 +21,13 @@ private const val REPOSITORY_URL = "https://github.com/vladleesi/braindance"
 private const val APP_URL = "https://app.braindancegg.com/"
 private const val IGDB_URL = "https://www.igdb.com/"
 private const val GAMERPOWER_URL = "https://www.gamerpower.com/"
+private const val RELEASES_URL = "$REPOSITORY_URL/releases"
+private const val THREADS_URL = "https://www.threads.com/@braindancegg"
+private const val X_URL = "https://x.com/braindancegg"
 
 // Provider names are brands, so they are not translated; the attribution strings place them in a sentence.
-private const val IGDB_NAME = "IGDB"
-private const val GAMERPOWER_NAME = "GamerPower"
+internal const val IGDB_NAME = "IGDB"
+internal const val GAMERPOWER_NAME = "GamerPower"
 
 /**
  * The project's promotion actions. [openRepository] opens the GitHub repository; [share] recommends the Braindance
@@ -41,6 +42,14 @@ class ProjectLinks(
     val share: () -> Unit,
     val openIgdb: () -> Unit,
     val openGamerPower: () -> Unit,
+)
+
+/** Where people follow the project: its Threads and X profiles and the GitHub release notes. Each opens its page. */
+@Immutable
+class CommunityLinks(
+    val openThreads: () -> Unit,
+    val openX: () -> Unit,
+    val openReleases: () -> Unit,
 )
 
 /** The project actions shared by Profile and the desktop sidebar. */
@@ -72,15 +81,15 @@ fun rememberProjectLinks(): ProjectLinks {
     }
 }
 
-/** The data attributions shared by Profile and the desktop sidebar: game data by IGDB, giveaways by GamerPower. */
+/** The community links used by the desktop sidebar. */
 @Composable
-fun ProjectLinks.rememberDataAttributions(): List<DataAttribution> {
-    val igdbLabel = stringResource(Res.string.data_attribution_igdb, IGDB_NAME)
-    val gamerPowerLabel = stringResource(Res.string.data_attribution_gamerpower, GAMERPOWER_NAME)
-    return remember(this, igdbLabel, gamerPowerLabel) {
-        listOf(
-            DataAttribution(label = igdbLabel, linkText = IGDB_NAME, onOpen = openIgdb),
-            DataAttribution(label = gamerPowerLabel, linkText = GAMERPOWER_NAME, onOpen = openGamerPower),
+fun rememberCommunityLinks(): CommunityLinks {
+    val uriHandler = LocalUriHandler.current
+    return remember(uriHandler) {
+        CommunityLinks(
+            openThreads = { uriHandler.openExternalUrl(THREADS_URL) },
+            openX = { uriHandler.openExternalUrl(X_URL) },
+            openReleases = { uriHandler.openExternalUrl(RELEASES_URL) },
         )
     }
 }

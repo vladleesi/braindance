@@ -4,6 +4,22 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.15.0
+
+### Android, iOS, and Web
+
+- Redesign Profile into grouped sections: account features that are coming, community links (GitHub, Threads, X, and
+  sharing), and About (release notes and the IGDB and GamerPower credits). The app version and its "In development"
+  stage sit at the bottom.
+- Replace the profile icon with an abstract user avatar in the navigation and page headers.
+
+### Web
+
+- Fix a blank white page in Safari 27.2 and in every browser on iOS and iPadOS 27.2.
+- The sidebar now ends with the Profile entry only; the project links, credits, and version moved to Profile.
+- The profile button no longer repeats in the page header while the sidebar is shown, and the "In development" badge
+  left the Home header.
+
 ## 0.14.1
 
 ### Android, iOS, and Web

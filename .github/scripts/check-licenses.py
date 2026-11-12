@@ -12,15 +12,18 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 ICON_DIR = Path("shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui/style/icons")
 LUCIDE_ICONS = {
-    "IconBell.kt", "IconCalendarDays.kt", "IconChevronLeft.kt", "IconCircleUserRound.kt", "IconCompass.kt",
+    "IconBell.kt", "IconCalendarDays.kt", "IconChevronLeft.kt", "IconCompass.kt",
     "IconGithub.kt", "IconHouse.kt", "IconLibrary.kt", "IconNewspaper.kt", "IconPlus.kt", "IconRss.kt",
-    "IconSearch.kt", "IconSlidersHorizontal.kt", "IconUsers.kt",
+    "IconSearch.kt", "IconSlidersHorizontal.kt", "IconUsers.kt", "IconDatabase.kt",
+    "IconFileText.kt", "IconGift.kt",
 }
+SIMPLE_ICONS = {"IconThreadsLogo.kt", "IconXLogo.kt"}
 SOURCE_SUFFIXES = {".kt", ".kts", ".swift", ".py", ".sh"}
 # Official Mozilla plain text and the upstream copies linked in THIRD_PARTY_NOTICES.md.
 LICENSE_HASHES = {
     "LICENSE": "3f3d9e0024b1921b067d6f7f88deb4a60cbe7a78e76c64e3f1d7fc3b779b9d04",
     "LICENSES/Apache-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "LICENSES/CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
     "LICENSES/Feather-MIT.txt": "308028e93fcf84972523cdf6e616f73168546b4953895f516d01287f16fe7bee",
     "LICENSES/Lucide-ISC.txt": "1e7290b35280a048667bbf0ebabac1c7fd52a75300e8b2946ac165715997f2bc",
     "LICENSES/Poppins-OFL-1.1.txt": "8503c30a4d7e09c4c09015fee42f829f18acbe6330755e9930ba50ea44eaa157",
@@ -45,11 +48,14 @@ def main():
     checked = 0
     for name in sorted(set(output.decode().split("\0")) - {""}):
         path = Path(name)
-        if path.suffix not in SOURCE_SUFFIXES:
+        # A tracked file that is already deleted in the working tree has no header to check before the commit.
+        if path.suffix not in SOURCE_SUFFIXES or not (ROOT / path).is_file():
             continue
         identifier = "MPL-2.0"
         if path.parent == ICON_DIR and path.name in LUCIDE_ICONS:
             identifier = "ISC AND MIT"
+        elif path.parent == ICON_DIR and path.name in SIMPLE_ICONS:
+            identifier = "CC0-1.0"
         elif path == ICON_DIR / "IconOpenInNew.kt":
             identifier = "Apache-2.0"
         prefix = "#" if path.suffix in {".py", ".sh"} else "//"

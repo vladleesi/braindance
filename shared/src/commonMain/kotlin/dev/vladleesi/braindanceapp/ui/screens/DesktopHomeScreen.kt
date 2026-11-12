@@ -4,7 +4,6 @@ package dev.vladleesi.braindanceapp.ui.screens
 
 import Bell
 import CalendarDays
-import CircleUserRound
 import Star
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -60,7 +58,6 @@ import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.resources.Res
-import dev.vladleesi.braindanceapp.resources.desktop_development_status
 import dev.vladleesi.braindanceapp.resources.desktop_hero_action
 import dev.vladleesi.braindanceapp.resources.desktop_hero_description
 import dev.vladleesi.braindanceapp.resources.desktop_hero_title
@@ -85,6 +82,7 @@ import dev.vladleesi.braindanceapp.ui.components.COVER_ASPECT_RATIO
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
+import dev.vladleesi.braindanceapp.ui.components.UserAvatar
 import dev.vladleesi.braindanceapp.ui.components.desktop.BrandAccentStrip
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopCardRow
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopGridColumns
@@ -101,7 +99,6 @@ import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.navBar
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.signalYellow
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
@@ -170,7 +167,10 @@ internal fun DesktopHomeScreen(
                 modifier = Modifier.width(mainWidth + contextWidth),
                 verticalArrangement = Arrangement.spacedBy(Dimens.large),
             ) {
-                DesktopHomeHeader(onProfileClick = { navigator.navigate(ProfileRoute) })
+                DesktopHomeHeader(
+                    showProfileButton = !layout.hasSidebar,
+                    onProfileClick = { navigator.navigate(ProfileRoute) },
+                )
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.large)) {
                     DesktopHomeMainColumn(
                         layout = layout,
@@ -256,7 +256,10 @@ private fun DesktopHomeMainColumn(
 }
 
 @Composable
-private fun DesktopHomeHeader(onProfileClick: () -> Unit) {
+private fun DesktopHomeHeader(
+    showProfileButton: Boolean,
+    onProfileClick: () -> Unit,
+) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = stringResource(Res.string.desktop_tagline),
@@ -266,24 +269,12 @@ private fun DesktopHomeHeader(onProfileClick: () -> Unit) {
                     .weight(1f)
                     .semantics { heading() },
         )
-        Text(
-            text = stringResource(Res.string.desktop_development_status),
-            style = MaterialTheme.typography.caption,
-            color = signalYellow,
-            maxLines = 1,
-            modifier =
-                Modifier
-                    .padding(end = Dimens.small)
-                    .background(secondary, CircleShape)
-                    .padding(horizontal = Dimens.small, vertical = Dimens.micro),
-        )
         ComingSoonAction(imageVector = Bell, label = stringResource(Res.string.home_notifications_coming_soon))
-        IconButton(onClick = onProfileClick, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)) {
-            Icon(
-                imageVector = CircleUserRound,
-                contentDescription = stringResource(Res.string.profile_screen_title),
-                tint = white,
-            )
+        // The sidebar links to Profile, so the button only appears in the layout without a sidebar.
+        if (showProfileButton) {
+            IconButton(onClick = onProfileClick, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)) {
+                UserAvatar(contentDescription = stringResource(Res.string.profile_screen_title))
+            }
         }
     }
 }
@@ -542,7 +533,7 @@ internal fun DesktopLinkButtonPreview() {
 internal fun DesktopHomeHeaderPreview() {
     BraindanceTheme {
         Box(modifier = Modifier.background(background).padding(Dimens.large)) {
-            DesktopHomeHeader(onProfileClick = {})
+            DesktopHomeHeader(showProfileButton = true, onProfileClick = {})
         }
     }
 }

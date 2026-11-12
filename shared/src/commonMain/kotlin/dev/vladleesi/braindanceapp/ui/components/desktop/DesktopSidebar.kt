@@ -2,12 +2,8 @@
 
 package dev.vladleesi.braindanceapp.ui.components.desktop
 
-import CircleUserRound
-import Github
-import Share
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -33,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.Role
@@ -45,11 +41,7 @@ import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.app_name
 import dev.vladleesi.braindanceapp.resources.profile_screen_title
-import dev.vladleesi.braindanceapp.resources.profile_support_share
-import dev.vladleesi.braindanceapp.resources.profile_support_star
-import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
-import dev.vladleesi.braindanceapp.ui.components.VersionAttribution
-import dev.vladleesi.braindanceapp.ui.components.rememberDataAttributions
+import dev.vladleesi.braindanceapp.ui.components.UserAvatar
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -69,16 +61,16 @@ val DesktopSidebarWidth = 232.dp
 
 private val ItemMinHeight = 44.dp
 private val ItemIconSize = 20.dp
-private val LinkMinHeight = 36.dp
-private val LinkIconSize = 16.dp
+private val ProfileAvatarSize = 24.dp
 private val IndicatorWidth = 3.dp
 private val IndicatorHeight = 20.dp
 private val AccentSegmentWidth = 10.dp
 private val AccentColors = listOf(neonCyan, hotMagenta, signalYellow)
 
 /**
- * The desktop navigation sidebar: the brand, the top-level destinations, and the profile entry at the bottom. It
- * renders the existing routes and navigation state; [onRouteClick] and [onProfileClick] perform the navigation.
+ * The desktop navigation sidebar: the brand, the top-level destinations, and the profile entry at the bottom, which
+ * leads to everything else (community links, credits, version). It renders the existing routes and navigation state;
+ * [onRouteClick] and [onProfileClick] perform the navigation.
  */
 @Composable
 fun DesktopSidebar(
@@ -87,7 +79,6 @@ fun DesktopSidebar(
     onRouteClick: (BottomBarRoute) -> Unit,
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
-    footer: @Composable () -> Unit = {},
 ) {
     Column(
         modifier =
@@ -110,101 +101,28 @@ fun DesktopSidebar(
             BottomBarRoute.routes.forEach { route ->
                 SidebarItem(
                     label = stringResource(route.label),
-                    imageVector = route.imageVector,
                     // The profile opens on top of the current tab, so only one row is highlighted at a time.
                     selected = route == selectedRoute && !isProfileSelected,
                     onClick = { onRouteClick(route) },
-                )
+                ) { contentColor ->
+                    Icon(
+                        imageVector = route.imageVector,
+                        contentDescription = null,
+                        tint = contentColor,
+                        modifier = Modifier.size(ItemIconSize),
+                    )
+                }
             }
         }
         SidebarItem(
             label = stringResource(Res.string.profile_screen_title),
-            imageVector = CircleUserRound,
             selected = isProfileSelected,
             onClick = onProfileClick,
             modifier = Modifier.padding(top = Dimens.small),
-        )
-        footer()
-    }
-}
-
-/**
- * A minimal footer for the sidebar: starring the GitHub repository, sharing the app, the app version, and the IGDB
- * and GamerPower data attributions.
- */
-@Composable
-fun DesktopProjectLinks(
-    links: ProjectLinks,
-    versionLabel: String,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier.fillMaxWidth().padding(top = Dimens.small)) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(Dimens.one)
-                    .background(secondary),
-        )
-        // Short labels keep both links on one row; the GitHub icon names the destination. The star link gives up width
-        // first if a translation runs long.
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = Dimens.small),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.tiny),
         ) {
-            SidebarLink(
-                label = stringResource(Res.string.profile_support_star),
-                imageVector = Github,
-                onClick = links.openRepository,
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            SidebarLink(label = stringResource(links.shareLabel), imageVector = Share, onClick = links.share)
+            // A little larger than the icons, so the picture reads as a picture; the item keeps its icon-slot size.
+            UserAvatar(size = ProfileAvatarSize, modifier = Modifier.requiredSize(ProfileAvatarSize))
         }
-        VersionAttribution(
-            versionLabel = versionLabel,
-            attributions = links.rememberDataAttributions(),
-            modifier = Modifier.padding(horizontal = Dimens.small, vertical = Dimens.tiny),
-        )
-    }
-}
-
-/** A secondary action row, quieter than a destination: a small icon and caption text. */
-@Composable
-private fun SidebarLink(
-    label: String,
-    imageVector: ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    Row(
-        modifier =
-            modifier
-                .heightIn(min = LinkMinHeight)
-                .clip(CornerShapes.small)
-                .focusRing(interactionSource.isFocusVisible(), CornerShapes.small)
-                .pointerHoverIcon(PointerIcon.Hand)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = LocalIndication.current,
-                    role = Role.Button,
-                    onClick = onClick,
-                ).padding(horizontal = Dimens.small),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.tiny),
-    ) {
-        Icon(
-            imageVector = imageVector,
-            contentDescription = null,
-            tint = secondaryText,
-            modifier = Modifier.size(LinkIconSize),
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.caption,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
     }
 }
 
@@ -242,10 +160,10 @@ fun BrandAccentStrip(modifier: Modifier = Modifier) {
 @Composable
 private fun SidebarItem(
     label: String,
-    imageVector: ImageVector,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    icon: @Composable (contentColor: Color) -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val contentColor = if (selected) white else secondaryText
@@ -273,15 +191,12 @@ private fun SidebarItem(
                     .size(width = IndicatorWidth, height = IndicatorHeight)
                     .background(if (selected) neonCyan else Color.Transparent, CornerShapes.tiny),
         )
-        Icon(
-            imageVector = imageVector,
-            contentDescription = null,
-            tint = contentColor,
-            modifier =
-                Modifier
-                    .padding(start = Dimens.small)
-                    .size(ItemIconSize),
-        )
+        Box(
+            modifier = Modifier.padding(start = Dimens.small).size(ItemIconSize),
+            contentAlignment = Alignment.Center,
+        ) {
+            icon(contentColor)
+        }
         Text(
             text = label,
             style = MaterialTheme.typography.subtitle1,
@@ -302,19 +217,6 @@ internal fun DesktopSidebarPreview() {
             isProfileSelected = false,
             onRouteClick = {},
             onProfileClick = {},
-            footer = {
-                DesktopProjectLinks(
-                    links =
-                        ProjectLinks(
-                            shareLabel = Res.string.profile_support_share,
-                            openRepository = {},
-                            share = {},
-                            openIgdb = {},
-                            openGamerPower = {},
-                        ),
-                    versionLabel = "v1.0.0",
-                )
-            },
         )
     }
 }
@@ -324,24 +226,5 @@ internal fun DesktopSidebarPreview() {
 internal fun BrandAccentStripPreview() {
     BraindanceTheme {
         BrandAccentStrip(modifier = Modifier.background(navBar).padding(Dimens.medium))
-    }
-}
-
-@Preview
-@Composable
-internal fun DesktopProjectLinksPreview() {
-    BraindanceTheme {
-        DesktopProjectLinks(
-            links =
-                ProjectLinks(
-                    shareLabel = Res.string.profile_support_share,
-                    openRepository = {},
-                    share = {},
-                    openIgdb = {},
-                    openGamerPower = {},
-                ),
-            versionLabel = "v1.0.0",
-            modifier = Modifier.width(DesktopSidebarWidth).background(navBar).padding(Dimens.medium),
-        )
     }
 }

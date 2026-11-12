@@ -35,7 +35,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.zIndex
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import dev.vladleesi.braindanceapp.BuildKonfig
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.Navigator
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
@@ -45,11 +44,8 @@ import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.navigation.routes.registerNestedRoute
 import dev.vladleesi.braindanceapp.navigation.routes.registerTopLevelRoute
 import dev.vladleesi.braindanceapp.navigation.toEntries
-import dev.vladleesi.braindanceapp.resources.Res
-import dev.vladleesi.braindanceapp.resources.profile_screen_version
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.system.isLargeWindow
-import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopSidebar
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopSidebarWidth
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -163,7 +159,7 @@ internal fun NavigationScaffold(
     }
 }
 
-/** The desktop sidebar for the current navigation state, with the project links and app version at the bottom. */
+/** The desktop sidebar for the current navigation state. */
 @Composable
 private fun NavigationSidebar(
     navigator: Navigator,
@@ -176,12 +172,6 @@ private fun NavigationSidebar(
         onRouteClick = { route -> navigator.selectTab(route) },
         onProfileClick = { navigator.navigate(ProfileRoute) },
         modifier = modifier,
-        footer = {
-            DesktopProjectLinks(
-                links = rememberProjectLinks(),
-                versionLabel = stringResource(Res.string.profile_screen_version, BuildKonfig.APP_VERSION),
-            )
-        },
     )
 }
 

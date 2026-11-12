@@ -3,7 +3,6 @@
 package dev.vladleesi.braindanceapp.ui.components
 
 import ChevronLeft
-import CircleUserRound
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.back_button_content_description
 import dev.vladleesi.braindanceapp.resources.profile_screen_title
+import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.navBar
@@ -115,13 +115,15 @@ fun TopAppBar(
 
 /**
  * The bar of a top-level screen: its [title], the screen's own [actions], and the profile button, which calls
- * [onProfileClick]. Nested screens use [TopAppBar] with a back button instead.
+ * [onProfileClick]. The button is left out while the desktop sidebar is shown, because the sidebar already links to
+ * Profile; [showProfileButton] overrides that. Nested screens use [TopAppBar] with a back button instead.
  */
 @Composable
 fun TopLevelTopAppBar(
     title: String,
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
+    showProfileButton: Boolean = desktopLayout()?.hasSidebar != true,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
@@ -131,12 +133,10 @@ fun TopLevelTopAppBar(
         tabBarColor = Color.Transparent,
         actions = {
             actions()
-            IconButton(onClick = onProfileClick) {
-                Icon(
-                    imageVector = CircleUserRound,
-                    contentDescription = stringResource(Res.string.profile_screen_title),
-                    tint = white,
-                )
+            if (showProfileButton) {
+                IconButton(onClick = onProfileClick) {
+                    UserAvatar(contentDescription = stringResource(Res.string.profile_screen_title))
+                }
             }
         },
     )

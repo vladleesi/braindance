@@ -16,11 +16,18 @@
     <!-- Profile screen -->
     <string name="profile_screen_title">Profile</string>
     <string name="profile_screen_version">v%1$s</string>
+    <string name="profile_development_status">In development</string>
+    <string name="profile_section_account">Account</string>
+    <string name="profile_section_community">Community</string>
+    <string name="profile_section_about">About</string>
+    <string name="profile_link_github">Star on GitHub</string>
+    <string name="profile_link_github_description">Braindance is open source</string>
+    <string name="profile_link_threads">Threads</string>
+    <string name="profile_link_x">X</string>
+    <string name="profile_social_handle">@braindancegg</string>
+    <string name="profile_release_notes">Release notes</string>
     <string name="data_attribution_igdb">Game data by %1$s</string>
     <string name="data_attribution_gamerpower">Giveaways by %1$s</string>
-    <string name="profile_open_source_title">Braindance is open source</string>
-    <string name="profile_support_description">Like the project? Support it on GitHub.</string>
-    <string name="profile_support_star">Star us</string>
     <string name="profile_support_share">Share</string>
     <string name="profile_support_copy">Copy invite</string>
     <string name="share_app_message">I'm checking out Braindance — a new place to discover trending games, upcoming releases, and free game giveaways. Check it out: %1$s</string>
@@ -49,7 +56,6 @@
     <!-- Desktop Web Home and navigation -->
     <string name="app_name">Braindance</string>
     <string name="desktop_tagline">Find what to play next.</string>
-    <string name="desktop_development_status">In development</string>
     <string name="desktop_hero_title">Discover your next obsession.</string>
     <string name="desktop_hero_description">Popular and upcoming games, similar titles, and free giveaways in one place.</string>
     <string name="desktop_hero_action">Explore games</string>
