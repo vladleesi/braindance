@@ -8,7 +8,7 @@ decisions take precedence over imported defaults. Explicit user instructions rem
 One-time import from [vladleesi/agent-guidelines](https://github.com/vladleesi/agent-guidelines/tree/v1.8.0),
 release **v1.8.0**, commit **3951202798c0cb5604cc0f9c0c00412a894f3154**.
 Selected modules: `general`, `agent-workflow`, `testing`, `security`, `git`, `ci`, `release`, `deployment`,
-`kotlin`, `compose`, `backend`, `python`, and `frontend`. Imported rules retain their
+`kotlin`, `compose`, `python`, and `frontend`. Imported rules retain their
 [MIT notice](LICENSES/Agent-guidelines-MIT.txt); see [third-party notices](THIRD_PARTY_NOTICES.md#agent-guidelines).
 Fetching, comparing with, or updating this collection requires an explicit user request.
 Attribution links do not authorize those actions.
@@ -32,7 +32,6 @@ before acting; reading a guide grants no additional authorization.
 | Kotlin, Gradle, Android, or Multiplatform | `docs/project/agent-guidance/kotlin.md` |
 | Compose UI, scrolling/rendering performance, Baseline Profiles, or platform integration | `docs/project/agent-guidance/compose.md` |
 | Python code, packaging, or interpreter/dependency changes (`.github/scripts`) | `docs/project/agent-guidance/python.md` |
-| Services, APIs, persistence, or backend concurrency (`backend`) | `docs/project/agent-guidance/backend.md` |
 | Browser UI, navigation, assets, or public web content | `docs/project/agent-guidance/frontend.md` |
 | CI status/failures, workflows, actions, or workflow-triggering operations | `docs/project/agent-guidance/ci.md` |
 | Versions, changelogs, tags, release artifacts, or publication | `docs/project/agent-guidance/release.md` |
@@ -317,7 +316,7 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
 - When adding, renaming, or removing a file with a third-party license header, such as an adapted icon in
   `ui/style/icons`, update its record in `.github/scripts/check-licenses.py` (for example `LUCIDE_ICONS`) and
   `THIRD_PARTY_NOTICES.md` in the same change. Otherwise CI's license check fails and blocks promotion.
-- Distributed applications, Web executables, and backend bundles need corresponding-source disclosures for the
+- Distributed applications and Web executables need corresponding-source disclosures for the
   shipped revision and their required third-party notices. Executable EULAs must preserve MPL source rights.
 - Keep audit reports, ownership confirmations, verification history, and commercial risk assessments in the
   local `no commit` changelist. Public documentation should contain concise contribution/distribution guidance
@@ -346,17 +345,15 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
 - Use Shields.io badges with `style=flat-square` consistently, including dynamic CI and publication badges.
 - Keep the opening description and badges accurate when development status, supported platforms, primary technology,
   licensing, release tags, or validation workflows change. Use descriptive badge alt text and relevant links.
-- Keep the badge row concise: development status, platforms, Kotlin Multiplatform, published app release, backend
-  version, CI, Web publication, backend publication, and license. Prefer dynamic status badges; avoid static dependency
-  versions.
+- Keep the badge row concise: development status, platforms, Kotlin Multiplatform, published app release, CI,
+  Web publication, and license. Prefer dynamic status badges; avoid static dependency versions.
 - Filter the app release badge to `app-v*` so historical mobile and independent backend releases are excluded.
   Keep the CI badge tied to the main validation workflow's `develop` push runs (`branch=develop&event=push`).
   Automated promotion with `GITHUB_TOKEN` does not trigger a new `master` push run. Update URLs if this flow changes.
 - Keep the license badge linked to the License section so first-party scope and third-party exclusions remain clear.
-- Track publication through the promoted Web publication and final backend deployment check runs on `master`,
-  using Shields.io `nameFilter` with their full job names. Reusable calls belong to the validation workflow;
-  standalone publication workflow badges miss them. Update filters and links when job names or publication flow change.
-  Publication badges show job checks for that revision; skipped backend jobs do not indicate a fresh deployment.
+- Track publication through the promoted Web publication check run on `master`, using Shields.io `nameFilter` with
+  its full job name. Reusable calls belong to the validation workflow; standalone publication workflow badges miss
+  them. Update filters and links when job names or publication flow change.
 
 ## Verification and completion
 - For routine documentation and instruction changes, use static diff, link, and accuracy checks.
@@ -375,10 +372,9 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
 - Treat `version.xcconfig` as the single source for the Android, iOS, and web frontend version. Keep all three on the
   same `MAJOR.MINOR.PATCH` value; Android and iOS also share its positive integer build number.
   Never define a separate frontend version elsewhere.
-- For every production code change, update each affected product version in the same change. Frontend changes include
-  `androidApp`, `iosApp`, `webApp`, and runtime code in `shared`; backend changes include runtime code in `backend`.
-  Changes affecting both products update both versions. Documentation, tests, formatting, and CI-only changes do not
-  require a version change. Choose one final increment per product for the whole task.
+- For every production code change, update the frontend version in the same change. Frontend changes include
+  `androidApp`, `iosApp`, `webApp`, and runtime code in `shared`. Documentation, tests, formatting, and CI-only
+  changes do not require a version change. Choose one final increment for the whole task.
 - For frontend versions, increment `MAJOR` for breaking product changes, `MINOR` for a feature release iteration,
   and `PATCH` for bug fixes. Increment `CURRENT_PROJECT_VERSION` for every frontend version change.
 - Update the current frontend version and `app-vMAJOR.MINOR.PATCH` release link in `README.md` whenever the frontend
@@ -388,10 +384,8 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
   the matching `## MAJOR.MINOR.PATCH` entry in the same change as the version update; preserve previous entries.
   Use concise change bullets only for platforms with user-visible changes. Group platforms with identical notes
   under one heading, such as `### Android and iOS` or `### Android, iOS, and Web`, instead of repeating the same
-  description. Use separate platform headings only when their notes differ; omit unchanged platforms and
-  backend-only changes. Derive notes from the actual changes, not raw commit subjects. The release workflow reads
+  description. Use separate platform headings only when their notes differ; omit unchanged platforms.
+  Derive notes from the actual changes, not raw commit subjects. The release workflow reads
   this version's entry directly; do not add a script that generates release notes from Git history.
-- Version the backend independently with SemVer in `backend/build.gradle.kts`. Before `1.0.0`, increment `MINOR`
-  for breaking API changes or new capabilities and `PATCH` for compatible fixes. Keep the README backend
-  version text and badge synchronized with that build file. Backend images must include the backend version
-  and source commit in their tags.
+- The Braindance API is versioned, released, and deployed from its own private repository. Changes here never
+  publish or deploy it; keep client API base URLs and request behavior compatible with its public contract.

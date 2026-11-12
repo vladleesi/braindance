@@ -1,5 +1,5 @@
 # Braindance
-[![Development status: in development](https://img.shields.io/badge/status-in%20development-FCEE0A?style=flat-square&labelColor=0B0E14)](#-platforms) [![Platforms: Android, iOS, and experimental Web](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web%20%28experimental%29-22ECFF?style=flat-square&labelColor=0B0E14)](#-platforms) [![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square&labelColor=0B0E14)](https://kotlinlang.org/docs/multiplatform.html) [![App source release](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=source&color=22ECFF&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![Backend version](https://img.shields.io/badge/backend-0.12.0-2E3650?style=flat-square&labelColor=0B0E14)](backend/CHANGELOG.md) [![CI checks on develop](https://img.shields.io/github/actions/workflow/status/vladleesi/braindance/build-test-push.yml?branch=develop&event=push&label=CI&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![Web publication checks on master](https://img.shields.io/github/check-runs/vladleesi/braindance/master?nameFilter=Publish%20Promoted%20Web%20App%20%2F%20Deploy%20Web%20App%20to%20Cloudflare%20Pages&label=Web%20publication&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![Backend deployment checks on master](https://img.shields.io/github/check-runs/vladleesi/braindance/master?nameFilter=Publish%20and%20Deploy%20Promoted%20Backend%20%2F%20Deploy%20Published%20Backend&label=backend%20publication&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-FF2E88?style=flat-square&labelColor=0B0E14)](#-license)
+[![Development status: in development](https://img.shields.io/badge/status-in%20development-FCEE0A?style=flat-square&labelColor=0B0E14)](#-platforms) [![Platforms: Android, iOS, and experimental Web](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web%20%28experimental%29-22ECFF?style=flat-square&labelColor=0B0E14)](#-platforms) [![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square&labelColor=0B0E14)](https://kotlinlang.org/docs/multiplatform.html) [![App source release](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=source&color=22ECFF&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![CI checks on develop](https://img.shields.io/github/actions/workflow/status/vladleesi/braindance/build-test-push.yml?branch=develop&event=push&label=CI&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![Web publication checks on master](https://img.shields.io/github/check-runs/vladleesi/braindance/master?nameFilter=Publish%20Promoted%20Web%20App%20%2F%20Deploy%20Web%20App%20to%20Cloudflare%20Pages&label=Web%20publication&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-FF2E88?style=flat-square&labelColor=0B0E14)](#-license)
 
 <div align="center">
 
@@ -54,18 +54,17 @@ See [CHANGELOG.md](CHANGELOG.md) for updates across Android, iOS, and Web.
   https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md).
 - 🛠️ [Contribute code or documentation](CONTRIBUTING.md).
 
-Feedback from the Web preview is welcome; you do not need to build the app or run a backend to participate.
+Feedback from the Web preview is welcome; you do not need to build the app to participate.
 
 ## 🧩 For developers
 
 Android, iOS, and Web share UI and application logic through Kotlin Multiplatform and Compose Multiplatform.
-A Kotlin/JVM Ktor backend keeps Twitch credentials server-side and provides IGDB and GamerPower data.
-Its independent version is `0.12.0`. See the [backend changelog](backend/CHANGELOG.md) for release notes.
+The clients load IGDB and GamerPower data from the Braindance API, which keeps Twitch credentials server-side and is
+developed and released separately.
 
 | | |
 | --- | --- |
 | 📘 **[Development guide](docs/project/development.md)** | Requirements, project layout, local builds, debugging, and validation. |
-| 🖥️ **[Backend reference](backend/README.md)** | Server configuration, API, packaging, and optional independent hosting. |
 | 🚀 **[Release guide](docs/project/releases.md)** | Versioning and publication workflows. |
 | 🎨 **[Brand assets](docs/project/branding/README.md)** | Logos, icons, banners, palette, and usage guidance. |
 | 🌐 **[Landing site](docs/)** | The static page served at [braindancegg.com](https://braindancegg.com/). |
@@ -73,9 +72,9 @@ Its independent version is `0.12.0`. See the [backend changelog](backend/CHANGEL
 The current frontend source version is
 [0.14.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.14.0).
 GitHub releases provide source code, not store-ready mobile downloads.
-Developer builds for Android, iOS, and Web are supported; see the development guide for backend configuration.
+Developer builds for Android, iOS, and Web are supported; see the development guide for API configuration.
 
-Publication badges show checks for the revision on `master`; a skipped backend check does not indicate a new deployment.
+The Web publication badge shows checks for the revision on `master`.
 
 ## 📄 License
 

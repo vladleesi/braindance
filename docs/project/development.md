@@ -10,7 +10,6 @@ Install only the tooling you need and run commands from the repository root.
 
 - JDK 21 and the checked-in Gradle wrapper. It is the newest maintained Temurin release below JDK 25;
   JDK 22–24 are end-of-life, and Detekt 1.23.8 cannot run on JDK 25.
-  The backend container uses Java 25 independently of the build JDK.
 - Android: Android Studio Rabbit 2 (2026.2.2) or newer with AGP 9.5 support and SDK API 37;
   minimum supported device API 24.
 - iOS: macOS, Xcode, and an iOS Simulator; minimum iOS 15.0. Device builds need your own signing configuration.
@@ -18,14 +17,14 @@ Install only the tooling you need and run commands from the repository root.
   Browser behavior, performance, and feature availability may change.
 
 `shared` owns Compose UI, ViewModels, and application logic. `androidApp`, `iosApp`, and `webApp` own their
-platform hosts; `webApp` also owns the HTML shell and web-only assets. `backend` is the Kotlin/JVM Ktor API.
-Keep platform APIs in platform source sets or hosts and Twitch credentials on the backend.
+platform hosts; `webApp` also owns the HTML shell and web-only assets. The Braindance API is developed and deployed
+separately; clients reach it only through its public HTTPS API. Keep platform APIs in platform source sets or hosts,
+and keep Twitch credentials out of the clients.
 
 ## Configure client builds
 
-Data screens need a reachable backend. Use one available for development or follow the
-[backend setup](../../backend/README.md#run-locally), including its Twitch credential configuration.
-GamerPower needs no key. Keep credentials out of Git, client builds, container images, and `local.properties`.
+Data screens need a reachable Braindance API. Use one available for development; it holds the Twitch credentials,
+and GamerPower needs no key. Keep credentials out of Git, client builds, and `local.properties`.
 
 Create an ignored root `local.properties`:
 
@@ -57,7 +56,7 @@ or distribution. Allow the Web development server's exact origin in backend CORS
 ## Validation
 
 Run checks relevant to the change. The [validation workflow](../../.github/workflows/build-test-push.yml) defines
-the full CI environment, including container checks. See [security checks](security.md) for coverage and limitations.
+the full CI environment. See [security checks](security.md) for coverage and limitations.
 
 | Check | Command |
 | --- | --- |
@@ -67,20 +66,17 @@ the full CI environment, including container checks. See [security checks](secur
 | Android baseline profile | `./gradlew :androidApp:generateReleaseBaselineProfile` (rooted emulator or API 33+ device, backend reachable); commit the regenerated `androidApp/src/release/generated/baselineProfiles/` |
 | Production Web bundle | `./gradlew :webApp:wasmJsBrowserDistribution` |
 | iOS Simulator framework | `./gradlew :shared:linkDebugFrameworkIosSimulatorArm64` |
-| Backend build and distribution | `./gradlew :backend:build :backend:installDist` |
 | Formatting and static analysis | `./gradlew ktlintFormat detekt` |
 | License notices | `python3 .github/scripts/check-licenses.py` |
 
 Android connected checks need a device/emulator; CI covers API 24 and 35, including packaged backup rules.
-iOS checks need macOS/Xcode and target the ARM64 Simulator. Backend Redis integration tests use `TEST_REDIS_URL`
-with a disposable database; CI supplies it. Some frontend test tasks have no test sources, so success alone
+iOS checks need macOS/Xcode and target the ARM64 Simulator. Some test tasks have no test sources, so success alone
 does not establish behavior coverage. Review autocorrections from formatting/Detekt and report unavailable checks.
 Documentation-only changes need link and accuracy checks, not an app build.
 
 ## Versions and releases
 
-Frontend version `0.11.0` and its shared Android/iOS build number come from `version.xcconfig`.
-Backend version `0.11.1` is independent, in `backend/build.gradle.kts`. Runtime changes require the affected product's
+The app version and its shared Android/iOS build number come from `version.xcconfig`. Runtime changes require
 version, changelog, and README updates; documentation, tests, formatting, and CI-only changes need no version bump.
 See [release conventions and publication](releases.md) for the full workflow and recovery steps.
 
@@ -91,16 +87,15 @@ For Web, configure the backend URL, run `./gradlew :webApp:wasmJsBrowserDistribu
 Serve `index.html` for any path that is not a file, so deep links such as `/games/42` load the app. Cache fingerprinted
 assets (`*.wasm`, `webApp.*`) immutably; keep HTML revalidatable. The distribution's `_headers` file sets these
 lifetimes and the security headers on Cloudflare Pages; mirror them on other hosts. Allow the exact website origin
-in backend CORS; allowlist changes need no client rebuild. For the server, see
-[backend hosting](../../backend/README.md#package-and-host).
+in the API's CORS configuration; allowlist changes need no client rebuild.
 
 Before enabling publication workflows for your own infrastructure, replace or disable their existing deployment
 steps; they do not configure a new host automatically.
 
 ## Distribution
 
-Ship an exact-revision source link and required third-party notices with apps, browser executables, backend bundles,
-and containers, including transitive, native, and base-image components. Keep corresponding source accessible and
+Ship an exact-revision source link and required third-party notices with apps and browser executables, including
+transitive and native components. Keep corresponding source accessible and
 preserve MPL source rights in executable EULAs. External data, trademarks, and excluded assets have separate terms:
 see [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md). Verify API commercial and attribution permissions before
 monetization and review the final package's notices and source disclosure. See the

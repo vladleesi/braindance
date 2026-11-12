@@ -1,8 +1,0 @@
-**
-!Dockerfile
-!docker/
-!docker/prepare-startup-archive.sh
-!build/
-!build/install/
-!build/install/backend/
-!build/install/backend/**

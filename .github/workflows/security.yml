@@ -66,10 +66,10 @@ jobs:
           queries: security-extended
           config-file: ./.github/codeql-config.yml
 
-      - name: Compile Backend and Android Sources for Analysis
+      - name: Compile Android Sources for Analysis
         # Kotlin extraction needs compiler execution, including shared Android sources.
         run: >-
-          ./gradlew :backend:classes :androidApp:assembleDebug
+          ./gradlew :androidApp:assembleDebug
           --no-configuration-cache --no-build-cache --rerun-tasks --stacktrace
 
       - name: Analyze Kotlin
@@ -146,45 +146,3 @@ jobs:
           annotations: true
           min-severity: medium
 
-  scheduled-container-scan:
-    name: Scheduled Backend Image Scan
-    # Pushes and PRs scan their image in Backend Validation; publication scans again before pushing.
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
-
-      - name: Package Backend
-        run: ./gradlew :backend:installDist --stacktrace
-
-      - name: Build Backend Container
-        run: docker build -f backend/Dockerfile -t braindance-backend:security backend
-
-      - name: Install Trivy
-        uses: ./.github/actions/install-trivy
-
-      - name: Scan Backend Container
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: braindance-backend:security
-          scanners: vuln
-          vuln-type: os,library
-          severity: HIGH,CRITICAL
-          ignore-unfixed: false
-          exit-code: '1'
-          format: table
-          cache: false
-          skip-setup-trivy: true

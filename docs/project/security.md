@@ -3,13 +3,11 @@
 [Security checks](../../.github/workflows/security.yml) run during validation, weekly, and manually.
 Scheduled scans do not deploy. Failures block promotion and publication, including Web on direct `master` pushes.
 
-- **CodeQL:** blocks high/critical backend and Android findings, including shared Kotlin. Swift, iOS-specific Kotlin,
+- **CodeQL:** blocks high/critical Android findings, including shared Kotlin. Swift, iOS-specific Kotlin,
   and Wasm coverage is incomplete. The backup-query exception is in [the config](../../.github/codeql-config.yml).
 - **Dependency Review:** blocks new high/critical vulnerabilities on pushes and PRs; incomplete snapshots fail.
   Both revisions resolve with read-only permissions; privileged submission never executes PR code. Push reviews
   wait for submission; fork PR submission needs its workflow on the default branch. Snapshots also refresh weekly.
-- **Trivy:** blocks high/critical backend-image OS/library vulnerabilities during validation and before publication,
-  including unfixed findings. Review findings instead of broadly suppressing them.
 - **zizmor:** checks workflows under [the policy](../../.github/zizmor.yml); Actions use readable release tags.
 
 Enable Dependency graph, Dependabot alerts, secret scanning, and push protection. Require security and validation

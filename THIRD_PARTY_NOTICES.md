@@ -9,7 +9,7 @@ The imported rules in `AGENTS.md` and `docs/project/agent-guidance/*.md` come fr
 [vladleesi/agent-guidelines v1.8.0](https://github.com/vladleesi/agent-guidelines/tree/v1.8.0),
 commit `3951202798c0cb5604cc0f9c0c00412a894f3154`.
 Selected modules: general, agent-workflow, testing, security, git, ci, release, deployment, kotlin, compose,
-backend, python, and frontend. Placement and headings were adapted for local task loading; imported bullets
+python, and frontend. Placement and headings were adapted for local task loading; imported bullets
 remain verbatim. The copyright and permission notice is retained in the
 [MIT license](LICENSES/Agent-guidelines-MIT.txt), separate from
 first-party MPL-2.0 instructions. This is a one-time import; fetching, comparing with, or updating the collection
@@ -39,13 +39,6 @@ Retain the copyright, license, and any NOTICE material in the published artifact
 Profile sharing uses [ShareKit 0.2.0](https://github.com/vladleesi/kmp-sharekit/tree/v0.2.0)
 (`dev.vladleesi:kmp-sharekit`) under [Apache-2.0](LICENSES/Apache-2.0.txt). Its only declared runtime dependency is
 the Kotlin standard library, already used by the application. Preserve any notices in the published artifacts.
-
-The backend uses the [Jedis 8 client](https://github.com/redis/jedis/tree/v8.0.2) under MIT and an
-[Eclipse Temurin Java 25 runtime](https://adoptium.net/temurin) under GPL-2.0 with the Classpath Exception;
-retain the notices provided with each distribution. CI uses the official [Redis 8 image](https://hub.docker.com/_/redis)
-as a disposable test service. Redis 8 is available under AGPLv3, RSALv2, or SSPLv1; see the
-[Redis licensing terms](https://redis.io/legal/licenses/). It is not bundled in the backend image, and the CI image
-version does not change an independently hosted Redis service.
 
 ## Artwork and branding
 

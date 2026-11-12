@@ -31,7 +31,7 @@ or accessibility is welcome. A proposed solution is optional; you do not need a 
 Follow `.editorconfig`, neighboring code, and the [project conventions](AGENTS.md#project-conventions).
 
 1. Fork the repository and create a branch from `develop`.
-2. Use the [development guide](docs/project/development.md) or [backend setup](backend/README.md) as needed.
+2. Use the [development guide](docs/project/development.md) as needed.
    Documentation changes need no app toolchain.
 3. Keep changes focused. For larger features or behavior changes, an issue helps agree on scope; small fixes need none.
 4. Run affected [validation checks](docs/project/development.md#validation), add focused behavior tests where

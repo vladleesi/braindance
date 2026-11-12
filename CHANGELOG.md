@@ -2,7 +2,7 @@
 
 Release notes for Android, iOS, and Web. Each version includes only platforms with user-visible changes.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
-Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
+The Braindance API is versioned and released separately.
 
 ## 0.14.0
 

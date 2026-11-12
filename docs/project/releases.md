@@ -5,15 +5,12 @@
 - Frontend: update the shared Android/iOS/Web version and positive Android/iOS build number in `version.xcconfig`.
   Add matching user-visible notes in [CHANGELOG.md](../../CHANGELOG.md); group identical notes and omit unchanged
   platforms. Update the README version/release link.
-- Backend: update `backend/build.gradle.kts`, [backend/CHANGELOG.md](../../backend/CHANGELOG.md), and README/backend
-  guide versions and examples.
-- Use one increment per affected product for runtime changes. Docs, tests, formatting, and CI-only changes need none.
+- Use one increment for runtime changes. Docs, tests, formatting, and CI-only changes need none.
 
 ## Publication and recovery
 
 CI validates `develop` and `master`; successful `develop` pushes fast-forward `master` without force pushes.
-The backend deploys only when its inputs changed since the previous `master` revision; Markdown never counts. To
-deploy it anyway, for example after changing a secret, run the backend publication workflow manually on `master`.
+The Braindance API is released and deployed from its own repository; changes here never deploy it.
 Web deploys the validated distribution to Cloudflare Pages with Wrangler. The workflow needs the repository secrets
 `CLOUDFLARE_API_TOKEN` (an account token with only Cloudflare Pages edit access) and `CLOUDFLARE_ACCOUNT_ID`, and the
 repository variable `CLOUDFLARE_PAGES_PROJECT`. The JavaScript bundle and Wasm files are named by their content, so

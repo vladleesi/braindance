@@ -23,7 +23,6 @@ plugins {
     alias(libs.plugins.android.test) apply false
     alias(libs.plugins.baselineprofile) apply false
     alias(libs.plugins.android.kotlin.multiplatform.library) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.compose.multiplatform) apply false
@@ -43,7 +42,7 @@ plugins.withType<WasmYarnPlugin> {
 }
 
 // Android lint, ktlint, and Kotlin's Swift export resolve their own tool classpaths with the same kinds of libraries.
-// None of these classpaths ships in an app or the backend.
+// None of these classpaths ships in an app.
 val toolClasspaths = setOf("androidLintTool", "ktlint", "swiftExportClasspath")
 
 allprojects {
@@ -66,11 +65,7 @@ tasks.named<Delete>("clean") {
 
 // The built-in nullable-call rules require the classpath supplied by these platform tasks.
 tasks.named(detektTaskName) {
-    dependsOn(
-        ":backend:detektMain",
-        ":backend:detektTest",
-        ":shared:detektAndroidMain",
-    )
+    dependsOn(":shared:detektAndroidMain")
 }
 
 fun configureDetektTasks(tasks: NamedDomainObjectContainer<Task>) {
