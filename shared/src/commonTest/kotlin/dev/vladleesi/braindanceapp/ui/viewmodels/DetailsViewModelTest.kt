@@ -60,7 +60,7 @@ class DetailsViewModelTest : ViewModelTest() {
             advanceUntilIdle()
 
             val details = assertIs<GameDetailsState.Success>(viewModel.gameDetailsState.value).gameDetails
-            assertEquals("https://images.igdb.com/igdb/image/upload/t_720p/co1.jpg", details.coverImageUrl)
+            assertEquals("https://images.igdb.com/igdb/image/upload/t_720p/co1.webp", details.coverImageUrl)
         }
 
     @Test

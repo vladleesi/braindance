@@ -4,6 +4,17 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.15.1
+
+### Android, iOS, and Web
+
+- Download game covers as WebP, which is smaller than JPEG at the same size.
+
+### Android and Web
+
+- Download a smaller cover file wherever a card is shown small enough for it, such as desktop cards, so covers appear
+  sooner.
+
 ## 0.15.0
 
 ### Android, iOS, and Web

@@ -70,7 +70,7 @@ developed and released separately.
 | 🌐 **[Landing site](docs/)** | The static page served at [braindancegg.com](https://braindancegg.com/). |
 
 The current frontend source version is
-[0.15.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.15.0).
+[0.15.1](https://github.com/vladleesi/braindance/releases/tag/app-v0.15.1).
 GitHub releases provide source code, not store-ready mobile downloads.
 Developer builds for Android, iOS, and Web are supported; see the development guide for API configuration.
 

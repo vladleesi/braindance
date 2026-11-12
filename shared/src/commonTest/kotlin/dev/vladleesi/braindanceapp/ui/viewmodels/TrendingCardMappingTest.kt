@@ -31,7 +31,7 @@ class TrendingCardMappingTest {
             ),
             cards.map { it.label },
         )
-        assertEquals("https://images.igdb.com/igdb/image/upload/t_720p/co1.jpg", cards.first().backgroundImageUrl)
+        assertEquals("https://images.igdb.com/igdb/image/upload/t_720p/co1.webp", cards.first().backgroundImageUrl)
         assertEquals("", cards[1].backgroundImageUrl)
     }
 }
