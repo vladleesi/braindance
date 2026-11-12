@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.BuildKonfig
 import dev.vladleesi.braindanceapp.resources.Res
+import dev.vladleesi.braindanceapp.resources.data_attribution_igdb
 import dev.vladleesi.braindanceapp.resources.profile_activity
 import dev.vladleesi.braindanceapp.resources.profile_open_source_title
 import dev.vladleesi.braindanceapp.resources.profile_reviews
@@ -82,9 +83,11 @@ fun ProfileScreen(
                             starLabel = stringResource(Res.string.profile_support_star),
                             shareLabel = stringResource(projectLinks.shareLabel),
                             versionLabel = stringResource(Res.string.profile_screen_version, BuildKonfig.APP_VERSION),
+                            dataAttributionLabel = stringResource(Res.string.data_attribution_igdb),
                         ),
                     onOpenRepository = projectLinks.openRepository,
                     onShare = projectLinks.share,
+                    onOpenDataSource = projectLinks.openDataSource,
                     modifier =
                         Modifier
                             .padding(horizontal = Dimens.medium)

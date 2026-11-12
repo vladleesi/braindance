@@ -6,13 +6,16 @@ import Github
 import Share
 import Star
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -36,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.white
 
@@ -45,6 +49,7 @@ data class OpenSourceSectionTexts(
     val starLabel: String,
     val shareLabel: String,
     val versionLabel: String,
+    val dataAttributionLabel: String,
 )
 
 @Composable
@@ -52,6 +57,7 @@ fun OpenSourceSection(
     texts: OpenSourceSectionTexts,
     onOpenRepository: () -> Unit,
     onShare: () -> Unit,
+    onOpenDataSource: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -66,11 +72,24 @@ fun OpenSourceSection(
             OpenSourceHeader(title = texts.title, description = texts.description)
 
             OpenSourceActions(
-                versionLabel = texts.versionLabel,
                 starLabel = texts.starLabel,
                 shareLabel = texts.shareLabel,
                 onOpenRepository = onOpenRepository,
                 onShare = onShare,
+            )
+
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(Dimens.one)
+                        .background(secondary),
+            )
+
+            VersionAttribution(
+                versionLabel = texts.versionLabel,
+                attributionLabel = texts.dataAttributionLabel,
+                onOpenDataSource = onOpenDataSource,
             )
         }
     }
@@ -108,64 +127,51 @@ private fun OpenSourceHeader(
 
 @Composable
 private fun OpenSourceActions(
-    versionLabel: String,
     starLabel: String,
     shareLabel: String,
     onOpenRepository: () -> Unit,
     onShare: () -> Unit,
 ) {
-    Row(
+    FlowRow(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimens.small),
+        verticalArrangement = Arrangement.spacedBy(Dimens.tiny),
+        itemVerticalAlignment = Alignment.CenterVertically,
     ) {
-        FlowRow(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.small),
-            verticalArrangement = Arrangement.spacedBy(Dimens.tiny),
-            itemVerticalAlignment = Alignment.CenterVertically,
+        OutlinedButton(
+            onClick = onOpenRepository,
+            shape = RoundedCornerShape(percent = 50),
+            border = BorderStroke(Dimens.one, white.copy(alpha = 0.2f)),
+            contentPadding = PaddingValues(horizontal = Dimens.medium, vertical = Dimens.small),
+            colors =
+                ButtonDefaults.outlinedButtonColors(
+                    backgroundColor = Color.Transparent,
+                    contentColor = white,
+                ),
         ) {
-            OutlinedButton(
-                onClick = onOpenRepository,
-                shape = RoundedCornerShape(percent = 50),
-                border = BorderStroke(Dimens.one, white.copy(alpha = 0.2f)),
-                contentPadding = PaddingValues(horizontal = Dimens.medium, vertical = Dimens.small),
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = Color.Transparent,
-                        contentColor = white,
-                    ),
-            ) {
-                Icon(
-                    imageVector = Star,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = LocalContentColor.current,
-                )
-                Spacer(Modifier.width(Dimens.small))
-                Text(starLabel, color = LocalContentColor.current)
-            }
-
-            TextButton(
-                onClick = onShare,
-                colors = ButtonDefaults.textButtonColors(contentColor = white),
-            ) {
-                Icon(
-                    imageVector = Share,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = LocalContentColor.current,
-                )
-                Spacer(Modifier.width(Dimens.small))
-                Text(shareLabel, color = LocalContentColor.current)
-            }
+            Icon(
+                imageVector = Star,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = LocalContentColor.current,
+            )
+            Spacer(Modifier.width(Dimens.small))
+            Text(starLabel, color = LocalContentColor.current)
         }
 
-        Text(
-            text = versionLabel,
-            style = MaterialTheme.typography.subtitle2,
-            color = secondaryText,
-        )
+        TextButton(
+            onClick = onShare,
+            colors = ButtonDefaults.textButtonColors(contentColor = white),
+        ) {
+            Icon(
+                imageVector = Share,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = LocalContentColor.current,
+            )
+            Spacer(Modifier.width(Dimens.small))
+            Text(shareLabel, color = LocalContentColor.current)
+        }
     }
 }
 
@@ -181,9 +187,11 @@ internal fun OpenSourceSectionPreview() {
                     starLabel = "Star",
                     shareLabel = "Share",
                     versionLabel = "v1.0.0",
+                    dataAttributionLabel = "Powered by IGDB",
                 ),
             onOpenRepository = {},
             onShare = {},
+            onOpenDataSource = {},
         )
     }
 }

@@ -70,14 +70,14 @@ class HistoryMirrorTest {
         val browser = FakeBrowser()
         val mirror = HistoryMirror(browser)
         mirror.start("home", "/")
-        mirror.onNavigated("home>game", "/game/1")
+        mirror.onNavigated("home>game", "/games/1")
         mirror.onNavigated("profile|home>game", "/profile")
-        assertEquals(listOf("/", "/game/1", "/profile"), browser.entries.map { it.path })
+        assertEquals(listOf("/", "/games/1", "/profile"), browser.entries.map { it.path })
 
         // Back restores the stored state; applying it must not add an entry.
         val first = browser.pressBack(mirror, appSnapshot = "profile|home>game")
         assertEquals("home>game", first)
-        mirror.onNavigated("home>game", "/game/1")
+        mirror.onNavigated("home>game", "/games/1")
 
         val second = browser.pressBack(mirror, appSnapshot = "home>game")
         assertEquals("home", second)
@@ -92,7 +92,7 @@ class HistoryMirrorTest {
         val browser = FakeBrowser()
         val mirror = HistoryMirror(browser)
         mirror.start("home", "/")
-        mirror.onNavigated("home>game", "/game/1")
+        mirror.onNavigated("home>game", "/games/1")
 
         mirror.onNavigated("home", "/")
 
@@ -106,7 +106,7 @@ class HistoryMirrorTest {
         val browser = FakeBrowser()
         val mirror = HistoryMirror(browser)
         mirror.start("home", "/")
-        mirror.onNavigated("home>game", "/game/1")
+        mirror.onNavigated("home>game", "/games/1")
         browser.pressBack(mirror, appSnapshot = "home>game")
         mirror.onNavigated("home", "/")
 

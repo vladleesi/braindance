@@ -4,6 +4,16 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 Backend releases are tracked in the [backend changelog](backend/CHANGELOG.md).
 
+## 0.14.0
+
+### Android, iOS, and Web
+
+- Credit IGDB as the source of game data with a "Powered by IGDB" link next to the app version.
+
+### Web
+
+- Game pages now use addresses such as `/games/42`. Older `/game/42` links still open the game.
+
 ## 0.13.3
 
 ### Android, iOS, and Web

@@ -16,7 +16,7 @@ import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.navigation.routes.SingleInstanceRoute
 
 /**
- * The browser address bar and session history, where one exists. Paths are app routes such as `/game/42`, relative
+ * The browser address bar and session history, where one exists. Paths are app routes such as `/games/42`, relative
  * to the page's base path. Platforms without one provide `null`.
  */
 internal interface BrowserLocation {
@@ -53,7 +53,10 @@ internal interface BrowserLocation {
 
 internal expect val browserLocation: BrowserLocation?
 
-private const val GAME_PREFIX = "/game/"
+private const val GAME_PREFIX = "/games/"
+
+// Game links published before the `/games/` address; still opened, then rewritten to the current address.
+private const val LEGACY_GAME_PREFIX = "/game/"
 private const val GIVEAWAY_PREFIX = "/giveaway/"
 private val fixedPaths =
     mapOf<NavKey, String>(
@@ -84,7 +87,7 @@ internal fun webPathToRoute(path: String?): NavKey? {
             .takeIf { normalized.startsWith(prefix) && it.all(Char::isDigit) }
             ?.toIntOrNull()
             ?.takeIf { it > 0 }
-    id(GAME_PREFIX)?.let { return GameDetailsRoute(it) }
+    (id(GAME_PREFIX) ?: id(LEGACY_GAME_PREFIX))?.let { return GameDetailsRoute(it) }
     id(GIVEAWAY_PREFIX)?.let { return GiveawayDetailsRoute(it) }
     return null
 }

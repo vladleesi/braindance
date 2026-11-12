@@ -26,8 +26,13 @@ class WebPathTest {
             listOf("/", "/discover", "/releases", "/news", "/library", "/profile"),
             (BottomBarRoute.routes + ProfileRoute).map { it.toWebPath() },
         )
-        assertEquals("/game/42", GameDetailsRoute(42).toWebPath())
+        assertEquals("/games/42", GameDetailsRoute(42).toWebPath())
         assertEquals("/giveaway/7", GiveawayDetailsRoute(7).toWebPath())
+    }
+
+    @Test
+    fun legacyGameLinksStillOpenTheGame() {
+        assertEquals(GameDetailsRoute(42), webPathToRoute("/game/42"))
     }
 
     @Test
@@ -35,11 +40,13 @@ class WebPathTest {
         for (path in listOf(
             "/search",
             "/collections",
+            "/games/0",
+            "/games/-1",
+            "/games/abc",
+            "/games/",
+            "/games/42/x",
             "/game/0",
-            "/game/-1",
             "/game/abc",
-            "/game/",
-            "/game/42/x",
             "/giveaway/1e3",
             "/unknown",
         )) {

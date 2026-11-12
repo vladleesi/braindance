@@ -19,17 +19,20 @@ import org.jetbrains.compose.resources.stringResource
 
 private const val REPOSITORY_URL = "https://github.com/vladleesi/braindance"
 private const val APP_URL = "https://app.braindancegg.com/"
+private const val IGDB_URL = "https://www.igdb.com/"
 
 /**
  * The project's promotion actions. [openRepository] opens the GitHub repository; [share] recommends the Braindance
  * Web app with a short message and its link, through the system share sheet where the platform supports it, otherwise
- * by copying the same message. [shareLabel] names whichever of the two [share] does.
+ * by copying the same message. [shareLabel] names whichever of the two [share] does. [openDataSource] opens IGDB, the
+ * source of the game data, for the "Powered by IGDB" attribution.
  */
 @Immutable
 class ProjectLinks(
     val shareLabel: StringResource,
     val openRepository: () -> Unit,
     val share: () -> Unit,
+    val openDataSource: () -> Unit,
 )
 
 /** The project actions shared by Profile and the desktop sidebar. */
@@ -55,6 +58,7 @@ fun rememberProjectLinks(): ProjectLinks {
                     clipboard.setText(AnnotatedString(shareMessage))
                 }
             },
+            openDataSource = { uriHandler.openExternalUrl(IGDB_URL) },
         )
     }
 }

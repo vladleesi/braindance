@@ -8,7 +8,7 @@ import org.w3c.dom.events.Event
 import org.w3c.dom.url.URL
 
 /**
- * Real paths such as `/game/42` under the page's base path (`<base href>`), for example `/` or `/braindance/`.
+ * Real paths such as `/games/42` under the page's base path (`<base href>`), for example `/` or `/braindance/`.
  * The host serves the page for any path that is not a file (Cloudflare Pages does this when the site has no
  * `404.html`), so a reload or a shared link still loads the app.
  */
