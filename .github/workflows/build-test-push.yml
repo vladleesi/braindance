@@ -304,6 +304,32 @@ jobs:
     with:
       source_sha: ${{ github.sha }}
 
+  distribute-promoted-tester-build:
+    name: Send Promoted Release to Testers
+    needs: publish-promoted-frontend-release
+    if: needs.publish-promoted-frontend-release.outputs.created == 'true' && vars.FIREBASE_TESTER_GROUPS != ''
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/distribute-testers.yml
+    with:
+      source_sha: ${{ github.sha }}
+    secrets:
+      BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+
+  distribute-master-tester-build:
+    name: Send Validated Master Release to Testers
+    needs: publish-master-frontend-release
+    if: needs.publish-master-frontend-release.outputs.created == 'true' && vars.FIREBASE_TESTER_GROUPS != ''
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/distribute-testers.yml
+    with:
+      source_sha: ${{ github.sha }}
+    secrets:
+      BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+
   publish-promoted-web-app:
     name: Publish Promoted Web App
     needs:

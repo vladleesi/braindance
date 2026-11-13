@@ -60,10 +60,35 @@ app on Android or the invitation link on iOS. Add testers in **Firebase console 
 Groups**, or with the CLI:
 
 ```sh
-firebase appdistribution:testers:add --project <project-id> tester@example.com
+firebase appdistribution:testers:add --project <project-id> --group-alias <group-alias> tester@example.com
 ```
 
-### Android
+### Android from CI
+
+Each new frontend release (`app-vMAJOR.MINOR.PATCH`) sends the Android staging build of that revision to the tester
+groups, with the version's changelog entry as release notes. The
+[tester distribution workflow](../../.github/workflows/distribute-testers.yml) runs after the release workflow
+creates the release, so a version is sent once; reruns of the release workflow skip it. Run the workflow manually on
+`master` to send the current revision again.
+
+It runs only when the repository variable `FIREBASE_TESTER_GROUPS` (comma-separated group aliases) is set, and
+needs the `firebase-app-distribution` environment, limited to the `master` and `develop` branches, with these
+secrets:
+
+| Secret | Value |
+| --- | --- |
+| `GOOGLE_SERVICES_JSON_BASE64` | Base64 of `androidApp/google-services.json` with both Android apps |
+| `STAGING_KEYSTORE_BASE64` | Base64 of the staging keystore |
+| `STAGING_STORE_PASSWORD`, `STAGING_KEY_ALIAS`, `STAGING_KEY_PASSWORD` | The staging signing values |
+| `FIREBASE_WORKLOAD_IDENTITY_PROVIDER` | Full resource name of the Workload Identity provider |
+| `FIREBASE_SERVICE_ACCOUNT` | Email of the service account that uploads builds |
+
+The build also uses the repository secret `BACKEND_BASE_URL`. CI signs in to Google Cloud without a stored key,
+through Workload Identity Federation: the provider accepts only tokens for this repository's ID in the
+`firebase-app-distribution` environment, and the service account has only the **Firebase App Distribution Admin**
+role. The signing key is deleted before the job downloads the Firebase CLI.
+
+### Android from a configured machine
 
 ```sh
 ./gradlew :androidApp:assembleStaging

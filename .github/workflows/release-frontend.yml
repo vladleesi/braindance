@@ -8,6 +8,10 @@ on:
         description: Validated master revision to release
         required: true
         type: string
+    outputs:
+      created:
+        description: Whether this run created the frontend release, so testers get each release once
+        value: ${{ jobs.publish-frontend-release.outputs.created }}
 
 permissions: {}
 
@@ -22,6 +26,8 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+    outputs:
+      created: ${{ steps.publish.outputs.created }}
 
     steps:
       # This trusted release job fetches Git refs and runs no project build code.
@@ -95,6 +101,7 @@ jobs:
           fi
 
       - name: Publish GitHub Release
+        id: publish
         if: steps.source.outputs.current == 'true' && steps.version-change.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -143,3 +150,4 @@ jobs:
             --target "$SOURCE_SHA" \
             --title "Braindance App $FRONTEND_VERSION" \
             --notes-file "$notes_file"
+          echo "created=true" >> "$GITHUB_OUTPUT"

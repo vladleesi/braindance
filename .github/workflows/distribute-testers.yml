@@ -1,0 +1,152 @@
+name: Tester Distribution
+
+on:
+  # Validation calls this after it creates a frontend release for the exact validated revision.
+  workflow_call:
+    inputs:
+      source_sha:
+        description: Released master revision to send to testers
+        required: true
+        type: string
+    secrets:
+      BACKEND_BASE_URL:
+        required: true
+  # Re-sends the current master revision, for example after a failed upload or a tester group change.
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: tester-distribution
+  cancel-in-progress: false
+
+jobs:
+  distribute-android-staging:
+    name: Send Android Staging Build to Testers
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    # Holds the Firebase configuration, staging signing key, and keyless Google Cloud identity. Only master and
+    # develop (whose promotion runs release master) can deploy to it.
+    environment: firebase-app-distribution
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout Released Revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.source_sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+
+      - name: Install Android SDK Platform 37
+        run: android sdk install platforms/android-37
+
+      # The signing job never reads a build cache that other workflows could have written.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-disabled: true
+
+      - name: Write Firebase Configuration and Signing Key
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          STAGING_KEYSTORE_BASE64: ${{ secrets.STAGING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON_BASE64" ] || [ -z "$STAGING_KEYSTORE_BASE64" ]; then
+            echo "Environment secrets GOOGLE_SERVICES_JSON_BASE64 and STAGING_KEYSTORE_BASE64 are required." >&2
+            exit 1
+          fi
+          printf '%s' "$GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > androidApp/google-services.json
+          printf '%s' "$STAGING_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/staging.jks"
+
+      - name: Build Signed Staging APK
+        env:
+          ORG_GRADLE_PROJECT_BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+          ORG_GRADLE_PROJECT_STAGING_STORE_PASSWORD: ${{ secrets.STAGING_STORE_PASSWORD }}
+          ORG_GRADLE_PROJECT_STAGING_KEY_ALIAS: ${{ secrets.STAGING_KEY_ALIAS }}
+          ORG_GRADLE_PROJECT_STAGING_KEY_PASSWORD: ${{ secrets.STAGING_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ORG_GRADLE_PROJECT_BACKEND_BASE_URL" ]; then
+            echo "Repository secret BACKEND_BASE_URL is required." >&2
+            exit 1
+          fi
+          export ORG_GRADLE_PROJECT_STAGING_STORE_FILE="$RUNNER_TEMP/staging.jks"
+          ./gradlew :androidApp:assembleStaging --stacktrace
+
+      # The upload step downloads the Firebase CLI from npm, so the signing key is gone before it runs.
+      - name: Remove Signing Key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/staging.jks"
+
+      - name: Prepare Release Notes
+        id: notes
+        run: |
+          version="$(sed -n 's/^MARKETING_VERSION[[:space:]]*=[[:space:]]*//p' version.xcconfig)"
+          notes_file="$RUNNER_TEMP/tester-release-notes.md"
+          {
+            printf 'Braindance %s (%s)\n\n' "$version" "$(git rev-parse --short HEAD)"
+            # Entry headings are "## MAJOR.MINOR.PATCH — YYYY-MM-DD"; the version field alone identifies the entry.
+            awk -v version="$version" '
+              $1 == "##" && $2 == version { found = 1; next }
+              found && /^## / { exit }
+              found { print }
+            ' CHANGELOG.md
+          } > "$notes_file"
+          echo "file=$notes_file" >> "$GITHUB_OUTPUT"
+
+      - name: Find Firebase Staging App
+        id: app
+        run: |
+          app_id="$(python3 - <<'EOF'
+          import json
+
+          package = "dev.vladleesi.braindanceapp.staging"
+          with open("androidApp/google-services.json", encoding="utf-8") as config:
+              clients = json.load(config)["client"]
+          ids = [
+              client["client_info"]["mobilesdk_app_id"]
+              for client in clients
+              if client["client_info"]["android_client_info"]["package_name"] == package
+          ]
+          if len(ids) != 1:
+              raise SystemExit(f"google-services.json must contain exactly one {package} app.")
+          print(ids[0])
+          EOF
+          )"
+          echo "::add-mask::$app_id"
+          echo "id=$app_id" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.FIREBASE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Send to Testers
+        env:
+          FIREBASE_APP_ID: ${{ steps.app.outputs.id }}
+          TESTER_GROUPS: ${{ vars.FIREBASE_TESTER_GROUPS }}
+          NOTES_FILE: ${{ steps.notes.outputs.file }}
+        run: |
+          if [ -z "$TESTER_GROUPS" ]; then
+            echo "Repository variable FIREBASE_TESTER_GROUPS is required." >&2
+            exit 1
+          fi
+          npx --yes firebase-tools@15.36.0 appdistribution:distribute \
+            androidApp/build/outputs/apk/staging/androidApp-staging.apk \
+            --app "$FIREBASE_APP_ID" \
+            --groups "$TESTER_GROUPS" \
+            --release-notes-file "$NOTES_FILE"
