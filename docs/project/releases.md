@@ -22,8 +22,8 @@
   [publish-landing.yml](../../.github/workflows/publish-landing.yml) on `master`, and a direct `master` push calls
   it. `.github/scripts/check-landing.py` checks the site before every promotion and again before each deployment.
 - **Source release:** a frontend version change creates one `app-vMAJOR.MINOR.PATCH` source release after all checks
-  pass for that commit on `master`. The version is compared with `master` before the push, so a version whose first
-  push failed validation is still released when it passes. The
+  pass for that commit on `master`. Each version is released once, while its tag does not exist yet, so a version whose
+  first push failed validation is still released when it passes. The
   [release workflow](../../.github/workflows/release-frontend.yml) uses its matching changelog entry. Preserve existing
   releases. Pull requests and manual validation publish nothing; source releases are separate from mobile store
   downloads.

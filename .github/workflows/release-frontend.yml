@@ -8,11 +8,6 @@ on:
         description: Validated master revision to release
         required: true
         type: string
-      baseline_sha:
-        description: Master revision before this push, for promotions; defaults to the push's previous revision
-        required: false
-        type: string
-        default: ''
     outputs:
       created:
         description: Whether this run created the frontend release, so testers get each release once
@@ -80,35 +75,24 @@ jobs:
           echo "build_number=$build_number" >> "$GITHUB_OUTPUT"
           echo "tag=app-v$version" >> "$GITHUB_OUTPUT"
 
-      - name: Check Frontend Version Change
-        # Compare with master before this release: promotions pass it, because develop's previous revision may carry a
-        # version that failed validation and was never released; direct master pushes use the push's previous revision.
+      - name: Check Frontend Release
+        # Each version is released once: the first time it reaches master with all checks passing, even when an earlier
+        # push of the same version failed validation. The full-history checkout includes every tag.
         if: steps.source.outputs.current == 'true'
-        id: version-change
+        id: release-check
         env:
-          BEFORE_SHA: ${{ inputs.baseline_sha || github.event.before }}
-          FRONTEND_VERSION: ${{ steps.version.outputs.name }}
+          FRONTEND_TAG: ${{ steps.version.outputs.tag }}
         run: |
-          previous_revision="$BEFORE_SHA"
-          if [ -n "$previous_revision" ] && [ "$previous_revision" != "0000000000000000000000000000000000000000" ]; then
-            git fetch origin "$previous_revision" --no-tags
+          if git show-ref --verify --quiet "refs/tags/$FRONTEND_TAG"; then
+            echo "::notice::Skipping frontend release because $FRONTEND_TAG already exists."
+            echo "needed=false" >> "$GITHUB_OUTPUT"
           else
-            previous_revision="$(git rev-parse HEAD^ 2>/dev/null || true)"
-          fi
-
-          # An unreadable previous version counts as a change so the first release can be published.
-          previous_config="$(git show "$previous_revision:version.xcconfig" 2>/dev/null || true)"
-          previous_version="$(printf '%s\n' "$previous_config" | sed -n 's/^MARKETING_VERSION[[:space:]]*=[[:space:]]*//p')"
-          if [ "$FRONTEND_VERSION" != "$previous_version" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::Skipping frontend release because the version is unchanged."
-            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "needed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Publish GitHub Release
         id: publish
-        if: steps.source.outputs.current == 'true' && steps.version-change.outputs.changed == 'true'
+        if: steps.source.outputs.current == 'true' && steps.release-check.outputs.needed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           FRONTEND_VERSION: ${{ steps.version.outputs.name }}

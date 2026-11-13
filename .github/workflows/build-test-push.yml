@@ -286,7 +286,6 @@ jobs:
     uses: ./.github/workflows/release-frontend.yml
     with:
       source_sha: ${{ github.sha }}
-      baseline_sha: ${{ needs.promote-to-master.outputs.before_sha }}
 
   publish-master-frontend-release:
     name: Publish Validated Master Frontend Release
