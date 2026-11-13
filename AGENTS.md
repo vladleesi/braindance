@@ -252,6 +252,10 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
 - Use constructor injection for business dependencies.
 - In suspending code, rethrow `CancellationException` with either `try`/`catch` or `runCatching`.
 - Consider Android and iOS implications of shared or platform changes.
+- Keep the mock API in sync with the real API. When the client's API use or the API's behavior changes, update
+  `docs/project/openapi.yaml`, the client models and `ApiConfig`, and the fixtures in `shared/src/apiFixtures` in the
+  same change. Fixtures must match the contract's endpoints, fields, and status codes; `ApiContractTest` checks the
+  contract against the client.
 
 ## Compose rendering
 - `NavigationScaffold` owns the app background, and `MainActivity` removes the redundant Android window background;

@@ -2,6 +2,7 @@
 
 package dev.vladleesi.braindanceapp.data.api
 
+import dev.vladleesi.braindanceapp.data.config.ApiConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.retry
 import io.ktor.client.request.prepareGet
@@ -24,7 +25,7 @@ internal fun warmUpBackend(client: () -> HttpClient) {
             try {
                 withTimeout(WARM_UP_TIMEOUT) {
                     client()
-                        .prepareGet("health") { retry { maxRetries = 0 } }
+                        .prepareGet(ApiConfig.Endpoints.HEALTH) { retry { maxRetries = 0 } }
                         .execute { }
                 }
             } catch (e: CancellationException) {

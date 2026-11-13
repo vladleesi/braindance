@@ -4,6 +4,7 @@ package dev.vladleesi.braindanceapp.data.config
 
 object ApiConfig {
     object Endpoints {
+        const val HEALTH = "health"
         const val GAME_DETAILS = "v1/games/details"
         const val GAME_RECOMMENDATIONS = "v1/games/recommendations"
         const val MOST_ANTICIPATED = "v1/games/anticipated"

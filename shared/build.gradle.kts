@@ -11,6 +11,10 @@ import java.util.Properties
 
 val appNamespace = "dev.vladleesi.braindanceapp"
 val backendBaseUrlProperty = "BACKEND_BASE_URL"
+val apiFixturesProperty = "API_FIXTURES"
+
+// Must match API_FIXTURES_BASE_URL in src/apiFixtures. The reserved .invalid domain never resolves.
+val apiFixturesBaseUrl = "https://fixtures.invalid"
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -27,6 +31,35 @@ val frontendVersionProperties =
     Properties().apply {
         rootProject.file("version.xcconfig").inputStream().use(::load)
     }
+
+// A Gradle property (CI, -P) wins over the ignored root local.properties.
+val localProperties =
+    providers
+        .fileContents(rootProject.layout.projectDirectory.file("local.properties"))
+        .asText
+        .map { contents -> Properties().apply { load(StringReader(contents)) } }
+
+fun configuredProperty(name: String): String =
+    providers
+        .gradleProperty(name)
+        .orElse(localProperties.map { properties -> properties.getProperty(name).orEmpty() })
+        .orNull
+        .orEmpty()
+        .trim()
+
+val configuredBackendUrl = configuredProperty(backendBaseUrlProperty)
+
+// Offline sample data for developer builds. Off unless explicitly enabled, and never combined with a real API, so a
+// build that talks to an API can never contain or serve fixtures. Disabled builds do not compile the fixture code.
+val apiFixtures =
+    when (val value = configuredProperty(apiFixturesProperty)) {
+        "", "false" -> false
+        "true" -> true
+        else -> error("$apiFixturesProperty must be true or false, not '$value'.")
+    }
+require(!apiFixtures || configuredBackendUrl.isEmpty()) {
+    "Set either $apiFixturesProperty=true or $backendBaseUrlProperty, not both."
+}
 
 kotlin {
     android {
@@ -61,6 +94,15 @@ kotlin {
     }
 
     sourceSets {
+        commonMain {
+            kotlin.srcDir(if (apiFixtures) "src/apiFixturesEnabled/kotlin" else "src/apiFixturesDisabled/kotlin")
+            if (apiFixtures) {
+                kotlin.srcDir("src/apiFixtures/kotlin")
+                dependencies { implementation(libs.ktor.client.mock) }
+            }
+        }
+        // Tests always cover the fixtures, so they keep working while the app build leaves them out.
+        if (!apiFixtures) commonTest { kotlin.srcDir("src/apiFixtures/kotlin") }
         commonMain.dependencies {
             // Compose
             implementation(libs.compose.runtime)
@@ -154,29 +196,26 @@ buildkonfig {
             "APP_VERSION",
             frontendVersionProperties.getProperty("MARKETING_VERSION"),
         )
-        val localPropertiesFile = rootProject.layout.projectDirectory.file("local.properties")
-        val localBackendUrl =
-            project.providers
-                .fileContents(localPropertiesFile)
-                .asText
-                .map { contents ->
-                    Properties()
-                        .apply { load(StringReader(contents)) }
-                        .getProperty(backendBaseUrlProperty)
-                        .orEmpty()
-                }
-        val backendUrl =
-            project.providers
-                .gradleProperty(backendBaseUrlProperty)
-                .orElse(localBackendUrl)
-                .orNull
-                .orEmpty()
-        buildConfigField(FieldSpec.Type.STRING, backendBaseUrlProperty, backendUrl)
+        buildConfigField(
+            FieldSpec.Type.STRING,
+            backendBaseUrlProperty,
+            if (apiFixtures) apiFixturesBaseUrl else configuredBackendUrl,
+        )
     }
 }
 
 tasks.named("detekt") {
     dependsOn("detektAndroidMain")
+}
+
+// ApiContractTest (Android host tests) compares the published API contract with the client's endpoints and models.
+val apiContractFile =
+    rootProject.layout.projectDirectory
+        .file("docs/project/openapi.yaml")
+        .asFile
+tasks.withType<Test>().configureEach {
+    inputs.file(apiContractFile).withPathSensitivity(PathSensitivity.RELATIVE)
+    systemProperty("apiContractFile", apiContractFile.absolutePath)
 }
 
 // CI passes an iPhone simulator that exists on its runner; locally the Kotlin plugin's default device is used.

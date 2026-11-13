@@ -4,6 +4,13 @@ Release notes for Android, iOS, and Web. Each version includes only platforms wi
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.15.2
+
+### Android, iOS, and Web
+
+- Developer builds can run offline on built-in sample data (`API_FIXTURES=true`), without a Braindance API. Release
+  builds are unchanged and contain no sample data.
+
 ## 0.15.1
 
 ### Android, iOS, and Web

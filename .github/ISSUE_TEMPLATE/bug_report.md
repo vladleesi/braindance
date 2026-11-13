@@ -6,7 +6,7 @@ labels: ''
 assignees: ''
 ---
 
-<!-- Search existing issues first. You do not need to build the app or run a backend to report a bug.
+<!-- Search existing issues first. You do not need to build the app to report a bug.
 Fill in what you know and remove sections that do not apply. Do not include credentials or personal information. -->
 
 ## What happened?

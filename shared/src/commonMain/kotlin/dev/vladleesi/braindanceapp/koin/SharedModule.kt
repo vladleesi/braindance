@@ -2,6 +2,7 @@
 
 package dev.vladleesi.braindanceapp.koin
 
+import dev.vladleesi.braindanceapp.data.api.apiFixtureEngine
 import dev.vladleesi.braindanceapp.data.api.clients.BackendClient
 import dev.vladleesi.braindanceapp.data.api.remote.GamerPowerRemote
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
@@ -45,7 +46,7 @@ private fun KoinApplication.koinModules(isDebugBuild: Boolean) =
 // The backend client is the only HttpClient in the graph, so remotes receive it by constructor injection.
 private fun httpClientModule(isDebugBuild: Boolean) =
     module {
-        single<HttpClient> { BackendClient.build(debugHttpLogging = isDebugBuild) }
+        single<HttpClient> { BackendClient.build(debugHttpLogging = isDebugBuild, engine = apiFixtureEngine()) }
     }
 
 private val remoteModule =

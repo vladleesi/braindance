@@ -1,7 +1,7 @@
 # Contributing to Braindance
 
 You can help improve Braindance by reporting bugs, suggesting features, sharing usability feedback,
-or contributing code and documentation. You do not need to build the app or run a backend to give feedback;
+or contributing code and documentation. You do not need to build the app to give feedback;
 you can use the [experimental Web preview](https://app.braindancegg.com/).
 Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
@@ -31,12 +31,12 @@ or accessibility is welcome. A proposed solution is optional; you do not need a 
 Follow `.editorconfig`, neighboring code, and the [project conventions](AGENTS.md#project-conventions).
 
 1. Fork the repository and create a branch from `develop`.
-2. Use the [development guide](docs/project/development.md) as needed.
-   Documentation changes need no app toolchain.
+2. Use the [development guide](docs/project/development.md) to build and run the clients; they run on built-in
+   sample data, with no API needed. Documentation changes need no app toolchain.
 3. Keep changes focused. For larger features or behavior changes, an issue helps agree on scope; small fixes need none.
 4. Run affected [validation checks](docs/project/development.md#validation), add focused behavior tests where
-   appropriate, and review your diff. For Kotlin/Gradle changes, run `./gradlew ktlintFormat detekt` and review autocorrections.
-   Docs-only changes need link and accuracy checks, not an app build.
+   appropriate, and review your diff. For Kotlin/Gradle changes, run `./gradlew ktlintFormat detekt` and review
+   autocorrections. Docs-only changes need link and accuracy checks, not an app build.
 5. Open a pull request against `develop`. Describe the change, link related issues, and report checks run or skipped.
    Include UI screenshots when useful.
 

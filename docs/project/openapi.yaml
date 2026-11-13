@@ -1,0 +1,294 @@
+# SPDX-License-Identifier: MPL-2.0
+# The Braindance API as the open-source clients use it. ApiContractTest fails when this file and the client's
+# endpoints or models disagree; update both together.
+openapi: 3.1.0
+info:
+  title: Braindance API (client contract)
+  version: v1
+  description: >-
+    Read-only JSON API that serves game data from IGDB and giveaways from GamerPower. Responses may contain fields
+    not listed here; clients ignore them. Clients retry 502, 503, and 504 and treat 429 as rate limiting.
+servers:
+  - url: https://api.example.com
+paths:
+  /health:
+    get:
+      summary: Reachability check sent at app start. The body is not part of the contract.
+      responses:
+        '200':
+          description: The API is reachable.
+  /v1/games/trending:
+    get:
+      summary: Popular Right Now, ranked by the API.
+      responses:
+        '200':
+          description: Ranked game cards.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrendingGameItem'
+  /v1/games/anticipated:
+    get:
+      summary: Most Anticipated, as compact cards with id, name, and cover only.
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Upcoming games.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameItem'
+  /v1/games/details:
+    get:
+      summary: One game's details.
+      parameters:
+        - $ref: '#/components/parameters/GameId'
+      responses:
+        '200':
+          description: A list with the game, or an empty list when the ID is unknown.
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 1
+                items:
+                  $ref: '#/components/schemas/GameItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /v1/games/recommendations:
+    get:
+      summary: Similar games, ranked by the API.
+      parameters:
+        - $ref: '#/components/parameters/GameId'
+      responses:
+        '200':
+          description: Similar games; empty when there are none.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SimilarGame'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /v1/giveaways:
+    get:
+      summary: All current giveaways.
+      responses:
+        '200':
+          description: Giveaways.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GiveawayResponse'
+  /v1/giveaways/{id}:
+    get:
+      summary: One giveaway.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: The giveaway.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GiveawayResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: No giveaway has this ID.
+components:
+  parameters:
+    GameId:
+      name: id
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    PageSize:
+      name: pageSize
+      in: query
+      description: Maximum number of cards. Clients always send it.
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    BadRequest:
+      description: The ID is missing or invalid.
+  schemas:
+    TrendingGameItem:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cover:
+          $ref: '#/components/schemas/Cover'
+        reason:
+          type: string
+          description: Why the game is trending, such as new_release, full_release, showcased, or new_platform.
+        platform:
+          type: string
+          description: Short platform name, sent only with new_platform.
+    GameItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cover:
+          $ref: '#/components/schemas/Cover'
+        first_release_date:
+          type: integer
+          description: Unix time in seconds.
+        release_dates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReleaseDate'
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+        platforms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Platform'
+        websites:
+          type: array
+          items:
+            $ref: '#/components/schemas/Websites'
+        screenshots:
+          type: array
+          items:
+            $ref: '#/components/schemas/Screenshot'
+        videos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Video'
+        summary:
+          type: string
+        storyline:
+          type: string
+    SimilarGame:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cover:
+          $ref: '#/components/schemas/Cover'
+    Cover:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          description: Protocol-relative IGDB image URL at t_thumb size; clients derive the sizes they show.
+    ReleaseDate:
+      type: object
+      properties:
+        id:
+          type: integer
+        human:
+          type: string
+          description: Human-readable release date, such as Q3 2027.
+    Genre:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Platform:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Websites:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          description: Clients open only HTTPS links.
+        type:
+          type: integer
+          description: IGDB website type, such as 13 for Steam.
+    Screenshot:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+        animated:
+          type: boolean
+    Video:
+      type: object
+      properties:
+        id:
+          type: integer
+        video_id:
+          type: string
+    GiveawayResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        worth:
+          type: string
+          description: Price text, or N/A when unknown.
+        thumbnail:
+          type: string
+        image:
+          type: string
+        description:
+          type: string
+        instructions:
+          type: string
+        open_giveaway_url:
+          type: string
+        open_giveaway:
+          type: string
+        gamerpower_url:
+          type: string
+        published_date:
+          type: string
+          description: YYYY-MM-DD HH:MM:SS.
+        end_date:
+          type: string
+          description: YYYY-MM-DD HH:MM:SS, or N/A when open-ended.
+        type:
+          type: string
+          description: Such as Game, DLC, or Early Access.
+        platforms:
+          type: string
+          description: Comma-separated platform names.
+        users:
+          type: integer
+          description: How many people claimed it.
+        status:
+          type: string

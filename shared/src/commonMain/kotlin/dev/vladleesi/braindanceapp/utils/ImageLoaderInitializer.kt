@@ -17,6 +17,7 @@ import coil3.size.Dimension
 import coil3.size.Scale
 import coil3.util.DebugLogger
 import coil3.util.Logger
+import dev.vladleesi.braindanceapp.data.api.apiFixtureEngine
 import dev.vladleesi.braindanceapp.data.api.retryConfig
 import dev.vladleesi.braindanceapp.data.api.timeoutConfig
 import io.ktor.client.HttpClient
@@ -49,7 +50,7 @@ private fun createImageLoader(context: PlatformContext) =
         .Builder(context)
         .components {
             add(SmallerCoverInterceptor())
-            add(KtorNetworkFetcherFactory(httpClient = { imageHttpClient() }))
+            add(KtorNetworkFetcherFactory(httpClient = { imageHttpClient(engine = apiFixtureEngine()) }))
         }.memoryCachePolicy(CachePolicy.ENABLED)
         .networkCachePolicy(CachePolicy.ENABLED)
         .configurePlatformCache()

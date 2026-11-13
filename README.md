@@ -9,7 +9,7 @@
 ### Find what to play next.
 
 Popular and upcoming games, similar titles and free giveaways — in one place.<br>
-Open source for **Android · iOS · Web**.
+Open-source clients for **Android · iOS · Web**.
 
 **[braindancegg.com](https://braindancegg.com/)** &nbsp;·&nbsp; **[Open the web app](https://app.braindancegg.com/)**
 &nbsp;·&nbsp; [Report a bug](https://github.com/vladleesi/braindance/issues/new?template=bug_report.md)
@@ -58,9 +58,18 @@ Feedback from the Web preview is welcome; you do not need to build the app to pa
 
 ## 🧩 For developers
 
-Android, iOS, and Web share UI and application logic through Kotlin Multiplatform and Compose Multiplatform.
-The clients load IGDB and GamerPower data from the Braindance API, which keeps Twitch credentials server-side and is
-developed and released separately.
+### Architecture
+
+- **Clients (this repository, open source):** the Android, iOS, and Web apps share UI and application logic through
+  Kotlin Multiplatform and Compose Multiplatform, with thin platform hosts in `androidApp`, `iosApp`, and `webApp`.
+- **Braindance API (private):** developed and deployed separately from a private repository. It ranks the trending
+  feed and similar-game recommendations and keeps Twitch credentials server-side.
+- **Third-party data:** game data from [IGDB](https://www.igdb.com/) and giveaways from
+  [GamerPower](https://www.gamerpower.com/), served through the API.
+
+Client builds run without the API on built-in sample data; see the
+[development guide](docs/project/development.md#configure-client-builds) and the
+[API contract](docs/project/openapi.yaml).
 
 | | |
 | --- | --- |
@@ -70,19 +79,23 @@ developed and released separately.
 | 🌐 **[Landing site](docs/)** | The static page served at [braindancegg.com](https://braindancegg.com/). |
 
 The current frontend source version is
-[0.15.1](https://github.com/vladleesi/braindance/releases/tag/app-v0.15.1).
+[0.15.2](https://github.com/vladleesi/braindance/releases/tag/app-v0.15.2).
 GitHub releases provide source code, not store-ready mobile downloads.
-Developer builds for Android, iOS, and Web are supported; see the development guide for API configuration.
 
 The Web publication badge shows checks for the revision on `master`.
 
 ## 📄 License
 
-First-party source, tests, build scripts, configuration, and documentation use [MPL-2.0](LICENSE).
-Modification, redistribution, commercial use, and forks are permitted under its terms. Preserve notices and MPL
-source rights; previously published GPL versions retain their rights. Third-party code, fonts, artwork, and external
-data have separate terms and exclusions in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Game covers shown on the
-landing site are © their respective owners, via [IGDB](https://www.igdb.com/).
+First-party source, tests, build scripts, configuration, and documentation in this repository use
+[MPL-2.0](LICENSE). Modification, redistribution, commercial use, and forks are permitted under its terms; preserve
+notices and MPL source rights.
+
+- Previously published GPL versions retain their rights.
+- The private backend is not part of this repository. Backend source in earlier Git history keeps the terms it was
+  published under and is no longer maintained here.
+- Third-party code, fonts, artwork, and external data have separate terms and exclusions in
+  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Game covers shown on the landing site are © their respective
+  owners, via [IGDB](https://www.igdb.com/).
 
 For first-party files without inline comments, this notice applies:
 
