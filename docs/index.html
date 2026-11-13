@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
   <title>Braindance: find what to play next | Game discovery app (in development)</title>
-  <meta name="description" content="Braindance is an open-source game discovery app for Android, iOS and Web, built with Compose Multiplatform. Browse popular and upcoming games, explore similar titles and find giveaways. In development.">
-  <meta name="keywords" content="game discovery, what to play next, upcoming games, popular games, similar games, game giveaways, free game giveaways, game release tracker, Kotlin Multiplatform, Compose Multiplatform, Android, iOS, web app, open source">
+  <meta name="description" content="Braindance is a game discovery app for Android, iOS and Web, with open-source clients built with Compose Multiplatform. Browse popular and upcoming games, explore similar titles and find giveaways. In development.">
+  <meta name="keywords" content="game discovery, what to play next, upcoming games, popular games, similar games, game giveaways, free game giveaways, game release tracker, Kotlin Multiplatform, Compose Multiplatform, Android, iOS, web app, open-source clients">
   <meta name="author" content="vladleesi">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#171717">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Braindance">
   <meta property="og:locale" content="en_US">
   <meta property="og:title" content="Braindance: find what to play next">
-  <meta property="og:description" content="Browse popular and upcoming games, explore similar titles and find giveaways in one place. Open source, for Android, iOS and Web. In development.">
+  <meta property="og:description" content="Browse popular and upcoming games, explore similar titles and find giveaways in one place. For Android, iOS and Web, with open-source clients. In development.">
   <meta property="og:url" content="https://braindancegg.com/">
   <meta property="og:image" content="https://braindancegg.com/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -25,7 +25,7 @@
   <meta property="og:image:alt" content="Braindance logo on a dark background">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Braindance: find what to play next">
-  <meta name="twitter:description" content="Open-source game discovery app for Android, iOS and Web. In development.">
+  <meta name="twitter:description" content="Game discovery app for Android, iOS and Web, with open-source clients. In development.">
   <meta name="twitter:image" content="https://braindancegg.com/og-image.png">
 
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -143,6 +143,7 @@
     .hero-logo { width: 88px; height: 88px; margin: 0 auto 26px; }
     h1 { font-size: clamp(2.4rem, 6.2vw, 4.25rem); line-height: 1.04; letter-spacing: -.035em; font-weight: 700; margin: 22px 0 20px; max-width: 14em; }
     .lead { font-size: clamp(1.05rem, 2vw, 1.2rem); color: #c9c9c9; max-width: 34em; margin: 0 auto 32px; }
+    .lead b { color: #fff; font-weight: 600; }
     .cta { display: flex; flex-wrap: wrap; gap: 12px; }
     .hero .cta { justify-content: center; }
     .fine { margin: 20px 0 0; font-size: .85rem; color: var(--muted); }
@@ -236,7 +237,7 @@
         "@id": "https://braindancegg.com/#website",
         "url": "https://braindancegg.com/",
         "name": "Braindance",
-        "description": "Open-source game discovery app: popular and upcoming games, similar titles and giveaways.",
+        "description": "Game discovery app with open-source clients: popular and upcoming games, similar titles and giveaways.",
         "inLanguage": "en"
       },
       {
@@ -245,7 +246,7 @@
         "name": "Braindance",
         "url": "https://app.braindancegg.com/",
         "image": "https://braindancegg.com/og-image.png",
-        "description": "Braindance is a game discovery service that helps you find what to play next. Browse popular and upcoming games, explore similar titles and find giveaways. Built with Compose Multiplatform for Android, iOS and Web. Currently in development; the web app is experimental and the Android and iOS apps are available by building from source.",
+        "description": "Braindance is a game discovery service that helps you find what to play next. Browse popular and upcoming games, explore similar titles and find giveaways. The Android, iOS and Web clients are open source and built with Compose Multiplatform. Currently in development; the web app is experimental and the Android and iOS apps are available by building from source.",
         "applicationCategory": "GameApplication",
         "operatingSystem": "Android, iOS, Web",
         "browserRequirements": "The web app requires a modern browser with WebAssembly GC (WasmGC) support",
@@ -268,7 +269,7 @@
           { "@type": "Question", "name": "How do I run the Android or iOS app?", "acceptedAnswer": { "@type": "Answer", "text": "Build it from source by following the development guide in the GitHub repository, which covers requirements, project layout and local builds." } },
           { "@type": "Question", "name": "Which browsers does the web app support?", "acceptedAnswer": { "@type": "Answer", "text": "The web app needs a modern browser with WasmGC support. Because Web support is experimental, browser behavior, performance and features may change." } },
           { "@type": "Question", "name": "Where does the game and giveaway data come from?", "acceptedAnswer": { "@type": "Answer", "text": "Game data is powered by IGDB and giveaways come from GamerPower." } },
-          { "@type": "Question", "name": "Is Braindance open source?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Braindance is open source under the MPL-2.0 license and built with Kotlin Multiplatform, Compose Multiplatform and a Kotlin/Ktor backend. The source is on GitHub." } },
+          { "@type": "Question", "name": "Is Braindance open source?", "acceptedAnswer": { "@type": "Answer", "text": "The Android, iOS and Web clients are open source under the MPL-2.0 license and built with Kotlin Multiplatform and Compose Multiplatform. The source is on GitHub. The backend that serves game and giveaway data is maintained privately." } },
           { "@type": "Question", "name": "How can I help improve Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "You can report a bug, suggest a feature or share usability feedback through GitHub issues, or contribute code and documentation. You do not need to build the app to give feedback." } }
         ]
       }
@@ -323,7 +324,7 @@
         <img class="hero-logo" src="/mark.svg" alt="Braindance mark" width="88" height="88" fetchpriority="high">
         <p class="status" role="status"><span class="dot" aria-hidden="true"></span><span><b>In development</b> &middot; Android, iOS and Web</span></p>
         <h1>Find what to play next.</h1>
-        <p class="lead">Braindance is an open-source game discovery app for Android, iOS and Web. Browse popular and upcoming games, explore similar titles and find giveaways in one place.</p>
+        <p class="lead">Braindance is a game discovery app with <b>open-source clients</b> for Android, iOS and Web. Browse popular and upcoming games, explore similar titles and find giveaways in one place.</p>
         <div class="cta">
           <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">
             Open the web app
@@ -430,18 +431,16 @@
 
     <section id="open-source" aria-labelledby="oss-title">
       <div class="wrap">
-        <h2 id="oss-title">Open source, built in the open</h2>
-        <p class="sub">Android, iOS and Web share UI and logic through <a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a> and <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a>. A <a href="https://ktor.io/" rel="noopener" target="_blank">Ktor</a> backend serves game and giveaway data and keeps API credentials server-side.</p>
+        <h2 id="oss-title">Open-source clients</h2>
+        <p class="sub">Android, iOS and Web share UI and logic through <a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a> and <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a>. The clients are open source under MPL-2.0. The backend that serves game and giveaway data and keeps API credentials server-side is maintained privately.</p>
         <div class="oss-group">
           <h3>Built with</h3>
           <ul class="tech" aria-label="Technology">
             <li><a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a></li>
             <li><a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a></li>
-            <li><a href="https://ktor.io/" rel="noopener" target="_blank">Ktor</a></li>
             <li><a href="https://insert-koin.io/" rel="noopener" target="_blank">Koin</a></li>
             <li><a href="https://kotlinlang.org/docs/wasm-overview.html" rel="noopener" target="_blank">Kotlin/Wasm</a></li>
             <li><a href="https://www.swift.org/" rel="noopener" target="_blank">Swift</a></li>
-            <li><a href="https://www.docker.com/" rel="noopener" target="_blank">Docker</a></li>
             <li><a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a></li>
           </ul>
         </div>
@@ -474,7 +473,7 @@
         <details><summary>How do I run the Android or iOS app?</summary><p>Build it from source by following the <a href="https://github.com/vladleesi/braindance/blob/master/docs/project/development.md" rel="noopener" target="_blank">development guide</a>, which covers requirements, project layout and local builds.</p></details>
         <details><summary>Which browsers does the web app support?</summary><p>The web app needs a modern browser with WasmGC support. Because Web support is experimental, browser behavior, performance and features may change.</p></details>
         <details><summary>Where does the game and giveaway data come from?</summary><p>Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>, and giveaways come from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>.</p></details>
-        <details><summary>Is Braindance open source?</summary><p>Yes. Braindance is open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license and built with <a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a>, <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a> and a <a href="https://ktor.io/" rel="noopener" target="_blank">Ktor</a> backend. The source is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>.</p></details>
+        <details><summary>Is Braindance open source?</summary><p>The Android, iOS and Web clients are open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license and built with <a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a> and <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a>. The source is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>. The backend that serves game and giveaway data is maintained privately.</p></details>
         <details><summary>How can I help improve Braindance?</summary><p><a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">Report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">suggest a feature or share usability feedback</a> through GitHub issues, or <a href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">contribute code and documentation</a>. You do not need to build the app to give feedback.</p></details>
       </div>
     </section>
