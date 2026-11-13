@@ -8,6 +8,11 @@ on:
         description: Validated master revision to release
         required: true
         type: string
+      baseline_sha:
+        description: Master revision before this push, for promotions; defaults to the push's previous revision
+        required: false
+        type: string
+        default: ''
     outputs:
       created:
         description: Whether this run created the frontend release, so testers get each release once
@@ -76,11 +81,12 @@ jobs:
           echo "tag=app-v$version" >> "$GITHUB_OUTPUT"
 
       - name: Check Frontend Version Change
-        # Compare with the caller's push baseline: develop before promotion, master on direct pushes.
+        # Compare with master before this release: promotions pass it, because develop's previous revision may carry a
+        # version that failed validation and was never released; direct master pushes use the push's previous revision.
         if: steps.source.outputs.current == 'true'
         id: version-change
         env:
-          BEFORE_SHA: ${{ github.event.before }}
+          BEFORE_SHA: ${{ inputs.baseline_sha || github.event.before }}
           FRONTEND_VERSION: ${{ steps.version.outputs.name }}
         run: |
           previous_revision="$BEFORE_SHA"
