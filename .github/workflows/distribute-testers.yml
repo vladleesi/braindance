@@ -8,9 +8,25 @@ on:
         description: Released master revision to send to testers
         required: true
         type: string
+    # A reusable workflow reads only declared secrets. Callers pass these names; the job then receives the values stored
+    # in the firebase-app-distribution environment.
     secrets:
       BACKEND_BASE_URL:
         required: true
+      GOOGLE_SERVICES_JSON_BASE64:
+        required: false
+      STAGING_KEYSTORE_BASE64:
+        required: false
+      STAGING_STORE_PASSWORD:
+        required: false
+      STAGING_KEY_ALIAS:
+        required: false
+      STAGING_KEY_PASSWORD:
+        required: false
+      FIREBASE_WORKLOAD_IDENTITY_PROVIDER:
+        required: false
+      FIREBASE_SERVICE_ACCOUNT:
+        required: false
   # Re-sends the current master revision, for example after a failed upload or a tester group change.
   workflow_dispatch:
 

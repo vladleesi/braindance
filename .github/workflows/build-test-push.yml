@@ -316,6 +316,13 @@ jobs:
       source_sha: ${{ github.sha }}
     secrets:
       BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+      GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+      STAGING_KEYSTORE_BASE64: ${{ secrets.STAGING_KEYSTORE_BASE64 }}
+      STAGING_STORE_PASSWORD: ${{ secrets.STAGING_STORE_PASSWORD }}
+      STAGING_KEY_ALIAS: ${{ secrets.STAGING_KEY_ALIAS }}
+      STAGING_KEY_PASSWORD: ${{ secrets.STAGING_KEY_PASSWORD }}
+      FIREBASE_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.FIREBASE_WORKLOAD_IDENTITY_PROVIDER }}
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
   distribute-master-tester-build:
     name: Send Validated Master Release to Testers
@@ -329,6 +336,13 @@ jobs:
       source_sha: ${{ github.sha }}
     secrets:
       BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+      GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+      STAGING_KEYSTORE_BASE64: ${{ secrets.STAGING_KEYSTORE_BASE64 }}
+      STAGING_STORE_PASSWORD: ${{ secrets.STAGING_STORE_PASSWORD }}
+      STAGING_KEY_ALIAS: ${{ secrets.STAGING_KEY_ALIAS }}
+      STAGING_KEY_PASSWORD: ${{ secrets.STAGING_KEY_PASSWORD }}
+      FIREBASE_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.FIREBASE_WORKLOAD_IDENTITY_PROVIDER }}
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
   publish-promoted-web-app:
     name: Publish Promoted Web App
