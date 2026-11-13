@@ -24,8 +24,9 @@
 - **Source release:** a frontend version change creates one `app-vMAJOR.MINOR.PATCH` source release after all checks
   pass for that commit on `master`. The version is compared with `master` before the push, so a version whose first
   push failed validation is still released when it passes. The
-  [release workflow](../../.github/workflows/release-frontend.yml) uses its matching changelog entry. Preserve existing releases. Pull requests and manual validation publish nothing; source
-  releases are separate from mobile store downloads.
+  [release workflow](../../.github/workflows/release-frontend.yml) uses its matching changelog entry. Preserve existing
+  releases. Pull requests and manual validation publish nothing; source releases are separate from mobile store
+  downloads.
 - **Tester builds:** each new frontend release also sends the Android staging build to Firebase App Distribution
   tester groups, after the release is created. iOS test builds are sent manually. See [Firebase](firebase.md).
 - **API:** the Braindance API is released and deployed from its own repository; changes here never deploy it.
