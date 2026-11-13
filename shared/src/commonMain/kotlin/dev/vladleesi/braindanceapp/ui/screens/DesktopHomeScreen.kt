@@ -4,7 +4,9 @@ package dev.vladleesi.braindanceapp.ui.screens
 
 import Bell
 import CalendarDays
+import ChevronLeft
 import Star
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,9 +33,9 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,7 +43,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -111,6 +115,12 @@ private val MainColumnMaxWidth = 1120.dp
 private val ContextColumnWidth = 280.dp
 private val HeroMinHeight = 220.dp
 private val ContextIconSize = 20.dp
+private val LinkButtonBorderWidth = 1.dp
+private val LinkButtonArrowSize = 16.dp
+private const val LINK_BUTTON_BORDER_ALPHA = 0.4f
+
+// The back chevron turned to point forward.
+private const val LINK_BUTTON_ARROW_ROTATION = 180f
 private const val HERO_TEXT_WIDTH_FRACTION = 0.6f
 private const val HERO_COVER_COUNT = 3
 private const val HERO_SCRIM_OPAQUE_END = 0.5f
@@ -501,20 +511,30 @@ private fun PreviewCard(
     )
 }
 
-/** A preview card's link to its destination, filled so it reads as a button before it is hovered. */
+/**
+ * A preview card's link to its destination. It is an outlined button with a trailing arrow, so it reads as navigation
+ * and not as a [ComingSoonLabel] tag, which is a filled pill.
+ */
 @Composable
 private fun DesktopLinkButton(
     text: String,
     onClick: () -> Unit,
 ) {
-    TextButton(
+    OutlinedButton(
         onClick = onClick,
         shape = CornerShapes.small,
-        colors = ButtonDefaults.textButtonColors(backgroundColor = background, contentColor = white),
+        border = BorderStroke(LinkButtonBorderWidth, white.copy(alpha = LINK_BUTTON_BORDER_ALPHA)),
+        colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent, contentColor = white),
         contentPadding = PaddingValues(horizontal = Dimens.compact, vertical = Dimens.small),
         modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
     ) {
         Text(text = text, color = white)
+        Spacer(Modifier.width(Dimens.small))
+        Icon(
+            imageVector = ChevronLeft,
+            contentDescription = null,
+            modifier = Modifier.size(LinkButtonArrowSize).rotate(LINK_BUTTON_ARROW_ROTATION),
+        )
     }
 }
 

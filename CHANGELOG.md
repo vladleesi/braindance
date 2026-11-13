@@ -5,6 +5,18 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.15.5 — 2026-11-13
+
+### Android, iOS, and Web
+
+- Add a Share button to the game details toolbar that shares a link to the game.
+- Show the release date on game details as a calm chip with a calendar icon instead of a bright white tag.
+
+### Web
+
+- Restyle the Open Releases and Open News buttons on the wide Home screen as outlined buttons with an arrow, so they
+  no longer look like the Coming soon tag.
+
 ## 0.15.4 — 2026-11-13
 
 ### Android, iOS, and Web

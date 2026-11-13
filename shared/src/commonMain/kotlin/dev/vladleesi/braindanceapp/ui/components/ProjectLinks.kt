@@ -8,10 +8,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
+import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
+import dev.vladleesi.braindanceapp.navigation.toWebPath
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.profile_support_copy
 import dev.vladleesi.braindanceapp.resources.profile_support_share
 import dev.vladleesi.braindanceapp.resources.share_app_message
+import dev.vladleesi.braindanceapp.resources.share_game_message
 import dev.vladleesi.braindanceapp.utils.openExternalUrl
 import dev.vladleesi.kmpsharekit.ShareKit
 import org.jetbrains.compose.resources.StringResource
@@ -44,6 +47,13 @@ class ProjectLinks(
     val openGamerPower: () -> Unit,
 )
 
+/** A share action for one piece of content: [label] names what [share] does on this platform. */
+@Immutable
+class ShareAction(
+    val label: StringResource,
+    val share: () -> Unit,
+)
+
 /** Where people follow the project: its Threads and X profiles and the GitHub release notes. Each opens its page. */
 @Immutable
 class CommunityLinks(
@@ -58,25 +68,48 @@ fun rememberProjectLinks(): ProjectLinks {
     val uriHandler = LocalUriHandler.current
     val shareMessage = stringResource(Res.string.share_app_message, APP_URL)
 
+    val shareApp = rememberShareAction(shareMessage)
+
+    return remember(uriHandler, shareApp) {
+        ProjectLinks(
+            shareLabel = shareApp.label,
+            openRepository = { uriHandler.openExternalUrl(REPOSITORY_URL) },
+            share = shareApp.share,
+            openIgdb = { uriHandler.openExternalUrl(IGDB_URL) },
+            openGamerPower = { uriHandler.openExternalUrl(GAMERPOWER_URL) },
+        )
+    }
+}
+
+/** Shares the game [gameId] ("[gameName]") with a link to its page in the Web app. */
+@Composable
+fun rememberShareGameAction(
+    gameId: Int,
+    gameName: String,
+): ShareAction {
+    val gameUrl = APP_URL.trimEnd('/') + GameDetailsRoute(gameId).toWebPath()
+    val message = stringResource(Res.string.share_game_message, gameName, gameUrl)
+    return rememberShareAction(message)
+}
+
+/** Shares [message] through the system share sheet where the platform supports it, otherwise copies it. */
+@Composable
+private fun rememberShareAction(message: String): ShareAction {
     // Compose's common Clipboard API does not yet expose a plain-text ClipEntry factory.
     @Suppress("DEPRECATION")
     val clipboard = LocalClipboardManager.current
 
-    return remember(uriHandler, clipboard, shareMessage) {
+    return remember(clipboard, message) {
         val nativeSharingSupported = ShareKit.isSupported()
-        ProjectLinks(
-            shareLabel =
-                if (nativeSharingSupported) Res.string.profile_support_share else Res.string.profile_support_copy,
-            openRepository = { uriHandler.openExternalUrl(REPOSITORY_URL) },
+        ShareAction(
+            label = if (nativeSharingSupported) Res.string.profile_support_share else Res.string.profile_support_copy,
             share = {
                 if (nativeSharingSupported) {
-                    ShareKit.shareText(shareMessage)
+                    ShareKit.shareText(message)
                 } else {
-                    clipboard.setText(AnnotatedString(shareMessage))
+                    clipboard.setText(AnnotatedString(message))
                 }
             },
-            openIgdb = { uriHandler.openExternalUrl(IGDB_URL) },
-            openGamerPower = { uriHandler.openExternalUrl(GAMERPOWER_URL) },
         )
     }
 }

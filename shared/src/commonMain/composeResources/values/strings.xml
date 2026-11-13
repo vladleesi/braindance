@@ -31,6 +31,7 @@
     <string name="profile_support_share">Share</string>
     <string name="profile_support_copy">Copy invite</string>
     <string name="share_app_message">I'm checking out Braindance — a new place to discover trending games, upcoming releases, and free game giveaways. Check it out: %1$s</string>
+    <string name="share_game_message">Check out %1$s on Braindance: %2$s</string>
     <string name="profile_sign_in">Sign in</string>
     <string name="profile_statistics">Gaming statistics</string>
     <string name="profile_activity">Activity</string>

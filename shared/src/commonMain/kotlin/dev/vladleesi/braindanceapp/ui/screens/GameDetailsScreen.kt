@@ -2,6 +2,7 @@
 
 package dev.vladleesi.braindanceapp.ui.screens
 
+import Share
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,10 +54,12 @@ import dev.vladleesi.braindanceapp.ui.components.details.ReleaseDateLabel
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.rememberShareGameAction
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
@@ -61,6 +67,7 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.RecommendationsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
 import dev.vladleesi.braindanceapp.utils.toContentDescription
+import dev.vladleesi.braindanceapp.utils.withCircleRippleEffect
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -193,17 +200,52 @@ private fun GameDetailsScreen(
             }
             item { Spacer(modifier = Modifier.size(Dimens.large)) }
         }
-        Column {
-            StatusBarOverlay(backgroundColor = topBarColor)
-            TopAppBar(
-                tabBarColor = topBarColor,
-                titleColor = topBarTitleColor,
-                showBackButton = true,
-                backButtonBackgroundColor = backButtonColor,
-                onBackButtonPressed = onBackButtonPressed,
-                title = state.gameDetails.name,
-            )
-        }
+        GameDetailsTopBar(
+            gameDetails = state.gameDetails,
+            topBarColor = topBarColor,
+            backButtonColor = backButtonColor,
+            titleColor = topBarTitleColor,
+            onBackButtonPressed = onBackButtonPressed,
+        )
+    }
+}
+
+/**
+ * The bar over the scrolling content: back, the game's name, and Share, which links to the game's page. The title fades
+ * in as the bar fills, but Share is always visible: like the back button it is a white icon on a circular backdrop
+ * that is a dark chip over the artwork and blends into the bar once it fills.
+ */
+@Composable
+private fun GameDetailsTopBar(
+    gameDetails: GameDetails,
+    topBarColor: Color,
+    backButtonColor: Color,
+    titleColor: Color,
+    onBackButtonPressed: () -> Unit,
+) {
+    val shareGame = rememberShareGameAction(gameId = gameDetails.id, gameName = gameDetails.name)
+    Column {
+        StatusBarOverlay(backgroundColor = topBarColor)
+        TopAppBar(
+            tabBarColor = topBarColor,
+            titleColor = titleColor,
+            showBackButton = true,
+            backButtonBackgroundColor = backButtonColor,
+            onBackButtonPressed = onBackButtonPressed,
+            title = gameDetails.name,
+            actions = {
+                IconButton(
+                    modifier = Modifier.withCircleRippleEffect(backButtonColor),
+                    onClick = shareGame.share,
+                ) {
+                    Icon(
+                        imageVector = Share,
+                        contentDescription = stringResource(shareGame.label),
+                        tint = white,
+                    )
+                }
+            },
+        )
     }
 }
 
