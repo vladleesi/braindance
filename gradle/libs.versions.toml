@@ -1,5 +1,5 @@
 [versions]
-gradle = "9.5.0"
+gradle = "9.5.1"
 kotlin = "2.4.21"
 coroutines = "1.11.0"
 compose-plugin = "1.12.2"
@@ -18,7 +18,7 @@ koin = "4.2.2"
 nav3 = "1.2.0"
 benchmark = "1.5.0"
 profileinstaller = "1.4.1"
-uiautomator = "2.4.0"
+uiautomator = "2.4.1"
 bouncycastle = "1.85"
 logback = "1.5.34"
 # Used directly by the Wasm Yarn resolution in the root build.gradle.kts.
@@ -64,7 +64,7 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
 
 # serialization
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.12.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.13.0" }
 
 # coroutines
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }

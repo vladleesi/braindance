@@ -115,7 +115,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.158.0'
+          wranglerVersion: '4.161.0'
           command: >-
             pages deploy ${{ env.DIST_DIR }}
             --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }}

@@ -5,6 +5,16 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.15.4 — 2026-11-13
+
+### Android, iOS, and Web
+
+- Update the JSON library with upstream fixes and faster JSON text output.
+
+### Android
+
+- Build with the latest Android Gradle Plugin bug-fix release.
+
 ## 0.15.3 — 2026-11-13
 
 ### Android, iOS, and Web
