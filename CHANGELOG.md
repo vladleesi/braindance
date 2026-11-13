@@ -5,6 +5,22 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.16.0 — 2026-11-13
+
+### Android and iOS
+
+- Report crashes from release builds to Firebase Crashlytics, so they can be found and fixed. Debug builds report
+  nothing, and the apps collect no analytics.
+- Test builds can be sent to testers through Firebase App Distribution.
+
+### Android
+
+- Add a Braindance Staging build for testers, which installs next to other Braindance builds.
+
+### Website and documentation
+
+- Add a Firebase guide covering crash reporting, Android staging builds, and sending test builds.
+
 ## 0.15.5 — 2026-11-13
 
 ### Android, iOS, and Web

@@ -30,6 +30,8 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
     alias(libs.plugins.buildkonfig) apply false
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
 }
 
 val detektTaskName = "detekt"

@@ -70,12 +70,13 @@ configuration, code style, and validation.
 | [Development guide](docs/project/development.md) | Requirements, configuration, code style, running, validation, and hosting. |
 | [API contract](docs/project/openapi.yaml) | Endpoints and fields the clients use (OpenAPI). |
 | [Releases](docs/project/releases.md) | Versioning, publication, and recovery. |
+| [Firebase](docs/project/firebase.md) | Crash reporting, staging builds, and tester builds. |
 | [Security checks](docs/project/security.md) | CI security checks, repository settings, and Android backups. |
 | [Brand assets](docs/project/branding/README.md) | Logos, icons, banners, palette, and usage. |
 | [Landing site](docs/) | The static page served at [braindancegg.com](https://braindancegg.com/). |
 
 The current frontend source version is
-[0.15.5](https://github.com/vladleesi/braindance/releases/tag/app-v0.15.5).
+[0.16.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.16.0).
 GitHub releases provide source code, not store-ready mobile downloads.
 The Web publication badge shows checks for the revision on `master`.
 

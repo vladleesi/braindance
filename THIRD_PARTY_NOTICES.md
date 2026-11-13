@@ -41,6 +41,20 @@ Profile sharing uses [ShareKit 0.2.0](https://github.com/vladleesi/kmp-sharekit/
 (`dev.vladleesi:kmp-sharekit`) under [Apache-2.0](LICENSES/Apache-2.0.txt). Its only declared runtime dependency is
 the Kotlin standard library, already used by the application. Preserve any notices in the published artifacts.
 
+Crash reporting on Android and iOS uses Firebase Crashlytics; see [Firebase](docs/project/firebase.md).
+
+- Android: `com.google.firebase:firebase-crashlytics` from the Firebase Android BOM in
+  `gradle/libs.versions.toml`, with its Firebase, Data Transport, and `javax.inject` dependencies, under
+  [Apache-2.0](LICENSES/Apache-2.0.txt). It also brings Google Play services `play-services-basement` and
+  `play-services-tasks`, which are under the
+  [Android Software Development Kit License](https://developer.android.com/studio/terms), not an open-source license.
+- iOS: `FirebaseCrashlytics` from [firebase-ios-sdk](https://github.com/firebase/firebase-ios-sdk), pinned in
+  `iosApp/iosApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`, with Firebase Core,
+  Installations, Sessions, GoogleDataTransport, GoogleUtilities, and Promises under
+  [Apache-2.0](LICENSES/Apache-2.0.txt), and nanopb under the zlib license.
+
+The Google Services and Crashlytics Gradle plugins run only during builds and are not shipped.
+
 ## Artwork and branding
 
 The following assets are excluded from the root MPL grant. Their provenance and redistribution permissions remain

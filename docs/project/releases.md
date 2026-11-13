@@ -25,6 +25,8 @@
   pass for that commit on `master`. The [release workflow](../../.github/workflows/release-frontend.yml) uses its
   matching changelog entry. Preserve existing releases. Pull requests and manual validation publish nothing; source
   releases are separate from mobile store downloads.
+- **Tester builds:** Android and iOS test builds go to testers through Firebase App Distribution, sent manually from
+  a configured machine; CI does not distribute them. See [Firebase](firebase.md).
 - **API:** the Braindance API is released and deployed from its own repository; changes here never deploy it.
 
 ## Recovery

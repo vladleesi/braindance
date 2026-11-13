@@ -33,6 +33,9 @@ Android Studio adds `sdk.dir` to this file itself; command-line builds without i
 Gradle properties (`-PAPI_FIXTURES=true`, or `ORG_GRADLE_PROJECT_*` variables) override `local.properties`.
 Rebuild after changing either.
 
+Crash reporting and signed Android staging builds for testers need local Firebase configuration and signing
+files; builds work without them. See [Firebase](firebase.md).
+
 ## Run a client
 
 | Platform | Start |
