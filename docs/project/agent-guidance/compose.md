@@ -1,54 +1,42 @@
 # Compose UI
 
-- Keep composables focused on rendering state and emitting events. Hoist state
-  to the lowest owner that needs control; pass values and callbacks to reusable
-  components instead of acquiring screen dependencies internally.
-- Keep external side effects out of composable bodies. Key effect APIs by values
-  that should restart work. Dispose listeners and resources; use updated
-  callback references to observe changes without restarting effects.
-- Match state lifetime: `remember` for composition-local values, saveable state
-  for suitable recreation needs, scoped state holders for screen/business work.
-  Collect with lifecycle awareness where supported.
-- Use deliberate navigation-entry scope for state holders. Preserve back
-  navigation, restoration, and deep links in navigation changes.
-- Reuse theme tokens, including spacing and shapes, plus resources and
-  components instead of repeating inline values. Lay out by available
-  constraints, not device labels or assumed sizes; account for text scaling,
-  localization, input methods, and window insets.
-- Provide accessible semantics, meaningful actions, focus behavior, and adequate
-  interaction targets.
-  Verify keyboard, pointer, and touch on relevant platforms; accessibility
-  support differs by platform.
-- Give the app background one owner, normally the root scaffold. Add an opaque
-  screen background only when its color differs; remove backgrounds, `Surface`
-  fills, and container colors that repeat a parent fill. On Android, remove a
-  redundant window background with `window.setBackgroundDrawable(null)` after
-  `setContent` only when the Compose root covers the window opaquely, including
-  during transitions and inset handling.
-- Use lazy layouts for large or unbounded scrollable collections, with stable,
-  unique item `key`s and `contentType` values matching reusable item structures.
-  Keep small fixed groups in ordinary layouts. For expensive items, prefetch
-  with `LazyLayoutCacheWindow` only where every affected target supports it:
-  start about one viewport ahead and behind, then tune against frame timings
-  and memory. Keep experimental APIs and their opt-ins in one small helper.
-- Keep sorting, mapping, formatting, and parsing out of composition; prepare
-  immutable UI models in a state holder. Hoist constant shapes, brushes, and
-  collections or `remember` them with correct keys; do not manually memoize
-  lambdas the compiler already handles. Use types with valid stability
-  contracts; never add stability annotations to hide mutable state.
-- Defer reads of scroll offsets, animation values, and pointer positions to
-  layout or draw lambdas such as `Modifier.offset { }`, `graphicsLayer { }`, or
-  `drawBehind { }` when composition does not need them. Use `derivedStateOf` for
-  composition decisions whose output changes less often than their inputs.
-- Give each wrapper layout a layout purpose. Constrain image bounds before
-  loading so images decode at display size. Use the project's existing image
-  loader and caching, with cache keys that change only when content changes.
-- Implement custom modifier behavior with `Modifier.Node` rather than
-  `Modifier.composed`; prefer existing modifiers when sufficient. Avoid
-  unnecessary offscreen rendering on scrolling content, such as large layers
-  with alpha below one, blur, shadows, or `CompositingStrategy.Offscreen`.
-- In approved Android rendering investigations, use the GPU overdraw overlay,
-  frame statistics, and traces. Aim for one or two total draws in ordinary
-  content areas. Repeat interleaved runs, and separate UI-thread, RenderThread,
-  and compositor waits before attributing missed frames; do not treat GPU
-  rendering bars as GPU execution time.
+- Render state and emit events; hoist state to the lowest owner needing control.
+  Pass values/callbacks to reusable components rather than acquiring screen dependencies.
+- Keep external side effects out of composable bodies. Key effects by restart
+  inputs; dispose listeners/resources and use updated callbacks without restarting.
+- Match state lifetime: `remember` for composition, saveable state for suitable
+  recreation needs, scoped holders for screen/business work. Collect with lifecycle
+  awareness where supported; deliberately scope navigation-entry holders. Preserve
+  back navigation, restoration, and deep links.
+- Reuse theme tokens (including spacing/shapes), resources, and components. Lay
+  out by available constraints; account for text scaling, localization, input
+  methods, and window insets rather than device labels/assumed sizes.
+- Provide accessible semantics, actions, focus, and adequate interaction targets.
+  Verify keyboard, pointer, and touch on relevant platforms; accessibility varies.
+- Give the app background one owner, normally the root scaffold; add opaque screen
+  backgrounds only for different colors. Remove backgrounds, `Surface` fills, and
+  container colors duplicating parent fills. On Android, clear redundant window
+  backgrounds with `window.setBackgroundDrawable(null)` after `setContent` only
+  with opaque Compose root coverage through transitions and inset handling.
+- Use lazy layouts for large/unbounded collections, stable unique `key`s, and
+  `contentType`s matching reusable item structures; use ordinary layouts for small
+  fixed groups. For expensive items, use `LazyLayoutCacheWindow` only where all
+  affected targets support it; start about one viewport ahead/behind and tune
+  against frame timings/memory. Isolate experimental APIs/opt-ins in one small helper.
+- Prepare immutable UI models in state holders; sort, map, format, and parse outside
+  composition. Hoist constant shapes, brushes, and collections or `remember` with
+  correct keys; do not memoize compiler-handled lambdas. Honor stability contracts;
+  never hide mutable state with stability annotations.
+- Defer scroll/animation/pointer reads to layout/draw lambdas (`Modifier.offset { }`,
+  `graphicsLayer { }`, `drawBehind { }`) when composition does not need them. Use
+  derived state when composition decisions change less often than inputs:
+  `derivedStateOf`, or `computedStateOf` for cheap derivations where supported.
+- Give wrapper layouts a layout purpose. Constrain images before loading to decode
+  at display size; reuse the project's loader/caching and change keys only with content.
+- Prefer existing modifiers; implement custom behavior with `Modifier.Node` over
+  `Modifier.composed`. Avoid unnecessary offscreen rendering in scrolling content
+  (large translucent layers, blur, shadows, `CompositingStrategy.Offscreen`).
+- In approved Android rendering investigations, use overdraw overlay, frame
+  statistics, and traces. Aim for one or two total draws in ordinary content areas.
+  Interleave repeated runs; separate UI-thread, RenderThread, and compositor waits
+  before attributing missed frames. GPU rendering bars are not GPU execution time.
