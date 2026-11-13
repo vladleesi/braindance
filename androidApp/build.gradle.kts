@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
+import com.android.build.api.dsl.AndroidSourceSet
 import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.HostTestBuilder
 import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
@@ -101,7 +102,6 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            configure<CrashlyticsExtension> { mappingFileUploadEnabled = hasFirebaseConfig }
         }
         // Tester builds sent through Firebase App Distribution: optimized like release, with their own application
         // ID so they install next to a store release signed with a different key.
@@ -110,12 +110,16 @@ android {
             applicationIdSuffix = ".staging"
             versionNameSuffix = "-staging"
             signingConfig = if (hasStagingSigning) signingConfigs.getByName(stagingBuildType) else null
-            configure<CrashlyticsExtension> { mappingFileUploadEnabled = hasFirebaseConfig }
+        }
+        // Only builds that reach users upload R8 mappings, and only with the Firebase configuration. This also covers
+        // the benchmark and non-minified types the baseline profile plugin adds, which would otherwise try to upload.
+        configureEach {
+            val uploadsMapping = hasFirebaseConfig && name in setOf("release", stagingBuildType)
+            configure<CrashlyticsExtension> { mappingFileUploadEnabled = uploadsMapping }
         }
     }
     sourceSets {
-        // Staging installs the same startup and browsing profile as release.
-        getByName(stagingBuildType).baselineProfiles.directories.add("src/release/generated/baselineProfiles")
+        useReleaseBaselineProfile(getByName(stagingBuildType))
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -155,4 +159,10 @@ dependencies {
 @Suppress("UnstableApiUsage")
 fun enableComposePreviewUnitTests(variant: ApplicationVariantBuilder) {
     variant.hostTests.getValue(HostTestBuilder.UNIT_TEST_TYPE).enable = true
+}
+
+// Staging installs the same startup and browsing profile as release. AGP's baselineProfiles source set is incubating.
+@Suppress("UnstableApiUsage")
+fun useReleaseBaselineProfile(sourceSet: AndroidSourceSet) {
+    sourceSet.baselineProfiles.directories.add("src/release/generated/baselineProfiles")
 }
