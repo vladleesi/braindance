@@ -7,6 +7,8 @@ Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Report a bug
 
+For security issues, follow the [security policy](SECURITY.md) instead of opening an issue.
+
 Search [existing issues](https://github.com/vladleesi/braindance/issues) first; if someone has reported the same
 problem, add any useful details there. Otherwise, [open a bug report](https://github.com/vladleesi/braindance/issues/new?template=bug_report.md)
 and describe:
@@ -28,7 +30,7 @@ or accessibility is welcome. A proposed solution is optional; you do not need a 
 
 ## Contribute code or documentation
 
-Follow `.editorconfig`, neighboring code, and the [project conventions](AGENTS.md#project-conventions).
+Follow neighboring code and the [code style](docs/project/development.md#code-style).
 
 1. Fork the repository and create a branch from `develop`.
 2. Use the [development guide](docs/project/development.md) to build and run the clients; they run on built-in
@@ -37,8 +39,7 @@ Follow `.editorconfig`, neighboring code, and the [project conventions](AGENTS.m
 4. Run affected [validation checks](docs/project/development.md#validation), add focused behavior tests where
    appropriate, and review your diff. For Kotlin/Gradle changes, run `./gradlew ktlintFormat detekt` and review
    autocorrections. Docs-only changes need link and accuracy checks, not an app build.
-5. Open a pull request against `develop`. Describe the change, link related issues, and report checks run or skipped.
-   Include UI screenshots when useful.
+5. Open a pull request against `develop` and fill in its template.
 
 Follow the [release conventions](docs/project/releases.md#version-changes) for version and changelog updates.
 

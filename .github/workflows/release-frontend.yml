@@ -117,8 +117,9 @@ jobs:
 
           notes_file="$RUNNER_TEMP/frontend-release-notes.md"
           changelog_entry="$RUNNER_TEMP/frontend-changelog-entry.md"
-          if ! awk -v heading="## $FRONTEND_VERSION" '
-            $0 == heading { found = 1; next }
+          # Entry headings are "## MAJOR.MINOR.PATCH — YYYY-MM-DD"; the version field alone identifies the entry.
+          if ! awk -v version="$FRONTEND_VERSION" '
+            $1 == "##" && $2 == version { found = 1; next }
             found && /^## / { exit }
             found { print }
             END { if (!found) exit 1 }

@@ -234,6 +234,13 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
   boundaries simple.
 - `docs` holds only the static landing site published to `braindancegg.com` with GitHub Pages. Project
   documentation, agent guidance, and brand assets live in `docs/project`, which is not published.
+- Write the landing site for players without technical knowledge: the product, its status, and open source in plain
+  language, without build steps, framework names, or developer guides. Write the README and `docs/project` for
+  developers.
+- When visible landing content in `docs/index.html` changes, set `lastmod` in `docs/sitemap.xml` to that UTC date.
+  Keep the page's structured data (descriptions and FAQ answers) identical to its visible text, and add no
+  hand-maintained version or date that can go stale.
+- Keep the human-readable code style in `docs/project/development.md#code-style` consistent with these conventions.
 - Follow `.editorconfig` and neighboring code: four-space indentation, 120-character lines, and trailing commas.
 - Use explicit imports and short names in Kotlin code instead of fully qualified references.
   Use import aliases when names conflict.
@@ -382,10 +389,12 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
   version changes. Publish one shared Android/iOS/web GitHub Release only after all validation checks succeed
   for the released commit on `master`.
 - Generate and maintain frontend release notes in root `CHANGELOG.md` when making frontend changes. Add or update
-  the matching `## MAJOR.MINOR.PATCH` entry in the same change as the version update; preserve previous entries.
+  the matching `## MAJOR.MINOR.PATCH — YYYY-MM-DD` entry, dated with the UTC day of the change, in the same change as
+  the version update; preserve previous entries. The release workflow finds the entry by its version.
   Use concise change bullets only for platforms with user-visible changes. Group platforms with identical notes
   under one heading, such as `### Android and iOS` or `### Android, iOS, and Web`, instead of repeating the same
-  description. Use separate platform headings only when their notes differ; omit unchanged platforms.
+  description. Use separate platform headings only when their notes differ; omit unchanged platforms. Put notable
+  website or documentation changes under `### Website and documentation` in the version they ship with.
   Derive notes from the actual changes, not raw commit subjects. The release workflow reads
   this version's entry directly; do not add a script that generates release notes from Git history.
 - The Braindance API is versioned, released, and deployed from its own private repository. Changes here never

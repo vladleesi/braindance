@@ -10,6 +10,9 @@ import androidx.compose.ui.graphics.Color
 val void = Color(0xFF0B0E14)
 val neonCyan = Color(0xFF22E4FF)
 val hotMagenta = Color(0xFFFF2E88)
+
+// Hot magenta lightened for text on a hot magenta tint, as in the landing site's "Coming soon" tag.
+val hotMagentaLight = Color(0xFFFF6FA8)
 val signalYellow = Color(0xFFFCEE0A)
 val statusGreen = Color(0xFF4ADE80)
 val slate = Color(0xFF2E3650)

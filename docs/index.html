@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
   <title>Braindance: find what to play next | Game discovery app (in development)</title>
-  <meta name="description" content="Braindance is a game discovery app for Android, iOS and Web, with open-source clients built with Compose Multiplatform. Browse popular and upcoming games, explore similar titles and find giveaways. In development.">
-  <meta name="keywords" content="game discovery, what to play next, upcoming games, popular games, similar games, game giveaways, free game giveaways, game release tracker, Kotlin Multiplatform, Compose Multiplatform, Android, iOS, web app, open-source clients">
+  <meta name="description" content="Braindance is a game discovery app for Android, iOS and Web with open-source apps. Browse popular and upcoming games, explore similar titles and find giveaways. In development.">
+  <meta name="keywords" content="game discovery, what to play next, upcoming games, popular games, similar games, game giveaways, free game giveaways, game release tracker, Android, iOS, web app, open-source apps">
   <meta name="author" content="vladleesi">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#171717">
@@ -17,7 +17,7 @@
   <meta property="og:site_name" content="Braindance">
   <meta property="og:locale" content="en_US">
   <meta property="og:title" content="Braindance: find what to play next">
-  <meta property="og:description" content="Browse popular and upcoming games, explore similar titles and find giveaways in one place. For Android, iOS and Web, with open-source clients. In development.">
+  <meta property="og:description" content="Browse popular and upcoming games, explore similar titles and find giveaways in one place. For Android, iOS and Web, with open-source apps. In development.">
   <meta property="og:url" content="https://braindancegg.com/">
   <meta property="og:image" content="https://braindancegg.com/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -25,7 +25,7 @@
   <meta property="og:image:alt" content="Braindance logo on a dark background">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Braindance: find what to play next">
-  <meta name="twitter:description" content="Game discovery app for Android, iOS and Web, with open-source clients. In development.">
+  <meta name="twitter:description" content="Game discovery app for Android, iOS and Web, with open-source apps. In development.">
   <meta name="twitter:image" content="https://braindancegg.com/og-image.png">
 
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -160,17 +160,7 @@
     .ico { width: 44px; height: 44px; border-radius: 14px; background: var(--chip); display: grid; place-items: center; margin-bottom: 18px; }
     .ico svg { width: 22px; height: 22px; stroke: var(--ink); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* Live rails (shown only when real data loads) */
-    .rail + .rail { margin-top: 36px; }
-    .rail h3 { margin-bottom: 14px; }
-    .scroller { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
-    .game { flex: 0 0 144px; scroll-snap-align: start; text-decoration: none; }
-    .game img { width: 144px; height: 192px; object-fit: cover; border-radius: 14px; background: var(--chip); border: 1px solid var(--line); }
-    .game span { display: block; margin-top: 8px; font-size: .82rem; font-weight: 500; line-height: 1.35; color: var(--ink); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .credit { margin: 22px 0 0; color: var(--muted); font-size: .85rem; }
-
     /* Development status */
-    .dev { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px; }
     .panel h3 { font-size: 1.25rem; margin: 0; }
     .panel .tag { margin-bottom: 12px; }
@@ -186,9 +176,6 @@
     .more { display: inline-block; margin-top: 16px; font-weight: 500; font-size: .9rem; color: #c9c9c9; }
     .oss-group + .oss-group { margin-top: 32px; }
     .oss-group h3 { font-size: .95rem; color: var(--muted); font-weight: 500; margin: 0 0 12px; }
-    .tech { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-    .tech a { display: inline-block; padding: 5px 10px; border-radius: 6px; background: var(--chip); color: #c9c9c9; font-size: .8rem; font-weight: 500; text-decoration: none; }
-    .tech a:hover { color: var(--ink); background: #3a3e48; }
     .actions { display: flex; flex-wrap: wrap; gap: 12px; }
     .btn-line { background: transparent; color: var(--ink); border-color: #4a4a4a; }
     .btn-line:hover { border-color: var(--magenta); background: rgba(255,46,136,.08); }
@@ -216,7 +203,7 @@
     .legal p { margin: 0 0 6px; max-width: 64em; }
 
     @media (max-width: 880px) {
-      .grid3, .plat, .dev { grid-template-columns: 1fr; }
+      .grid3, .plat { grid-template-columns: 1fr; }
       section { padding: 56px 0; }
       .panel { padding: 26px; }
       .hero-inner { padding: 60px 0 126px; }
@@ -237,7 +224,7 @@
         "@id": "https://braindancegg.com/#website",
         "url": "https://braindancegg.com/",
         "name": "Braindance",
-        "description": "Game discovery app with open-source clients: popular and upcoming games, similar titles and giveaways.",
+        "description": "Game discovery app with open-source apps: popular and upcoming games, similar titles and giveaways.",
         "inLanguage": "en"
       },
       {
@@ -246,11 +233,10 @@
         "name": "Braindance",
         "url": "https://app.braindancegg.com/",
         "image": "https://braindancegg.com/og-image.png",
-        "description": "Braindance is a game discovery service that helps you find what to play next. Browse popular and upcoming games, explore similar titles and find giveaways. The Android, iOS and Web clients are open source and built with Compose Multiplatform. Currently in development; the web app is experimental and the Android and iOS apps are available by building from source.",
+        "description": "Braindance is a game discovery app that helps you find what to play next. Browse popular and upcoming games, explore similar titles and find giveaways. The Android, iOS and Web apps are open source. Currently in development; the web app is experimental and Android and iOS store releases are planned.",
         "applicationCategory": "GameApplication",
         "operatingSystem": "Android, iOS, Web",
         "browserRequirements": "The web app requires a modern browser with WebAssembly GC (WasmGC) support",
-        "softwareVersion": "0.7.2",
         "license": "https://www.mozilla.org/MPL/2.0/",
         "isAccessibleForFree": true,
         "codeRepository": "https://github.com/vladleesi/braindance",
@@ -264,13 +250,13 @@
       {
         "@type": "FAQPage",
         "mainEntity": [
-          { "@type": "Question", "name": "What is Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is a game discovery service that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place." } },
-          { "@type": "Question", "name": "Is Braindance available yet?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is in development. The web app is available now as an experimental version. The Android and iOS apps are built with Compose Multiplatform and are available by building them from source. Store downloads are not available yet and there is no confirmed release date." } },
-          { "@type": "Question", "name": "How do I run the Android or iOS app?", "acceptedAnswer": { "@type": "Answer", "text": "Build it from source by following the development guide in the GitHub repository, which covers requirements, project layout and local builds." } },
-          { "@type": "Question", "name": "Which browsers does the web app support?", "acceptedAnswer": { "@type": "Answer", "text": "The web app needs a modern browser with WasmGC support. Because Web support is experimental, browser behavior, performance and features may change." } },
-          { "@type": "Question", "name": "Where does the game and giveaway data come from?", "acceptedAnswer": { "@type": "Answer", "text": "Game data is powered by IGDB and giveaways come from GamerPower." } },
-          { "@type": "Question", "name": "Is Braindance open source?", "acceptedAnswer": { "@type": "Answer", "text": "The Android, iOS and Web clients are open source under the MPL-2.0 license and built with Kotlin Multiplatform and Compose Multiplatform. The source is on GitHub. The backend that serves game and giveaway data is maintained privately." } },
-          { "@type": "Question", "name": "How can I help improve Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "You can report a bug, suggest a feature or share usability feedback through GitHub issues, or contribute code and documentation. You do not need to build the app to give feedback." } }
+          { "@type": "Question", "name": "What is Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is a game discovery app that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place." } },
+          { "@type": "Question", "name": "Is Braindance available yet?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is in development. The web app is available now as an experimental version. Android and iOS store releases are planned, with no confirmed date." } },
+          { "@type": "Question", "name": "Can I use Braindance on my phone?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Open the web app in your phone's browser; it adapts to small screens. Android and iOS store apps are planned." } },
+          { "@type": "Question", "name": "Which browsers does the web app support?", "acceptedAnswer": { "@type": "Answer", "text": "An up-to-date version of Chrome, Edge, Firefox or Safari, on a computer or phone; older browser versions cannot run it. The web app is experimental, so its behavior, speed and features may change." } },
+          { "@type": "Question", "name": "Where does the game and giveaway data come from?", "acceptedAnswer": { "@type": "Answer", "text": "Game data is powered by IGDB, and giveaways come from GamerPower." } },
+          { "@type": "Question", "name": "Is Braindance open source?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Android, iOS and Web apps are open source under the MPL-2.0 license, and their code is on GitHub. The server that provides game and giveaway data is run privately." } },
+          { "@type": "Question", "name": "How can I help improve Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "Report a bug, suggest a feature or share usability feedback on GitHub; no technical setup is needed. Developers can also contribute code." } }
         ]
       }
     ]
@@ -324,7 +310,7 @@
         <img class="hero-logo" src="/mark.svg" alt="Braindance mark" width="88" height="88" fetchpriority="high">
         <p class="status" role="status"><span class="dot" aria-hidden="true"></span><span><b>In development</b> &middot; Android, iOS and Web</span></p>
         <h1>Find what to play next.</h1>
-        <p class="lead">Braindance is a game discovery app with <b>open-source clients</b> for Android, iOS and Web. Browse popular and upcoming games, explore similar titles and find giveaways in one place.</p>
+        <p class="lead">Braindance is a game discovery app with <b>open-source apps</b> for Android, iOS and Web. Browse popular and upcoming games, explore similar titles and find giveaways in one place.</p>
         <div class="cta">
           <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">
             Open the web app
@@ -335,7 +321,7 @@
             View on GitHub
           </a>
         </div>
-        <p class="fine">Built with Compose Multiplatform. Android and iOS apps are available to build from source; store releases are not available yet.</p>
+        <p class="fine">Use it in your browser today. Android and iOS store releases are planned.</p>
       </div>
     </div>
 
@@ -363,41 +349,19 @@
       </div>
     </section>
 
-    <!-- Real game covers. Hidden until BACKEND_URL (see script below) returns data. -->
-    <section id="live" aria-labelledby="live-title" hidden>
-      <div class="wrap">
-        <h2 id="live-title">Right now in Braindance</h2>
-        <p class="sub">A live look at the two feeds you see when you open the app.</p>
-        <div class="rail" hidden><h3>Popular right now</h3><div class="scroller" id="rail-popular"></div></div>
-        <div class="rail" hidden><h3>Most anticipated</h3><div class="scroller" id="rail-anticipated"></div></div>
-        <p class="credit">Game data powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>.</p>
-      </div>
-    </section>
-
     <section id="status" aria-labelledby="status-title">
       <div class="wrap">
         <h2 id="status-title">Braindance is in development</h2>
-        <p class="sub">It is actively built toward a public launch, with no confirmed release date. The web app is experimental, and the Android and iOS apps are available only by building from source, so behavior and features may change. Updates are tracked in the <a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">changelog</a>.</p>
-        <div class="dev">
-          <div class="panel">
-            <span class="tag live">Available now</span>
-            <h3>In the app today</h3>
-            <ul class="plain">
-              <li><strong>Popular and upcoming games</strong><span>Popular Right Now and Most Anticipated lists</span></li>
-              <li><strong>Game details</strong><span>Open a game and discover similar titles</span></li>
-              <li><strong>Giveaways</strong><span>Instructions and links to claim them</span></li>
-            </ul>
-          </div>
-          <div class="panel">
-            <span class="tag wip">Not available yet</span>
-            <h3>Still to come</h3>
-            <ul class="plain">
-              <li><strong>Personal tracking and collections</strong><span>Save and organize games</span></li>
-              <li><strong>Search results</strong><span>Look up a specific game</span></li>
-              <li><strong>News</strong><span>Updates from the game world</span></li>
-              <li><strong>Account management</strong><span>Sign in and manage your profile</span></li>
-            </ul>
-          </div>
+        <p class="sub">It is actively built toward a public launch, with no confirmed release date, so features and behavior may change. Updates are tracked in the <a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">changelog</a>.</p>
+        <div class="panel">
+          <span class="tag wip">Not available yet</span>
+          <h3>Still to come</h3>
+          <ul class="plain">
+            <li><strong>Personal tracking and collections</strong><span>Save and organize games</span></li>
+            <li><strong>Search results</strong><span>Look up a specific game</span></li>
+            <li><strong>News</strong><span>Updates from the game world</span></li>
+            <li><strong>Account management</strong><span>Sign in and manage your profile</span></li>
+          </ul>
         </div>
       </div>
     </section>
@@ -405,25 +369,23 @@
     <section id="platforms" aria-labelledby="platforms-title">
       <div class="wrap">
         <h2 id="platforms-title">Android, iOS and Web</h2>
-        <p class="sub">All three apps share one <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a> codebase.</p>
+        <p class="sub">All three apps are built from one shared codebase.</p>
         <div class="plat">
           <article class="card">
             <span class="tag live">Available now</span>
             <h3>Web (experimental)</h3>
-            <p>Open it in your browser, no installation needed. Requires a modern browser with WasmGC support.</p>
+            <p>Open it in your browser, no installation needed. Works in up-to-date Chrome, Edge, Firefox and Safari.</p>
             <a class="more" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
           </article>
           <article class="card">
-            <span class="tag wip">Build from source</span>
+            <span class="tag wip">Coming soon</span>
             <h3>Android</h3>
-            <p>The Android app is available by building it yourself. Store downloads are not available yet.</p>
-            <a class="more" href="https://github.com/vladleesi/braindance/blob/master/docs/project/development.md" rel="noopener" target="_blank">Read the development guide</a>
+            <p>A store release is planned. Until then, open the web app in your phone's browser.</p>
           </article>
           <article class="card">
-            <span class="tag wip">Build from source</span>
+            <span class="tag wip">Coming soon</span>
             <h3>iOS</h3>
-            <p>The iOS app is available by building it yourself. Store downloads are not available yet.</p>
-            <a class="more" href="https://github.com/vladleesi/braindance/blob/master/docs/project/development.md" rel="noopener" target="_blank">Read the development guide</a>
+            <p>A store release is planned. Until then, open the web app in your phone's browser.</p>
           </article>
         </div>
       </div>
@@ -431,33 +393,22 @@
 
     <section id="open-source" aria-labelledby="oss-title">
       <div class="wrap">
-        <h2 id="oss-title">Open-source clients</h2>
-        <p class="sub">Android, iOS and Web share UI and logic through <a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a> and <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a>. The clients are open source under MPL-2.0. The backend that serves game and giveaway data and keeps API credentials server-side is maintained privately.</p>
-        <div class="oss-group">
-          <h3>Built with</h3>
-          <ul class="tech" aria-label="Technology">
-            <li><a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a></li>
-            <li><a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a></li>
-            <li><a href="https://insert-koin.io/" rel="noopener" target="_blank">Koin</a></li>
-            <li><a href="https://kotlinlang.org/docs/wasm-overview.html" rel="noopener" target="_blank">Kotlin/Wasm</a></li>
-            <li><a href="https://www.swift.org/" rel="noopener" target="_blank">Swift</a></li>
-            <li><a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a></li>
-          </ul>
-        </div>
+        <h2 id="oss-title">Open source</h2>
+        <p class="sub">The Android, iOS and Web apps are open source: anyone can read their code on GitHub and suggest improvements. The server that provides game and giveaway data is run privately.</p>
         <div class="oss-group">
           <h3>Get involved</h3>
           <div class="actions">
-            <a class="btn btn-primary" href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="9" r="2.5"/><path d="M6 8.5v7M18 11.5v1a3 3 0 0 1-3 3H9"/></svg>
-              Contribute code
-            </a>
-            <a class="btn btn-line" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">
+            <a class="btn btn-primary" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
               Share feedback
             </a>
             <a class="btn btn-line" href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5M12 16.5v.5"/><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
               Report a bug
+            </a>
+            <a class="btn btn-line" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
+              View the code
             </a>
           </div>
         </div>
@@ -468,13 +419,13 @@
       <div class="wrap">
         <h2 id="faq-title">Frequently asked questions</h2>
         <p class="sub">Short answers about Braindance and where it stands.</p>
-        <details><summary>What is Braindance?</summary><p>Braindance is a game discovery service that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place.</p></details>
-        <details><summary>Is Braindance available yet?</summary><p>Braindance is in development. The web app is available now at <a href="https://app.braindancegg.com/" rel="noopener" target="_blank">app.braindancegg.com</a> as an experimental version. The Android and iOS apps are built with Compose Multiplatform and are available by building them from source. Store downloads are not available yet and there is no confirmed release date.</p></details>
-        <details><summary>How do I run the Android or iOS app?</summary><p>Build it from source by following the <a href="https://github.com/vladleesi/braindance/blob/master/docs/project/development.md" rel="noopener" target="_blank">development guide</a>, which covers requirements, project layout and local builds.</p></details>
-        <details><summary>Which browsers does the web app support?</summary><p>The web app needs a modern browser with WasmGC support. Because Web support is experimental, browser behavior, performance and features may change.</p></details>
+        <details><summary>What is Braindance?</summary><p>Braindance is a game discovery app that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place.</p></details>
+        <details><summary>Is Braindance available yet?</summary><p>Braindance is in development. The web app is available now at <a href="https://app.braindancegg.com/" rel="noopener" target="_blank">app.braindancegg.com</a> as an experimental version. Android and iOS store releases are planned, with no confirmed date.</p></details>
+        <details><summary>Can I use Braindance on my phone?</summary><p>Yes. Open the web app in your phone's browser; it adapts to small screens. Android and iOS store apps are planned.</p></details>
+        <details><summary>Which browsers does the web app support?</summary><p>An up-to-date version of Chrome, Edge, Firefox or Safari, on a computer or phone; older browser versions cannot run it. The web app is experimental, so its behavior, speed and features may change.</p></details>
         <details><summary>Where does the game and giveaway data come from?</summary><p>Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>, and giveaways come from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>.</p></details>
-        <details><summary>Is Braindance open source?</summary><p>The Android, iOS and Web clients are open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license and built with <a href="https://kotlinlang.org/docs/multiplatform.html" rel="noopener" target="_blank">Kotlin Multiplatform</a> and <a href="https://www.jetbrains.com/compose-multiplatform/" rel="noopener" target="_blank">Compose Multiplatform</a>. The source is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>. The backend that serves game and giveaway data is maintained privately.</p></details>
-        <details><summary>How can I help improve Braindance?</summary><p><a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">Report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">suggest a feature or share usability feedback</a> through GitHub issues, or <a href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">contribute code and documentation</a>. You do not need to build the app to give feedback.</p></details>
+        <details><summary>Is Braindance open source?</summary><p>Yes. The Android, iOS and Web apps are open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license, and their code is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>. The server that provides game and giveaway data is run privately.</p></details>
+        <details><summary>How can I help improve Braindance?</summary><p><a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">Report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">suggest a feature or share usability feedback</a> on GitHub; no technical setup is needed. Developers can also <a href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">contribute code</a>.</p></details>
       </div>
     </section>
 
@@ -485,7 +436,7 @@
           <p class="sub">Open the web app, then tell us what you would change.</p>
           <div class="cta">
             <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
-            <a class="btn btn-ghost" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">Star on GitHub</a>
+            <a class="btn btn-ghost" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">Share feedback</a>
           </div>
         </div>
       </div>
@@ -543,56 +494,5 @@
     (function(){var w=document.querySelector(".wall");if(!w||!("IntersectionObserver" in window))return;new IntersectionObserver(function(e){w.classList.toggle("paused",!e[0].isIntersecting)}).observe(w.parentNode)})();
   </script>
 
-  <script>
-    /* Optional: show real game covers from your Braindance backend.
-       1. Set BACKEND_URL to your backend origin, e.g. "https://api.example.com".
-       2. Add this site's origin (https://braindancegg.com) to the backend's CORS_ALLOWED_ORIGINS.
-       Leave empty to keep the section hidden; nothing is faked. */
-    var BACKEND_URL = "";
-
-    (function () {
-      if (!BACKEND_URL) return;
-      var base = BACKEND_URL.replace(/\/$/, "");
-      var APP = "https://app.braindancegg.com/";
-      var feeds = [
-        ["rail-popular", "/v1/games/trending?page=1&pageSize=20"],
-        ["rail-anticipated", "/v1/games/anticipated?pageSize=20"]
-      ];
-      function coverUrl(g) {
-        var u = (g.cover && g.cover.url) || g.coverUrl || g.imageUrl;
-        if (typeof u !== "string") return null;
-        if (u.indexOf("//") === 0) u = "https:" + u;
-        try {
-          var parsed = new URL(u);
-          if (parsed.hostname !== "images.igdb.com") return null;
-          return u.replace(/\/t_[a-z0-9_]+\//, "/t_cover_big/");
-        } catch (e) { return null; }
-      }
-      var shown = 0;
-      Promise.all(feeds.map(function (f) {
-        return fetch(base + f[1], { headers: { Accept: "application/json" } })
-          .then(function (r) { return r.ok ? r.json() : []; })
-          .then(function (data) {
-            var list = document.getElementById(f[0]);
-            var count = 0;
-            (Array.isArray(data) ? data : []).forEach(function (g) {
-              var name = g && (g.name || g.title), src = g && coverUrl(g);
-              if (!name || !src || count >= 14) return;
-              var a = document.createElement("a");
-              a.className = "game"; a.href = APP; a.target = "_blank"; a.rel = "noopener";
-              var img = document.createElement("img");
-              img.src = src; img.alt = name; img.width = 144; img.height = 192; img.loading = "lazy";
-              var label = document.createElement("span");
-              label.textContent = name;
-              a.appendChild(img); a.appendChild(label); list.appendChild(a); count++;
-            });
-            if (count) { list.parentNode.hidden = false; shown += count; }
-          })
-          .catch(function () {});
-      })).then(function () {
-        if (shown) document.getElementById("live").hidden = false;
-      });
-    })();
-  </script>
 </body>
 </html>

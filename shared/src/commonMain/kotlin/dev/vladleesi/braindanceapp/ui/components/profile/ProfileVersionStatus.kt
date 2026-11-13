@@ -17,18 +17,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.hotMagenta
+import dev.vladleesi.braindanceapp.ui.style.hotMagentaLight
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.statusGreen
 
-private val StatusDotSize = 8.dp
+private val StatusDotSize = 6.dp
 
-// A tint of the badge color keeps its text readable on the dark background.
-private const val BADGE_BACKGROUND_ALPHA = 0.16f
+// The badge matches the landing site's "Coming soon" tag: lighter text on a faint hot magenta tint.
+private const val BADGE_BACKGROUND_ALPHA = 0.14f
 
 /**
  * The app version with a green dot at the start, and a pink badge for the development stage ([statusLabel]) at the
@@ -61,13 +63,13 @@ fun ProfileVersionStatus(
         }
         Text(
             text = statusLabel,
-            style = MaterialTheme.typography.caption,
-            color = hotMagenta,
+            style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.SemiBold),
+            color = hotMagentaLight,
             maxLines = 1,
             modifier =
                 Modifier
                     .background(hotMagenta.copy(alpha = BADGE_BACKGROUND_ALPHA), CircleShape)
-                    .padding(horizontal = Dimens.small, vertical = Dimens.micro),
+                    .padding(horizontal = Dimens.compact, vertical = Dimens.tiny),
         )
     }
 }

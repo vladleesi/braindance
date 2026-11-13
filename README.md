@@ -19,70 +19,70 @@ Open-source clients for **Android · iOS · Web**.
 
 ---
 
-## 🎮 What's inside
+Braindance is a game discovery app in active development. This repository holds its open-source Android, iOS, and
+Web clients, built with Kotlin Multiplatform and Compose Multiplatform. The API they use is maintained privately.
 
-Braindance helps you decide what to play next. No endless store pages — just a focused place to see what is hot,
-what is coming and what is free.
+## ✨ Features
 
-| | |
-| --- | --- |
-| 🔥 **Popular Right Now** | See what everyone is playing today. |
-| ⏳ **Most Anticipated** | Keep track of upcoming releases worth waiting for. |
-| 🧭 **Game details & similar games** | Open any game, then jump to similar titles when you want more of the same. |
-| 🎁 **Free giveaways** | Browse current giveaways, read the instructions and follow the link to claim. |
+- **Popular Right Now** and **Most Anticipated** game feeds.
+- **Game details** with similar games.
+- **Giveaways** with instructions and claim links.
 
-Game data comes from [IGDB](https://www.igdb.com/), and giveaways from [GamerPower](https://www.gamerpower.com/).
+Not available yet: personal tracking, collections, search results, news, and accounts. Game data comes from
+[IGDB](https://www.igdb.com/), and giveaways from [GamerPower](https://www.gamerpower.com/).
 
 ## 📱 Platforms
 
-> [!NOTE]
-> Braindance is in active development toward a public launch, with no confirmed release date. Personal tracking,
-> collections, search results, news, and account management are not available yet.
-
-| Platform | Availability |
+| Platform | Status |
 | --- | --- |
-| **Web (experimental)** | [Preview available now](https://app.braindancegg.com/) in a modern browser with WasmGC support. |
-| Android and iOS | Official releases are planned; store downloads are not available yet. |
+| **Web (experimental)** | [Preview](https://app.braindancegg.com/) in up-to-date Chrome, Edge, Firefox, or Safari; behavior, performance, and features may change. |
+| Android and iOS | Build from source; store releases are planned, with no confirmed date. |
 
-Web support is experimental: browser behavior, performance, and feature availability may change.
-See [CHANGELOG.md](CHANGELOG.md) for updates across Android, iOS, and Web.
+See [CHANGELOG.md](CHANGELOG.md) for changes in each version.
 
-## 🤝 Help improve Braindance
+## 🚀 Quick start
 
-- 🐞 [Report a bug](https://github.com/vladleesi/braindance/issues/new?template=bug_report.md).
-- 💡 [Suggest a feature or share usability feedback](
-  https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md).
-- 🛠️ [Contribute code or documentation](CONTRIBUTING.md).
+Requirements: JDK 21; Android Studio for Android; macOS and Xcode for iOS.
 
-Feedback from the Web preview is welcome; you do not need to build the app to participate.
+```sh
+git clone https://github.com/vladleesi/braindance.git
+cd braindance
+echo "API_FIXTURES=true" >> local.properties  # offline sample data, no API needed
+./gradlew :webApp:wasmJsBrowserDevelopmentRun  # Web; or :androidApp:assembleDebug for Android
+```
 
-## 🧩 For developers
+For iOS, open `iosApp/iosApp.xcodeproj` in Xcode. The [development guide](docs/project/development.md) covers
+configuration, code style, and validation.
 
-### Architecture
+## 🧩 Architecture
 
-- **Clients (this repository, open source):** the Android, iOS, and Web apps share UI and application logic through
-  Kotlin Multiplatform and Compose Multiplatform, with thin platform hosts in `androidApp`, `iosApp`, and `webApp`.
-- **Braindance API (private):** developed and deployed separately from a private repository. It ranks the trending
-  feed and similar-game recommendations and keeps Twitch credentials server-side.
-- **Third-party data:** game data from [IGDB](https://www.igdb.com/) and giveaways from
-  [GamerPower](https://www.gamerpower.com/), served through the API.
+- **Clients (this repository):** the Android, iOS, and Web apps share UI and application logic in `shared`, with
+  thin platform hosts in `androidApp`, `iosApp`, and `webApp`.
+- **Braindance API (private):** developed and deployed separately. It ranks the trending feed and similar-game
+  recommendations and keeps Twitch credentials server-side. The [API contract](docs/project/openapi.yaml) describes
+  what the clients use.
+- **Third-party data:** game data from IGDB and giveaways from GamerPower, served through the API.
 
-Client builds run without the API on built-in sample data; see the
-[development guide](docs/project/development.md#configure-client-builds) and the
-[API contract](docs/project/openapi.yaml).
+## 📚 Documentation
 
-| | |
+| Guide | Covers |
 | --- | --- |
-| 📘 **[Development guide](docs/project/development.md)** | Requirements, project layout, local builds, debugging, and validation. |
-| 🚀 **[Release guide](docs/project/releases.md)** | Versioning and publication workflows. |
-| 🎨 **[Brand assets](docs/project/branding/README.md)** | Logos, icons, banners, palette, and usage guidance. |
-| 🌐 **[Landing site](docs/)** | The static page served at [braindancegg.com](https://braindancegg.com/). |
+| [Development guide](docs/project/development.md) | Requirements, configuration, code style, running, validation, and hosting. |
+| [API contract](docs/project/openapi.yaml) | Endpoints and fields the clients use (OpenAPI). |
+| [Releases](docs/project/releases.md) | Versioning, publication, and recovery. |
+| [Security checks](docs/project/security.md) | CI security checks, repository settings, and Android backups. |
+| [Brand assets](docs/project/branding/README.md) | Logos, icons, banners, palette, and usage. |
+| [Landing site](docs/) | The static page served at [braindancegg.com](https://braindancegg.com/). |
 
 The current frontend source version is
-[0.15.2](https://github.com/vladleesi/braindance/releases/tag/app-v0.15.2).
+[0.15.3](https://github.com/vladleesi/braindance/releases/tag/app-v0.15.3).
 GitHub releases provide source code, not store-ready mobile downloads.
-
 The Web publication badge shows checks for the revision on `master`.
+
+## 🤝 Contributing
+
+Bug reports, ideas, and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Report security issues
+privately as described in [SECURITY.md](SECURITY.md).
 
 ## 📄 License
 

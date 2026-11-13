@@ -1,17 +1,30 @@
 # Frontend changelog
 
-Release notes for Android, iOS, and Web. Each version includes only platforms with user-visible changes.
+Release notes for Android, iOS, and Web, plus notable website and documentation changes. Each version lists only
+what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
-## 0.15.2
+## 0.15.3 — 2026-11-13
+
+### Android, iOS, and Web
+
+- Show the "In development" badge on Profile in the website's colors, with lighter pink text that is easier to read.
+
+### Website and documentation
+
+- Rewrite braindancegg.com for players, in plain language, and the README for developers, with a quick start.
+- Add a security policy for private vulnerability reports, a pull request template, and a code style guide.
+- Date every changelog entry.
+
+## 0.15.2 — 2026-11-13
 
 ### Android, iOS, and Web
 
 - Developer builds can run offline on built-in sample data (`API_FIXTURES=true`), without a Braindance API. Release
   builds are unchanged and contain no sample data.
 
-## 0.15.1
+## 0.15.1 — 2026-11-12
 
 ### Android, iOS, and Web
 
@@ -22,7 +35,7 @@ The Braindance API is versioned and released separately.
 - Download a smaller cover file wherever a card is shown small enough for it, such as desktop cards, so covers appear
   sooner.
 
-## 0.15.0
+## 0.15.0 — 2026-11-12
 
 ### Android, iOS, and Web
 
@@ -38,14 +51,14 @@ The Braindance API is versioned and released separately.
 - The profile button no longer repeats in the page header while the sidebar is shown, and the "In development" badge
   left the Home header.
 
-## 0.14.1
+## 0.14.1 — 2026-11-12
 
 ### Android, iOS, and Web
 
 - Credit the data providers next to the app version as "Game data by IGDB" and "Giveaways by GamerPower", with each
   provider name linking to its site.
 
-## 0.14.0
+## 0.14.0 — 2026-11-12
 
 ### Android, iOS, and Web
 
@@ -55,26 +68,26 @@ The Braindance API is versioned and released separately.
 
 - Game pages now use addresses such as `/games/42`. Older `/game/42` links still open the game.
 
-## 0.13.3
+## 0.13.3 — 2026-11-11
 
 ### Android, iOS, and Web
 
 - Open a giveaway from Home instantly, using the details already loaded with the list instead of waiting for
   another request. Direct links and Retry still load it from the server.
 
-## 0.13.2
+## 0.13.2 — 2026-11-10
 
 ### Android, iOS, and Web
 
 - Show Nintendo Store links on game details when provided by IGDB.
 
-## 0.13.1
+## 0.13.1 — 2026-11-10
 
 ### Android
 
 - Update the precompiled startup and Home code profile for the new shared cards.
 
-## 0.13.0
+## 0.13.0 — 2026-11-10
 
 ### Android, iOS, and Web
 
@@ -93,7 +106,7 @@ The Braindance API is versioned and released separately.
 - Give the Open Releases and Open News buttons on desktop Home a background, so they look like buttons before hover.
 - Rename the Star button to "Star us", still on one row with Share in the sidebar and on Profile.
 
-## 0.12.0
+## 0.12.0 — 2026-11-10
 
 ### Android, iOS, and Web
 
@@ -109,14 +122,14 @@ The Braindance API is versioned and released separately.
 - Support hover and keyboard focus on desktop cards and navigation. Narrow windows and mobile browsers keep the
   current layout.
 
-## 0.11.7
+## 0.11.7 — 2026-11-09
 
 ### Android and Web
 
 - Keep Home game and giveaway images at the size they are shown instead of their full download size, which uses
   less memory and graphics work while scrolling without lowering image quality.
 
-## 0.11.6
+## 0.11.6 — 2026-11-09
 
 ### Android, iOS, and Web
 
@@ -124,14 +137,14 @@ The Braindance API is versioned and released separately.
 - Paint the screen background fewer times per frame, which lightens scrolling on the GPU.
 - Fill the giveaway details top bar with color as you scroll, as on game details.
 
-## 0.11.5
+## 0.11.5 — 2026-11-09
 
 ### Web
 
 - Fix the app staying on the loading screen in Safari.
 - Download the app's files with the browser's and hosting provider's standard loading and compression.
 
-## 0.11.4
+## 0.11.4 — 2026-11-09
 
 ### Web
 
@@ -140,7 +153,7 @@ The Braindance API is versioned and released separately.
 - Show the loading icon immediately, without waiting for a separate download.
 - Publish a robots.txt file so search engines can read the app's crawling rules.
 
-## 0.11.3
+## 0.11.3 — 2026-11-08
 
 ### Android, iOS, and Web
 
@@ -151,7 +164,7 @@ The Braindance API is versioned and released separately.
 - Hide horizontal list arrow controls on devices with a touchscreen; swipe to browse instead.
 - Make enabled list arrows brighter and easier to distinguish from disabled arrows.
 
-## 0.11.2
+## 0.11.2 — 2026-11-08
 
 ### Web
 
@@ -159,7 +172,7 @@ The Braindance API is versioned and released separately.
 - Mark the app as the page's main content, so screen readers can jump straight to it.
 - Download less on the first visit, and load the app from the browser's cache on later visits.
 
-## 0.11.1
+## 0.11.1 — 2026-11-07
 
 ### Android, iOS, and Web
 
@@ -173,7 +186,7 @@ The Braindance API is versioned and released separately.
 - Stop the pull-to-refresh indicator getting stuck when scrolling past the top with a mouse wheel or trackpad.
 - Show the hand cursor over clickable game and giveaway cards.
 
-## 0.11.0
+## 0.11.0 — 2026-11-07
 
 ### Android, iOS, and Web
 
@@ -191,13 +204,13 @@ The Braindance API is versioned and released separately.
 
 - Refresh browser and home-screen icons.
 
-## 0.10.1
+## 0.10.1 — 2026-11-06
 
 ### Web
 
 - Fix garbled or missing text shortly after an update, when a cache still held the previous version's text.
 
-## 0.10.0
+## 0.10.0 — 2026-11-06
 
 ### Android, iOS, and Web
 
@@ -213,14 +226,14 @@ The Braindance API is versioned and released separately.
 
 - Open the new screens at `/discover`, `/releases`, and `/library`; Profile stays at `/profile`.
 
-## 0.9.0
+## 0.9.0 — 2026-11-06
 
 ### Android, iOS, and Web
 
 - Show labeled bottom navigation in compact windows and a left navigation rail at widths of 600 dp and above.
 - Keep the current screen and navigation history when resizing, rotating, or entering split-screen.
 
-## 0.8.1
+## 0.8.1 — 2026-11-04
 
 ### Web
 
@@ -229,7 +242,7 @@ The Braindance API is versioned and released separately.
   returns to the game and then to Home before leaving the site.
 - Open Home's first screen when its address is entered directly.
 
-## 0.8.0
+## 0.8.0 — 2026-11-04
 
 ### Android
 
@@ -247,7 +260,7 @@ The Braindance API is versioned and released separately.
 - Switch between the narrow and wide layouts as you resize the window.
 - Restrict the page to Braindance's own servers, IGDB images, and font downloads with a content security policy.
 
-## 0.7.2
+## 0.7.2 — 2026-11-04
 
 ### Android, iOS, and Web
 
@@ -264,7 +277,7 @@ The Braindance API is versioned and released separately.
 
 - Fix a crash when Braindance is opened in a second window on iPad.
 
-## 0.7.1
+## 0.7.1 — 2026-11-03
 
 ### Android, iOS, and Web
 
@@ -276,13 +289,13 @@ The Braindance API is versioned and released separately.
 - Show a "not found" message for a game or giveaway that no longer exists, instead of an empty page.
 - Show store and giveaway buttons only for secure links, and stop crashing when no app can open a link.
 
-## 0.7.0
+## 0.7.0 — 2026-11-03
 
 ### Android, iOS, and Web
 
 - Add an open-source card to Profile with GitHub star and share actions alongside the app version.
 
-## 0.6.1
+## 0.6.1 — 2026-11-01
 
 ### Android, iOS, and Web
 
@@ -290,7 +303,7 @@ The Braindance API is versioned and released separately.
   are discovering now and moves up recent launches, new platform releases, and showcase appearances. It now normally
   shows about 20 games instead of about five; upcoming games stay in Most Anticipated.
 
-## 0.6.0
+## 0.6.0 — 2026-11-01
 
 ### Android, iOS, and Web
 
@@ -302,7 +315,7 @@ The Braindance API is versioned and released separately.
 
 - Remove duplicate safe-area spacing above content and below bottom navigation.
 
-## 0.5.0
+## 0.5.0 — 2026-10-31
 
 ### Android, iOS, and Web
 
@@ -310,14 +323,14 @@ The Braindance API is versioned and released separately.
   showing only released games.
 - Load Popular Right Now with one request instead of two.
 
-## 0.4.2
+## 0.4.2 — 2026-10-31
 
 ### Web
 
 - Stay on the current screen, with its back history, after reloading the page.
 - Keep carousel titles and cards in place when loading placeholders are replaced by games.
 
-## 0.4.1
+## 0.4.1 — 2026-10-31
 
 ### Android, iOS, and Web
 
@@ -327,7 +340,7 @@ The Braindance API is versioned and released separately.
 
 - Place carousel arrow buttons closer together and give them more space from the content on their right.
 
-## 0.4.0
+## 0.4.0 — 2026-10-31
 
 ### Android, iOS, and Web
 
@@ -335,7 +348,7 @@ The Braindance API is versioned and released separately.
 - Exclude editions, DLC, and bundles from similar games.
 - Show game details without waiting for similar games to load.
 
-## 0.3.6
+## 0.3.6 — 2026-10-31
 
 ### Android, iOS, and Web
 
@@ -346,7 +359,7 @@ The Braindance API is versioned and released separately.
 - Show the dark app background instead of a white page while the app loads.
 - Keep carousel arrow highlights inside their round buttons and show a pointer cursor on hover.
 
-## 0.3.5
+## 0.3.5 — 2026-10-30
 
 ### Android, iOS, and Web
 
@@ -356,7 +369,7 @@ The Braindance API is versioned and released separately.
 
 - Version the browser bundle to prevent cached JavaScript from loading removed Wasm files after an update.
 
-## 0.3.4
+## 0.3.4 — 2026-10-30
 
 ### Android, iOS, and Web
 
@@ -370,26 +383,26 @@ The Braindance API is versioned and released separately.
 
 - Tighten spacing between carousel arrows and the See all action.
 
-## 0.3.3
+## 0.3.3 — 2026-10-24
 
 ### Android
 
 - Restrict backups and device transfers to approved exports and require encryption for cloud backups.
 
-## 0.3.2
+## 0.3.2 — 2026-10-02
 
 ### Android, iOS, and Web
 
 - Use cacheable game reads and start a background backend wake-up request to reduce loading delays.
 
-## 0.3.1
+## 0.3.1 — 2026-09-23
 
 ### Web
 
 - Add previous and next controls to horizontal game and giveaway lists.
 - Add a favicon and improve browser startup.
 
-## 0.3.0
+## 0.3.0 — 2026-09-21
 
 ### Android and iOS
 
@@ -400,19 +413,19 @@ The Braindance API is versioned and released separately.
 - Add a Kotlin/Wasm browser app with the shared game and giveaway screens.
 - Adapt layouts to the browser viewport and enable loading game covers and giveaway images.
 
-## 0.2.1
+## 0.2.1 — 2026-09-21
 
 ### iOS
 
 - Raise the minimum supported iOS version from 14.1 to 15.0.
 
-## 0.2.0
+## 0.2.0 — 2026-09-21
 
 ### Android and iOS
 
 - Load giveaway lists and details through the configured backend alongside game data.
 
-## 0.1.0
+## 0.1.0 — 2026-09-20
 
 ### Android and iOS
 

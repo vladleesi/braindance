@@ -45,6 +45,18 @@ Android APKs are in `androidApp/build/outputs/apk/debug/`. Xcode invokes
 `:shared:embedAndSignAppleFrameworkForXcode`; configure your own development team and bundle identifier for devices
 or distribution.
 
+## Code style
+
+- Follow `.editorconfig`: four-space indentation, 120-character lines, and trailing commas. `./gradlew ktlintFormat
+  detekt` applies and checks most rules.
+- Use explicit imports and short names instead of fully qualified ones; use import aliases for name conflicts.
+- Declare dependency and plugin versions only in `gradle/libs.versions.toml` and use its aliases in build files.
+- Pass business dependencies through constructors. In suspending code, rethrow `CancellationException`.
+- In Compose, use `Dimens` for spacing and `CornerShapes` for rounded corners. Give every new UI component a
+  `@Preview` in the same file: an `internal fun <Name>Preview()` in `BraindanceTheme`, with sample data and no-op
+  callbacks. Pass navigation and data in as parameters so it previews without a ViewModel.
+- Start new source files with `SPDX-License-Identifier: MPL-2.0`; see [licensing](../../CONTRIBUTING.md#licensing).
+
 ## Validation
 
 Run checks relevant to the change. The [validation workflow](../../.github/workflows/build-test-push.yml) defines
