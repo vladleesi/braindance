@@ -14,7 +14,7 @@ local.properties
 .local-docs/
 gha-creds-*.json
 application_default_credentials.json
-# Firebase app configuration and release signing stay local; see docs/project/firebase.md.
+# Firebase app configuration and release signing stay local; see docs/firebase.md.
 google-services.json
 GoogleService-Info.plist
 *.jks

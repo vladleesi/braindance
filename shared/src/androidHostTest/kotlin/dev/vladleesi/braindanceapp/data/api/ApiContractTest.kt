@@ -20,7 +20,7 @@ import java.lang.reflect.Modifier
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** docs/project/openapi.yaml lists exactly the endpoints and fields the client uses. */
+/** docs/openapi.yaml lists exactly the endpoints and fields the client uses. */
 class ApiContractTest {
     private val contract = Contract.parse(File(System.getProperty("apiContractFile")).readLines())
 

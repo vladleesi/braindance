@@ -36,21 +36,11 @@ jobs:
       - name: Check Landing Site
         run: python3 .github/scripts/check-landing.py
 
-      # docs/project holds repository documentation; only the site itself is published.
-      - name: Collect Site Files
-        run: |
-          site_dir="$RUNNER_TEMP/landing-site"
-          mkdir -p "$site_dir"
-          rsync -a --exclude '/project/' docs/ "$site_dir/"
-          if [ -e "$site_dir/project" ]; then
-            echo "docs/project must not be published." >&2
-            exit 1
-          fi
-
+      # landing/ holds only the published site; documentation lives in docs/ and is never uploaded.
       - name: Upload Site
         uses: actions/upload-pages-artifact@v5
         with:
-          path: ${{ runner.temp }}/landing-site
+          path: landing
 
       - name: Deploy to GitHub Pages
         id: deploy

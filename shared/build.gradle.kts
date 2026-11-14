@@ -211,7 +211,7 @@ tasks.named("detekt") {
 // ApiContractTest (Android host tests) compares the published API contract with the client's endpoints and models.
 val apiContractFile =
     rootProject.layout.projectDirectory
-        .file("docs/project/openapi.yaml")
+        .file("docs/openapi.yaml")
         .asFile
 tasks.withType<Test>().configureEach {
     inputs.file(apiContractFile).withPathSensitivity(PathSensitivity.RELATIVE)

@@ -30,18 +30,18 @@ or accessibility is welcome. A proposed solution is optional; you do not need a 
 
 ## Contribute code or documentation
 
-Follow neighboring code and the [code style](docs/project/development.md#code-style).
+Follow neighboring code and the [code style](docs/development.md#code-style).
 
 1. Fork the repository and create a branch from `develop`.
-2. Use the [development guide](docs/project/development.md) to build and run the clients; they run on built-in
+2. Use the [development guide](docs/development.md) to build and run the clients; they run on built-in
    sample data, with no API needed. Documentation changes need no app toolchain.
 3. Keep changes focused. For larger features or behavior changes, an issue helps agree on scope; small fixes need none.
-4. Run affected [validation checks](docs/project/development.md#validation), add focused behavior tests where
+4. Run affected [validation checks](docs/development.md#validation), add focused behavior tests where
    appropriate, and review your diff. For Kotlin/Gradle changes, run `./gradlew ktlintFormat detekt` and review
    autocorrections. Docs-only changes need link and accuracy checks, not an app build.
 5. Open a pull request against `develop` and fill in its template.
 
-Follow the [release conventions](docs/project/releases.md#version-changes) for version and changelog updates.
+Follow the [release conventions](docs/releases.md#version-changes) for version and changelog updates.
 
 ## Licensing
 

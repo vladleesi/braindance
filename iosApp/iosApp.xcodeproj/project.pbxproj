@@ -208,7 +208,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "config=\"$SRCROOT/iosApp/GoogleService-Info.plist\"\ntarget=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/GoogleService-Info.plist\"\nif [ -f \"$config\" ]; then\n  cp \"$config\" \"$target\"\nelse\n  rm -f \"$target\"\n  echo \"GoogleService-Info.plist not found: Firebase stays off (docs/project/firebase.md).\"\nfi\n";
+			shellScript = "config=\"$SRCROOT/iosApp/GoogleService-Info.plist\"\ntarget=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/GoogleService-Info.plist\"\nif [ -f \"$config\" ]; then\n  cp \"$config\" \"$target\"\nelse\n  rm -f \"$target\"\n  echo \"GoogleService-Info.plist not found: Firebase stays off (docs/firebase.md).\"\nfi\n";
 		};
 		A10000000000000000000007 /* Upload Crashlytics Symbols */ = {
 			isa = PBXShellScriptBuildPhase;

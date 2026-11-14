@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MPL-2.0
 
-"""Check the static landing site in docs/ without builds or network access."""
+"""Check the static landing site in landing/ without builds or network access."""
 
 import json
 from pathlib import Path
@@ -11,9 +11,7 @@ import xml.etree.ElementTree as ElementTree
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SITE = ROOT / "docs"
-# docs/project holds repository documentation and is never published with the site.
-UNPUBLISHED = {"project"}
+SITE = ROOT / "landing"
 REQUIRED_FILES = [
     "index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.svg", "favicon.ico", "favicon-32.png",
     "apple-touch-icon.png", "og-image.png",
@@ -32,7 +30,7 @@ def check_page(page: Path, errors: list[str]) -> None:
     for match in LOCAL_REFERENCE.finditer(html):
         reference = match.group(1) or match.group(2)
         relative = reference.lstrip("/")
-        if reference != "/" and (relative.split("/", 1)[0] in UNPUBLISHED or not (SITE / relative).exists()):
+        if reference != "/" and not (SITE / relative).exists():
             errors.append(f"{name}: broken local reference {reference}")
     for tag in IMAGE_TAG.findall(html):
         if " alt=" not in tag:
@@ -48,7 +46,7 @@ def main() -> int:
     errors: list[str] = []
     for file_name in REQUIRED_FILES:
         if not (SITE / file_name).is_file():
-            errors.append(f"missing file: docs/{file_name}")
+            errors.append(f"missing file: landing/{file_name}")
     if not errors:
         home = (SITE / "index.html").read_text(encoding="utf-8")
         if 'name="description"' not in home or 'rel="canonical"' not in home:

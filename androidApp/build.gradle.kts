@@ -39,7 +39,7 @@ fun configuredProperty(name: String): String =
         .orEmpty()
         .trim()
 
-// Signing for staging tester builds (docs/project/firebase.md). Without these values, as in CI, staging APKs stay
+// Signing for staging tester builds (docs/firebase.md). Without these values, as in CI, staging APKs stay
 // unsigned; a partial set fails instead of silently producing an unsigned APK. Release builds stay unsigned.
 val stagingBuildType = "staging"
 val stagingSigning =

@@ -5,7 +5,7 @@ converting, bundling, or distributing them. Include the full applicable license 
 
 ## Agent guidelines
 
-The imported rules in `AGENTS.md` and `docs/project/agent-guidance/*.md` come from
+The imported rules in `AGENTS.md` and `docs/agent-guidance/*.md` come from
 [vladleesi/agent-guidelines v1.9.0](https://github.com/vladleesi/agent-guidelines/tree/v1.9.0),
 commit `c915caa69e7a32415e3845d9c81d3b85b160a4ca`.
 Selected modules: general, agent-workflow, testing, security, git, ci, release, deployment, kotlin, compose,
@@ -41,7 +41,7 @@ Profile sharing uses [ShareKit 0.2.0](https://github.com/vladleesi/kmp-sharekit/
 (`dev.vladleesi:kmp-sharekit`) under [Apache-2.0](LICENSES/Apache-2.0.txt). Its only declared runtime dependency is
 the Kotlin standard library, already used by the application. Preserve any notices in the published artifacts.
 
-Crash reporting on Android and iOS uses Firebase Crashlytics; see [Firebase](docs/project/firebase.md).
+Crash reporting on Android and iOS uses Firebase Crashlytics; see [Firebase](docs/firebase.md).
 
 - Android: `com.google.firebase:firebase-crashlytics` from the Firebase Android BOM in
   `gradle/libs.versions.toml`, with its Firebase, Data Transport, and `javax.inject` dependencies, under
@@ -64,20 +64,20 @@ modifications, and applicable brand guidelines before redistributing them.
 - `shared/src/commonMain/composeResources/drawable/ic_platform_logo_*.xml` (Android, iOS, Linux, macOS,
   PlayStation, Switch, Windows, Xbox).
 - `shared/src/commonMain/composeResources/drawable/ic_store_logo_*.xml` (Epic Games, GOG, Steam).
-- The Braindance kit in `docs/project/branding/`, supplied by the repository owner as `brand-kit (1).zip`, including
-  outlined Outfit Regular/SemiBold lettering, logos, marks, banners, and icons. No separate asset license or font
-  files were supplied. See the [brand usage guide](docs/project/branding/README.md).
-- Copies of that kit in `androidApp/src/main/ic_launcher-playstore.png`, launcher PNGs and adaptive XML in
-  `androidApp/src/main/res/mipmap-*`, vectors in `androidApp/src/main/res/drawable/ic_launcher_*.xml`, and
-  `androidApp/src/main/res/values/ic_launcher_background.xml`.
-- Copies and resized exports in `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/*.png`,
-  `iosApp/iosApp/appstore.png`, and `iosApp/iosApp/playstore.png`.
-- Copies in `webApp/src/wasmJsMain/resources/favicon*` and `apple-touch-icon-180.png` in the same directory.
-- The root README banner, copied from the kit and stored in `docs/project/branding/banner/readme-banner.png`.
-- Copies of the kit on the landing site: `docs/favicon*`, `docs/apple-touch-icon.png`, `docs/mark.svg`,
-  `docs/lockup-dark.svg`, and `docs/og-image.png`.
-- `docs/img/wall-*.webp`: the landing site's hero wall, a collage of game covers from IGDB, resized and re-encoded.
-  Each cover remains the property of its game's rights holders; see External data below.
+- The Braindance kit in `docs/branding/`, supplied by the repository owner as `braindance-brand.zip`: the "bd" mark,
+  the wordmark, and lockups with outlined Poppins Bold lettering (Poppins is listed under bundled fonts above),
+  platform icons, and social and marketing images. No separate asset license was supplied. See the
+  [brand usage guide](docs/branding/README.md). The cover and banner images in `docs/branding/social/` and
+  `docs/branding/marketing/` include game covers, which remain the property of their games' rights holders.
+- Copies of that kit in the apps: `androidApp/src/main/ic_launcher-playstore.png`, the launcher icons in
+  `androidApp/src/main/res/mipmap-*/`, and `androidApp/src/main/res/values/ic_launcher_background.xml`;
+  `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/*.png`; and the icons in `webApp/src/wasmJsMain/resources/`.
+- Copies of the kit on the landing site: `landing/favicon*`, `landing/apple-touch-icon.png`, `landing/icon-512.png`,
+  `landing/mark.svg`, `landing/wordmark.svg`, and `landing/og-image.png`.
+- `landing/img/wall-*.webp`: the landing site's hero wall, a collage of game covers from IGDB, resized, rounded, and
+  re-encoded. Each cover remains the property of its game's rights holders; see External data below.
+- `docs/branding/banner/social-header-cover-wall*.jpg`: social headers made from game covers from IGDB,
+  resized and arranged. Each cover remains the property of its game's rights holders.
 
 A copyright license for an icon does not grant general rights to its trademark. Platform software licenses also
 do not determine the licenses of platform logos or mascot artwork.

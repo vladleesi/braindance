@@ -13,11 +13,10 @@
           content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ${backendOrigin} https://images.igdb.com https://fonts.gstatic.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
     <meta name="description" content="Braindance helps you discover games: what is popular right now, the most anticipated releases, similar games, and current free giveaways.">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#171717">
-    <link rel="icon" href="favicon.ico" sizes="any">
+    <meta name="theme-color" content="#0A0D14">
+    <link rel="icon" href="favicon.ico" sizes="48x48">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
     <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180.png">
     <!-- Text needs these, but the app requests them only after the Wasm bundle starts; preloading downloads them in
@@ -41,7 +40,7 @@ ${resourcePreloads}
         /* Matches the app background so no white page shows before the Wasm bundle renders. */
         html,
         body {
-            background-color: #171717;
+            background-color: #0A0D14;
         }
 
         body {
@@ -76,8 +75,8 @@ ${resourcePreloads}
             box-sizing: border-box;
             width: 64px;
             height: 64px;
-            border: 4px solid #2f2f2f;
-            border-top-color: #efefef;
+            border: 4px solid #222B40;
+            border-top-color: #F4F6FA;
             border-radius: 50%;
             animation: boot-spin 1s linear infinite;
         }

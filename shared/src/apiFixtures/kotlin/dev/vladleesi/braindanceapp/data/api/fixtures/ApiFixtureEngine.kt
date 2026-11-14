@@ -50,7 +50,7 @@ private fun MockRequestHandleScope.respondFixture(request: HttpRequestData): Htt
     return respond(image, HttpStatusCode.OK, pngHeaders)
 }
 
-/** Follows docs/project/openapi.yaml: an invalid ID is 400, an unknown game an empty list, an unknown giveaway 404. */
+/** Follows docs/openapi.yaml: an invalid ID is 400, an unknown game an empty list, an unknown giveaway 404. */
 private fun MockRequestHandleScope.respondApi(
     path: String,
     parameters: Parameters,

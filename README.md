@@ -1,10 +1,10 @@
 # Braindance
-[![Development status: in development](https://img.shields.io/badge/status-in%20development-FCEE0A?style=flat-square&labelColor=0B0E14)](#-platforms) [![Platforms: Android, iOS, and experimental Web](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web%20%28experimental%29-22ECFF?style=flat-square&labelColor=0B0E14)](#-platforms) [![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square&labelColor=0B0E14)](https://kotlinlang.org/docs/multiplatform.html) [![App source release](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=source&color=22ECFF&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![CI checks on develop](https://img.shields.io/github/actions/workflow/status/vladleesi/braindance/build-test-push.yml?branch=develop&event=push&label=CI&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![Web publication checks on master](https://img.shields.io/github/check-runs/vladleesi/braindance/master?nameFilter=Publish%20Promoted%20Web%20App%20%2F%20Deploy%20Web%20App%20to%20Cloudflare%20Pages&label=Web%20publication&labelColor=0B0E14&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-FF2E88?style=flat-square&labelColor=0B0E14)](#-license)
+[![Development status: in development](https://img.shields.io/badge/status-in%20development-FFEE0A?style=flat-square&labelColor=0A0D14)](#-platforms) [![Platforms: Android, iOS, and experimental Web](https://img.shields.io/badge/platforms-Android%20%C2%B7%20iOS%20%C2%B7%20Web%20%28experimental%29-22ECFF?style=flat-square&labelColor=0A0D14)](#-platforms) [![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?logo=kotlin&logoColor=white&style=flat-square&labelColor=0A0D14)](https://kotlinlang.org/docs/multiplatform.html) [![App source release](https://img.shields.io/github/v/release/vladleesi/braindance?filter=app-v%2A&label=source&color=22ECFF&labelColor=0A0D14&style=flat-square)](https://github.com/vladleesi/braindance/releases) [![CI checks on develop](https://img.shields.io/github/actions/workflow/status/vladleesi/braindance/build-test-push.yml?branch=develop&event=push&label=CI&labelColor=0A0D14&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![Web publication checks on master](https://img.shields.io/github/check-runs/vladleesi/braindance/master?nameFilter=Publish%20Promoted%20Web%20App%20%2F%20Deploy%20Web%20App%20to%20Cloudflare%20Pages&label=Web%20publication&labelColor=0A0D14&style=flat-square)](https://github.com/vladleesi/braindance/actions/workflows/build-test-push.yml?query=branch%3Adevelop+event%3Apush) [![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-FF2E88?style=flat-square&labelColor=0A0D14)](#-license)
 
 <div align="center">
 
-<a href="https://braindancegg.com/"><img src="docs/project/branding/banner/readme-banner.png"
-  alt="braindance — games / backlog / what's next" width="100%"></a>
+<a href="https://braindancegg.com/"><img src="docs/branding/marketing/banner-1600x500.png"
+  alt="braindance — Find what to play next. Android · iOS · Web" width="100%"></a>
 
 ### Find what to play next.
 
@@ -51,7 +51,7 @@ echo "API_FIXTURES=true" >> local.properties  # offline sample data, no API need
 ./gradlew :webApp:wasmJsBrowserDevelopmentRun  # Web; or :androidApp:assembleDebug for Android
 ```
 
-For iOS, open `iosApp/iosApp.xcodeproj` in Xcode. The [development guide](docs/project/development.md) covers
+For iOS, open `iosApp/iosApp.xcodeproj` in Xcode. The [development guide](docs/development.md) covers
 configuration, code style, and validation.
 
 ## 🧩 Architecture
@@ -59,7 +59,7 @@ configuration, code style, and validation.
 - **Clients (this repository):** the Android, iOS, and Web apps share UI and application logic in `shared`, with
   thin platform hosts in `androidApp`, `iosApp`, and `webApp`.
 - **Braindance API (private):** developed and deployed separately. It ranks the trending feed and similar-game
-  recommendations and keeps Twitch credentials server-side. The [API contract](docs/project/openapi.yaml) describes
+  recommendations and keeps Twitch credentials server-side. The [API contract](docs/openapi.yaml) describes
   what the clients use.
 - **Third-party data:** game data from IGDB and giveaways from GamerPower, served through the API.
 
@@ -67,16 +67,16 @@ configuration, code style, and validation.
 
 | Guide | Covers |
 | --- | --- |
-| [Development guide](docs/project/development.md) | Requirements, configuration, code style, running, validation, and hosting. |
-| [API contract](docs/project/openapi.yaml) | Endpoints and fields the clients use (OpenAPI). |
-| [Releases](docs/project/releases.md) | Versioning, publication, and recovery. |
-| [Firebase](docs/project/firebase.md) | Crash reporting, staging builds, and tester builds. |
-| [Security checks](docs/project/security.md) | CI security checks, repository settings, and Android backups. |
-| [Brand assets](docs/project/branding/README.md) | Logos, icons, banners, palette, and usage. |
-| [Landing site](docs/) | The static page served at [braindancegg.com](https://braindancegg.com/). |
+| [Development guide](docs/development.md) | Requirements, configuration, code style, running, validation, and hosting. |
+| [API contract](docs/openapi.yaml) | Endpoints and fields the clients use (OpenAPI). |
+| [Releases](docs/releases.md) | Versioning, publication, and recovery. |
+| [Firebase](docs/firebase.md) | Crash reporting, staging builds, and tester builds. |
+| [Security checks](docs/security.md) | CI security checks, repository settings, and Android backups. |
+| [Brand assets](docs/branding/README.md) | Logos, icons, banners, palette, and usage. |
+| [Landing site](landing/) | The static page served at [braindancegg.com](https://braindancegg.com/). |
 
 The current frontend source version is
-[0.16.1](https://github.com/vladleesi/braindance/releases/tag/app-v0.16.1).
+[0.17.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.17.0).
 GitHub releases provide source code, not store-ready mobile downloads.
 The Web publication badge shows checks for the revision on `master`.
 
@@ -104,15 +104,15 @@ For first-party files without inline comments, this notice applies:
 > If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 See [contribution requirements](CONTRIBUTING.md#licensing) and
-[distribution guidance](docs/project/development.md#distribution) for notices, corresponding source, and third-party
+[distribution guidance](docs/development.md#distribution) for notices, corresponding source, and third-party
 terms.
 
 ---
 
 <div align="center">
 
-<a href="https://braindancegg.com/"><img src="docs/mark.svg" alt="Braindance mark" width="40"></a>
+<a href="https://braindancegg.com/"><img src="docs/branding/logo/svg/mark-small-on-ink.svg" alt="Braindance mark" width="40"></a>
 
-<sub><b>braindance</b> · games / backlog / what's next</sub>
+<sub><b>braindance</b> · Find what to play next.</sub>
 
 </div>

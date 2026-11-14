@@ -25,19 +25,19 @@ before acting; reading grants no authorization.
 
 | Work | Read first |
 | --- | --- |
-| Code, configuration, dependency, or documentation changes/review | `docs/project/agent-guidance/general.md` |
-| Investigation, planning, or tool use | `docs/project/agent-guidance/agent-workflow.md` |
-| Changes needing validation, test work, CI fixes, or release preparation | `docs/project/agent-guidance/testing.md` |
-| Kotlin, Gradle, Android, or Multiplatform | `docs/project/agent-guidance/kotlin.md` |
-| Compose UI, scrolling/rendering performance, Baseline Profiles, or platform integration | `docs/project/agent-guidance/compose.md` |
-| Python code, packaging, or interpreter/dependency changes (`.github/scripts`) | `docs/project/agent-guidance/python.md` |
-| Browser UI, navigation, assets, or public web content | `docs/project/agent-guidance/frontend.md` |
-| CI status/failures, workflows, actions, or workflow-triggering operations | `docs/project/agent-guidance/ci.md` |
-| Versions, changelogs, tags, release artifacts, or publication | `docs/project/agent-guidance/release.md` |
+| Code, configuration, dependency, or documentation changes/review | `docs/agent-guidance/general.md` |
+| Investigation, planning, or tool use | `docs/agent-guidance/agent-workflow.md` |
+| Changes needing validation, test work, CI fixes, or release preparation | `docs/agent-guidance/testing.md` |
+| Kotlin, Gradle, Android, or Multiplatform | `docs/agent-guidance/kotlin.md` |
+| Compose UI, scrolling/rendering performance, Baseline Profiles, or platform integration | `docs/agent-guidance/compose.md` |
+| Python code, packaging, or interpreter/dependency changes (`.github/scripts`) | `docs/agent-guidance/python.md` |
+| Browser UI, navigation, assets, or public web content | `docs/agent-guidance/frontend.md` |
+| CI status/failures, workflows, actions, or workflow-triggering operations | `docs/agent-guidance/ci.md` |
+| Versions, changelogs, tags, release artifacts, or publication | `docs/agent-guidance/release.md` |
 
 Routes include shared browser code, documentation, pushes, and CI promotion with indirect publication effects.
-Read `docs/project/security.md` for existing security-check coverage or Android backup policy, and
-`docs/project/releases.md` for release/publication workflow changes or recovery.
+Read `docs/security.md` for existing security-check coverage or Android backup policy, and
+`docs/releases.md` for release/publication workflow changes or recovery.
 
 ## Imported core rules
 
@@ -232,15 +232,16 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
 - `androidApp` owns the Android host; `iosApp` owns the SwiftUI host; `webApp` owns the browser host,
   HTML shell, and web entry point; `shared` owns shared UI/logic and platform implementations. Keep module
   boundaries simple.
-- `docs` holds only the static landing site published to `braindancegg.com` with GitHub Pages. Project
-  documentation, agent guidance, and brand assets live in `docs/project`, which is not published.
+- `landing` holds only the static landing site, which GitHub Actions publishes to `braindancegg.com` with GitHub Pages.
+  Project documentation, agent guidance, and brand assets live in `docs`, which is not published.
 - Write the landing site for players without technical knowledge: the product, its status, and open source in plain
-  language, without build steps, framework names, or developer guides. Write the README and `docs/project` for
+  language, without build steps, framework names, or developer guides. Write the README and `docs` for
   developers.
-- When visible landing content in `docs/index.html` changes, set `lastmod` in `docs/sitemap.xml` to that UTC date.
+- When visible landing content in `landing/index.html` changes, set `lastmod` in `landing/sitemap.xml` to that UTC
+  date.
   Keep the page's structured data (descriptions and FAQ answers) identical to its visible text, and add no
   hand-maintained version or date that can go stale.
-- Keep the human-readable code style in `docs/project/development.md#code-style` consistent with these conventions.
+- Keep the human-readable code style in `docs/development.md#code-style` consistent with these conventions.
 - Follow `.editorconfig` and neighboring code: four-space indentation, 120-character lines, and trailing commas.
 - Use explicit imports and short names in Kotlin code instead of fully qualified references.
   Use import aliases when names conflict.
@@ -257,7 +258,7 @@ Read `docs/project/security.md` for existing security-check coverage or Android 
 - In suspending code, rethrow `CancellationException` with either `try`/`catch` or `runCatching`.
 - Consider Android and iOS implications of shared or platform changes.
 - Keep the mock API in sync with the real API. When the client's API use or the API's behavior changes, update
-  `docs/project/openapi.yaml`, the client models and `ApiConfig`, and the fixtures in `shared/src/apiFixtures` in the
+  `docs/openapi.yaml`, the client models and `ApiConfig`, and the fixtures in `shared/src/apiFixtures` in the
   same change. Fixtures must match the contract's endpoints, fields, and status codes; `ApiContractTest` checks the
   contract against the client.
 

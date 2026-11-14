@@ -5,6 +5,23 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.17.0 — 2026-11-14
+
+### Android, iOS, and Web
+
+- Refresh the look with the new Braindance brand: the "bd" app icon, a darker ink background, and the brand's cyan,
+  magenta, and yellow.
+
+### iOS
+
+- Add dark and tinted app icons for the iOS 18 Home Screen styles.
+
+### Website and documentation
+
+- Rebrand braindancegg.com with the new logo and colors, and rebuild its game cover wall with rounded, sharper,
+  higher-resolution covers and a refreshed set of games.
+- Publish the website from its own `landing` folder; project documentation and the brand kit now live in `docs`.
+
 ## 0.16.1 — 2026-11-14
 
 ### Android, iOS, and Web
