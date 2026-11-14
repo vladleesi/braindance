@@ -17,7 +17,7 @@ LUCIDE_ICONS = {
     "IconSearch.kt", "IconSlidersHorizontal.kt", "IconUsers.kt", "IconDatabase.kt",
     "IconFileText.kt", "IconGift.kt",
 }
-SIMPLE_ICONS = {"IconThreadsLogo.kt", "IconXLogo.kt"}
+SIMPLE_ICONS = {"IconBlueskyLogo.kt", "IconThreadsLogo.kt", "IconXLogo.kt"}
 SOURCE_SUFFIXES = {".kt", ".kts", ".swift", ".py", ".sh"}
 # Official Mozilla plain text and the upstream copies linked in THIRD_PARTY_NOTICES.md.
 LICENSE_HASHES = {

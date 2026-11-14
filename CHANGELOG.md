@@ -5,6 +5,16 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.16.1 — 2026-11-14
+
+### Android, iOS, and Web
+
+- Add Braindance on Bluesky (@braindancegg.com) to the Community links on Profile.
+
+### Website and documentation
+
+- Add "Follow @braindancegg" to the braindancegg.com footer, with links to Braindance on Bluesky, Threads, and X.
+
 ## 0.16.0 — 2026-11-13
 
 ### Android and iOS

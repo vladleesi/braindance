@@ -24,7 +24,9 @@
     <string name="profile_link_github_description">Braindance is open source</string>
     <string name="profile_link_threads">Threads</string>
     <string name="profile_link_x">X</string>
+    <string name="profile_link_bluesky">Bluesky</string>
     <string name="profile_social_handle">@braindancegg</string>
+    <string name="profile_bluesky_handle">@braindancegg.com</string>
     <string name="profile_release_notes">Release notes</string>
     <string name="data_attribution_igdb">Game data by %1$s</string>
     <string name="data_attribution_gamerpower">Giveaways by %1$s</string>

@@ -29,7 +29,9 @@ import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.data_attribution_gamerpower
 import dev.vladleesi.braindanceapp.resources.data_attribution_igdb
 import dev.vladleesi.braindanceapp.resources.profile_activity
+import dev.vladleesi.braindanceapp.resources.profile_bluesky_handle
 import dev.vladleesi.braindanceapp.resources.profile_development_status
+import dev.vladleesi.braindanceapp.resources.profile_link_bluesky
 import dev.vladleesi.braindanceapp.resources.profile_link_github
 import dev.vladleesi.braindanceapp.resources.profile_link_github_description
 import dev.vladleesi.braindanceapp.resources.profile_link_threads
@@ -62,6 +64,7 @@ import dev.vladleesi.braindanceapp.ui.components.rememberCommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.rememberProjectLinks
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.icons.BlueskyLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.Database
 import dev.vladleesi.braindanceapp.ui.style.icons.FileText
 import dev.vladleesi.braindanceapp.ui.style.icons.Gift
@@ -190,6 +193,13 @@ private fun CommunitySection(
         )
         ProfileDivider(inset = ProfileRowTextInset)
         ProfileLinkRow(
+            title = stringResource(Res.string.profile_link_bluesky),
+            supportingText = stringResource(Res.string.profile_bluesky_handle),
+            imageVector = BlueskyLogo,
+            onClick = community.openBluesky,
+        )
+        ProfileDivider(inset = ProfileRowTextInset)
+        ProfileLinkRow(
             title = stringResource(links.shareLabel),
             imageVector = Share,
             onClick = links.share,
@@ -255,7 +265,7 @@ internal fun ProfileScreenPreview() {
                         openIgdb = {},
                         openGamerPower = {},
                     ),
-                community = CommunityLinks(openThreads = {}, openX = {}, openReleases = {}),
+                community = CommunityLinks(openThreads = {}, openX = {}, openBluesky = {}, openReleases = {}),
                 versionLabel = "v1.0.0",
                 onBackButtonPressed = {},
                 modifier = Modifier.fillMaxSize(),
