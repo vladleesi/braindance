@@ -29,6 +29,8 @@
     <string name="profile_bluesky_handle">@braindancegg.com</string>
     <string name="profile_link_reddit">Reddit</string>
     <string name="profile_reddit_handle">r/BraindanceGG</string>
+    <string name="profile_link_discord">Discord</string>
+    <string name="profile_link_discord_description">Join the Braindance community</string>
     <string name="profile_release_notes">Release notes</string>
     <string name="data_attribution_igdb">Game data by %1$s</string>
     <string name="data_attribution_gamerpower">Giveaways by %1$s</string>

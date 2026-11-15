@@ -39,6 +39,7 @@ class ProfileContentTest {
                                 openX = { opened += "x" },
                                 openBluesky = { opened += "bluesky" },
                                 openReddit = { opened += "reddit" },
+                                openDiscord = { opened += "discord" },
                                 openReleases = { opened += "releases" },
                             ),
                         versionLabel = "v1.0.0",
@@ -48,11 +49,12 @@ class ProfileContentTest {
             }
 
             listOf(
-                "Star on GitHub",
-                "Threads",
+                "Discord",
+                "Reddit",
                 "X",
                 "Bluesky",
-                "Reddit",
+                "Threads",
+                "Star on GitHub",
                 "Share",
                 "Release notes",
                 "Game data by IGDB",
@@ -60,7 +62,18 @@ class ProfileContentTest {
             ).forEach { title -> onNodeWithText(title).performScrollTo().performClick() }
 
             assertEquals(
-                listOf("github", "threads", "x", "bluesky", "reddit", "share", "releases", "igdb", "gamerpower"),
+                listOf(
+                    "discord",
+                    "reddit",
+                    "x",
+                    "bluesky",
+                    "threads",
+                    "github",
+                    "share",
+                    "releases",
+                    "igdb",
+                    "gamerpower",
+                ),
                 opened,
             )
         }
@@ -85,6 +98,7 @@ class ProfileContentTest {
                                 openX = {},
                                 openBluesky = {},
                                 openReddit = {},
+                                openDiscord = {},
                                 openReleases = {},
                             ),
                         versionLabel = "v1.0.0",

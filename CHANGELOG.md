@@ -5,6 +5,16 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.18.1 — 2026-11-15
+
+### Android, iOS, and Web
+
+- Add a permanent Discord invite to Profile and put Discord and Reddit first in the Community links.
+
+### Website and documentation
+
+- Add the permanent Discord invite to braindancegg.com and put Discord and Reddit first in its social links.
+
 ## 0.18.0 — 2026-11-15
 
 ### Android, iOS, and Web

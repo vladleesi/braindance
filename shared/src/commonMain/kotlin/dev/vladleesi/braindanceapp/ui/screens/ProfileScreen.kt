@@ -32,6 +32,8 @@ import dev.vladleesi.braindanceapp.resources.profile_activity
 import dev.vladleesi.braindanceapp.resources.profile_bluesky_handle
 import dev.vladleesi.braindanceapp.resources.profile_development_status
 import dev.vladleesi.braindanceapp.resources.profile_link_bluesky
+import dev.vladleesi.braindanceapp.resources.profile_link_discord
+import dev.vladleesi.braindanceapp.resources.profile_link_discord_description
 import dev.vladleesi.braindanceapp.resources.profile_link_github
 import dev.vladleesi.braindanceapp.resources.profile_link_github_description
 import dev.vladleesi.braindanceapp.resources.profile_link_reddit
@@ -68,6 +70,7 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.icons.BlueskyLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.Database
+import dev.vladleesi.braindanceapp.ui.style.icons.DiscordLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.FileText
 import dev.vladleesi.braindanceapp.ui.style.icons.Gift
 import dev.vladleesi.braindanceapp.ui.style.icons.RedditLogo
@@ -175,17 +178,17 @@ private fun CommunitySection(
     val handle = stringResource(Res.string.profile_social_handle)
     ProfileSection(title = stringResource(Res.string.profile_section_community)) {
         ProfileLinkRow(
-            title = stringResource(Res.string.profile_link_github),
-            supportingText = stringResource(Res.string.profile_link_github_description),
-            imageVector = Github,
-            onClick = links.openRepository,
+            title = stringResource(Res.string.profile_link_discord),
+            supportingText = stringResource(Res.string.profile_link_discord_description),
+            imageVector = DiscordLogo,
+            onClick = community.openDiscord,
         )
         ProfileDivider(inset = ProfileRowTextInset)
         ProfileLinkRow(
-            title = stringResource(Res.string.profile_link_threads),
-            supportingText = handle,
-            imageVector = ThreadsLogo,
-            onClick = community.openThreads,
+            title = stringResource(Res.string.profile_link_reddit),
+            supportingText = stringResource(Res.string.profile_reddit_handle),
+            imageVector = RedditLogo,
+            onClick = community.openReddit,
         )
         ProfileDivider(inset = ProfileRowTextInset)
         ProfileLinkRow(
@@ -203,10 +206,17 @@ private fun CommunitySection(
         )
         ProfileDivider(inset = ProfileRowTextInset)
         ProfileLinkRow(
-            title = stringResource(Res.string.profile_link_reddit),
-            supportingText = stringResource(Res.string.profile_reddit_handle),
-            imageVector = RedditLogo,
-            onClick = community.openReddit,
+            title = stringResource(Res.string.profile_link_threads),
+            supportingText = handle,
+            imageVector = ThreadsLogo,
+            onClick = community.openThreads,
+        )
+        ProfileDivider(inset = ProfileRowTextInset)
+        ProfileLinkRow(
+            title = stringResource(Res.string.profile_link_github),
+            supportingText = stringResource(Res.string.profile_link_github_description),
+            imageVector = Github,
+            onClick = links.openRepository,
         )
         ProfileDivider(inset = ProfileRowTextInset)
         ProfileLinkRow(
@@ -281,6 +291,7 @@ internal fun ProfileScreenPreview() {
                         openX = {},
                         openBluesky = {},
                         openReddit = {},
+                        openDiscord = {},
                         openReleases = {},
                     ),
                 versionLabel = "v1.0.0",
