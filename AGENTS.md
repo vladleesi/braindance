@@ -249,8 +249,12 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   build files. Keep the catalog's existing grouping and naming style. Do not remove unused dependencies.
 - Use existing `Dimens` values for Compose padding and spacing instead of raw `dp` values when an appropriate value
   already exists. Add a new shared dimension only when it represents a reusable design-system value.
-- Use `CornerShapes` (`ui/style/CornerShapes.kt`, named after the `Dimens` radius) for rounded corners instead of
-  creating `RoundedCornerShape` in composables. Add a shape there only for a reusable design-system value.
+- Follow the product design rules in `docs/branding/README.md#in-the-product`. In the app, use `CornerShapes`
+  (`ui/style/CornerShapes.kt`): `small` for imagery, tiles, and rows, `large` for cards and panels, `pill` for
+  buttons, chips, and tags, and `CircleShape` for icon buttons. Do not create `RoundedCornerShape` in composables.
+  Fill cards with `surface`; use the neutral roles in `Colors.kt` and cyan (`accent`) as the only functional accent.
+- Use `PrimaryButton` for the one main action of a view and `TonalButton` for secondary actions
+  (`ui/components/Buttons.kt`) instead of styling Material buttons in place. The landing site keeps square imagery.
 - Add a `@Preview` for every new UI component, in the same file: an `internal fun <Name>Preview()` wrapped in
   `BraindanceTheme` with static sample data and no-op callbacks. Pass navigation and data in as parameters so the
   component previews without a `Navigator` or ViewModel.

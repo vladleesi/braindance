@@ -13,11 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -44,6 +43,7 @@ import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_instruction
 import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
 import dev.vladleesi.braindanceapp.ui.components.PlatformLogoList
+import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
 import dev.vladleesi.braindanceapp.ui.components.SpacerTopBarWithStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StaticText
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
@@ -56,7 +56,6 @@ import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.icons.OpenInNew
 import dev.vladleesi.braindanceapp.ui.style.icons.Users
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
@@ -276,7 +275,7 @@ private fun SummaryText(
     description: String,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.widthIn(max = Dimens.readableTextWidth)) {
         StaticText(
             text = title,
             style = MaterialTheme.typography.h3,
@@ -297,23 +296,11 @@ private fun OpenGiveawayButton(
     modifier: Modifier = Modifier,
     uriHandler: UriHandler = LocalUriHandler.current,
 ) {
-    Button(
-        modifier = modifier.height(48.dp),
-        colors = ButtonDefaults.buttonColors(backgroundColor = secondaryVariant),
+    PrimaryButton(
+        text = stringResource(Res.string.giveaway_details_screen_get_giveaway),
         onClick = { uriHandler.openExternalUrl(url) },
-    ) {
-        Row {
-            Text(
-                text = stringResource(Res.string.giveaway_details_screen_get_giveaway),
-                modifier = Modifier.align(Alignment.CenterVertically),
-            )
-            Spacer(Modifier.width(Dimens.tiny))
-            Icon(
-                imageVector = OpenInNew,
-                contentDescription = url.toContentDescription(),
-                tint = white,
-                modifier = Modifier.align(Alignment.CenterVertically),
-            )
-        }
-    }
+        modifier = modifier,
+        trailingIcon = OpenInNew,
+        trailingIconDescription = url.toContentDescription(),
+    )
 }

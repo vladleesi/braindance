@@ -2,6 +2,7 @@
 
 package dev.vladleesi.braindanceapp.ui.components.desktop
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -46,6 +47,7 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.hotMagenta
+import dev.vladleesi.braindanceapp.ui.style.icons.BraindanceWordmark
 import dev.vladleesi.braindanceapp.ui.style.navBar
 import dev.vladleesi.braindanceapp.ui.style.neonCyan
 import dev.vladleesi.braindanceapp.ui.style.secondary
@@ -66,6 +68,9 @@ private val IndicatorWidth = 3.dp
 private val IndicatorHeight = 20.dp
 private val AccentSegmentWidth = 10.dp
 private val AccentColors = listOf(neonCyan, hotMagenta, signalYellow)
+
+// 26 dp tall is 160 dp wide: above the wordmark's 120 dp minimum, and it fits the sidebar's content width.
+private val BrandHeight = 26.dp
 
 /**
  * The desktop navigation sidebar: the brand, the top-level destinations, and the profile entry at the bottom, which
@@ -128,14 +133,12 @@ fun DesktopSidebar(
 
 @Composable
 private fun SidebarBrand(modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Dimens.tiny)) {
-        Text(
-            text = stringResource(Res.string.app_name),
-            style = MaterialTheme.typography.h4,
-            maxLines = 1,
-        )
-        BrandAccentStrip()
-    }
+    // The real wordmark with its trail, as in the landing site's header; the brand's name is never retyped.
+    Image(
+        imageVector = BraindanceWordmark,
+        contentDescription = stringResource(Res.string.app_name),
+        modifier = modifier.height(BrandHeight),
+    )
 }
 
 /** Three short bars in the brand colors: a small accent for headings, used sparingly. */
@@ -147,7 +150,7 @@ fun BrandAccentStrip(modifier: Modifier = Modifier) {
                 modifier =
                     Modifier
                         .size(width = AccentSegmentWidth, height = Dimens.micro)
-                        .background(color, CornerShapes.tiny),
+                        .background(color, CornerShapes.pill),
             )
         }
     }
@@ -189,7 +192,7 @@ private fun SidebarItem(
             modifier =
                 Modifier
                     .size(width = IndicatorWidth, height = IndicatorHeight)
-                    .background(if (selected) neonCyan else Color.Transparent, CornerShapes.tiny),
+                    .background(if (selected) neonCyan else Color.Transparent, CornerShapes.pill),
         )
         Box(
             modifier = Modifier.padding(start = Dimens.small).size(ItemIconSize),

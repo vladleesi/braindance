@@ -136,13 +136,11 @@ private fun StandardHomeScreen(
                     .pullRefresh(pullState, enabled = !isMousePointer),
             verticalArrangement = Arrangement.spacedBy(Dimens.large),
         ) {
-            item { HomeTopBar(onProfileClick = { navigator.navigate(ProfileRoute) }) }
             item {
-                GamesCarousel(
-                    title = stringResource(Res.string.home_screen_popular_right_now),
-                    state = trendingNow,
+                HomeHeader(
+                    trendingNow = trendingNow,
+                    onProfileClick = { navigator.navigate(ProfileRoute) },
                     onRetry = viewModel::loadTrendingNow,
-                    showTitles = true,
                     onGameClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
                 )
             }
@@ -198,7 +196,31 @@ private fun StandardHomeScreen(
 private const val GAME_CARD_CONTENT_TYPE = "game_card"
 private const val GIVEAWAY_CARD_CONTENT_TYPE = "giveaway_card"
 
+/**
+ * The top bar and the first section as one list item, so Popular Right Now starts right under the title, like the
+ * content of every other screen, without the gap that separates sections.
+ */
+@Composable
+private fun HomeHeader(
+    trendingNow: SectionState<GameCardModel>,
+    onProfileClick: () -> Unit,
+    onRetry: () -> Unit,
+    onGameClick: (id: Int) -> Unit,
+) {
+    Column {
+        HomeTopBar(onProfileClick = onProfileClick)
+        GamesCarousel(
+            title = stringResource(Res.string.home_screen_popular_right_now),
+            state = trendingNow,
+            onRetry = onRetry,
+            showTitles = true,
+            onGameClick = onGameClick,
+        )
+    }
+}
+
 /** A carousel of game cards; [showTitles] adds each game's title and trending reason below its cover. */
+
 @Composable
 private fun GamesCarousel(
     title: String,

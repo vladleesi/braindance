@@ -29,6 +29,9 @@ object Dimens {
 
     val topBarHeight = 82.dp
 
+    // The widest a block of running text gets: about 80 characters a line, however wide the window is.
+    val readableTextWidth = 720.dp
+
     val statusBarInsets
         @Composable
         get() = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()

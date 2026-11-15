@@ -21,7 +21,7 @@ requires an explicit user request.
 | --- | --- | --- |
 | Poppins 4.004, three font weights | `shared/src/commonMain/composeResources/font/poppins_*.ttf` | Copyright 2020 The Poppins Project Authors. [SIL OFL 1.1](LICENSES/Poppins-OFL-1.1.txt), retained for the fonts and their modifications. [Upstream](https://github.com/google/fonts/tree/main/ofl/poppins). |
 | Lucide/Feather icon adaptations | `shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui/style/icons/Icon*.kt`, except the logos below, `IconOpenInNew.kt`, `IconShare.kt`, and `IconStar.kt` | [Lucide ISC](LICENSES/Lucide-ISC.txt) and [Feather MIT](LICENSES/Feather-MIT.txt); both sets of notices are retained through SPDX `ISC AND MIT`. [Upstream artwork](https://github.com/lucide-icons/lucide/tree/0.468.0/icons). |
-| Bluesky, Threads, and X logos from Simple Icons 14.0.0 | Same directory, `IconBlueskyLogo.kt`, `IconThreadsLogo.kt`, and `IconXLogo.kt` | [CC0-1.0](LICENSES/CC0-1.0.txt) for the artwork. The logos remain trademarks of Bluesky Social, PBC, Meta Platforms, Inc., and X Corp.; the license does not grant trademark rights, and the app uses them only to link to the project's own profiles. [Upstream artwork](https://github.com/simple-icons/simple-icons/tree/14.0.0/icons). |
+| Bluesky, Reddit, Threads, and X logos from Simple Icons 14.0.0 | Same directory, `IconBlueskyLogo.kt`, `IconRedditLogo.kt`, `IconThreadsLogo.kt`, and `IconXLogo.kt` | [CC0-1.0](LICENSES/CC0-1.0.txt) for the artwork. The logos remain trademarks of Bluesky Social, PBC, Reddit, Inc., Meta Platforms, Inc., and X Corp.; the license does not grant trademark rights, and the app uses them only to link to the project's own profiles. [Upstream artwork](https://github.com/simple-icons/simple-icons/tree/14.0.0/icons). |
 | Google Material open-in-new icon adaptation | Same directory, `IconOpenInNew.kt` | [Apache-2.0](LICENSES/Apache-2.0.txt). [Upstream artwork](https://github.com/google/material-design-icons/blob/master/symbols/web/open_in_new/materialsymbolsoutlined/open_in_new_24px.svg). |
 | Gradle wrapper | `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar` | [Apache-2.0](LICENSES/Apache-2.0.txt). Existing script copyright and license headers are preserved. |
 
@@ -71,11 +71,13 @@ modifications, and applicable brand guidelines before redistributing them.
   `docs/branding/marketing/` include game covers, which remain the property of their games' rights holders.
 - Copies of that kit in the apps: `androidApp/src/main/ic_launcher-playstore.png`, the launcher icons in
   `androidApp/src/main/res/mipmap-*/`, and `androidApp/src/main/res/values/ic_launcher_background.xml`;
-  `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/*.png`; and the icons in `webApp/src/wasmJsMain/resources/`.
+  `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/*.png`; the icons in `webApp/src/wasmJsMain/resources/`; and the
+  wordmark's outline in `shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui/style/icons/BraindanceWordmark.kt`.
 - Copies of the kit on the landing site: `landing/favicon*`, `landing/apple-touch-icon.png`, `landing/icon-512.png`,
   `landing/mark.svg`, `landing/wordmark.svg`, and `landing/og-image.png`.
-- `landing/img/wall-*.webp`: the landing site's hero wall, a collage of game covers from IGDB, resized, rounded, and
-  re-encoded. Each cover remains the property of its game's rights holders; see External data below.
+- `landing/img/covers-*.webp`: the landing site's cover band, game covers from IGDB resized and re-encoded;
+  and `landing/img/app-*.webp`: screenshots of the Braindance app, which show game covers from IGDB and a giveaway
+  image from GamerPower. Each cover and image remains the property of its rights holders; see External data below.
 - `docs/branding/banner/social-header-cover-wall*.jpg`: social headers made from game covers from IGDB,
   resized and arranged. Each cover remains the property of its game's rights holders.
 

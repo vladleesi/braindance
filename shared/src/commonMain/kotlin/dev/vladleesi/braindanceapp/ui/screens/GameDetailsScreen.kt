@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -154,7 +155,11 @@ private fun GameDetailsScreen(
                 item {
                     ExpandableText(
                         text = state.gameDetails.summary,
-                        modifier = Modifier.fillMaxWidth().padding(start = Dimens.medium, end = Dimens.medium),
+                        modifier =
+                            Modifier
+                                .widthIn(max = Dimens.readableTextWidth)
+                                .fillMaxWidth()
+                                .padding(start = Dimens.medium, end = Dimens.medium),
                     )
                 }
                 item { Spacer(modifier = Modifier.size(Dimens.large)) }

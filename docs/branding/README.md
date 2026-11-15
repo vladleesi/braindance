@@ -46,4 +46,40 @@ by 1/24 of the font size. No blur, glow, gradient, or gaps.
 - The d-pad and button backdrop is for the social avatar only. In app icons the mark is 72% of the visible icon.
 - Do not reorder or recolor the trail, split it, add effects, rotate or stretch the logo, or retype the wordmark.
 
+## In the product
+
+The kit sets the identity; the app and the landing site translate it, each for its job. The landing site is a
+marketing page and can be loud. The app is used every day and stays calm.
+
+### Color roles
+
+| Role | Color | Where |
+| --- | --- | --- |
+| Canvas | Ink `#0A0D14` | Page and screen backgrounds |
+| Chrome | `#070A10` | Sidebar, bottom bar, status bar |
+| Surface | `#12161F` | Cards, panels, tiles |
+| Control | `#1B202B` | Chips, inputs, selected rows; hairlines on the site |
+| Raised control | `#262C39` | Secondary buttons, outlines |
+| Text | White `#F4F6FA`, Grey `#A9B1C2` | Main and secondary text |
+| Accent | Cyan `#22E4FF` | Selection, focus, links: the one functional color |
+
+The surface steps are low-chroma neutrals built from Ink. Navy stays a brand color for background symbols; as a
+surface tint it gave the interface a blue cast that competed with cover art. Magenta and yellow are not interface
+colors: they appear with cyan as the trail, and magenta alone marks the development status.
+
+### Shape
+
+- **App:** soft geometry in three steps. Imagery and compact elements (covers, screenshots, tiles, rows) round by
+  8 dp; containers (cards, panels, banners) by 16 dp; everything pressable or labelling (buttons, chips, tags, the
+  search field) is a pill. Icon buttons and the avatar are circles. Cards are filled with the surface color, not
+  outlined.
+- **Landing site:** imagery has square corners: editorial plates and a tight band of whole 3:4 covers, with hairline
+  rules between sections. Buttons and tags are pills, as in the app.
+
+### The trail in the interface
+
+The trail belongs to the logo first. In the interface it marks only the main action: the primary button (white on
+Ink, a pill) lifts and shows the trail under a pointer, on the landing site and in the app alike. The landing site
+also sets it on one word of a headline and behind the hero screenshot. Do not put it on cards, lists, or icons.
+
 Source and permissions are recorded in [artwork and branding notices](../../THIRD_PARTY_NOTICES.md#artwork-and-branding).

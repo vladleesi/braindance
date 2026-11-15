@@ -47,8 +47,8 @@ import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
+import dev.vladleesi.braindanceapp.ui.components.SurfaceTile
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
-import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.white
@@ -131,11 +131,7 @@ private fun StatusCard(
     status: String,
     modifier: Modifier,
 ) {
-    Surface(
-        modifier = modifier,
-        shape = CornerShapes.medium,
-        color = secondary,
-    ) {
+    SurfaceTile(modifier = modifier) {
         Text(
             text = status,
             modifier = Modifier.padding(Dimens.medium),

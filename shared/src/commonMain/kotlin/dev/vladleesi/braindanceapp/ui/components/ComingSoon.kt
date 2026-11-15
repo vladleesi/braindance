@@ -10,12 +10,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,10 +24,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.coming_soon
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
-import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.secondary
@@ -40,18 +40,12 @@ import org.jetbrains.compose.resources.stringResource
  * hold no state, so they can be replaced one by one as the features arrive.
  */
 
-/** A small "Coming soon" tag. */
+private val CardMaxWidth = 560.dp
+
+/** The "Coming soon" [Tag]. */
 @Composable
 fun ComingSoonLabel(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(Res.string.coming_soon),
-        modifier =
-            modifier
-                .background(background, CircleShape)
-                .padding(horizontal = Dimens.small, vertical = Dimens.micro),
-        style = MaterialTheme.typography.caption,
-        color = white,
-    )
+    Tag(text = stringResource(Res.string.coming_soon), modifier = modifier)
 }
 
 /**
@@ -65,11 +59,8 @@ fun ComingSoonCard(
     modifier: Modifier = Modifier,
     action: (@Composable () -> Unit)? = null,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = CornerShapes.medium,
-        color = secondary,
-    ) {
+    // A card holds a couple of lines; on a wide window it keeps a readable width instead of stretching across it.
+    SurfaceCard(modifier = modifier.widthIn(max = CardMaxWidth).fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(Dimens.medium),
             verticalAlignment = Alignment.CenterVertically,

@@ -31,9 +31,10 @@ fun BraindanceTheme(
     }
     val shapes =
         Shapes(
-            small = CornerShapes.tiny,
-            medium = CornerShapes.small,
-            large = CornerShapes.compact,
+            // Material buttons and chips use the small shape; cards, sheets, and dialogs use medium and large.
+            small = CornerShapes.pill,
+            medium = CornerShapes.large,
+            large = CornerShapes.large,
         )
     // Only the weights the typography uses: the Web app downloads every listed font before it can show text.
     val fonts =
@@ -63,7 +64,10 @@ fun BraindanceTheme(
 
 private val AppIndication = FocusVisibleIndication(ripple())
 
-/** Compact headings and readable body styles, using only the three bundled Poppins weights. */
+/**
+ * Compact headings and readable body styles, using only the three bundled Poppins weights. Headings are set tight,
+ * like the landing site's.
+ */
 private fun buildTypography(fonts: FontFamily): Typography {
     val heading = TextStyle(color = white, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp)
     val body = TextStyle(color = white, fontWeight = FontWeight.Normal, letterSpacing = 0.sp)
@@ -71,10 +75,10 @@ private fun buildTypography(fonts: FontFamily): Typography {
 
     return Typography(
         defaultFontFamily = fonts,
-        h1 = heading.copy(fontSize = 32.sp, lineHeight = 40.sp, letterSpacing = (-0.5).sp),
-        h2 = heading.copy(fontSize = 24.sp, lineHeight = 32.sp, letterSpacing = (-0.25).sp),
-        h3 = heading.copy(fontSize = 20.sp, lineHeight = 28.sp),
-        h4 = heading.copy(fontSize = 18.sp, lineHeight = 24.sp),
+        h1 = heading.copy(fontSize = 32.sp, lineHeight = 38.sp, letterSpacing = (-1).sp),
+        h2 = heading.copy(fontSize = 24.sp, lineHeight = 30.sp, letterSpacing = (-0.7).sp),
+        h3 = heading.copy(fontSize = 20.sp, lineHeight = 26.sp, letterSpacing = (-0.5).sp),
+        h4 = heading.copy(fontSize = 18.sp, lineHeight = 24.sp, letterSpacing = (-0.4).sp),
         h5 = heading.copy(fontSize = 16.sp, lineHeight = 24.sp),
         h6 = heading.copy(fontSize = 14.sp, lineHeight = 20.sp, letterSpacing = 0.1.sp),
         body1 = body.copy(fontSize = 18.sp, lineHeight = 28.sp),

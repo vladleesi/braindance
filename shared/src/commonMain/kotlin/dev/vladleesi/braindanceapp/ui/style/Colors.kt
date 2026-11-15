@@ -25,23 +25,30 @@ val overlayWhiteWith80Alpha = Color(0xCCFFFFFF)
 val overlayBlackWith70Alpha = Color(0xB2000000)
 val overlayBlackWith80Alpha = Color(0xCC000000)
 
-// Surfaces sit on Ink and are tinted toward Navy, matching the landing site's palette.
-val background = void
-val secondaryText = Color(0xFFA9B1C2)
-val secondary = Color(0xFF222B40)
-val secondaryVariant = Color(0xFF1C2438)
-val error = Color(0xFFEA5A4A)
-val accent = Color(0xFF00BFFF) // TODO: Change color
-val shimmer = Color(0xFF2A3450)
+// Functional neutrals: a low-chroma ramp built from Ink, one step per role. Navy (slate) stays a brand color for
+// background symbols; tinting surfaces with it gave the whole interface a blue cast that competed with cover art.
+// navBar (chrome: sidebar, bottom bar) < background (canvas) < surface (cards, panels, tiles)
+// < secondary (controls: chips, inputs, selected rows) < secondaryVariant (tonal buttons, outlines).
 val navBar = Color(0xFF070A10)
+val background = void
+val surface = Color(0xFF12161F)
+val secondary = Color(0xFF1B202B)
+val secondaryVariant = Color(0xFF262C39)
+val shimmer = Color(0xFF2C3342)
+val secondaryText = Color(0xFFA9B1C2)
+val error = Color(0xFFEA5A4A)
 
-// TODO: Needs to check all colors
+// The one functional accent: selection, focus, and links. Magenta and yellow join it only in the Echo trail, and
+// magenta alone marks the development status.
+val accent = neonCyan
+
 val DarkColors =
     darkColors(
         primary = background,
         secondary = secondary,
         secondaryVariant = secondaryVariant,
         background = navBar,
+        surface = surface,
         error = error,
     )
 

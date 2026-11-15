@@ -55,10 +55,25 @@ or distribution.
 - Use explicit imports and short names instead of fully qualified ones; use import aliases for name conflicts.
 - Declare dependency and plugin versions only in `gradle/libs.versions.toml` and use its aliases in build files.
 - Pass business dependencies through constructors. In suspending code, rethrow `CancellationException`.
-- In Compose, use `Dimens` for spacing and `CornerShapes` for rounded corners. Give every new UI component a
+- In Compose, use `Dimens` for spacing, `CornerShapes` for corners, and `PrimaryButton` or `TonalButton` for
+  buttons, following the [product design rules](branding/README.md#in-the-product). Give every new UI component a
   `@Preview` in the same file: an `internal fun <Name>Preview()` in `BraindanceTheme`, with sample data and no-op
   callbacks. Pass navigation and data in as parameters so it previews without a ViewModel.
 - Start new source files with `SPDX-License-Identifier: MPL-2.0`; see [licensing](../CONTRIBUTING.md#licensing).
+
+## Design system
+
+The rules are in the [brand guide](branding/README.md#in-the-product). Build new screens from these shared pieces in
+`shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui` before adding new ones:
+
+| Piece | Where | Use |
+| --- | --- | --- |
+| Colors, `CornerShapes`, `Dimens`, typography | `style/` | Tokens: color roles, the three corner shapes, spacing, text styles |
+| `PrimaryButton`, `TonalButton`, `OutlineButton` | `components/Buttons.kt` | The main action, secondary actions, and links inside cards |
+| `SurfaceCard`, `SurfaceTile` | `components/Surfaces.kt` | Containers: cards and panels, and compact tiles |
+| `Tag`, `ComingSoonLabel`, `ComingSoonCard` | `components/Tag.kt`, `ComingSoon.kt` | Status labels and placeholders for planned features |
+| `CardCover`, `CarouselSection` | `components/` | Game covers and horizontal rows of them |
+| `BraindanceWordmark`, `BrandAccentStrip` | `style/icons/`, `components/desktop/` | The logo and the three-color accent |
 
 ## Validation
 

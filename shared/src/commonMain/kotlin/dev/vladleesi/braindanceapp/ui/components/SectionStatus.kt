@@ -6,14 +6,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.resources.Res
@@ -22,7 +18,6 @@ import dev.vladleesi.braindanceapp.resources.home_section_empty
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
-import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import org.jetbrains.compose.resources.stringResource
 
 private const val ERROR_MESSAGE_LINES = 3
@@ -41,12 +36,11 @@ fun SectionError(
             maxLines = ERROR_MESSAGE_LINES,
             overflow = TextOverflow.Ellipsis,
         )
-        Button(
-            onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(backgroundColor = secondaryVariant),
-            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-        ) {
-            Text(text = stringResource(Res.string.error_screen_retry_button_text))
+        TonalButton(onClick = onRetry) {
+            Text(
+                text = stringResource(Res.string.error_screen_retry_button_text),
+                style = MaterialTheme.typography.button,
+            )
         }
     }
 }

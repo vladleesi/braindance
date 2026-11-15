@@ -34,8 +34,10 @@ import dev.vladleesi.braindanceapp.resources.profile_development_status
 import dev.vladleesi.braindanceapp.resources.profile_link_bluesky
 import dev.vladleesi.braindanceapp.resources.profile_link_github
 import dev.vladleesi.braindanceapp.resources.profile_link_github_description
+import dev.vladleesi.braindanceapp.resources.profile_link_reddit
 import dev.vladleesi.braindanceapp.resources.profile_link_threads
 import dev.vladleesi.braindanceapp.resources.profile_link_x
+import dev.vladleesi.braindanceapp.resources.profile_reddit_handle
 import dev.vladleesi.braindanceapp.resources.profile_release_notes
 import dev.vladleesi.braindanceapp.resources.profile_reviews
 import dev.vladleesi.braindanceapp.resources.profile_screen_title
@@ -68,6 +70,7 @@ import dev.vladleesi.braindanceapp.ui.style.icons.BlueskyLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.Database
 import dev.vladleesi.braindanceapp.ui.style.icons.FileText
 import dev.vladleesi.braindanceapp.ui.style.icons.Gift
+import dev.vladleesi.braindanceapp.ui.style.icons.RedditLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.ThreadsLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.XLogo
 import org.jetbrains.compose.resources.stringResource
@@ -200,6 +203,13 @@ private fun CommunitySection(
         )
         ProfileDivider(inset = ProfileRowTextInset)
         ProfileLinkRow(
+            title = stringResource(Res.string.profile_link_reddit),
+            supportingText = stringResource(Res.string.profile_reddit_handle),
+            imageVector = RedditLogo,
+            onClick = community.openReddit,
+        )
+        ProfileDivider(inset = ProfileRowTextInset)
+        ProfileLinkRow(
             title = stringResource(links.shareLabel),
             imageVector = Share,
             onClick = links.share,
@@ -265,7 +275,14 @@ internal fun ProfileScreenPreview() {
                         openIgdb = {},
                         openGamerPower = {},
                     ),
-                community = CommunityLinks(openThreads = {}, openX = {}, openBluesky = {}, openReleases = {}),
+                community =
+                    CommunityLinks(
+                        openThreads = {},
+                        openX = {},
+                        openBluesky = {},
+                        openReddit = {},
+                        openReleases = {},
+                    ),
                 versionLabel = "v1.0.0",
                 onBackButtonPressed = {},
                 modifier = Modifier.fillMaxSize(),

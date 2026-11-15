@@ -28,6 +28,7 @@ private const val RELEASES_URL = "$REPOSITORY_URL/releases"
 private const val THREADS_URL = "https://www.threads.com/@braindancegg"
 private const val X_URL = "https://x.com/braindancegg"
 private const val BLUESKY_URL = "https://bsky.app/profile/braindancegg.com"
+private const val REDDIT_URL = "https://www.reddit.com/r/BraindanceGG/"
 
 // Provider names are brands, so they are not translated; the attribution strings place them in a sentence.
 internal const val IGDB_NAME = "IGDB"
@@ -56,14 +57,15 @@ class ShareAction(
 )
 
 /**
- * Where people follow the project: its Threads, X, and Bluesky profiles and the GitHub release notes. Each opens its
- * page.
+ * Where people follow the project: its Threads, X, and Bluesky profiles, its subreddit, and the GitHub release notes.
+ * Each opens its page.
  */
 @Immutable
 class CommunityLinks(
     val openThreads: () -> Unit,
     val openX: () -> Unit,
     val openBluesky: () -> Unit,
+    val openReddit: () -> Unit,
     val openReleases: () -> Unit,
 )
 
@@ -128,6 +130,7 @@ fun rememberCommunityLinks(): CommunityLinks {
             openThreads = { uriHandler.openExternalUrl(THREADS_URL) },
             openX = { uriHandler.openExternalUrl(X_URL) },
             openBluesky = { uriHandler.openExternalUrl(BLUESKY_URL) },
+            openReddit = { uriHandler.openExternalUrl(REDDIT_URL) },
             openReleases = { uriHandler.openExternalUrl(RELEASES_URL) },
         )
     }

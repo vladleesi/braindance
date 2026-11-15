@@ -38,6 +38,7 @@ class ProfileContentTest {
                                 openThreads = { opened += "threads" },
                                 openX = { opened += "x" },
                                 openBluesky = { opened += "bluesky" },
+                                openReddit = { opened += "reddit" },
                                 openReleases = { opened += "releases" },
                             ),
                         versionLabel = "v1.0.0",
@@ -51,6 +52,7 @@ class ProfileContentTest {
                 "Threads",
                 "X",
                 "Bluesky",
+                "Reddit",
                 "Share",
                 "Release notes",
                 "Game data by IGDB",
@@ -58,7 +60,7 @@ class ProfileContentTest {
             ).forEach { title -> onNodeWithText(title).performScrollTo().performClick() }
 
             assertEquals(
-                listOf("github", "threads", "x", "bluesky", "share", "releases", "igdb", "gamerpower"),
+                listOf("github", "threads", "x", "bluesky", "reddit", "share", "releases", "igdb", "gamerpower"),
                 opened,
             )
         }
@@ -77,7 +79,14 @@ class ProfileContentTest {
                                 openIgdb = {},
                                 openGamerPower = {},
                             ),
-                        community = CommunityLinks(openThreads = {}, openX = {}, openBluesky = {}, openReleases = {}),
+                        community =
+                            CommunityLinks(
+                                openThreads = {},
+                                openX = {},
+                                openBluesky = {},
+                                openReddit = {},
+                                openReleases = {},
+                            ),
                         versionLabel = "v1.0.0",
                         onBackButtonPressed = {},
                     )

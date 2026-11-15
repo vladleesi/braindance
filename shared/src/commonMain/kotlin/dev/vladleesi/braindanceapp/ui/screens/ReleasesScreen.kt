@@ -4,9 +4,7 @@ package dev.vladleesi.braindanceapp.ui.screens
 
 import ChevronLeft
 import SlidersHorizontal
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,10 +37,9 @@ import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.PlaceholderChips
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
+import dev.vladleesi.braindanceapp.ui.components.SurfaceTile
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
-import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.secondary
 import org.jetbrains.compose.resources.stringResource
 
 private const val DAYS_IN_WEEK = 7
@@ -120,13 +117,7 @@ private fun WeekStrip() {
         horizontalArrangement = Arrangement.spacedBy(Dimens.tiny),
     ) {
         repeat(DAYS_IN_WEEK) {
-            Box(
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .height(Dimens.extraLarge)
-                        .background(secondary, CornerShapes.small),
-            )
+            SurfaceTile(modifier = Modifier.weight(1f).height(Dimens.extraLarge))
         }
     }
 }

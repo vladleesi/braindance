@@ -40,18 +40,16 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
-  <link rel="preload" as="image" href="/img/wall-1.webp" imagesrcset="/img/wall-1.webp 1x, /img/wall-1@2x.webp 2x" fetchpriority="high">
-  <link rel="preload" as="image" href="/mark.svg">
+  <link rel="preload" as="image" href="/img/app-home.webp" imagesrcset="/img/app-home-560.webp 560w, /img/app-home.webp 780w" imagesizes="(min-width: 721px) 372px, 340px" fetchpriority="high">
 
   <style>
     :root {
       color-scheme: dark;
       /* Brand palette (docs/branding/README.md); the app uses the same values in Colors.kt */
       --bg: #0a0d14;        /* Ink */
-      --nav: #070a10;
-      --card: #111725;
-      --line: #222b40;
-      --chip: #1c2438;
+      --deep: #070a10;
+      --line: #1b202b;      /* hairlines: the app's control neutral */
+      --line-2: #313848;    /* stronger rules and outlines */
       --ink: #f4f6fa;       /* White */
       --muted: #a9b1c2;     /* Grey */
       --soft: #cdd3df;      /* lead text, between White and Grey */
@@ -59,167 +57,260 @@
       --cyan: #22e4ff;
       --magenta: #ff2e88;
       --yellow: #ffee0a;
-      --link-line: #5d6880; /* underline of links in text: about 3:1 against --bg, so they never rely on color alone */
-      --r-lg: 24px;
-      --r-md: 16px;
+      /* The Echo trail: flat copies in cyan, magenta, then yellow, each 1/24 of the font size down and right. */
+      --echo: .0417em .0417em 0 var(--cyan), .0834em .0834em 0 var(--magenta), .125em .125em 0 var(--yellow);
+      --gutter: 24px;
     }
+    /* Stand-ins for Poppins while it loads: Arial scaled to Poppins' measured width (13% wider at regular weights,
+       7% at bold), so text wraps the same before and after the web font arrives and nothing below it moves. */
+    @font-face { font-family: "Poppins Fallback"; src: local("Arial"); font-weight: 400 500; size-adjust: 113%; ascent-override: 93%; descent-override: 31%; line-gap-override: 9%; }
+    @font-face { font-family: "Poppins Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Arial"); font-weight: 600 700; size-adjust: 106.8%; ascent-override: 98%; descent-override: 33%; line-gap-override: 9%; }
     *, *::before, *::after { box-sizing: border-box; }
     [hidden] { display: none !important; }
     html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; background: var(--bg); }
     body {
       margin: 0; background: var(--bg); color: var(--ink);
-      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.65; -webkit-font-smoothing: antialiased;
+      font-family: "Poppins", "Poppins Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6; -webkit-font-smoothing: antialiased;
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
+    ::selection { background: var(--cyan); color: var(--void); }
     img, svg { max-width: 100%; display: block; }
     a { color: inherit; }
-    /* One style for every link inside running text: always underlined, and on hover the text turns white and the
-       underline turns cyan. Navigation lists, buttons, cards, and chips have their own hover styles. */
-    p a, .sub a, .more, .foot p a, .legal a { text-decoration: underline; text-decoration-color: var(--link-line); text-underline-offset: 3px; }
-    p a:hover, .sub a:hover, .more:hover, .foot p a:hover, .legal a:hover { color: var(--ink); text-decoration-color: var(--cyan); }
-    :focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; border-radius: 8px; }
-    .skip { position: absolute; left: -999px; top: 8px; background: var(--cyan); color: var(--void); padding: 10px 16px; border-radius: 10px; font-weight: 600; z-index: 50; }
+    h1, h2, h3, p, figure { margin: 0; }
+    /* One style for every link inside running text: always underlined; on hover the underline turns cyan. */
+    main p a, .legal a, .more { text-decoration: underline; text-decoration-color: var(--line-2); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+    main p a:hover, .legal a:hover, .more:hover { color: var(--ink); text-decoration-color: var(--cyan); }
+    :focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+    .skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: var(--void); padding: 10px 18px; border-radius: 999px; font-weight: 600; z-index: 50; }
     .skip:focus { left: 8px; }
-    .wrap { width: min(1080px, 100% - 40px); margin-inline: auto; }
+    .wrap { width: min(1320px, 100% - var(--gutter) * 2); margin-inline: auto; }
+    /* Small labels: section numbers, captions, tags, navigation. Poppins Medium, uppercase, widely spaced. */
+    .label { font-size: .72rem; font-weight: 500; line-height: 1.4; letter-spacing: .14em; text-transform: uppercase; }
+    .echo { text-shadow: var(--echo); }
+
+    /* Status bar */
+    .statusbar { border-bottom: 1px solid var(--line); background: var(--deep); color: var(--muted); }
+    .statusbar .wrap { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 36px; }
+    .statusbar p { display: flex; align-items: center; gap: 10px; }
+    .statusbar b { color: var(--ink); font-weight: 500; }
+    .dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--magenta); animation: pulse 2.4s ease-out infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 46, 136, .55); } 70%, 100% { box-shadow: 0 0 0 8px rgba(255, 46, 136, 0); } }
 
     /* Header */
-    header.top { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--nav) 86%, transparent); backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
-    .bar { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .brand { display: inline-flex; align-items: center; }
+    header.top { position: sticky; top: 0; z-index: 30; background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+    .bar { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 68px; }
+    .brand { display: inline-flex; align-items: center; flex: none; }
     .brand img { height: 44px; width: auto; }
-    nav.links { display: flex; align-items: center; gap: 6px; }
-    nav.links a { text-decoration: none; color: var(--muted); font-size: .9rem; font-weight: 500; padding: 8px 12px; border-radius: 999px; }
-    nav.links a:hover { color: var(--ink); background: var(--chip); }
-    section[id] { scroll-margin-top: 76px; }
+    nav.links { display: flex; align-items: center; gap: 4px; }
+    nav.links a { text-decoration: none; }
+    nav.links a:not(.btn) { color: var(--muted); padding: 10px 12px; }
+    nav.links a:not(.btn):hover { color: var(--ink); }
+    nav.links .btn { margin-left: 12px; letter-spacing: 0; text-transform: none; }
+    section[id] { scroll-margin-top: 84px; }
 
     /* Mobile menu */
     .menu-btn { display: none; align-items: center; justify-content: center; width: 44px; height: 44px; margin-right: -8px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; }
-    .menu-btn:hover { background: var(--chip); }
-    .menu-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+    .menu-btn:hover { background: var(--line); }
+    .menu-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: square; }
     .menu-btn .i-close { display: none; }
     .menu-btn[aria-expanded="true"] .i-open { display: none; }
     .menu-btn[aria-expanded="true"] .i-close { display: block; }
-    .mobile-menu { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--nav); border-bottom: 1px solid var(--line); box-shadow: 0 24px 40px -20px rgba(0,0,0,.7); max-height: calc(100vh - 72px); max-height: calc(100dvh - 72px); overflow-y: auto; }
+    .mobile-menu { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--bg); border-bottom: 1px solid var(--line-2); max-height: calc(100vh - 72px); max-height: calc(100dvh - 72px); overflow-y: auto; }
     .mobile-menu ul { list-style: none; margin: 0; padding: 4px 0 0; }
-    .mobile-menu li a { display: block; padding: 15px 4px; font-size: 1.05rem; font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--line); }
+    .mobile-menu li a { display: flex; justify-content: space-between; padding: 16px 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; text-decoration: none; border-bottom: 1px solid var(--line); }
     .mobile-menu li a:hover { color: var(--cyan); }
-    .mobile-menu .btn { width: 100%; margin: 20px 0 24px; }
-    @media (max-width: 720px) {
+    .mobile-menu .btn { width: 100%; margin: 24px 0 28px; }
+    @media (max-width: 900px) {
       nav.links { display: none; }
       .menu-btn { display: inline-flex; }
       .mobile-menu { display: block; }
     }
 
-    /* Buttons */
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 24px; border-radius: 999px; font: inherit; font-weight: 600; font-size: .95rem; text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, background .15s ease; }
-    .btn:active { transform: scale(.98); }
-    .btn svg { width: 18px; height: 18px; }
-    .btn-primary { background: var(--cyan); color: var(--void); }
-    .btn-primary:hover { background: color-mix(in srgb, var(--cyan) 86%, #fff); }
-    .btn-ghost { background: var(--card); color: var(--ink); border-color: var(--line); }
-    .btn-ghost:hover { background: var(--chip); }
+    /* Buttons and tags are the round shapes; imagery and surfaces are square. The primary button is the logo in
+       miniature: white on Ink, and the trail appears when it is hovered or focused. */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 26px; border-radius: 999px; font: inherit; font-weight: 600; font-size: .95rem; text-decoration: none; border: 1px solid transparent; transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
+    .btn svg { width: 18px; height: 18px; flex: none; }
+    .btn-sm { min-height: 40px; padding: 0 18px; font-size: .85rem; }
+    .btn-primary { background: var(--ink); color: var(--void); }
+    .btn-primary:hover, .btn-primary:focus-visible { transform: translate(-3px, -3px); box-shadow: 3px 3px 0 var(--cyan), 6px 6px 0 var(--magenta), 9px 9px 0 var(--yellow); }
+    .btn-primary:active { transform: none; box-shadow: none; }
+    .btn-line { background: transparent; color: var(--ink); border-color: var(--line-2); }
+    .btn-line:hover { border-color: var(--ink); }
+    .cta, .actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-    /* Status pill */
-    .status { display: inline-flex; align-items: center; gap: 10px; padding: 7px 16px 7px 12px; border-radius: 999px; background: color-mix(in srgb, var(--card) 88%, transparent); border: 1px solid var(--line); font-size: .85rem; font-weight: 500; color: var(--muted); backdrop-filter: blur(6px); }
-    .status b { color: var(--ink); font-weight: 600; }
-    .dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--magenta); animation: pulse 2.4s ease-out infinite; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,46,136,.55); } 70%,100% { box-shadow: 0 0 0 9px rgba(255,46,136,0); } }
+    /* Tags */
+    .tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 12px; border: 1px solid var(--line-2); border-radius: 999px; color: var(--muted); }
+    .tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--magenta); }
+    .tag.live { background: var(--cyan); border-color: var(--cyan); color: var(--void); font-weight: 600; }
+    .tag.live::before { background: var(--void); }
 
-    /* Hero with game wall */
-    .hero { position: relative; overflow: hidden; isolation: isolate; border-bottom: 1px solid var(--line); }
-    .wall { position: absolute; z-index: -2; inset: 0; display: flex; flex-direction: column; gap: 7px; padding: 7px 0; overflow: hidden; opacity: .55; -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 55%, transparent 98%); mask-image: linear-gradient(to bottom, #000 0, #000 55%, transparent 98%); }
-    .wall-row { flex: none; height: 192px; overflow: hidden; contain: strict; }
-    /* Each row is one strip of --n distinct covers (150px pitch at 192px tall) repeated 5 times, so moving by 20% is
-       exactly one strip: a seamless loop. Speed is about 22px/s. 1x and 2x files are chosen by pixel density. */
-    .wall-track { width: calc(var(--n) * 750px); height: 100%; background-repeat: repeat-x; background-size: auto 192px; will-change: transform; animation: wall-left 60s linear infinite; }
-    .wall-row:nth-child(even) .wall-track { animation-name: wall-right; }
-    .wall-row:nth-child(1) .wall-track { --n: 12; background-image: url(/img/wall-1.webp); background-image: image-set(url(/img/wall-1.webp) 1x, url(/img/wall-1@2x.webp) 2x); animation-duration: 75s; animation-delay: -12s; }
-    .wall-row:nth-child(2) .wall-track { --n: 12; background-image: url(/img/wall-2.webp); background-image: image-set(url(/img/wall-2.webp) 1x, url(/img/wall-2@2x.webp) 2x); animation-duration: 70s; animation-delay: -30s; }
-    .wall-row:nth-child(3) .wall-track { --n: 12; background-image: url(/img/wall-3.webp); background-image: image-set(url(/img/wall-3.webp) 1x, url(/img/wall-3@2x.webp) 2x); animation-duration: 62s; animation-delay: -20s; }
-    .wall-row:nth-child(4) .wall-track { --n: 11; background-image: url(/img/wall-4.webp); background-image: image-set(url(/img/wall-4.webp) 1x, url(/img/wall-4@2x.webp) 2x); animation-duration: 77s; animation-delay: -45s; }
-    @keyframes wall-left { from { transform: translate3d(0,0,0); } to { transform: translate3d(-20%,0,0); } }
-    @keyframes wall-right { from { transform: translate3d(-20%,0,0); } to { transform: translate3d(0,0,0); } }
-    .scrim { position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse 60% 72% at 50% 46%, rgba(10,13,20,.94) 30%, rgba(10,13,20,.5) 64%, rgba(10,13,20,.08) 100%), linear-gradient(to bottom, rgba(10,13,20,0) 60%, var(--bg)); }
-    .hero-inner { text-align: center; padding: 96px 0 162px; display: flex; flex-direction: column; align-items: center; }
-    .hero-logo { width: 112px; height: 112px; margin: 0 auto 18px; }
-    h1 { font-size: clamp(2.4rem, 6.2vw, 4.25rem); line-height: 1.04; letter-spacing: -.035em; font-weight: 700; margin: 22px 0 20px; max-width: 14em; }
-    .lead { font-size: clamp(1.05rem, 2vw, 1.2rem); color: var(--soft); max-width: 34em; margin: 0 auto 32px; }
+    /* Hero */
+    .hero { position: relative; overflow: hidden; isolation: isolate; }
+    .hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: radial-gradient(var(--line-2) 1px, transparent 1.5px); background-size: 28px 28px; -webkit-mask-image: linear-gradient(115deg, transparent 38%, #000 100%); mask-image: linear-gradient(115deg, transparent 38%, #000 100%); opacity: .7; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 48px; align-items: end; padding: clamp(40px, 4.6vw, 68px) 0 clamp(48px, 5vw, 72px); }
+    .eyebrow { display: flex; align-items: center; gap: 14px; color: var(--muted); margin-bottom: clamp(20px, 2.2vw, 30px); }
+    .eyebrow::before { content: ""; width: 40px; height: 1px; background: var(--line-2); }
+    h1 { font-size: clamp(3.25rem, 8.7vw, 8.1rem); line-height: .9; letter-spacing: -.05em; font-weight: 700; margin-bottom: .36em; }
+    h1 .echo { display: inline-block; }
+    .lead { font-size: clamp(1.05rem, 1.5vw, 1.25rem); color: var(--soft); max-width: 33em; margin-bottom: 32px; }
     .lead b { color: var(--ink); font-weight: 600; }
-    .cta { display: flex; flex-wrap: wrap; gap: 12px; }
-    .hero .cta { justify-content: center; }
-    .fine { margin: 20px 0 0; font-size: .85rem; color: var(--muted); }
+    .fine { margin-top: 20px; font-size: .85rem; color: var(--muted); }
+    /* The hero plate: a real screenshot with the trail behind it, like the letters of the logo. */
+    .plate { justify-self: end; width: min(100%, 372px); margin: 0 30px 30px 0; }
+    .plate .frame { aspect-ratio: 3 / 4; overflow: hidden; background: var(--deep); outline: 1px solid var(--line-2); box-shadow: 10px 10px 0 var(--cyan), 20px 20px 0 var(--magenta), 30px 30px 0 var(--yellow); }
+    .plate img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    figcaption { margin-top: 14px; color: var(--muted); }
+    .plate figcaption { margin-top: 46px; }
+
+    /* Cover band: two rows of whole covers at their own 3:4 proportion, 144 x 192 like a game card in the app. Each
+       row is one strip of 16 covers (12 row heights wide) repeated three times, so moving by a third is exactly one
+       strip: a seamless loop at about 19px a second. 1x and 2x files are chosen by pixel density. */
+    .band { --h: 192px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; }
+    .band-row { height: var(--h); overflow: hidden; contain: strict; }
+    .band-track { width: calc(var(--h) * 36); height: 100%; background-repeat: repeat-x; background-size: calc(var(--h) * 12) var(--h); will-change: transform; animation: band-left 120s linear infinite; }
+    .band-row:nth-child(1) .band-track { background-image: url(/img/covers-1.webp); background-image: image-set(url(/img/covers-1.webp) 1x, url(/img/covers-1@2x.webp) 2x); }
+    .band-row:nth-child(2) .band-track { background-image: url(/img/covers-2.webp); background-image: image-set(url(/img/covers-2.webp) 1x, url(/img/covers-2@2x.webp) 2x); animation-name: band-right; animation-duration: 136s; }
+    @keyframes band-left { to { transform: translate3d(-33.3333%, 0, 0); } }
+    @keyframes band-right { from { transform: translate3d(-33.3333%, 0, 0); } to { transform: translate3d(0, 0, 0); } }
 
     /* Sections */
-    section { padding: 84px 0; }
-    section + section { border-top: 1px solid var(--line); }
-    h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.12; letter-spacing: -.025em; font-weight: 700; margin: 0 0 14px; }
-    .sub { color: var(--muted); max-width: 38em; margin: 0 0 40px; }
-    h3 { font-size: 1.1rem; font-weight: 600; letter-spacing: -.01em; margin: 0 0 8px; }
-    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 26px; }
-    .card p { margin: 0; color: var(--muted); font-size: .95rem; }
-    .ico { width: 44px; height: 44px; border-radius: 14px; background: var(--chip); display: grid; place-items: center; margin-bottom: 18px; }
-    .ico svg { width: 22px; height: 22px; stroke: var(--ink); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .sec { position: relative; padding: clamp(72px, 9.5vw, 136px) 0; border-top: 1px solid var(--line); }
+    .band + .sec { border-top: 0; }
+    /* Registration marks where a section rule meets the page margins. */
+    .sec::before, .sec::after { content: "+"; position: absolute; top: 0; transform: translate(-50%, -50%); font-size: 1rem; font-weight: 400; line-height: 1; color: var(--line-2); }
+    .sec::before { left: max(var(--gutter), calc(50% - 660px)); }
+    .sec::after { left: min(calc(100% - var(--gutter)), calc(50% + 660px)); }
+    .band + .sec::before, .band + .sec::after { content: none; }
+    .num { display: flex; align-items: center; gap: 14px; color: var(--muted); margin-bottom: clamp(20px, 2.4vw, 32px); }
+    .num span { color: var(--ink); }
+    .num::after { content: ""; flex: none; width: 40px; height: 1px; background: var(--line-2); order: 1; }
+    .num i { font-style: normal; order: 2; }
+    h2 { font-size: clamp(2.1rem, 4.6vw, 4.1rem); line-height: 1.02; letter-spacing: -.04em; font-weight: 700; text-wrap: balance; }
+    h3 { font-size: 1.3rem; line-height: 1.2; letter-spacing: -.02em; font-weight: 600; }
+    .sub { color: var(--muted); max-width: 34em; margin-top: 20px; }
+    .split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px clamp(32px, 6vw, 104px); align-items: start; }
+    .rail { position: sticky; top: 108px; }
 
-    /* Development status */
-    .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px; }
-    .panel h3 { font-size: 1.25rem; margin: 0; }
-    .panel .tag { margin-bottom: 12px; }
-    .plain { list-style: none; margin: 20px 0 0; padding: 0; }
-    .plain li { padding: 16px 0; border-top: 1px solid var(--line); }
-    .plain li:first-child { border-top: 0; padding-top: 4px; }
-    .plain strong { display: block; font-weight: 600; font-size: 1rem; }
-    .plain span { display: block; color: var(--muted); font-size: .92rem; margin-top: 2px; }
-    .tag { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: .75rem; font-weight: 600; background: var(--chip); color: var(--muted); margin-bottom: 14px; }
-    .tag.live { background: rgba(34,228,255,.14); color: var(--cyan); }
-    .tag.wip { background: rgba(255,46,136,.14); color: #ff6fa8; }
-    .plat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .more { display: inline-block; margin-top: 16px; font-weight: 500; font-size: .9rem; color: var(--soft); }
-    .oss-group + .oss-group { margin-top: 32px; }
-    .oss-group h3 { font-size: .95rem; color: var(--muted); font-weight: 500; margin: 0 0 12px; }
-    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-    .btn-line { background: transparent; color: var(--ink); border-color: #3a4560; }
-    .btn-line:hover { border-color: var(--magenta); background: rgba(255,46,136,.08); }
+    /* 01 Features: text beside a square screenshot, alternating sides. */
+    .feat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 3vw, 40px); align-items: center; padding: clamp(32px, 4vw, 48px) 0; border-top: 1px solid var(--line); }
+    .feat:first-child { border-top: 0; padding-top: 0; }
+    .feat:last-child { padding-bottom: 0; }
+    .feat:nth-child(even) .shot { order: 2; }
+    .feat .label { color: var(--muted); margin-bottom: 14px; }
+    .feat h3 { font-size: clamp(1.4rem, 2.2vw, 1.9rem); letter-spacing: -.03em; margin-bottom: 12px; }
+    .feat p { color: var(--muted); }
+    .shot img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; outline: 1px solid var(--line-2); outline-offset: -1px; }
 
-    details { border-bottom: 1px solid var(--line); padding: 4px 0; }
-    details:first-of-type { border-top: 1px solid var(--line); }
-    summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 18px 0; font-weight: 600; font-size: 1.02rem; }
+    /* 02 Status: one large statement, then what is still to come as a list. */
+    .statement { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; row-gap: 28px; }
+    .statement h2 { grid-column: 1 / span 10; font-size: clamp(2.5rem, 7.2vw, 6.75rem); line-height: .94; letter-spacing: -.05em; }
+    .statement .sub { grid-column: 7 / span 6; margin-top: 0; max-width: none; font-size: 1.05rem; }
+    .todo { margin-top: clamp(48px, 7vw, 96px); }
+    .todo-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line-2); }
+    .plain { list-style: none; margin: 0; padding: 0; }
+    .plain li { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: 24px; align-items: baseline; padding: clamp(18px, 2.4vw, 28px) 0; border-bottom: 1px solid var(--line); }
+    .plain strong { font-size: clamp(1.35rem, 3vw, 2.4rem); line-height: 1.1; letter-spacing: -.035em; font-weight: 600; }
+    .plain span { color: var(--muted); }
+
+    /* 03 Platforms: three columns ruled like a spec sheet, then the web app at full width. */
+    .sec-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: clamp(32px, 6vw, 104px); row-gap: 20px; align-items: end; margin-bottom: clamp(40px, 5vw, 72px); }
+    .sec-head .num { grid-column: 1 / -1; margin-bottom: 4px; }
+    .sec-head .sub { margin-top: 0; }
+    .plat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
+    .plat article { display: flex; flex-direction: column; align-items: flex-start; padding: 28px 28px 32px 0; }
+    .plat article + article { padding-left: 28px; border-left: 1px solid var(--line); }
+    .plat h3 { font-size: clamp(2.3rem, 4.4vw, 4rem); line-height: 1; letter-spacing: -.05em; font-weight: 700; margin: 28px 0 16px; }
+    .plat h3 small { display: block; margin-top: 12px; font-size: .72rem; font-weight: 500; line-height: 1.4; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .plat p { color: var(--muted); max-width: 26em; }
+    .more { display: inline-block; margin-top: 20px; font-weight: 600; }
+    .wide { margin-top: clamp(40px, 5vw, 72px); }
+    .wide img { width: 100%; height: auto; outline: 1px solid var(--line-2); outline-offset: -1px; }
+
+    /* 04 Open source */
+    .oss-group { margin-top: 0; }
+    .oss-group h3 { color: var(--muted); font-size: .72rem; font-weight: 500; line-height: 1.4; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 20px; }
+    .oss-lead { font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.35; letter-spacing: -.02em; color: var(--soft); margin-bottom: clamp(32px, 4vw, 48px); max-width: 26em; }
+
+    /* 05 FAQ */
+    details { border-bottom: 1px solid var(--line); }
+    details:first-of-type { border-top: 1px solid var(--line-2); }
+    summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 24px; align-items: baseline; padding: 22px 0; font-weight: 600; font-size: clamp(1.05rem, 1.6vw, 1.3rem); letter-spacing: -.02em; }
     summary::-webkit-details-marker { display: none; }
-    summary::after { content: "+"; font-weight: 500; font-size: 1.5rem; line-height: 1; color: var(--muted); transition: transform .2s ease; }
-    details[open] summary::after { transform: rotate(45deg); color: var(--cyan); }
-    details p { margin: 0 0 20px; color: var(--muted); max-width: 46em; }
+    summary::after { content: "+"; flex: none; font-size: 1.4rem; font-weight: 400; line-height: 1; color: var(--muted); }
+    summary:hover::after { color: var(--ink); }
+    details[open] summary::after { content: "\2212"; color: var(--cyan); }
+    details p { margin: 0 0 26px; color: var(--muted); max-width: 44em; }
 
-    .closing { text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 64px 24px; }
-    .closing .cta { justify-content: center; }
-    .closing .sub { margin-inline: auto; }
+    /* Marquee: the app's section names, set large and outlined. */
+    .marquee { overflow: hidden; border-top: 1px solid var(--line); padding: clamp(20px, 3vw, 36px) 0; }
+    .marquee-track { display: flex; width: max-content; will-change: transform; animation: marquee 64s linear infinite; }
+    .marquee span { flex: none; padding-right: .5em; font-size: clamp(3rem, 9vw, 8.25rem); line-height: 1; letter-spacing: -.05em; font-weight: 700; white-space: nowrap; color: transparent; -webkit-text-stroke: 1.5px #4a5263; }
+    .marquee span b { font-weight: 700; color: var(--ink); -webkit-text-stroke: 0; }
+    @keyframes marquee { to { transform: translate3d(-50%, 0, 0); } }
 
-    footer { background: var(--nav); padding: 40px 0 56px; border-top: 1px solid var(--line); color: var(--muted); font-size: .88rem; }
-    .foot { display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: space-between; align-items: flex-start; }
-    .foot ul { display: flex; flex-wrap: wrap; gap: 6px 20px; list-style: none; margin: 0; padding: 0; }
+    /* Closing */
+    .closing { border-top: 1px solid var(--line); padding: clamp(72px, 10vw, 152px) 0; }
+    .closing h2 { font-size: clamp(2.6rem, 8.2vw, 7.75rem); line-height: .92; letter-spacing: -.05em; max-width: 11em; text-wrap: balance; }
+    .closing .echo { display: inline-block; }
+    .closing-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 28px 48px; margin-top: clamp(36px, 5vw, 64px); }
+    .closing .sub { margin-top: 0; font-size: 1.1rem; color: var(--soft); }
+
+    /* Footer */
+    footer { background: var(--deep); border-top: 1px solid var(--line-2); color: var(--muted); font-size: .9rem; }
+    .foot { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 40px clamp(32px, 6vw, 104px); padding: clamp(48px, 6vw, 80px) 0 40px; }
+    .foot p { max-width: 34em; }
+    .foot .about { font-size: 1.05rem; color: var(--soft); }
+    .foot .powered { margin-top: 10px; }
+    .foot .powered a { color: var(--ink); font-weight: 600; }
+    .foot ul { list-style: none; margin: 0; padding: 0; }
+    .foot nav[aria-label="Footer"] ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
     .foot a { text-decoration: none; }
-    .foot a:hover { color: var(--ink); text-decoration: underline var(--cyan); text-underline-offset: 3px; }
-    .foot p { margin: 12px 0 0; max-width: 36em; }
-    .foot .social { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 12px; }
-    .foot .social p { margin: 0; }
-    .foot .social .handle { color: var(--ink); font-weight: 600; }
-    .foot .social ul { gap: 4px; }
-    .foot .social a { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 999px; }
-    .foot .social a:hover { color: var(--ink); background: var(--line); text-decoration: none; }
-    .foot .social svg { width: 18px; height: 18px; fill: currentColor; }
-    .foot .powered a { color: var(--soft); font-weight: 600; }
-    .legal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); font-size: .8rem; }
-    .legal p { margin: 0 0 6px; max-width: 64em; }
+    .foot nav a:hover, .foot .powered a:hover { color: var(--ink); text-decoration: underline var(--cyan); text-underline-offset: 4px; }
+    .social { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 28px; }
+    .social .handle { color: var(--ink); font-weight: 600; }
+    .social ul { display: flex; gap: 4px; }
+    .social a { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; }
+    .social a:hover { color: var(--ink); background: var(--line); }
+    .social svg { width: 18px; height: 18px; fill: currentColor; }
+    .legal { padding: 24px 0 8px; border-top: 1px solid var(--line); font-size: .8rem; }
+    .legal p { margin: 0 0 6px; max-width: 70em; }
+    /* The wordmark at the full width of the page. The SVG has clear space around the letters (they occupy
+       2116 x 344 of its 2480 x 720 canvas), so the image is enlarged and offset to crop to the letters. */
+    .signature { display: block; position: relative; aspect-ratio: 2116 / 344; overflow: hidden; margin: clamp(24px, 4vw, 56px) 0 clamp(28px, 4vw, 56px); }
+    .signature img { position: absolute; left: -8.64%; top: -51.79%; width: 117.21%; max-width: none; height: auto; }
 
-    @media (max-width: 880px) {
-      .grid3, .plat { grid-template-columns: 1fr; }
-      section { padding: 56px 0; }
-      .panel { padding: 26px; }
-      .hero-inner { padding: 60px 0 126px; }
-      .scrim { background: radial-gradient(ellipse 90% 70% at 50% 46%, rgba(10,13,20,.95) 35%, rgba(10,13,20,.6) 70%, rgba(10,13,20,.25) 100%), linear-gradient(to bottom, rgba(10,13,20,0) 60%, var(--bg)); }
+    @media (max-width: 900px) {
+      .split, .sec-head, .foot { grid-template-columns: minmax(0, 1fr); }
+      .rail { position: static; }
+      .hero-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 32px; align-items: center; }
+      .statement h2, .statement .sub { grid-column: 1 / -1; }
+      .plat { grid-template-columns: minmax(0, 1fr); }
+      .plat article { padding: 28px 0 32px; }
+      .plat article + article { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+      .plat h3 { margin-top: 20px; }
     }
-    .wall.paused .wall-track, .wall.paused ~ * .dot { animation-play-state: paused; }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .dot, .wall-track { animation: none; } .btn { transition: none; } }
+    @media (max-width: 720px) {
+      :root { --gutter: 20px; }
+      .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 48px; }
+      .plate { justify-self: start; margin-left: auto; width: min(100% - 30px, 340px); }
+      .band { --h: 144px; }
+      .statusbar .platforms { display: none; }
+      .plain li { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+      .cta .btn, .closing .btn { flex: 1 1 auto; }
+    }
+    @media (max-width: 560px) {
+      .feat { grid-template-columns: minmax(0, 1fr); }
+      .feat:nth-child(even) .shot { order: 0; }
+      .shot { width: min(100%, 420px); }
+    }
+    .paused .band-track, .paused .marquee-track { animation-play-state: paused; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .dot, .band-track, .marquee-track { animation: none; }
+      .btn { transition: none; }
+      .btn-primary:hover, .btn-primary:focus-visible { transform: none; }
+    }
   </style>
 
   <noscript><style>.menu-btn{display:none!important}.mobile-menu[hidden]{display:block!important;position:static}</style></noscript>
@@ -247,6 +338,7 @@
           "https://bsky.app/profile/braindancegg.com",
           "https://www.threads.com/@braindancegg",
           "https://x.com/braindancegg",
+          "https://www.reddit.com/r/BraindanceGG/",
           "https://github.com/vladleesi/braindance"
         ]
       },
@@ -291,14 +383,23 @@
 <body>
   <a class="skip" href="#main">Skip to content</a>
 
+  <div class="statusbar label">
+    <div class="wrap">
+      <p role="status"><span class="dot" aria-hidden="true"></span><span><b>In development</b></span></p>
+      <p class="platforms">Android &middot; iOS &middot; Web</p>
+    </div>
+  </div>
+
   <header class="top">
     <div class="wrap bar">
       <a class="brand" href="/" aria-label="Braindance home"><img src="/wordmark.svg" alt="Braindance" width="152" height="44"></a>
-      <nav class="links" aria-label="Primary">
-        <a class="hide-sm" href="#features">Features</a>
-        <a class="hide-sm" href="#status">Status</a>
-        <a class="hide-sm" href="#faq">FAQ</a>
+      <nav class="links label" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#status">Status</a>
+        <a href="#platforms">Platforms</a>
+        <a href="#faq">FAQ</a>
         <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>
+        <a class="btn btn-primary btn-sm" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
       </nav>
       <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
         <svg class="i-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -322,64 +423,83 @@
 
   <main id="main">
     <div class="hero">
-      <div class="wall" aria-hidden="true">
-        <div class="wall-row"><div class="wall-track"></div></div>
-        <div class="wall-row"><div class="wall-track"></div></div>
-        <div class="wall-row"><div class="wall-track"></div></div>
-        <div class="wall-row"><div class="wall-track"></div></div>
-      </div>
-      <div class="scrim" aria-hidden="true"></div>
-
-      <div class="wrap hero-inner">
-        <img class="hero-logo" src="/mark.svg" alt="Braindance mark" width="112" height="112" fetchpriority="high">
-        <p class="status" role="status"><span class="dot" aria-hidden="true"></span><span><b>In development</b> &middot; Android, iOS and Web</span></p>
-        <h1>Find what to play next.</h1>
-        <p class="lead">Braindance is a game discovery app with <b>open-source apps</b> for Android, iOS and Web. Browse popular and upcoming games, explore similar titles and find giveaways in one place.</p>
-        <div class="cta">
-          <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">
-            Open the web app
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
-          </a>
-          <a class="btn btn-ghost" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
-            View on GitHub
-          </a>
+      <div class="wrap hero-grid">
+        <div>
+          <p class="eyebrow label">Game discovery app</p>
+          <h1>Find what to play <span class="echo">next.</span></h1>
+          <p class="lead">Braindance is a game discovery app with <b>open-source apps</b> for Android, iOS and Web. Browse popular and upcoming games, explore similar titles and find giveaways in one place.</p>
+          <div class="cta">
+            <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">
+              Open the web app
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+            </a>
+            <a class="btn btn-line" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+              View on GitHub
+            </a>
+          </div>
+          <p class="fine">Use it in your browser today. Android and iOS store releases are planned.</p>
         </div>
-        <p class="fine">Use it in your browser today. Android and iOS store releases are planned.</p>
+        <figure class="plate">
+          <div class="frame"><img src="/img/app-home.webp" srcset="/img/app-home-560.webp 560w, /img/app-home.webp 780w" sizes="(min-width: 721px) 372px, 340px" alt="The Braindance Home screen on a phone, with a row of game covers under Popular Right Now" width="780" height="1040" fetchpriority="high"></div>
+          <figcaption class="label">Home, on a phone</figcaption>
+        </figure>
       </div>
     </div>
 
-    <section id="features" aria-labelledby="features-title">
-      <div class="wrap">
-        <h2 id="features-title">What you can do today</h2>
-        <p class="sub">The current version focuses on discovery. Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>.</p>
-        <div class="grid3">
-          <article class="card">
-            <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1.5 3.2 4.3 4.5 4.3 8.2A4.3 4.3 0 0 1 12 15.5a4.3 4.3 0 0 1-4.3-4.3c0-1.4.6-2.4 1.4-3.3.3 1.2 1 1.9 1.9 2.2C11 8 10.8 5.3 12 3z"/><path d="M8 20h8"/></svg></div>
-            <h3>Popular and upcoming games</h3>
-            <p>See what everyone is playing in Popular Right Now, and what to look forward to in Most Anticipated.</p>
+    <div class="band" aria-hidden="true">
+      <div class="band-row"><div class="band-track"></div></div>
+      <div class="band-row"><div class="band-track"></div></div>
+    </div>
+
+    <section class="sec" id="features" aria-labelledby="features-title">
+      <div class="wrap split">
+        <div class="rail">
+          <p class="num label"><span>01</span><i>Features</i></p>
+          <h2 id="features-title">What you can do today</h2>
+          <p class="sub">The current version focuses on discovery. Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>.</p>
+        </div>
+        <div>
+          <article class="feat">
+            <figure class="shot"><img src="/img/app-popular.webp" alt="The Home screen in the app: a row of game covers with their names under Popular Right Now" width="780" height="780" loading="lazy" decoding="async"></figure>
+            <div>
+              <p class="label">Browse</p>
+              <h3>Popular and upcoming games</h3>
+              <p>See what everyone is playing in Popular Right Now, and what to look forward to in Most Anticipated.</p>
+            </div>
           </article>
-          <article class="card">
-            <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="11" rx="2"/><rect x="13" y="9" width="8" height="11" rx="2"/></svg></div>
-            <h3>Game details and similar games</h3>
-            <p>Open any game for its details, then jump to similar titles when you want more of the same.</p>
+          <article class="feat">
+            <figure class="shot"><img src="/img/app-details.webp" alt="A game page in the app: cover, release date, platforms, genres and description" width="780" height="780" loading="lazy" decoding="async"></figure>
+            <div>
+              <p class="label">Explore</p>
+              <h3>Game details and similar games</h3>
+              <p>Open any game for its details, then jump to similar titles when you want more of the same.</p>
+            </div>
           </article>
-          <article class="card">
-            <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16v4H4zM12 9v11M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6M8.5 9a2.5 2.5 0 1 1 0-5C11 4 12 9 12 9s1-5 3.5-5a2.5 2.5 0 1 1 0 5"/></svg></div>
-            <h3>Game giveaways</h3>
-            <p>Browse current giveaways from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>, read the instructions and follow the link to claim.</p>
+          <article class="feat">
+            <figure class="shot"><img src="/img/app-giveaways.webp" alt="A giveaway page in the app: the game's artwork, its price marked as free, and how many people claimed it" width="780" height="780" loading="lazy" decoding="async"></figure>
+            <div>
+              <p class="label">Claim</p>
+              <h3>Game giveaways</h3>
+              <p>Browse current giveaways from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>, read the instructions and follow the link to claim.</p>
+            </div>
           </article>
         </div>
       </div>
     </section>
 
-    <section id="status" aria-labelledby="status-title">
+    <section class="sec" id="status" aria-labelledby="status-title">
       <div class="wrap">
-        <h2 id="status-title">Braindance is in development</h2>
-        <p class="sub">It is actively built toward a public launch, with no confirmed release date, so features and behavior may change. Updates are tracked in the <a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">changelog</a>.</p>
-        <div class="panel">
-          <span class="tag wip">Not available yet</span>
-          <h3>Still to come</h3>
+        <p class="num label"><span>02</span><i>Status</i></p>
+        <div class="statement">
+          <h2 id="status-title">Braindance is in development</h2>
+          <p class="sub">It is actively built toward a public launch, with no confirmed release date, so features and behavior may change. Updates are tracked in the <a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">changelog</a>.</p>
+        </div>
+        <div class="todo">
+          <div class="todo-head">
+            <h3>Still to come</h3>
+            <span class="tag label">Not available yet</span>
+          </div>
           <ul class="plain">
             <li><strong>Personal tracking and collections</strong><span>Save and organize games</span></li>
             <li><strong>Search results</strong><span>Look up a specific game</span></li>
@@ -390,77 +510,101 @@
       </div>
     </section>
 
-    <section id="platforms" aria-labelledby="platforms-title">
+    <section class="sec" id="platforms" aria-labelledby="platforms-title">
       <div class="wrap">
-        <h2 id="platforms-title">Android, iOS and Web</h2>
-        <p class="sub">All three apps are built from one shared codebase.</p>
+        <div class="sec-head">
+          <p class="num label"><span>03</span><i>Platforms</i></p>
+          <h2 id="platforms-title">Android, iOS and Web</h2>
+          <p class="sub">All three apps are built from one shared codebase.</p>
+        </div>
         <div class="plat">
-          <article class="card">
-            <span class="tag live">Available now</span>
-            <h3>Web (experimental)</h3>
+          <article>
+            <span class="tag live label">Available now</span>
+            <h3>Web <small>Experimental</small></h3>
             <p>Open it in your browser, no installation needed. Works in up-to-date Chrome, Edge, Firefox and Safari.</p>
             <a class="more" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
           </article>
-          <article class="card">
-            <span class="tag wip">Coming soon</span>
+          <article>
+            <span class="tag label">Coming soon</span>
             <h3>Android</h3>
             <p>A store release is planned. Until then, open the web app in your phone's browser.</p>
           </article>
-          <article class="card">
-            <span class="tag wip">Coming soon</span>
+          <article>
+            <span class="tag label">Coming soon</span>
             <h3>iOS</h3>
             <p>A store release is planned. Until then, open the web app in your phone's browser.</p>
           </article>
         </div>
+        <figure class="wide">
+          <img src="/img/app-desktop.webp" srcset="/img/app-desktop.webp 1440w, /img/app-desktop@2x.webp 2880w" sizes="(min-width: 1368px) 1320px, calc(100vw - 48px)" alt="The Braindance web app on a computer: a sidebar with the Braindance logo, a Discover your next obsession banner, and game covers under Popular Right Now" width="1440" height="900" loading="lazy" decoding="async">
+          <figcaption class="label">The web app, on a computer</figcaption>
+        </figure>
       </div>
     </section>
 
-    <section id="open-source" aria-labelledby="oss-title">
-      <div class="wrap">
-        <h2 id="oss-title">Open source</h2>
-        <p class="sub">The Android, iOS and Web apps are open source: anyone can read their code on GitHub and suggest improvements. The server that provides game and giveaway data is run privately.</p>
-        <div class="oss-group">
-          <h3>Get involved</h3>
-          <div class="actions">
-            <a class="btn btn-primary" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
-              Share feedback
-            </a>
-            <a class="btn btn-line" href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5M12 16.5v.5"/><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
-              Report a bug
-            </a>
-            <a class="btn btn-line" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
-              View the code
-            </a>
+    <section class="sec" id="open-source" aria-labelledby="oss-title">
+      <div class="wrap split">
+        <div class="rail">
+          <p class="num label"><span>04</span><i>Open source</i></p>
+          <h2 id="oss-title">Open source</h2>
+        </div>
+        <div>
+          <p class="oss-lead">The Android, iOS and Web apps are open source: anyone can read their code on GitHub and suggest improvements. The server that provides game and giveaway data is run privately.</p>
+          <div class="oss-group">
+            <h3>Get involved</h3>
+            <div class="actions">
+              <a class="btn btn-primary" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+                Share feedback
+              </a>
+              <a class="btn btn-line" href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5M12 16.5v.5"/><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+                Report a bug
+              </a>
+              <a class="btn btn-line" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
+                View the code
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="faq" aria-labelledby="faq-title">
-      <div class="wrap">
-        <h2 id="faq-title">Frequently asked questions</h2>
-        <p class="sub">Short answers about Braindance and where it stands.</p>
-        <details><summary>What is Braindance?</summary><p>Braindance is a game discovery app that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place.</p></details>
-        <details><summary>Is Braindance available yet?</summary><p>Braindance is in development. The web app is available now at <a href="https://app.braindancegg.com/" rel="noopener" target="_blank">app.braindancegg.com</a> as an experimental version. Android and iOS store releases are planned, with no confirmed date.</p></details>
-        <details><summary>Can I use Braindance on my phone?</summary><p>Yes. Open the web app in your phone's browser; it adapts to small screens. Android and iOS store apps are planned.</p></details>
-        <details><summary>Which browsers does the web app support?</summary><p>An up-to-date version of Chrome, Edge, Firefox or Safari, on a computer or phone; older browser versions cannot run it. The web app is experimental, so its behavior, speed and features may change.</p></details>
-        <details><summary>Where does the game and giveaway data come from?</summary><p>Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>, and giveaways come from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>.</p></details>
-        <details><summary>Is Braindance open source?</summary><p>Yes. The Android, iOS and Web apps are open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license, and their code is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>. The server that provides game and giveaway data is run privately.</p></details>
-        <details><summary>How can I help improve Braindance?</summary><p><a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">Report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">suggest a feature or share usability feedback</a> on GitHub; no technical setup is needed. Developers can also <a href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">contribute code</a>.</p></details>
+    <section class="sec" id="faq" aria-labelledby="faq-title">
+      <div class="wrap split">
+        <div class="rail">
+          <p class="num label"><span>05</span><i>FAQ</i></p>
+          <h2 id="faq-title">Frequently asked questions</h2>
+          <p class="sub">Short answers about Braindance and where it stands.</p>
+        </div>
+        <div>
+          <details><summary>What is Braindance?</summary><p>Braindance is a game discovery app that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place.</p></details>
+          <details><summary>Is Braindance available yet?</summary><p>Braindance is in development. The web app is available now at <a href="https://app.braindancegg.com/" rel="noopener" target="_blank">app.braindancegg.com</a> as an experimental version. Android and iOS store releases are planned, with no confirmed date.</p></details>
+          <details><summary>Can I use Braindance on my phone?</summary><p>Yes. Open the web app in your phone's browser; it adapts to small screens. Android and iOS store apps are planned.</p></details>
+          <details><summary>Which browsers does the web app support?</summary><p>An up-to-date version of Chrome, Edge, Firefox or Safari, on a computer or phone; older browser versions cannot run it. The web app is experimental, so its behavior, speed and features may change.</p></details>
+          <details><summary>Where does the game and giveaway data come from?</summary><p>Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>, and giveaways come from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>.</p></details>
+          <details><summary>Is Braindance open source?</summary><p>Yes. The Android, iOS and Web apps are open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license, and their code is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>. The server that provides game and giveaway data is run privately.</p></details>
+          <details><summary>How can I help improve Braindance?</summary><p><a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">Report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">suggest a feature or share usability feedback</a> on GitHub; no technical setup is needed. Developers can also <a href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">contribute code</a>.</p></details>
+        </div>
       </div>
     </section>
 
-    <section aria-labelledby="cta-title" style="border-top:0">
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Popular Right Now <b>+</b> Most Anticipated <b>+</b> Similar games <b>+</b> Giveaways <b>+</b></span>
+        <span>Popular Right Now <b>+</b> Most Anticipated <b>+</b> Similar games <b>+</b> Giveaways <b>+</b></span>
+      </div>
+    </div>
+
+    <section class="closing" aria-labelledby="cta-title">
       <div class="wrap">
-        <div class="closing">
-          <h2 id="cta-title">Try it while it is still taking shape</h2>
+        <h2 id="cta-title">Try it while it is still <span class="echo">taking shape</span></h2>
+        <div class="closing-row">
           <p class="sub">Open the web app, then tell us what you would change.</p>
           <div class="cta">
             <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
-            <a class="btn btn-ghost" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">Share feedback</a>
+            <a class="btn btn-line" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">Share feedback</a>
           </div>
         </div>
       </div>
@@ -468,33 +612,36 @@
   </main>
 
   <footer>
-    <div class="wrap foot">
-      <div>
-        <a class="brand" href="/" aria-label="Braindance home"><img src="/wordmark.svg" alt="Braindance" width="152" height="44" loading="lazy"></a>
-        <p>Game discovery app for Android, iOS and Web, in development.</p>
-        <p class="powered">Powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a></p>
-        <nav class="social" aria-labelledby="follow-title">
-          <p id="follow-title">Follow <span class="handle">@braindancegg</span></p>
+    <div class="wrap">
+      <div class="foot">
+        <div>
+          <p class="about">Game discovery app for Android, iOS and Web, in development.</p>
+          <p class="powered">Powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a></p>
+          <nav class="social" aria-labelledby="follow-title">
+            <p id="follow-title">Follow <span class="handle">@braindancegg</span></p>
+            <ul>
+              <li><a href="https://bsky.app/profile/braindancegg.com" rel="me noopener" target="_blank" aria-label="Braindance on Bluesky, @braindancegg.com" title="Bluesky"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg></a></li>
+              <li><a href="https://www.threads.com/@braindancegg" rel="me noopener" target="_blank" aria-label="Braindance on Threads, @braindancegg" title="Threads"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z"/></svg></a></li>
+              <li><a href="https://x.com/braindancegg" rel="me noopener" target="_blank" aria-label="Braindance on X, @braindancegg" title="X"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg></a></li>
+              <li><a href="https://www.reddit.com/r/BraindanceGG/" rel="me noopener" target="_blank" aria-label="Braindance on Reddit, r/BraindanceGG" title="Reddit"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286C.775 23.225 1.097 24 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0Zm4.388 3.199c1.104 0 1.999.895 1.999 1.999 0 1.105-.895 2-1.999 2-.946 0-1.739-.657-1.947-1.539v.002c-1.147.162-2.032 1.15-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363.473-.363 1.064-.58 1.707-.58 1.547 0 2.802 1.254 2.802 2.802 0 1.117-.655 2.081-1.601 2.531-.088 3.256-3.637 5.876-7.997 5.876-4.361 0-7.905-2.617-7.998-5.87-.954-.447-1.614-1.415-1.614-2.538 0-1.548 1.255-2.802 2.803-2.802.645 0 1.239.218 1.712.585 1.275-.79 2.881-1.291 4.64-1.365v-.01c0-1.663 1.263-3.034 2.88-3.207.188-.911.993-1.595 1.959-1.595Zm-8.085 8.376c-.784 0-1.459.78-1.506 1.797-.047 1.016.64 1.429 1.426 1.429.786 0 1.371-.369 1.418-1.385.047-1.017-.553-1.841-1.338-1.841Zm7.406 0c-.786 0-1.385.824-1.338 1.841.047 1.017.634 1.385 1.418 1.385.785 0 1.473-.413 1.426-1.429-.046-1.017-.721-1.797-1.506-1.797Zm-3.703 4.013c-.974 0-1.907.048-2.77.135-.147.015-.241.168-.183.305.483 1.154 1.622 1.964 2.953 1.964 1.33 0 2.47-.81 2.953-1.964.057-.137-.037-.29-.184-.305-.863-.087-1.795-.135-2.769-.135Z"/></svg></a></li>
+            </ul>
+          </nav>
+        </div>
+        <nav aria-label="Footer">
           <ul>
-            <li><a href="https://bsky.app/profile/braindancegg.com" rel="me noopener" target="_blank" aria-label="Braindance on Bluesky, @braindancegg.com" title="Bluesky"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg></a></li>
-            <li><a href="https://www.threads.com/@braindancegg" rel="me noopener" target="_blank" aria-label="Braindance on Threads, @braindancegg" title="Threads"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z"/></svg></a></li>
-            <li><a href="https://x.com/braindancegg" rel="me noopener" target="_blank" aria-label="Braindance on X, @braindancegg" title="X"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg></a></li>
+            <li><a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a></li>
+            <li><a href="https://app.braindancegg.com/" rel="noopener" target="_blank">Web app</a></li>
+            <li><a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">Changelog</a></li>
+            <li><a href="https://github.com/vladleesi/braindance/blob/master/LICENSE" rel="noopener" target="_blank">License</a></li>
+            <li><a href="https://github.com/vladleesi/braindance/blob/master/THIRD_PARTY_NOTICES.md" rel="noopener" target="_blank">Third-party notices</a></li>
           </ul>
         </nav>
       </div>
-      <nav aria-label="Footer">
-        <ul>
-          <li><a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a></li>
-          <li><a href="https://app.braindancegg.com/" rel="noopener" target="_blank">Web app</a></li>
-          <li><a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">Changelog</a></li>
-          <li><a href="https://github.com/vladleesi/braindance/blob/master/LICENSE" rel="noopener" target="_blank">License</a></li>
-          <li><a href="https://github.com/vladleesi/braindance/blob/master/THIRD_PARTY_NOTICES.md" rel="noopener" target="_blank">Third-party notices</a></li>
-        </ul>
-      </nav>
-    </div>
-    <div class="wrap legal">
-      <p>Game data and cover art provided by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>; giveaways from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>. Game titles, cover art and trademarks belong to their respective owners. Braindance is not affiliated with or endorsed by IGDB, Twitch or GamerPower.</p>
-      <p>&copy; 2026 Braindance. Source code under <a href="https://github.com/vladleesi/braindance/blob/master/LICENSE" rel="noopener" target="_blank">MPL-2.0</a>; third-party terms are listed in the <a href="https://github.com/vladleesi/braindance/blob/master/THIRD_PARTY_NOTICES.md" rel="noopener" target="_blank">notices</a>.</p>
+      <div class="legal">
+        <p>Game data and cover art provided by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>; giveaways from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>. Game titles, cover art and trademarks belong to their respective owners. Braindance is not affiliated with or endorsed by IGDB, Twitch or GamerPower.</p>
+        <p>&copy; 2026 Braindance. Source code under <a href="https://github.com/vladleesi/braindance/blob/master/LICENSE" rel="noopener" target="_blank">MPL-2.0</a>; third-party terms are listed in the <a href="https://github.com/vladleesi/braindance/blob/master/THIRD_PARTY_NOTICES.md" rel="noopener" target="_blank">notices</a>.</p>
+      </div>
+      <a class="signature" href="/" aria-label="Braindance home"><img src="/wordmark.svg" alt="Braindance" width="2480" height="720" loading="lazy" decoding="async"></a>
     </div>
   </footer>
 
@@ -516,14 +663,21 @@
       document.addEventListener("keydown", function (e) {
         if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") { setOpen(false); btn.focus(); }
       });
-      var mq = window.matchMedia("(min-width: 721px)");
+      var mq = window.matchMedia("(min-width: 901px)");
       var onChange = function (e) { if (e.matches) setOpen(false); };
       if (mq.addEventListener) mq.addEventListener("change", onChange); else mq.addListener(onChange);
     })();
   </script>
 
   <script>
-    (function(){var w=document.querySelector(".wall");if(!w||!("IntersectionObserver" in window))return;new IntersectionObserver(function(e){w.classList.toggle("paused",!e[0].isIntersecting)}).observe(w.parentNode)})();
+    /* The cover band and the marquee only animate while they are on screen. */
+    (function () {
+      if (!("IntersectionObserver" in window)) return;
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) { entry.target.classList.toggle("paused", !entry.isIntersecting); });
+      });
+      document.querySelectorAll(".band, .marquee").forEach(function (el) { observer.observe(el); });
+    })();
   </script>
 
 </body>

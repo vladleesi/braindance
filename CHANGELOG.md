@@ -5,6 +5,29 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.18.0 — 2026-11-15
+
+### Android, iOS, and Web
+
+- Refine the look: calmer neutral surfaces instead of blue-tinted ones, softly rounded covers and cards, and
+  round buttons and tags.
+- Make the main button of a screen white, so the main action is easy to find.
+- Start the Home screen's first row right under its title.
+- Set headings slightly tighter.
+- Add the Braindance subreddit (r/BraindanceGG) to the Community links on Profile.
+
+### Web
+
+- Show the Braindance logo in the sidebar.
+- Keep long descriptions at a comfortable reading width on wide windows.
+- The main button lifts and shows the logo's colors under the mouse pointer.
+
+### Website and documentation
+
+- Redesign braindancegg.com: a large headline, numbered sections, real screenshots of the app, and a band of game
+  covers in place of the cover wall.
+- Add a link to the Braindance subreddit to the braindancegg.com footer.
+
 ## 0.17.0 — 2026-11-14
 
 ### Android, iOS, and Web

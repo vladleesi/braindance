@@ -74,7 +74,7 @@ fun GiveawayCard(
                         Modifier
                             .align(Alignment.TopStart)
                             .padding(Dimens.small)
-                            .background(overlayBlackWith70Alpha, CornerShapes.small)
+                            .background(overlayBlackWith70Alpha, CornerShapes.pill)
                             .padding(horizontal = Dimens.tiny, vertical = Dimens.micro),
                 )
             }
@@ -88,7 +88,7 @@ fun GiveawayCard(
                         Modifier
                             .align(Alignment.BottomEnd)
                             .padding(Dimens.small)
-                            .background(overlayWhiteWith80Alpha, CornerShapes.small)
+                            .background(overlayWhiteWith80Alpha, CornerShapes.pill)
                             .padding(horizontal = Dimens.tiny),
                 )
             }
@@ -149,7 +149,7 @@ private fun GiveawayPlatforms(
         modifier =
             modifier
                 .padding(Dimens.small)
-                .background(overlayBlackWith70Alpha, CornerShapes.small)
+                .background(overlayBlackWith70Alpha, CornerShapes.pill)
                 .padding(Dimens.tiny),
         horizontalArrangement = Arrangement.spacedBy(Dimens.micro),
     ) {

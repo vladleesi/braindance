@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +19,7 @@ import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.error_screen_error_message
 import dev.vladleesi.braindanceapp.resources.error_screen_retry_button_text
 import dev.vladleesi.braindanceapp.resources.error_screen_title
+import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import org.jetbrains.compose.resources.stringResource
@@ -62,9 +62,7 @@ fun ErrorScreen(
 
             Spacer(modifier = Modifier.height(Dimens.medium))
 
-            Button(onClick = onRetry) {
-                Text(text = retryButtonText, style = MaterialTheme.typography.button)
-            }
+            PrimaryButton(text = retryButtonText, onClick = onRetry)
         }
     }
 }

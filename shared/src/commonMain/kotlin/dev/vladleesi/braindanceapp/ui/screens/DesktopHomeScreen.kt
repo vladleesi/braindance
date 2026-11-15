@@ -4,16 +4,13 @@ package dev.vladleesi.braindanceapp.ui.screens
 
 import Bell
 import CalendarDays
-import ChevronLeft
 import Star
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -28,13 +25,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,9 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -86,6 +77,9 @@ import dev.vladleesi.braindanceapp.ui.components.COVER_ASPECT_RATIO
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
+import dev.vladleesi.braindanceapp.ui.components.OutlineButton
+import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
+import dev.vladleesi.braindanceapp.ui.components.SurfaceCard
 import dev.vladleesi.braindanceapp.ui.components.UserAvatar
 import dev.vladleesi.braindanceapp.ui.components.desktop.BrandAccentStrip
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopCardRow
@@ -101,9 +95,7 @@ import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.navBar
-import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.utils.rememberCachedImageRequest
@@ -115,12 +107,8 @@ private val MainColumnMaxWidth = 1120.dp
 private val ContextColumnWidth = 280.dp
 private val HeroMinHeight = 220.dp
 private val ContextIconSize = 20.dp
-private val LinkButtonBorderWidth = 1.dp
-private val LinkButtonArrowSize = 16.dp
-private const val LINK_BUTTON_BORDER_ALPHA = 0.4f
 
 // The back chevron turned to point forward.
-private const val LINK_BUTTON_ARROW_ROTATION = 180f
 private const val HERO_TEXT_WIDTH_FRACTION = 0.6f
 private const val HERO_COVER_COUNT = 3
 private const val HERO_SCRIM_OPAQUE_END = 0.5f
@@ -304,7 +292,7 @@ private fun DesktopHero(
             Modifier
                 .fillMaxWidth()
                 .heightIn(min = HeroMinHeight)
-                .clip(CornerShapes.medium)
+                .clip(CornerShapes.large)
                 .background(navBar),
     ) {
         if (trendingNow is SectionState.Success && trendingNow.items.isNotEmpty()) {
@@ -359,19 +347,7 @@ private fun DesktopHero(
                 color = secondaryText,
             )
             Spacer(Modifier.height(Dimens.tiny))
-            Button(
-                onClick = onExploreClick,
-                colors = ButtonDefaults.buttonColors(backgroundColor = white, contentColor = navBar),
-                elevation = null,
-                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-            ) {
-                // The theme's text styles carry their own color, which would override the button's content color.
-                Text(
-                    text = stringResource(Res.string.desktop_hero_action),
-                    color = navBar,
-                    modifier = Modifier.padding(horizontal = Dimens.small),
-                )
-            }
+            PrimaryButton(text = stringResource(Res.string.desktop_hero_action), onClick = onExploreClick)
         }
     }
 }
@@ -407,7 +383,7 @@ private fun ContextCard(
     link: StringResource? = null,
     onLinkClick: (() -> Unit)? = null,
 ) {
-    Surface(modifier = Modifier.fillMaxWidth(), shape = CornerShapes.medium, color = secondary) {
+    SurfaceCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(Dimens.medium),
             verticalArrangement = Arrangement.spacedBy(Dimens.small),
@@ -429,7 +405,7 @@ private fun ContextCard(
             )
             Text(text = description, style = MaterialTheme.typography.caption, color = secondaryText)
             if (link != null && onLinkClick != null) {
-                DesktopLinkButton(text = stringResource(link), onClick = onLinkClick)
+                OutlineButton(text = stringResource(link), onClick = onLinkClick)
             }
         }
     }
@@ -503,49 +479,12 @@ private fun PreviewCard(
         action =
             if (link != null && onLinkClick != null) {
                 {
-                    DesktopLinkButton(text = stringResource(link), onClick = onLinkClick)
+                    OutlineButton(text = stringResource(link), onClick = onLinkClick)
                 }
             } else {
                 null
             },
     )
-}
-
-/**
- * A preview card's link to its destination. It is an outlined button with a trailing arrow, so it reads as navigation
- * and not as a [ComingSoonLabel] tag, which is a filled pill.
- */
-@Composable
-private fun DesktopLinkButton(
-    text: String,
-    onClick: () -> Unit,
-) {
-    OutlinedButton(
-        onClick = onClick,
-        shape = CornerShapes.small,
-        border = BorderStroke(LinkButtonBorderWidth, white.copy(alpha = LINK_BUTTON_BORDER_ALPHA)),
-        colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent, contentColor = white),
-        contentPadding = PaddingValues(horizontal = Dimens.compact, vertical = Dimens.small),
-        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-    ) {
-        Text(text = text, color = white)
-        Spacer(Modifier.width(Dimens.small))
-        Icon(
-            imageVector = ChevronLeft,
-            contentDescription = null,
-            modifier = Modifier.size(LinkButtonArrowSize).rotate(LINK_BUTTON_ARROW_ROTATION),
-        )
-    }
-}
-
-@Preview
-@Composable
-internal fun DesktopLinkButtonPreview() {
-    BraindanceTheme {
-        Box(modifier = Modifier.background(secondary).padding(Dimens.medium)) {
-            DesktopLinkButton(text = "Open Releases", onClick = {})
-        }
-    }
 }
 
 @Preview
