@@ -77,11 +77,13 @@
     ::selection { background: var(--cyan); color: var(--void); }
     img, svg { max-width: 100%; display: block; }
     a { color: inherit; }
-    h1, h2, h3, p, figure { margin: 0; }
+    h1, h2, h3, h4, p, figure { margin: 0; }
     /* One style for every link inside running text: always underlined; on hover the underline turns cyan. */
-    main p a, .legal a, .more { text-decoration: underline; text-decoration-color: var(--line-2); text-decoration-thickness: 1px; text-underline-offset: 4px; }
-    main p a:hover, .legal a:hover, .more:hover { color: var(--ink); text-decoration-color: var(--cyan); }
+    main p a, .legal a { text-decoration: underline; text-decoration-color: var(--line-2); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+    main p a:hover, .legal a:hover { color: var(--ink); text-decoration-color: var(--cyan); }
     :focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+    .sprite { position: absolute; overflow: hidden; }
+    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
     .skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: var(--void); padding: 10px 18px; border-radius: 999px; font-weight: 600; z-index: 50; }
     .skip:focus { left: 8px; }
     .wrap { width: min(1320px, 100% - var(--gutter) * 2); margin-inline: auto; }
@@ -137,7 +139,7 @@
     .btn-primary:active { transform: none; box-shadow: none; }
     .btn-line { background: transparent; color: var(--ink); border-color: var(--line-2); }
     .btn-line:hover { border-color: var(--ink); }
-    .cta, .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .cta { display: flex; flex-wrap: wrap; gap: 12px; }
 
     /* Tags */
     .tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 12px; border: 1px solid var(--line-2); border-radius: 999px; color: var(--muted); }
@@ -192,45 +194,91 @@
     .split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px clamp(32px, 6vw, 104px); align-items: start; }
     .rail { position: sticky; top: 108px; }
 
-    /* 01 Features: text beside a square screenshot, alternating sides. */
-    .feat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 3vw, 40px); align-items: center; padding: clamp(32px, 4vw, 48px) 0; border-top: 1px solid var(--line); }
-    .feat:first-child { border-top: 0; padding-top: 0; }
-    .feat:last-child { padding-bottom: 0; }
-    .feat:nth-child(even) .shot { order: 2; }
-    .feat .label { color: var(--muted); margin-bottom: 14px; }
-    .feat h3 { font-size: clamp(1.4rem, 2.2vw, 1.9rem); letter-spacing: -.03em; margin-bottom: 12px; }
-    .feat p { color: var(--muted); }
-    .shot img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; outline: 1px solid var(--line-2); outline-offset: -1px; }
-
-    /* 02 Status: one large statement, then what is still to come as a list. */
-    .statement { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; row-gap: 28px; }
-    .statement h2 { grid-column: 1 / span 10; font-size: clamp(2.5rem, 7.2vw, 6.75rem); line-height: .94; letter-spacing: -.05em; }
-    .statement .sub { grid-column: 7 / span 6; margin-top: 0; max-width: none; font-size: 1.05rem; }
-    .todo { margin-top: clamp(48px, 7vw, 96px); }
-    .todo-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line-2); }
-    .plain { list-style: none; margin: 0; padding: 0; }
-    .plain li { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: 24px; align-items: baseline; padding: clamp(18px, 2.4vw, 28px) 0; border-bottom: 1px solid var(--line); }
-    .plain strong { font-size: clamp(1.35rem, 3vw, 2.4rem); line-height: 1.1; letter-spacing: -.035em; font-weight: 600; }
-    .plain span { color: var(--muted); }
-
-    /* 03 Platforms: three columns ruled like a spec sheet, then the web app at full width. */
+    /* Section heads that span the page: number, then the title beside a short note. */
     .sec-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: clamp(32px, 6vw, 104px); row-gap: 20px; align-items: end; margin-bottom: clamp(40px, 5vw, 72px); }
     .sec-head .num { grid-column: 1 / -1; margin-bottom: 4px; }
     .sec-head .sub { margin-top: 0; }
-    .plat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
-    .plat article { display: flex; flex-direction: column; align-items: flex-start; padding: 28px 28px 32px 0; }
-    .plat article + article { padding-left: 28px; border-left: 1px solid var(--line); }
-    .plat h3 { font-size: clamp(2.3rem, 4.4vw, 4rem); line-height: 1; letter-spacing: -.05em; font-weight: 700; margin: 28px 0 16px; }
-    .plat h3 small { display: block; margin-top: 12px; font-size: .72rem; font-weight: 500; line-height: 1.4; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-    .plat p { color: var(--muted); max-width: 26em; }
-    .more { display: inline-block; margin-top: 20px; font-weight: 600; }
-    .wide { margin-top: clamp(40px, 5vw, 72px); }
-    .wide img { width: 100%; height: auto; outline: 1px solid var(--line-2); outline-offset: -1px; }
+    /* Every other section sits on the deeper ink, with the hero's dot grid fading in from the top right. */
+    .sec.alt { background-color: var(--deep); background-image: linear-gradient(200deg, transparent, var(--deep) 45%), radial-gradient(var(--line-2) 1px, transparent 1.5px); background-size: auto, 28px 28px; }
 
-    /* 04 Open source */
-    .oss-group { margin-top: 0; }
-    .oss-group h3 { color: var(--muted); font-size: .72rem; font-weight: 500; line-height: 1.4; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 20px; }
-    .oss-lead { font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.35; letter-spacing: -.02em; color: var(--soft); margin-bottom: clamp(32px, 4vw, 48px); max-width: 26em; }
+    /* Status tags: cyan for available, the magenta dot for in progress, an open dot for planned. */
+    .tag.plan::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
+
+    /* 01 Features: what works today in ruled columns, each opened by a short bar in the trail's colors. */
+    .today { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
+    .today li { padding: 28px 28px 32px 0; }
+    .today li + li { padding-left: 28px; border-left: 1px solid var(--line); }
+    .today li::before { content: ""; display: block; width: 28px; height: 3px; margin-bottom: 22px; background: var(--bar, var(--cyan)); transition: width .2s ease; }
+    .today li:nth-child(2) { --bar: var(--magenta); }
+    .today li:nth-child(3) { --bar: var(--yellow); }
+    .today li:nth-child(4) { --bar: var(--ink); }
+    .today li:hover::before { width: 56px; }
+    .today .label { color: var(--muted); margin-bottom: 10px; }
+    .today h3 { margin-bottom: 10px; }
+    .today p { color: var(--muted); }
+
+    /* Platforms: one panel on the deeper ink, with a column per platform and its testing status. */
+    .avail { margin-top: clamp(56px, 7vw, 96px); padding: clamp(28px, 3.4vw, 48px); background: var(--deep); outline: 1px solid var(--line-2); outline-offset: -1px; }
+    .avail-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: clamp(32px, 6vw, 104px); row-gap: 12px; align-items: end; margin-bottom: clamp(28px, 3.4vw, 44px); }
+    .avail-head h3 { font-size: clamp(1.6rem, 3vw, 2.5rem); line-height: 1.1; letter-spacing: -.035em; font-weight: 700; text-wrap: balance; }
+    .avail-head p { color: var(--muted); }
+    .plat { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
+    .plat li { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 24px 24px 0 0; }
+    .plat li + li { padding-left: 24px; border-left: 1px solid var(--line); }
+    .plat h4 { font-size: clamp(2rem, 3.6vw, 3.25rem); line-height: 1; letter-spacing: -.05em; font-weight: 700; }
+    .plat p { color: var(--muted); max-width: 24em; }
+
+    /* 02 Roadmap: milestones on a dashed timeline. The current one has the pulsing dot and the brightest text, shipped
+       items carry a cyan check, and the release target sits apart in its own panel. */
+    .road { --ms: clamp(1.35rem, 2.4vw, 2rem); --node: calc(var(--ms) * .55); list-style: none; margin: 0; padding: 0; }
+    .road > li { position: relative; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: 24px; row-gap: 12px; padding: 0 0 clamp(32px, 3.6vw, 44px) 44px; }
+    .road > li:last-child { padding-bottom: 0; }
+    .road > li::before { content: ""; position: absolute; z-index: 1; left: 0; top: calc(var(--node) - 8px); width: 16px; height: 16px; border-radius: 50%; background: var(--deep); box-shadow: inset 0 0 0 1.5px var(--line-2); }
+    .road > li:not(:last-child)::after { content: ""; position: absolute; left: 7.5px; top: var(--node); bottom: calc(var(--node) * -1); width: 1px; background: repeating-linear-gradient(to bottom, var(--line-2) 0 4px, transparent 4px 9px); }
+    .road > .now::before { background: var(--magenta); box-shadow: none; animation: pulse 2.4s ease-out infinite; }
+    .road h3 { font-size: var(--ms); line-height: 1.1; letter-spacing: -.035em; color: var(--soft); }
+    .road .now h3 { color: var(--ink); }
+    .road .state { margin-top: 10px; color: var(--muted); }
+    .road .now .state { color: var(--magenta); }
+    .road ul { list-style: none; margin: 0; padding: max(0px, calc(var(--node) - .8rem)) 0 0; display: flex; flex-wrap: wrap; gap: 8px 28px; color: var(--muted); }
+    .road .now ul { color: var(--soft); }
+    /* Markers sit beside the first line of an item, even when it wraps. */
+    .road ul li { display: inline-flex; align-items: flex-start; gap: 10px; }
+    .road ul li::before { content: ""; flex: none; width: 5px; height: 5px; margin-top: calc(.8em - 2.5px); border-radius: 50%; background: var(--line-2); }
+    .road ul .check { margin-top: calc(.8em - 8px); }
+    .road ul .done { color: var(--ink); }
+    .road ul .done::before { content: none; }
+    .road .note { color: var(--muted); font-size: .85em; }
+    .check { flex: none; width: 16px; height: 16px; fill: none; stroke: var(--cyan); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .road-key { display: flex; align-items: center; gap: 10px; margin: clamp(28px, 3vw, 40px) 0 0 44px; color: var(--muted); font-size: .9rem; }
+    .target { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: clamp(28px, 5vw, 80px); row-gap: 20px; align-items: center; margin-top: clamp(56px, 7vw, 96px); padding: clamp(28px, 4vw, 56px); background: var(--bg); outline: 1px solid var(--line-2); outline-offset: -1px; }
+    .target-num { font-size: clamp(5rem, 13vw, 10.5rem); line-height: .85; letter-spacing: -.06em; font-weight: 700; padding-right: .12em; }
+    .target .eyebrow { margin-bottom: 16px; }
+    .target h3 { font-size: clamp(1.6rem, 3vw, 2.5rem); line-height: 1.1; letter-spacing: -.035em; font-weight: 700; text-wrap: balance; }
+    .target-note { margin-top: 14px; color: var(--muted); max-width: 36em; }
+
+    /* 03 Updates: the latest few changelog highlights, the newest dated in cyan. */
+    .log { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-2); }
+    .log li { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 8fr); column-gap: 24px; row-gap: 8px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+    .log .label { color: var(--muted); padding-top: .35em; }
+    .log li:first-child .label { color: var(--cyan); }
+    .log h3 { margin-bottom: 6px; }
+    .log div p { color: var(--muted); }
+
+    /* 04 Community: Discord and Reddit in two ruled columns; X, Bluesky and Threads as small outlined buttons below. */
+    .hubs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
+    .hubs article { display: flex; flex-direction: column; align-items: flex-start; padding: 28px 28px 32px 0; }
+    .hubs article + article { padding-left: 28px; border-left: 1px solid var(--line); }
+    .hubs .icon { width: 32px; height: 32px; fill: currentColor; margin-top: 4px; }
+    .hubs h3 { font-size: clamp(2.3rem, 4.4vw, 4rem); line-height: 1; letter-spacing: -.05em; font-weight: 700; margin: 24px 0 16px; }
+    .hubs h3 small { display: block; margin-top: 12px; color: var(--muted); }
+    .hubs p { flex: 1; color: var(--muted); max-width: 30em; margin-bottom: 24px; }
+    .follow { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; padding-top: clamp(24px, 3vw, 32px); border-top: 1px solid var(--line); }
+    .follow p { color: var(--muted); }
+    .follow b { color: var(--ink); font-weight: 600; }
+    .follow ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn-sm svg { width: 16px; height: 16px; }
+    .elsewhere { margin-top: 20px; color: var(--muted); max-width: 52em; }
 
     /* 05 FAQ */
     details { border-bottom: 1px solid var(--line); }
@@ -248,13 +296,6 @@
     .marquee span { flex: none; padding-right: .5em; font-size: clamp(3rem, 9vw, 8.25rem); line-height: 1; letter-spacing: -.05em; font-weight: 700; white-space: nowrap; color: transparent; -webkit-text-stroke: 1.5px #4a5263; }
     .marquee span b { font-weight: 700; color: var(--ink); -webkit-text-stroke: 0; }
     @keyframes marquee { to { transform: translate3d(-50%, 0, 0); } }
-
-    /* Closing */
-    .closing { border-top: 1px solid var(--line); padding: clamp(72px, 10vw, 152px) 0; }
-    .closing h2 { font-size: clamp(2.6rem, 8.2vw, 7.75rem); line-height: .92; letter-spacing: -.05em; max-width: 11em; text-wrap: balance; }
-    .closing .echo { display: inline-block; }
-    .closing-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 28px 48px; margin-top: clamp(36px, 5vw, 64px); }
-    .closing .sub { margin-top: 0; font-size: 1.1rem; color: var(--soft); }
 
     /* Footer */
     footer { background: var(--deep); border-top: 1px solid var(--line-2); color: var(--muted); font-size: .9rem; }
@@ -281,14 +322,13 @@
     .signature img { position: absolute; left: -8.64%; top: -51.79%; width: 117.21%; max-width: none; height: auto; }
 
     @media (max-width: 900px) {
-      .split, .sec-head, .foot { grid-template-columns: minmax(0, 1fr); }
+      .split, .sec-head, .foot, .avail-head { grid-template-columns: minmax(0, 1fr); }
       .rail { position: static; }
       .hero-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 32px; align-items: center; }
-      .statement h2, .statement .sub { grid-column: 1 / -1; }
-      .plat { grid-template-columns: minmax(0, 1fr); }
-      .plat article { padding: 28px 0 32px; }
-      .plat article + article { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
-      .plat h3 { margin-top: 20px; }
+      .today { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .today li, .today li + li { padding: 24px 24px 28px 0; border-left: 0; }
+      .today li:nth-child(even) { padding-left: 24px; padding-right: 0; border-left: 1px solid var(--line); }
+      .today li:nth-child(n+3) { border-top: 1px solid var(--line); }
     }
     @media (max-width: 720px) {
       :root { --gutter: 20px; }
@@ -296,19 +336,31 @@
       .plate { justify-self: start; margin-left: auto; width: min(100% - 30px, 340px); }
       .band { --h: 144px; }
       .statusbar .platforms { display: none; }
-      .plain li { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
-      .cta .btn, .closing .btn { flex: 1 1 auto; }
+      .plat { grid-template-columns: minmax(0, 1fr); border-top: 0; }
+      .plat li, .plat li + li { gap: 12px; padding: 20px 0; border-left: 0; border-top: 1px solid var(--line-2); }
+      .plat li:last-child { padding-bottom: 0; }
+      .road > li { grid-template-columns: minmax(0, 1fr); padding-left: 36px; }
+      .road ul { padding-top: 0; }
+      .road-key { margin-left: 36px; }
+      .target { grid-template-columns: minmax(0, 1fr); }
+      .log li { grid-template-columns: minmax(0, 1fr); }
+      .log .label { padding-top: 0; }
+      .hubs { grid-template-columns: minmax(0, 1fr); }
+      .hubs article { padding: 28px 0 32px; }
+      .hubs article + article { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+      .cta .btn, .hubs .btn { flex: 1 1 auto; }
+      .hubs .btn { align-self: stretch; }
     }
     @media (max-width: 560px) {
-      .feat { grid-template-columns: minmax(0, 1fr); }
-      .feat:nth-child(even) .shot { order: 0; }
-      .shot { width: min(100%, 420px); }
+      .today { grid-template-columns: minmax(0, 1fr); }
+      .today li, .today li + li, .today li:nth-child(even) { padding: 24px 0 28px; border-left: 0; }
+      .today li + li { border-top: 1px solid var(--line); }
     }
     .paused .band-track, .paused .marquee-track { animation-play-state: paused; }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      .dot, .band-track, .marquee-track { animation: none; }
-      .btn { transition: none; }
+      .dot, .band-track, .marquee-track, .road > .now::before { animation: none; }
+      .btn, .today li::before { transition: none; }
       .btn-primary:hover, .btn-primary:focus-visible { transform: none; }
     }
   </style>
@@ -349,7 +401,7 @@
         "name": "Braindance",
         "url": "https://app.braindancegg.com/",
         "image": "https://braindancegg.com/og-image.png",
-        "description": "Braindance is a game discovery app that helps you find what to play next. Browse popular and upcoming games, explore similar titles and find giveaways. The Android, iOS and Web apps are open source. Currently in development; the web app is experimental and Android and iOS store releases are planned.",
+        "description": "Braindance is a game discovery app that helps you find what to play next. Browse popular and upcoming games, explore similar titles and find giveaways. The Android, iOS and Web apps are open source. Currently in development: the web app is available as an experimental version, and the Android and iOS apps are in alpha, with testing starting on Android.",
         "applicationCategory": "GameApplication",
         "operatingSystem": "Android, iOS, Web",
         "browserRequirements": "The web app requires a modern browser with WebAssembly GC (WasmGC) support",
@@ -361,19 +413,19 @@
         "featureList": [
           "Popular Right Now and Most Anticipated games",
           "Game details and similar games",
-          "Giveaways with instructions and claim links"
+          "Giveaways with instructions and claim links",
+          "Shareable links to games and giveaways"
         ]
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           { "@type": "Question", "name": "What is Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is a game discovery app that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place." } },
-          { "@type": "Question", "name": "Is Braindance available yet?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is in development. The web app is available now as an experimental version. Android and iOS store releases are planned, with no confirmed date." } },
-          { "@type": "Question", "name": "Can I use Braindance on my phone?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Open the web app in your phone's browser; it adapts to small screens. Android and iOS store apps are planned." } },
-          { "@type": "Question", "name": "Which browsers does the web app support?", "acceptedAnswer": { "@type": "Answer", "text": "An up-to-date version of Chrome, Edge, Firefox or Safari, on a computer or phone; older browser versions cannot run it. The web app is experimental, so its behavior, speed and features may change." } },
+          { "@type": "Question", "name": "When will Braindance be released?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is in development and targeting Q2 2027 for version 1.0; that is a target, not a fixed date, and development continues after it. The web app is available now at app.braindancegg.com as an experimental version." } },
+          { "@type": "Question", "name": "Can I use Braindance on my phone?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Open the web app in an up-to-date Chrome, Edge, Firefox or Safari on your phone or computer; older browser versions cannot run it. The Android and iOS apps are already running: Android alpha testing comes next, through Firebase App Distribution, and iOS testing follows." } },
           { "@type": "Question", "name": "Where does the game and giveaway data come from?", "acceptedAnswer": { "@type": "Answer", "text": "Game data is powered by IGDB, and giveaways come from GamerPower." } },
-          { "@type": "Question", "name": "Is Braindance open source?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Android, iOS and Web apps are open source under the MPL-2.0 license, and their code is on GitHub. The server that provides game and giveaway data is run privately." } },
-          { "@type": "Question", "name": "How can I help improve Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "Report a bug, suggest a feature or share usability feedback on GitHub; no technical setup is needed. Developers can also contribute code." } }
+          { "@type": "Question", "name": "Is Braindance open source?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Android, iOS and Web apps are open source under the MPL-2.0 license, and their code is on GitHub." } },
+          { "@type": "Question", "name": "How can I help improve Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "Join the Braindance Discord or r/BraindanceGG on Reddit to try early versions, share feedback and suggest features; no technical knowledge is needed. You can also report bugs on GitHub, and developers can contribute code." } }
         ]
       }
     ]
@@ -382,6 +434,14 @@
 </head>
 
 <body>
+  <!-- Icons used more than once on the page. -->
+  <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <symbol id="i-discord" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 0 0 -4.8851-1.5152.0741.0741 0 0 0 -.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 0 0 -.0785-.037 19.7363 19.7363 0 0 0 -4.8852 1.515.0699.0699 0 0 0 -.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 0 0 .0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 0 0 .0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 0 0 -.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 0 1 -.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 0 1 .0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 0 1 .0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 0 1 -.0066.1276 12.2986 12.2986 0 0 1 -1.873.8914.0766.0766 0 0 0 -.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 0 0 .0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 0 0 .0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 0 0 -.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></symbol>
+    <symbol id="i-reddit" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286C.775 23.225 1.097 24 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0Zm4.388 3.199c1.104 0 1.999.895 1.999 1.999 0 1.105-.895 2-1.999 2-.946 0-1.739-.657-1.947-1.539v.002c-1.147.162-2.032 1.15-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363.473-.363 1.064-.58 1.707-.58 1.547 0 2.802 1.254 2.802 2.802 0 1.117-.655 2.081-1.601 2.531-.088 3.256-3.637 5.876-7.997 5.876-4.361 0-7.905-2.617-7.998-5.87-.954-.447-1.614-1.415-1.614-2.538 0-1.548 1.255-2.802 2.803-2.802.645 0 1.239.218 1.712.585 1.275-.79 2.881-1.291 4.64-1.365v-.01c0-1.663 1.263-3.034 2.88-3.207.188-.911.993-1.595 1.959-1.595Zm-8.085 8.376c-.784 0-1.459.78-1.506 1.797-.047 1.016.64 1.429 1.426 1.429.786 0 1.371-.369 1.418-1.385.047-1.017-.553-1.841-1.338-1.841Zm7.406 0c-.786 0-1.385.824-1.338 1.841.047 1.017.634 1.385 1.418 1.385.785 0 1.473-.413 1.426-1.429-.046-1.017-.721-1.797-1.506-1.797Zm-3.703 4.013c-.974 0-1.907.048-2.77.135-.147.015-.241.168-.183.305.483 1.154 1.622 1.964 2.953 1.964 1.33 0 2.47-.81 2.953-1.964.057-.137-.037-.29-.184-.305-.863-.087-1.795-.135-2.769-.135Z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></symbol>
+    <symbol id="i-bluesky" viewBox="0 0 24 24"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></symbol>
+    <symbol id="i-threads" viewBox="0 0 24 24"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z"/></symbol>
+  </svg>
   <a class="skip" href="#main">Skip to content</a>
 
   <div class="statusbar label">
@@ -396,8 +456,8 @@
       <a class="brand" href="/" aria-label="Braindance home"><img src="/wordmark.svg" alt="Braindance" width="152" height="44"></a>
       <nav class="links label" aria-label="Primary">
         <a href="#features">Features</a>
-        <a href="#status">Status</a>
-        <a href="#platforms">Platforms</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#community">Community</a>
         <a href="#faq">FAQ</a>
         <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>
         <a class="btn btn-primary btn-sm" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
@@ -411,9 +471,9 @@
       <div class="wrap">
         <ul>
           <li><a href="#features">Features</a></li>
-          <li><a href="#status">Status</a></li>
-          <li><a href="#platforms">Platforms</a></li>
-          <li><a href="#open-source">Open source</a></li>
+          <li><a href="#roadmap">Roadmap</a></li>
+          <li><a href="#updates">Updates</a></li>
+          <li><a href="#community">Community</a></li>
           <li><a href="#faq">FAQ</a></li>
           <li><a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a></li>
         </ul>
@@ -434,12 +494,12 @@
               Open the web app
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
             </a>
-            <a class="btn btn-line" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
-              View on GitHub
+            <a class="btn btn-line" href="https://discord.gg/XawnYAVdzj" rel="noopener" target="_blank">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><use href="#i-discord"/></svg>
+              Join the Discord
             </a>
           </div>
-          <p class="fine">Use it in your browser today. Android and iOS store releases are planned.</p>
+          <p class="fine">Use it in your browser today. Android alpha testing comes next, then iOS.</p>
         </div>
         <figure class="plate">
           <div class="frame"><img src="/img/app-home.webp" srcset="/img/app-home-560.webp 560w, /img/app-home.webp 780w" sizes="(min-width: 721px) 372px, 340px" alt="The Braindance Home screen on a phone, with a row of game covers under Popular Right Now" width="780" height="1040" fetchpriority="high"></div>
@@ -454,121 +514,205 @@
     </div>
 
     <section class="sec" id="features" aria-labelledby="features-title">
-      <div class="wrap split">
-        <div class="rail">
-          <p class="num label"><span>01</span><i>Features</i></p>
-          <h2 id="features-title">What you can do today</h2>
-          <p class="sub">The current version focuses on discovery. Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>.</p>
-        </div>
-        <div>
-          <article class="feat">
-            <figure class="shot"><img src="/img/app-popular.webp" alt="The Home screen in the app: a row of game covers with their names under Popular Right Now" width="780" height="780" loading="lazy" decoding="async"></figure>
-            <div>
-              <p class="label">Browse</p>
-              <h3>Popular and upcoming games</h3>
-              <p>See what everyone is playing in Popular Right Now, and what to look forward to in Most Anticipated.</p>
-            </div>
-          </article>
-          <article class="feat">
-            <figure class="shot"><img src="/img/app-details.webp" alt="A game page in the app: cover, release date, platforms, genres and description" width="780" height="780" loading="lazy" decoding="async"></figure>
-            <div>
-              <p class="label">Explore</p>
-              <h3>Game details and similar games</h3>
-              <p>Open any game for its details, then jump to similar titles when you want more of the same.</p>
-            </div>
-          </article>
-          <article class="feat">
-            <figure class="shot"><img src="/img/app-giveaways.webp" alt="A giveaway page in the app: the game's artwork, its price marked as free, and how many people claimed it" width="780" height="780" loading="lazy" decoding="async"></figure>
-            <div>
-              <p class="label">Claim</p>
-              <h3>Game giveaways</h3>
-              <p>Browse current giveaways from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>, read the instructions and follow the link to claim.</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="sec" id="status" aria-labelledby="status-title">
       <div class="wrap">
-        <p class="num label"><span>02</span><i>Status</i></p>
-        <div class="statement">
-          <h2 id="status-title">Braindance is in development</h2>
-          <p class="sub">It is actively built toward a public launch, with no confirmed release date, so features and behavior may change. Updates are tracked in the <a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">changelog</a>.</p>
+        <div class="sec-head">
+          <p class="num label"><span>01</span><i>Features</i></p>
+          <h2 id="features-title">What you can try today</h2>
+          <p class="sub">Everything here works in the web app now, and the Android and iOS apps share the same features. Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>.</p>
         </div>
-        <div class="todo">
-          <div class="todo-head">
-            <h3>Still to come</h3>
-            <span class="tag label">Not available yet</span>
+        <ul class="today">
+          <li>
+            <p class="label">Browse</p>
+            <h3>Popular and upcoming games</h3>
+            <p>Popular Right Now shows what people are playing and why each game is trending. Most Anticipated shows what is coming.</p>
+          </li>
+          <li>
+            <p class="label">Explore</p>
+            <h3>Game details</h3>
+            <p>Release date, platforms, genres, description and store links, plus similar games to try next.</p>
+          </li>
+          <li>
+            <p class="label">Claim</p>
+            <h3>Game giveaways</h3>
+            <p>Current giveaways from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>, with instructions and a link to claim.</p>
+          </li>
+          <li>
+            <p class="label">Share</p>
+            <h3>Links to games</h3>
+            <p>Share a game with a link that opens its page in the web app. Game and giveaway pages can be bookmarked.</p>
+          </li>
+        </ul>
+        <!-- Platform availability: update the tag and line of a platform when its testing status changes. -->
+        <div class="avail">
+          <div class="avail-head">
+            <h3 id="platforms-title">One app for Web, Android and iOS</h3>
+            <p>The same features and the same look on every platform. Only how soon you can get it differs.</p>
           </div>
-          <ul class="plain">
-            <li><strong>Personal tracking and collections</strong><span>Save and organize games</span></li>
-            <li><strong>Search results</strong><span>Look up a specific game</span></li>
-            <li><strong>News</strong><span>Updates from the game world</span></li>
-            <li><strong>Account management</strong><span>Sign in and manage your profile</span></li>
+          <ul class="plat" aria-labelledby="platforms-title">
+            <li>
+              <h4>Web</h4>
+              <span class="tag live label">Available now</span>
+              <p>Open it in any modern browser, on a computer or phone. Nothing to install.</p>
+            </li>
+            <li>
+              <h4>Android</h4>
+              <span class="tag label">Alpha testing next</span>
+              <p>The app is already running. Alpha testing starts here first; join the Discord to hear when it opens.</p>
+            </li>
+            <li>
+              <h4>iOS</h4>
+              <span class="tag plan label">After Android</span>
+              <p>The app is already running too. Testing access follows Android.</p>
+            </li>
           </ul>
         </div>
       </div>
     </section>
 
-    <section class="sec" id="platforms" aria-labelledby="platforms-title">
+    <section class="sec alt" id="roadmap" aria-labelledby="roadmap-title">
       <div class="wrap">
         <div class="sec-head">
-          <p class="num label"><span>03</span><i>Platforms</i></p>
-          <h2 id="platforms-title">Android, iOS and Web</h2>
-          <p class="sub">All three apps are built from one shared codebase.</p>
+          <p class="num label"><span>02</span><i>Roadmap</i></p>
+          <h2 id="roadmap-title">What comes next</h2>
+          <p class="sub">The milestones the work focuses on next. They are not the whole plan for 1.0, and more features and improvements will follow.</p>
         </div>
-        <div class="plat">
-          <article>
-            <span class="tag live label">Available now</span>
-            <h3>Web <small>Experimental</small></h3>
-            <p>Open it in your browser, no installation needed. Works in up-to-date Chrome, Edge, Firefox and Safari.</p>
-            <a class="more" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
-          </article>
-          <article>
-            <span class="tag label">Coming soon</span>
-            <h3>Android</h3>
-            <p>A store release is planned. Until then, open the web app in your phone's browser.</p>
-          </article>
-          <article>
-            <span class="tag label">Coming soon</span>
-            <h3>iOS</h3>
-            <p>A store release is planned. Until then, open the web app in your phone's browser.</p>
-          </article>
+        <!-- One <li> per milestone, without dates. The current milestone gets class="now" and "In progress"; the others
+             say "Planned". Mark shipped items class="done" with the check, and wrap optional ones with the note in a <span>. -->
+        <ol class="road">
+          <li class="now">
+            <div>
+              <h3>First Alpha</h3>
+              <p class="state label">In progress</p>
+            </div>
+            <ul>
+              <li>Game compilations on Home</li>
+              <li>Game search</li>
+              <li>Paginated game lists</li>
+              <li class="done"><svg class="check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Game sharing<span class="sr-only"> (available now)</span></li>
+              <li class="done"><svg class="check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Links to games on the web<span class="sr-only"> (available now)</span></li>
+              <li>Links that open the Android and iOS apps</li>
+              <li><span>Gaming events on Home <span class="note">(optional)</span></span></li>
+            </ul>
+          </li>
+          <li>
+            <div>
+              <h3>User Accounts</h3>
+              <p class="state label">Planned</p>
+            </div>
+            <ul>
+              <li>Sign-in</li>
+              <li>Personal profiles</li>
+            </ul>
+          </li>
+          <li>
+            <div>
+              <h3>Game Collections</h3>
+              <p class="state label">Planned</p>
+            </div>
+            <ul>
+              <li>Personal library</li>
+              <li>Wishlist</li>
+              <li>Playing and completed games</li>
+            </ul>
+          </li>
+          <li>
+            <div>
+              <h3>Release Calendar</h3>
+              <p class="state label">Planned</p>
+            </div>
+            <ul>
+              <li>Upcoming game releases</li>
+              <li>Calendar navigation</li>
+              <li>Advanced search and tag filters</li>
+              <li>Improved game details</li>
+            </ul>
+          </li>
+          <li>
+            <div>
+              <h3>Better Discovery</h3>
+              <p class="state label">Planned</p>
+            </div>
+            <ul>
+              <li>A gaming news feed you can customize</li>
+            </ul>
+          </li>
+        </ol>
+        <p class="road-key"><svg class="check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Already available</p>
+        <div class="target">
+          <p class="target-num echo" aria-hidden="true">1.0</p>
+          <div>
+            <p class="eyebrow label">Release target</p>
+            <h3>Targeting Q2 2027 for version 1.0</h3>
+            <p class="target-note">Version 1.0 is the first full release. It is a target, not a fixed date, and development continues after it.</p>
+          </div>
         </div>
-        <figure class="wide">
-          <img src="/img/app-desktop.webp" srcset="/img/app-desktop.webp 1440w, /img/app-desktop@2x.webp 2880w" sizes="(min-width: 1368px) 1320px, calc(100vw - 48px)" alt="The Braindance web app on a computer: a sidebar with the Braindance logo, a Discover your next obsession banner, and game covers under Popular Right Now" width="1440" height="900" loading="lazy" decoding="async">
-          <figcaption class="label">The web app, on a computer</figcaption>
-        </figure>
       </div>
     </section>
 
-    <section class="sec" id="open-source" aria-labelledby="oss-title">
+    <section class="sec" id="updates" aria-labelledby="updates-title">
       <div class="wrap split">
         <div class="rail">
-          <p class="num label"><span>04</span><i>Open source</i></p>
-          <h2 id="oss-title">Open source</h2>
+          <p class="num label"><span>03</span><i>Updates</i></p>
+          <h2 id="updates-title">Recent updates</h2>
+          <p class="sub">The latest highlights. Every change is listed in the <a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">full changelog</a>.</p>
         </div>
-        <div>
-          <p class="oss-lead">The Android, iOS and Web apps are open source: anyone can read their code on GitHub and suggest improvements. The server that provides game and giveaway data is run privately.</p>
-          <div class="oss-group">
-            <h3>Get involved</h3>
-            <div class="actions">
-              <a class="btn btn-primary" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
-                Share feedback
-              </a>
-              <a class="btn btn-line" href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5M12 16.5v.5"/><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
-                Report a bug
-              </a>
-              <a class="btn btn-line" href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
-                View the code
-              </a>
+        <!-- The three latest meaningful product updates from CHANGELOG.md: add the newest first, then drop the oldest. -->
+        <ol class="log">
+          <li>
+            <p class="label"><time datetime="2026-11-15">Nov 15, 2026</time> &middot; 0.18</p>
+            <div>
+              <h3>A calmer look and a community</h3>
+              <p>Softer covers and cards, calmer surfaces and a clear main button on every screen. Discord and Reddit are now linked from Profile.</p>
             </div>
-          </div>
+          </li>
+          <li>
+            <p class="label"><time datetime="2026-11-14">Nov 14, 2026</time> &middot; 0.17</p>
+            <div>
+              <h3>The new Braindance brand</h3>
+              <p>A new logo and app icon, a darker background, and the brand's cyan, magenta and yellow.</p>
+            </div>
+          </li>
+          <li>
+            <p class="label"><time datetime="2026-11-13">Nov 13, 2026</time> &middot; 0.15</p>
+            <div>
+              <h3>Share a game</h3>
+              <p>A Share button on every game page sends a link that opens the game in the web app.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="sec alt" id="community" aria-labelledby="community-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="num label"><span>04</span><i>Community</i></p>
+          <h2 id="community-title">Help shape Braindance</h2>
+          <p class="sub">Alpha testing, feedback, feature ideas and conversations about games happen on Discord and Reddit. Anyone can join; no technical knowledge is needed.</p>
         </div>
+        <div class="hubs">
+          <article>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-discord"/></svg>
+            <h3>Discord <small class="label">Alpha testing and chat</small></h3>
+            <p>Try early versions, report what you find and talk about games with other players.</p>
+            <a class="btn btn-primary" href="https://discord.gg/XawnYAVdzj" rel="noopener" target="_blank">Join the Discord</a>
+          </article>
+          <article>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-reddit"/></svg>
+            <h3>Reddit <small class="label">r/BraindanceGG</small></h3>
+            <p>Suggest features, share feedback and discuss ideas in the open.</p>
+            <a class="btn btn-line" href="https://www.reddit.com/r/BraindanceGG/" rel="noopener" target="_blank">Visit r/BraindanceGG</a>
+          </article>
+        </div>
+        <div class="follow">
+          <p id="news-title">Follow <b>@braindancegg</b> for news</p>
+          <ul aria-labelledby="news-title">
+            <li><a class="btn btn-line btn-sm" href="https://x.com/braindancegg" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><use href="#i-x"/></svg>X</a></li>
+            <li><a class="btn btn-line btn-sm" href="https://bsky.app/profile/braindancegg.com" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><use href="#i-bluesky"/></svg>Bluesky</a></li>
+            <li><a class="btn btn-line btn-sm" href="https://www.threads.com/@braindancegg" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><use href="#i-threads"/></svg>Threads</a></li>
+          </ul>
+        </div>
+        <p class="elsewhere">The apps are open source: <a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">share feedback</a> or <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">read the code</a> on GitHub.</p>
       </div>
     </section>
 
@@ -581,12 +725,11 @@
         </div>
         <div>
           <details><summary>What is Braindance?</summary><p>Braindance is a game discovery app that helps you find what to play next. You can browse popular and upcoming games, explore similar titles, and find giveaways in one place.</p></details>
-          <details><summary>Is Braindance available yet?</summary><p>Braindance is in development. The web app is available now at <a href="https://app.braindancegg.com/" rel="noopener" target="_blank">app.braindancegg.com</a> as an experimental version. Android and iOS store releases are planned, with no confirmed date.</p></details>
-          <details><summary>Can I use Braindance on my phone?</summary><p>Yes. Open the web app in your phone's browser; it adapts to small screens. Android and iOS store apps are planned.</p></details>
-          <details><summary>Which browsers does the web app support?</summary><p>An up-to-date version of Chrome, Edge, Firefox or Safari, on a computer or phone; older browser versions cannot run it. The web app is experimental, so its behavior, speed and features may change.</p></details>
+          <details><summary>When will Braindance be released?</summary><p>Braindance is in development and targeting Q2 2027 for version 1.0; that is a target, not a fixed date, and development continues after it. The web app is available now at <a href="https://app.braindancegg.com/" rel="noopener" target="_blank">app.braindancegg.com</a> as an experimental version.</p></details>
+          <details><summary>Can I use Braindance on my phone?</summary><p>Yes. Open the web app in an up-to-date Chrome, Edge, Firefox or Safari on your phone or computer; older browser versions cannot run it. The Android and iOS apps are already running: Android alpha testing comes next, through Firebase App Distribution, and iOS testing follows.</p></details>
           <details><summary>Where does the game and giveaway data come from?</summary><p>Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>, and giveaways come from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>.</p></details>
-          <details><summary>Is Braindance open source?</summary><p>Yes. The Android, iOS and Web apps are open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license, and their code is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>. The server that provides game and giveaway data is run privately.</p></details>
-          <details><summary>How can I help improve Braindance?</summary><p><a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">Report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">suggest a feature or share usability feedback</a> on GitHub; no technical setup is needed. Developers can also <a href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">contribute code</a>.</p></details>
+          <details><summary>Is Braindance open source?</summary><p>Yes. The Android, iOS and Web apps are open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license, and their code is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>.</p></details>
+          <details><summary>How can I help improve Braindance?</summary><p>Join the <a href="https://discord.gg/XawnYAVdzj" rel="noopener" target="_blank">Braindance Discord</a> or <a href="https://www.reddit.com/r/BraindanceGG/" rel="noopener" target="_blank">r/BraindanceGG</a> on Reddit to try early versions, share feedback and suggest features; no technical knowledge is needed. You can also <a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">report bugs</a> on GitHub, and developers can <a href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">contribute code</a>.</p></details>
         </div>
       </div>
     </section>
@@ -598,18 +741,6 @@
       </div>
     </div>
 
-    <section class="closing" aria-labelledby="cta-title">
-      <div class="wrap">
-        <h2 id="cta-title">Try it while it is still <span class="echo">taking shape</span></h2>
-        <div class="closing-row">
-          <p class="sub">Open the web app, then tell us what you would change.</p>
-          <div class="cta">
-            <a class="btn btn-primary" href="https://app.braindancegg.com/" rel="noopener" target="_blank">Open the web app</a>
-            <a class="btn btn-line" href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">Share feedback</a>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer>
@@ -621,11 +752,11 @@
           <nav class="social" aria-labelledby="follow-title">
             <p id="follow-title">Follow <span class="handle">@braindancegg</span></p>
             <ul>
-              <li><a href="https://discord.gg/XawnYAVdzj" rel="noopener" target="_blank" aria-label="Join the Braindance Discord community" title="Discord"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.317 4.3698a19.7913 19.7913 0 0 0 -4.8851-1.5152.0741.0741 0 0 0 -.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 0 0 -.0785-.037 19.7363 19.7363 0 0 0 -4.8852 1.515.0699.0699 0 0 0 -.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 0 0 .0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 0 0 .0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 0 0 -.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 0 1 -.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 0 1 .0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 0 1 .0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 0 1 -.0066.1276 12.2986 12.2986 0 0 1 -1.873.8914.0766.0766 0 0 0 -.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 0 0 .0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 0 0 .0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 0 0 -.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a></li>
-              <li><a href="https://www.reddit.com/r/BraindanceGG/" rel="me noopener" target="_blank" aria-label="Braindance on Reddit, r/BraindanceGG" title="Reddit"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286C.775 23.225 1.097 24 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0Zm4.388 3.199c1.104 0 1.999.895 1.999 1.999 0 1.105-.895 2-1.999 2-.946 0-1.739-.657-1.947-1.539v.002c-1.147.162-2.032 1.15-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363.473-.363 1.064-.58 1.707-.58 1.547 0 2.802 1.254 2.802 2.802 0 1.117-.655 2.081-1.601 2.531-.088 3.256-3.637 5.876-7.997 5.876-4.361 0-7.905-2.617-7.998-5.87-.954-.447-1.614-1.415-1.614-2.538 0-1.548 1.255-2.802 2.803-2.802.645 0 1.239.218 1.712.585 1.275-.79 2.881-1.291 4.64-1.365v-.01c0-1.663 1.263-3.034 2.88-3.207.188-.911.993-1.595 1.959-1.595Zm-8.085 8.376c-.784 0-1.459.78-1.506 1.797-.047 1.016.64 1.429 1.426 1.429.786 0 1.371-.369 1.418-1.385.047-1.017-.553-1.841-1.338-1.841Zm7.406 0c-.786 0-1.385.824-1.338 1.841.047 1.017.634 1.385 1.418 1.385.785 0 1.473-.413 1.426-1.429-.046-1.017-.721-1.797-1.506-1.797Zm-3.703 4.013c-.974 0-1.907.048-2.77.135-.147.015-.241.168-.183.305.483 1.154 1.622 1.964 2.953 1.964 1.33 0 2.47-.81 2.953-1.964.057-.137-.037-.29-.184-.305-.863-.087-1.795-.135-2.769-.135Z"/></svg></a></li>
-              <li><a href="https://x.com/braindancegg" rel="me noopener" target="_blank" aria-label="Braindance on X, @braindancegg" title="X"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg></a></li>
-              <li><a href="https://bsky.app/profile/braindancegg.com" rel="me noopener" target="_blank" aria-label="Braindance on Bluesky, @braindancegg.com" title="Bluesky"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg></a></li>
-              <li><a href="https://www.threads.com/@braindancegg" rel="me noopener" target="_blank" aria-label="Braindance on Threads, @braindancegg" title="Threads"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z"/></svg></a></li>
+              <li><a href="https://discord.gg/XawnYAVdzj" rel="noopener" target="_blank" aria-label="Join the Braindance Discord community" title="Discord"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-discord"/></svg></a></li>
+              <li><a href="https://www.reddit.com/r/BraindanceGG/" rel="me noopener" target="_blank" aria-label="Braindance on Reddit, r/BraindanceGG" title="Reddit"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-reddit"/></svg></a></li>
+              <li><a href="https://x.com/braindancegg" rel="me noopener" target="_blank" aria-label="Braindance on X, @braindancegg" title="X"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></a></li>
+              <li><a href="https://bsky.app/profile/braindancegg.com" rel="me noopener" target="_blank" aria-label="Braindance on Bluesky, @braindancegg.com" title="Bluesky"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-bluesky"/></svg></a></li>
+              <li><a href="https://www.threads.com/@braindancegg" rel="me noopener" target="_blank" aria-label="Braindance on Threads, @braindancegg" title="Threads"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-threads"/></svg></a></li>
             </ul>
           </nav>
         </div>

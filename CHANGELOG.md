@@ -14,6 +14,10 @@ The Braindance API is versioned and released separately.
 ### Website and documentation
 
 - Add the permanent Discord invite to braindancegg.com and put Discord and Reddit first in its social links.
+- Shorten braindancegg.com: what you can try today replaces the feature screenshots, and a new panel shows that
+  Braindance is one app for Web, Android, and iOS, with Android alpha testing next and iOS after it.
+- Add a roadmap timeline with each milestone's status, the Q2 2027 target for version 1.0, the latest updates, and a
+  Community section that puts Discord and Reddit first, with X, Bluesky, and Threads as smaller buttons.
 
 ## 0.18.0 — 2026-11-15
 
