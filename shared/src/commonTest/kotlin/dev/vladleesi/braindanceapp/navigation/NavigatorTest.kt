@@ -8,6 +8,8 @@ import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -56,5 +58,41 @@ class NavigatorTest {
         navigator.navigate(GameDetailsRoute(1))
 
         assertEquals(listOf(home, GameDetailsRoute(1), GameDetailsRoute(1)), navigator.stack(home))
+    }
+
+    @Test
+    fun tappingTheCurrentTabLeavesAScreenOpenedOnIt() {
+        val navigator = navigator()
+        navigator.navigate(discover)
+        navigator.navigate(ProfileRoute)
+
+        navigator.selectTab(discover)
+
+        assertEquals(listOf(discover), navigator.stack(discover))
+        assertEquals(discover, navigator.state.topLevelRoute)
+    }
+
+    @Test
+    fun tappingDiscoverOnItsRootScreenFocusesSearch() =
+        runTest {
+            val navigator = navigator()
+            navigator.navigate(discover)
+
+            navigator.selectTab(discover)
+
+            assertEquals(listOf(discover), navigator.stack(discover))
+            assertEquals(true, navigator.resultsFlow(BottomBarRoute.DiscoverRoute.RESULT_KEY).first())
+        }
+
+    @Test
+    fun tappingAnotherTabKeepsItsStack() {
+        val navigator = navigator()
+        navigator.navigate(GameDetailsRoute(1))
+        navigator.navigate(discover)
+
+        navigator.selectTab(home)
+
+        assertEquals(home, navigator.state.topLevelRoute)
+        assertEquals(listOf(home, GameDetailsRoute(1)), navigator.stack(home))
     }
 }

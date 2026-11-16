@@ -270,13 +270,21 @@ class NavEntryViewModelScopeTest {
                     recorder.navigator.navigate(GameDetailsRoute(2))
                 }
                 waitForIdle()
+                // The first tap returns to Discover's root screen; the second focuses its search field.
                 onNodeWithText("Discover").performClick()
                 runOnIdle {
                     assertEquals(
-                        GameDetailsRoute(2),
+                        listOf(BottomBarRoute.DiscoverRoute),
                         recorder.navigator.state.backStacks[BottomBarRoute.DiscoverRoute]
-                            ?.last(),
+                            ?.toList(),
                     )
+                    assertEquals(
+                        false,
+                        runBlocking { recorder.navigator.resultsFlow(BottomBarRoute.DiscoverRoute.RESULT_KEY).first() },
+                    )
+                }
+                onNodeWithText("Discover").performClick()
+                runOnIdle {
                     assertEquals(
                         true,
                         runBlocking { recorder.navigator.resultsFlow(BottomBarRoute.DiscoverRoute.RESULT_KEY).first() },

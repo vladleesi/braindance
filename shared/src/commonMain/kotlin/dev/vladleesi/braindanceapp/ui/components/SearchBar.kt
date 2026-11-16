@@ -2,81 +2,187 @@
 
 package dev.vladleesi.braindanceapp.ui.components
 
+import Search
+import X
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
+import dev.vladleesi.braindanceapp.ui.style.CornerShapes
+import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.accent
+import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.utils.focusRing
+import dev.vladleesi.braindanceapp.utils.isFocusVisible
+import androidx.compose.foundation.clickable as foundationClickable
 
+// Compact next to Material's 56 dp text field, and still the 44 dp touch height of iOS controls. The icon slots span
+// the field's height, so their touch targets are as tall as the field.
+private val SearchFieldHeight = 44.dp
+private val SearchIconSlotWidth = 44.dp
+private val SearchIconSize = 20.dp
+private val SearchProgressSize = 18.dp
+
+/**
+ * A compact pill-shaped search field. The caller owns [query], so it can clear, restore, or act on it.
+ *
+ * [leadingIcon] defaults to a decorative search icon. Slots take a [SearchFieldIcon], which is a button when it has
+ * a click action, or a [SearchFieldProgress]; an empty [trailingIcon] leaves room for the text instead.
+ */
 @Composable
 fun SearchBar(
-    modifier: Modifier = Modifier,
-    placeholder: String = "Search for games",
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    query: String,
     onQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    leadingIcon: @Composable () -> Unit = { SearchFieldIcon(imageVector = Search) },
+    trailingIcon: @Composable () -> Unit = {},
 ) {
-    var query by rememberSaveable { mutableStateOf("") }
-    TextField(
+    val interactionSource = remember { MutableInteractionSource() }
+    BasicTextField(
         value = query,
-        onValueChange = { value ->
-            query = value
-            onQueryChange(value)
-        },
+        onValueChange = onQueryChange,
+        modifier = modifier.fillMaxWidth().height(SearchFieldHeight),
         singleLine = true,
-        textStyle = MaterialTheme.typography.body1,
-        placeholder = {
-            Text(
-                text = placeholder,
-                style = MaterialTheme.typography.body2,
-                color = secondaryText,
-            )
+        textStyle = MaterialTheme.typography.body2.copy(color = white),
+        cursorBrush = SolidColor(accent),
+        // Game titles are names, so autocorrect would only rewrite them.
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search, autoCorrectEnabled = false),
+        keyboardActions = KeyboardActions(onSearch = { onSearch(query) }),
+        interactionSource = interactionSource,
+        decorationBox = { innerTextField ->
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .background(secondary, CornerShapes.pill)
+                        .focusRing(visible = interactionSource.isFocusVisible(), shape = CornerShapes.pill),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                leadingIcon()
+                Box(
+                    modifier = Modifier.weight(1f).padding(end = Dimens.compact),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    if (query.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            style = MaterialTheme.typography.body2,
+                            color = secondaryText,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    innerTextField()
+                }
+                trailingIcon()
+            }
         },
-        shape = CircleShape,
-        colors =
-            TextFieldDefaults.textFieldColors(
-                backgroundColor = secondary,
-                cursorColor = white,
-                leadingIconColor = white,
-                textColor = white,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-            ),
-        leadingIcon = leadingIcon,
-        trailingIcon = trailingIcon,
-        keyboardOptions =
-            KeyboardOptions(
-                imeAction = ImeAction.Search,
-            ),
-        keyboardActions =
-            KeyboardActions(
-                onSearch = { onSearch(query) },
-            ),
-        modifier = modifier.fillMaxWidth(),
     )
+}
+
+/**
+ * An icon in a [SearchBar] slot. With [onClick] it is a button that [label] names; without it, it is decorative.
+ */
+@Composable
+fun SearchFieldIcon(
+    imageVector: ImageVector,
+    modifier: Modifier = Modifier,
+    label: String? = null,
+    onClick: (() -> Unit)? = null,
+) {
+    val action =
+        if (onClick != null) {
+            Modifier
+                .clip(CircleShape)
+                .pointerHoverIcon(PointerIcon.Hand)
+                .foundationClickable(role = Role.Button, onClick = onClick)
+        } else {
+            Modifier
+        }
+    Box(
+        modifier = modifier.fillMaxHeight().width(SearchIconSlotWidth).then(action),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = label,
+            modifier = Modifier.size(SearchIconSize),
+            tint = if (onClick != null) white else secondaryText,
+        )
+    }
+}
+
+/** The [SearchBar] trailing indicator while a search runs. */
+@Composable
+fun SearchFieldProgress(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxHeight().width(SearchIconSlotWidth),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(SearchProgressSize),
+            color = white,
+            strokeWidth = Dimens.micro,
+        )
+    }
 }
 
 @Preview
 @Composable
 internal fun SearchBarPreview() {
     BraindanceTheme {
-        SearchBar(onQueryChange = {}, onSearch = {})
+        Column(
+            modifier = Modifier.background(background).padding(Dimens.medium),
+        ) {
+            SearchBar(
+                query = "",
+                onQueryChange = {},
+                onSearch = {},
+                placeholder = "Search games",
+            )
+            SearchBar(
+                query = "Hollow Knight",
+                onQueryChange = {},
+                onSearch = {},
+                placeholder = "Search games",
+                modifier = Modifier.padding(top = Dimens.medium),
+                trailingIcon = { SearchFieldIcon(imageVector = X, label = "Clear search", onClick = {}) },
+            )
+        }
     }
 }

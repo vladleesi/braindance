@@ -5,6 +5,22 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.18.2 — 2026-11-15
+
+### Android, iOS, and Web
+
+- Make the Discover search field compact, with a clear button, a shorter placeholder, and room between it and the
+  content scrolling under it, which a thin line marks once you scroll.
+- While you type in the Discover search field, the title and profile button make way, so the field moves to the top
+  on phones and tablets.
+- Back now leaves Discover search step by step: it first closes the keyboard, then leaves search, and only then leaves
+  the screen. The arrow in the field and the Escape key also leave search.
+- Turn off autocorrect in the Discover search field, so game titles stay as typed.
+- Tapping Discover while a screen such as Profile is open on it now returns to Discover; tapping it again focuses
+  the search field.
+- Keep the screen in view while the keyboard is open. The keyboard now covers the navigation bar; on iOS, it
+  used to squeeze the Discover screen down to its title.
+
 ## 0.18.1 — 2026-11-15
 
 ### Android, iOS, and Web

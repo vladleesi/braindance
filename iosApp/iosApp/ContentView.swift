@@ -6,8 +6,9 @@ import shared
 struct ContentView: View {
 	var body: some View {
 		ComposeView()
-			// Compose handles system insets; retain SwiftUI's keyboard avoidance.
-			.ignoresSafeArea(.container)
+			// Compose handles system insets and the keyboard, as on Android. SwiftUI's keyboard avoidance would shrink
+			// the view on top of Compose's keyboard inset and squeeze screens to their title.
+			.ignoresSafeArea()
 	}
 }
 

@@ -11,7 +11,8 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -149,11 +150,16 @@ internal fun NavigationScaffold(
         if (useSidebar) {
             NavigationSidebar(navigator = navigator, modifier = Modifier.zIndex(1f))
         }
+        // System bars and cutouts only, not the keyboard: the keyboard covers the navigation bar, and a screen with
+        // a text field makes room for it in its own scrolling content. Padding every screen by the keyboard would
+        // count the navigation bar twice and squeeze screens to their title.
         content(
             Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+                    WindowInsets.systemBars
+                        .union(WindowInsets.displayCutout)
+                        .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
                 ).then(if (useSidebar) Modifier.padding(start = DesktopSidebarWidth) else Modifier),
         )
     }
@@ -192,14 +198,6 @@ private fun Modifier.selectedLine(): Modifier =
             cap = StrokeCap.Round,
         )
     }
-
-private fun Navigator.selectTab(route: BottomBarRoute) {
-    if (route == state.topLevelRoute && route is BottomBarRoute.DiscoverRoute) {
-        setResult(BottomBarRoute.DiscoverRoute.RESULT_KEY, true)
-    } else {
-        navigate(route)
-    }
-}
 
 @Composable
 fun NavigationGraph(modifier: Modifier) {

@@ -70,6 +70,9 @@
 
     <!-- Discover screen -->
     <string name="discover_advanced_filters_coming_soon">Advanced filters, coming soon</string>
+    <string name="discover_search_placeholder">Search games</string>
+    <string name="discover_search_close">Close search</string>
+    <string name="discover_search_clear">Clear search</string>
     <string name="discover_filter_platform">Platform</string>
     <string name="discover_filter_genre">Genre</string>
     <string name="discover_filter_release_date">Release date</string>

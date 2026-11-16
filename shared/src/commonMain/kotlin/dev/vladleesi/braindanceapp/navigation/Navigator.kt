@@ -5,6 +5,7 @@ package dev.vladleesi.braindanceapp.navigation
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.logger.BLogger
+import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.SingleInstanceRoute
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -43,6 +44,20 @@ class Navigator(
                 // Navigate deeper in current tab
                 backStacks[currentTopLevel]?.add(route)
             }
+        }
+    }
+
+    /**
+     * Handles a tap on a tab in the bottom bar, rail, or sidebar. Another tab opens with its own stack as it was left.
+     * Tapping the current tab returns it to its root screen; on Discover's root screen, it focuses the search field
+     * instead.
+     */
+    fun selectTab(route: BottomBarRoute) {
+        val isAtRoot = state.backStacks[route]?.singleOrNull() == route
+        if (route == state.topLevelRoute && route is BottomBarRoute.DiscoverRoute && isAtRoot) {
+            setResult(BottomBarRoute.DiscoverRoute.RESULT_KEY, true)
+        } else {
+            navigate(route)
         }
     }
 
