@@ -5,6 +5,13 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.19.1 — 2026-11-16
+
+### Android and iOS
+
+- Opening a game reuses the cover its card already saved instead of requesting it again, and a cover shown
+  in both card styles is stored once.
+
 ## 0.19.0 — 2026-11-16
 
 ### Android, iOS, and Web

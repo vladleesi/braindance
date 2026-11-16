@@ -59,7 +59,7 @@ fun GiveawayCard(
     Column(modifier = modifier.cardClickable(interactionSource) { onClick(item.id) }) {
         CardCover(
             imageUrl = item.image,
-            imageCacheKey = "gwc-${item.id}",
+            memoryCacheKey = "gwc-${item.id}",
             contentDescription = item.title,
             aspectRatio = GIVEAWAY_IMAGE_ASPECT_RATIO,
             interactionSource = interactionSource,

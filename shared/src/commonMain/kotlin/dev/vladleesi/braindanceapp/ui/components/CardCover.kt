@@ -48,14 +48,14 @@ private const val HOVER_IMAGE_SCALE = 1.04f
 private const val HOVER_ANIMATION_MILLIS = 150
 
 /**
- * Card artwork at a fixed [aspectRatio], decoded at its displayed size and cached under [imageCacheKey]. It shows the
- * card's [interactionSource] state: the theme ripple for press, a slight zoom on mouse hover, and the focus ring for
- * keyboard focus. [overlay] draws over the image.
+ * Card artwork at a fixed [aspectRatio], decoded at its displayed size and memory-cached under [memoryCacheKey]. It
+ * shows the card's [interactionSource] state: the theme ripple for press, a slight zoom on mouse hover, and the focus
+ * ring for keyboard focus. [overlay] draws over the image.
  */
 @Composable
 fun CardCover(
     imageUrl: String,
-    imageCacheKey: String,
+    memoryCacheKey: String,
     contentDescription: String,
     aspectRatio: Float,
     interactionSource: MutableInteractionSource,
@@ -79,7 +79,7 @@ fun CardCover(
                 .focusRing(interactionSource.isFocusVisible(), CornerShapes.small, Dimens.micro),
     ) {
         AsyncImage(
-            model = rememberCachedImageRequest(data = imageUrl, imageCacheKey = imageCacheKey),
+            model = rememberCachedImageRequest(data = imageUrl, memoryCacheKey = memoryCacheKey),
             contentDescription = contentDescription.toContentDescription(),
             contentScale = ContentScale.Crop,
             modifier =

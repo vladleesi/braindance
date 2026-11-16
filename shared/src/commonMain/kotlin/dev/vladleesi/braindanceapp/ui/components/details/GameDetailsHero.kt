@@ -168,9 +168,9 @@ private fun HeroCover(
     modifier: Modifier,
 ) {
     AsyncImage(
-        // Its own cache key: the hero shows the cover at another size than the cards, which would otherwise swap the
-        // decoded size in the memory cache back and forth.
-        model = rememberCachedImageRequest(data = details.coverImageUrl, imageCacheKey = "gdc-${details.id}"),
+        // Its own memory key: the hero shows the cover at another size than the cards, which would otherwise swap the
+        // decoded size in the memory cache back and forth. The download itself is shared with the card's.
+        model = rememberCachedImageRequest(data = details.coverImageUrl, memoryCacheKey = "gdc-${details.id}"),
         contentDescription = details.name.toContentDescription(),
         contentScale = ContentScale.Crop,
         modifier =

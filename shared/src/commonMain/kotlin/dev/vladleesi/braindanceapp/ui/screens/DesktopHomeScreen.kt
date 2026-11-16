@@ -309,7 +309,7 @@ private fun DesktopHero(
                         model =
                             rememberCachedImageRequest(
                                 data = card.backgroundImageUrl,
-                                imageCacheKey = "dhc-${card.id}",
+                                memoryCacheKey = "dhc-${card.id}",
                             ),
                         // Decorative: the same games are listed, with their titles, in the sections below.
                         contentDescription = null,

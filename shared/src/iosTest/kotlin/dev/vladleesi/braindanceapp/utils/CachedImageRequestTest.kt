@@ -39,15 +39,24 @@ class CachedImageRequestTest {
     }
 
     @Test
-    fun bothCachesUseTheGivenKey() {
+    fun theMemoryCacheUsesTheGivenKeyAndTheDiskCacheTheUrl() {
         val request = cachedImageRequest(PlatformContext.INSTANCE, IMAGE_URL, CACHE_KEY)
 
         assertEquals(CACHE_KEY, request.memoryCacheKey)
-        assertEquals(CACHE_KEY, request.diskCacheKey)
+        // Without a disk key, Coil's network fetcher stores the download under its URL.
+        assertNull(request.diskCacheKey)
     }
 
     @Test
-    fun aSmallDisplayLoadsTheSmallerCoverUnderItsOwnCacheKeys() =
+    fun requestsWithDifferentMemoryKeysShareTheDownloadOfTheSameUrl() {
+        val card = cachedImageRequest(PlatformContext.INSTANCE, IMAGE_URL, "gct-1")
+        val details = cachedImageRequest(PlatformContext.INSTANCE, IMAGE_URL, "gdc-1")
+
+        assertEquals(card.diskCacheKey ?: card.data, details.diskCacheKey ?: details.data)
+    }
+
+    @Test
+    fun aSmallDisplayLoadsTheSmallerCoverUnderItsOwnCacheEntries() =
         runTest {
             val request = croppedCoverRequest()
 
@@ -55,7 +64,8 @@ class CachedImageRequestTest {
 
             assertEquals("https://images.igdb.com/igdb/image/upload/t_cover_small_2x/co1.webp", loaded.data)
             assertEquals("$CACHE_KEY-t_cover_small_2x", loaded.memoryCacheKey)
-            assertEquals("$CACHE_KEY-t_cover_small_2x", loaded.diskCacheKey)
+            // The smaller file is disk-cached under its own URL.
+            assertNull(loaded.diskCacheKey)
         }
 
     @Test

@@ -53,7 +53,7 @@ fun GameCard(
             imageUrl = card.backgroundImageUrl,
             // Each style has its own key: a desktop row shows them at different sizes, and a shared key would make
             // the memory cache swap one decoded size for the other.
-            imageCacheKey = if (showTitle) "gct-${card.id}" else "gcc-${card.id}",
+            memoryCacheKey = if (showTitle) "gct-${card.id}" else "gcc-${card.id}",
             contentDescription = card.title,
             aspectRatio = COVER_ASPECT_RATIO,
             interactionSource = interactionSource,

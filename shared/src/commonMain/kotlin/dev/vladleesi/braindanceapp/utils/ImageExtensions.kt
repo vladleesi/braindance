@@ -13,18 +13,22 @@ import coil3.size.Size
 fun String.toContentDescription(): String = "Image: $this"
 
 /**
- * Builds an image request cached under [imageCacheKey]. Pass it to `AsyncImage` with the same `contentScale` the
- * image is drawn with: `AsyncImage` sizes the request from its layout constraints, so the bitmap matches the displayed
- * pixel size, never smaller and never larger than the download. A painter from `rememberAsyncImagePainter` has no size
- * and would keep the downloaded file's full pixel size.
+ * Builds an image request whose decoded bitmap is memory-cached under [memoryCacheKey]. Pass it to `AsyncImage` with
+ * the same `contentScale` the image is drawn with: `AsyncImage` sizes the request from its layout constraints, so the
+ * bitmap matches the displayed pixel size, never smaller and never larger than the download. A painter from
+ * `rememberAsyncImagePainter` has no size and would keep the downloaded file's full pixel size.
+ *
+ * The downloaded file is disk-cached under its URL, which already names the image and its size. So every place that
+ * shows the same file, such as a card and the details screen it opens, shares one download, while each keeps its own
+ * memory key for its own decoded size.
  */
 @Composable
 fun rememberCachedImageRequest(
     data: Any?,
-    imageCacheKey: String?,
+    memoryCacheKey: String?,
 ): ImageRequest {
     val context = LocalPlatformContext.current
-    return remember(context, data, imageCacheKey) { cachedImageRequest(context, data, imageCacheKey) }
+    return remember(context, data, memoryCacheKey) { cachedImageRequest(context, data, memoryCacheKey) }
 }
 
 /**
@@ -35,15 +39,14 @@ fun rememberCachedImageRequest(
 internal fun cachedImageRequest(
     context: PlatformContext,
     data: Any?,
-    imageCacheKey: String?,
+    memoryCacheKey: String?,
     keepOriginalSize: Boolean = !scalesDecodedImagesSmoothly,
 ): ImageRequest {
     val builder =
         ImageRequest
             .Builder(context)
             .data(data)
-            .memoryCacheKey(imageCacheKey)
-            .diskCacheKey(imageCacheKey)
+            .memoryCacheKey(memoryCacheKey)
             .crossfade(true)
     if (keepOriginalSize) {
         builder.size(Size.ORIGINAL)

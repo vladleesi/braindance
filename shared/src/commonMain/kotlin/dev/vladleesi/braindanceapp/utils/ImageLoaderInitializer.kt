@@ -63,10 +63,10 @@ private fun createImageLoader(context: PlatformContext) =
  * Downloads a cropped cover at the smallest IGDB size that fills the pixels it is displayed at, such as a desktop card
  * on a standard-density screen, instead of the large file every card asks for; see [smallerCoverSizeOrNull].
  *
- * Each size is cached under its own keys, so a larger display of the same cover never gets a smaller file from a
- * cache. If the smaller file does not fill the display after all, which only a cover that is not 3:4 can cause, the
- * large one is loaded as before. A request with no pixel size, such as one that keeps the original size, and an image
- * that is fitted rather than cropped are left as they are.
+ * Each size has its own memory key and, through its URL, its own disk cache entry, so a larger display of the same
+ * cover never gets a smaller file from a cache. If the smaller file does not fill the display after all, which only a
+ * cover that is not 3:4 can cause, the large one is loaded as before. A request with no pixel size, such as one that
+ * keeps the original size, and an image that is fitted rather than cropped are left as they are.
  */
 internal class SmallerCoverInterceptor : Interceptor {
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
@@ -83,6 +83,7 @@ internal class SmallerCoverInterceptor : Interceptor {
                 .newBuilder()
                 .data(smallerUrl)
                 .memoryCacheKey(request.memoryCacheKey?.let { key -> key + keySuffix })
+                // Keeps an explicit disk key apart per size too; without one, the smaller URL is the key.
                 .diskCacheKey(request.diskCacheKey?.let { key -> key + keySuffix })
                 .build()
         val smallerResult = chain.withRequest(smallerRequest).proceed()

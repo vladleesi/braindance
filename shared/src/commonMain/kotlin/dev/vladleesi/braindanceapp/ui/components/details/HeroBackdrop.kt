@@ -52,7 +52,7 @@ fun HeroBackdrop(
         return
     }
     AsyncImage(
-        model = rememberCachedImageRequest(data = imageUrl, imageCacheKey = null),
+        model = rememberCachedImageRequest(data = imageUrl, memoryCacheKey = null),
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier =
