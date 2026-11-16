@@ -14,34 +14,28 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
-import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.secondary
+import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.white
 
 private val IconSize = 14.dp
 
 /**
- * A game's release date as a quiet chip: a calendar icon and the date on the raised surface color, so it reads as
- * information beside the platform logos and not as a button or tag.
+ * A game's release date as quiet text: a calendar icon and the date, with no fill, so it reads as information beside
+ * the platform logos and not as a button or tag, and stays secondary to the title above it.
  */
 @Composable
 fun ReleaseDateLabel(
     releaseDate: String,
     modifier: Modifier = Modifier,
-    shape: Shape = CornerShapes.small,
 ) {
     Row(
-        modifier =
-            modifier
-                .background(color = secondary, shape = shape)
-                .padding(horizontal = Dimens.small, vertical = Dimens.tiny),
-        horizontalArrangement = Arrangement.spacedBy(Dimens.tiny),
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -64,7 +58,8 @@ fun ReleaseDateLabel(
 internal fun ReleaseDateLabelPreview() {
     BraindanceTheme {
         ReleaseDateLabel(
-            releaseDate = "Feb 3th, 2026",
+            releaseDate = "Feb 3, 2026",
+            modifier = Modifier.background(background).padding(Dimens.medium),
         )
     }
 }

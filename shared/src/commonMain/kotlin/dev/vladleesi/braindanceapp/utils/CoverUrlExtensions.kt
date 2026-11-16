@@ -70,6 +70,12 @@ enum class CoverSize(
     COVER_SMALL_2X("t_cover_small_2x"),
     COVER_BIG("t_cover_big"),
     LOGO_MED("t_logo_med"),
+
+    /** 569x320, 16:9: screenshots in compact layouts. */
+    SCREENSHOT_MED("t_screenshot_med"),
+
+    /** 889x500, 16:9: screenshots in wide layouts. */
+    SCREENSHOT_BIG("t_screenshot_big"),
     P_720("t_720p"),
     P_1080("t_1080p"),
     ORIGINAL("t_original"),

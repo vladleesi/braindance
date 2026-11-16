@@ -4,7 +4,7 @@ package dev.vladleesi.braindanceapp.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -19,6 +19,7 @@ import dev.vladleesi.braindanceapp.utils.ParentPlatformType
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 import org.jetbrains.compose.resources.painterResource
 
+/** The platforms' logos in one row, wrapping onto further rows, [horizontalSpacing] apart, when they do not fit. */
 @Composable
 fun PlatformLogoList(
     platforms: List<ParentPlatformType>,
@@ -26,9 +27,10 @@ fun PlatformLogoList(
     imageSize: Dp,
     horizontalSpacing: Dp,
 ) {
-    Row(
+    FlowRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+        verticalArrangement = Arrangement.spacedBy(horizontalSpacing),
     ) {
         platforms.forEach { platform ->
             if (platform.iconRes == null) return@forEach

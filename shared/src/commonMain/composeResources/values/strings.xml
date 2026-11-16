@@ -134,6 +134,12 @@
     <!-- Game details screen -->
     <string name="game_details_screen_where_to_buy">Where to buy</string>
     <string name="game_details_screen_similar_games">Similar games</string>
+    <string name="game_details_add_to_collection">Add to collection</string>
+    <string name="game_details_in_collection">In collection</string>
+    <string name="game_details_wishlist">Wishlist</string>
+    <string name="game_details_on_wishlist">On wishlist</string>
+    <string name="game_details_add_to_collection_coming_soon">Add to collection, coming soon</string>
+    <string name="game_details_wishlist_coming_soon">Wishlist, coming soon</string>
 
     <!-- Giveaway details screen -->
     <string name="giveaway_details_screen_free">FREE</string>

@@ -5,6 +5,21 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.19.0 — 2026-11-16
+
+### Android, iOS, and Web
+
+- Redesign the top of game pages. The game's first screenshot now sits dimmed behind the cover, title, release date,
+  and platforms, with a quiet gradient for games without screenshots. Long titles step down in size to stay compact.
+- Add an "Add to collection" button and a wishlist button to game pages. They are marked "Coming soon" and stay
+  disabled until accounts and collections arrive.
+- On tablets and wide browser windows, show a larger cover with the title, genres, and buttons beside it.
+- Show genres as quiet tags and the release date as plain text, so nothing looks pressable that does nothing.
+
+### Website and documentation
+
+- Refresh the latest updates on braindancegg.com.
+
 ## 0.18.2 — 2026-11-15
 
 ### Android, iOS, and Web

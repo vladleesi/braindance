@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 
 class DetailsViewModelTest : ViewModelTest() {
     @Test
@@ -61,6 +62,57 @@ class DetailsViewModelTest : ViewModelTest() {
 
             val details = assertIs<GameDetailsState.Success>(viewModel.gameDetailsState.value).gameDetails
             assertEquals("https://images.igdb.com/igdb/image/upload/t_720p/co1.webp", details.coverImageUrl)
+        }
+
+    @Test
+    fun theBackdropIsTheFirstStillScreenshotAtBothSizes() =
+        runTest(dispatcher) {
+            val thumbs = "//images.igdb.com/igdb/image/upload/t_thumb"
+            val client =
+                mockBackendClient(dispatcher) { request ->
+                    when (request.url.encodedPath) {
+                        "/v1/games/details" ->
+                            respondJson(
+                                """[{"id":42,"name":"Game","screenshots":[""" +
+                                    """{"id":1,"animated":true,"url":"$thumbs/gif.jpg"},""" +
+                                    """{"id":2,"url":null},""" +
+                                    """{"id":3,"url":"$thumbs/sc1.jpg"},""" +
+                                    """{"id":4,"url":"$thumbs/sc2.jpg"}]}]""",
+                            )
+                        else -> respondJson("{}", HttpStatusCode.InternalServerError)
+                    }
+                }
+            val viewModel = GameDetailsViewModel(gameId = 42, gameDetailsRepo = GameDetailsRepo(GamesRemote(client)))
+
+            viewModel.load()
+            advanceUntilIdle()
+
+            val details = assertIs<GameDetailsState.Success>(viewModel.gameDetailsState.value).gameDetails
+            assertEquals(
+                BackdropImage(
+                    compactUrl = "https://images.igdb.com/igdb/image/upload/t_screenshot_med/sc1.webp",
+                    wideUrl = "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc1.webp",
+                ),
+                details.backdrop,
+            )
+        }
+
+    @Test
+    fun aGameWithoutScreenshotsHasNoBackdrop() =
+        runTest(dispatcher) {
+            val client =
+                mockBackendClient(dispatcher) { request ->
+                    when (request.url.encodedPath) {
+                        "/v1/games/details" -> respondJson("""[{"id":42,"name":"Game","screenshots":[]}]""")
+                        else -> respondJson("{}", HttpStatusCode.InternalServerError)
+                    }
+                }
+            val viewModel = GameDetailsViewModel(gameId = 42, gameDetailsRepo = GameDetailsRepo(GamesRemote(client)))
+
+            viewModel.load()
+            advanceUntilIdle()
+
+            assertNull(assertIs<GameDetailsState.Success>(viewModel.gameDetailsState.value).gameDetails.backdrop)
         }
 
     @Test

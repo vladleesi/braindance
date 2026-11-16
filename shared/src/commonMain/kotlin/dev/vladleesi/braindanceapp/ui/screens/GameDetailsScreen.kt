@@ -4,39 +4,29 @@ package dev.vladleesi.braindanceapp.ui.screens
 
 import Share
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
@@ -46,18 +36,15 @@ import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.CarouselSection
 import dev.vladleesi.braindanceapp.ui.components.ExpandableText
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
-import dev.vladleesi.braindanceapp.ui.components.PlatformLogoList
-import dev.vladleesi.braindanceapp.ui.components.SpacerTopBarWithStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
-import dev.vladleesi.braindanceapp.ui.components.details.GenreTags
-import dev.vladleesi.braindanceapp.ui.components.details.ReleaseDateLabel
+import dev.vladleesi.braindanceapp.ui.components.details.GameDetailsHero
+import dev.vladleesi.braindanceapp.ui.components.details.LibraryActionsState
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.rememberShareGameAction
 import dev.vladleesi.braindanceapp.ui.components.userMessage
-import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.white
@@ -67,12 +54,12 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.RecommendationsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
-import dev.vladleesi.braindanceapp.utils.toContentDescription
 import dev.vladleesi.braindanceapp.utils.withCircleRippleEffect
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+private const val HERO_KEY = "hero"
 private const val SIMILAR_GAMES_KEY = "similar_games"
 private const val SIMILAR_GAME_CONTENT_TYPE = "similar_game"
 
@@ -145,11 +132,17 @@ private fun GameDetailsScreen(
             state = lazyListState,
             modifier = Modifier.fillMaxSize(),
         ) {
-            item { SpacerTopBarWithStatusBarInsets() }
-            if (isLargeWindow) {
-                gameInfoHeaderLargeScreen(state)
-            } else {
-                gameInfoHeaderSmallScreen(state)
+            item(key = HERO_KEY) {
+                GameDetailsHero(
+                    details = state.gameDetails,
+                    expanded = isLargeWindow,
+                    // Accounts and collections do not exist yet, so the actions stay disabled and never call back.
+                    // The library will provide this state and handle onLibraryStatusChange.
+                    libraryActions = LibraryActionsState.Unavailable,
+                    onLibraryStatusChange = {},
+                    // Genres become chips once Discover can browse by genre; until then they are plain tags.
+                    onGenreClick = null,
+                )
             }
             if (state.gameDetails.summary.isNotEmpty()) {
                 item {
@@ -252,87 +245,4 @@ private fun GameDetailsTopBar(
             },
         )
     }
-}
-
-@Composable
-private fun GameDetailsInfo(gameDetails: GameDetails) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(start = Dimens.medium, end = Dimens.medium),
-        horizontalArrangement = Arrangement.spacedBy(Dimens.small),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        gameDetails.releaseDate?.let { releaseDate ->
-            ReleaseDateLabel(releaseDate)
-        }
-        PlatformLogoList(
-            platforms = gameDetails.platforms,
-            imageSize = 18.dp,
-            horizontalSpacing = Dimens.tiny,
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
-}
-
-private fun LazyListScope.gameInfoHeaderLargeScreen(state: GameDetailsState.Success) =
-    item {
-        Row(
-            modifier =
-                Modifier
-                    .padding(horizontal = Dimens.medium)
-                    .padding(bottom = Dimens.medium),
-        ) {
-            AsyncImage(
-                modifier =
-                    Modifier
-                        .width(Dimens.gameCardWidth)
-                        .height(Dimens.gameCardHeight)
-                        .clip(CornerShapes.small),
-                model = state.gameDetails.coverImageUrl,
-                contentScale = ContentScale.Crop,
-                contentDescription = state.gameDetails.name.toContentDescription(),
-            )
-            Spacer(modifier = Modifier.size(Dimens.medium))
-            Column {
-                GameDetailsInfo(gameDetails = state.gameDetails)
-                Spacer(modifier = Modifier.size(Dimens.small))
-                Text(
-                    text = state.gameDetails.name,
-                    style = MaterialTheme.typography.h2,
-                    modifier = Modifier.fillMaxWidth().padding(start = Dimens.medium, end = Dimens.medium),
-                )
-                GenreTags(state.gameDetails.genres, onClick = {})
-            }
-        }
-    }
-
-private fun LazyListScope.gameInfoHeaderSmallScreen(state: GameDetailsState.Success) {
-    item {
-        Box(modifier = Modifier.padding(horizontal = Dimens.medium)) {
-            AsyncImage(
-                modifier =
-                    Modifier
-                        .width(Dimens.gameCardWidth)
-                        .height(Dimens.gameCardHeight)
-                        .clip(CornerShapes.small),
-                model = state.gameDetails.coverImageUrl,
-                contentScale = ContentScale.Crop,
-                contentDescription = state.gameDetails.name.toContentDescription(),
-            )
-        }
-    }
-    item { Spacer(modifier = Modifier.size(Dimens.medium)) }
-    item { GameDetailsInfo(gameDetails = state.gameDetails) }
-    item { Spacer(modifier = Modifier.size(Dimens.small)) }
-    item {
-        Text(
-            text = state.gameDetails.name,
-            style = MaterialTheme.typography.h2,
-            modifier = Modifier.fillMaxWidth().padding(start = Dimens.medium, end = Dimens.medium),
-        )
-    }
-    item { GenreTags(state.gameDetails.genres, onClick = {}) }
-    item { Spacer(modifier = Modifier.size(Dimens.medium)) }
 }

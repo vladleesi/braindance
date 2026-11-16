@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dev.vladleesi.braindanceapp.data.DataError
 import dev.vladleesi.braindanceapp.data.Outcome
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.Screenshot
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
@@ -95,6 +96,7 @@ private fun GameItem.toGameDetails() =
                 ?.url
                 ?.toCoverUrl(CoverSize.P_720)
                 .orEmpty(),
+        backdrop = screenshots.orEmpty().toBackdropImage(),
         releaseDate = releaseDates?.firstOrNull()?.human ?: firstReleaseDate?.formatDate(),
         platforms = platforms.orEmpty().parentPlatformTypes(),
         stores = websites.orEmpty().toStoreTypes(),
@@ -106,6 +108,20 @@ private fun GameItem.toGameDetails() =
                 )
             },
     )
+
+/**
+ * The first still screenshot at the two sizes the hero draws it. It sits dimmed behind the hero, where IGDB's small
+ * sizes are enough: a larger file would only add bytes and decoding the scrim hides.
+ */
+private fun List<Screenshot>.toBackdropImage(): BackdropImage? {
+    val url = firstOrNull { screenshot -> screenshot.animated != true && !screenshot.url.isNullOrBlank() }?.url
+    return url?.let {
+        BackdropImage(
+            compactUrl = it.toCoverUrl(CoverSize.SCREENSHOT_MED),
+            wideUrl = it.toCoverUrl(CoverSize.SCREENSHOT_BIG),
+        )
+    }
+}
 
 // Cards without an ID cannot be opened, and lazy lists need unique keys.
 private fun List<SimilarGame>.toCards() =
@@ -154,10 +170,18 @@ data class GameDetails(
     val summary: String,
     val storyline: String,
     val coverImageUrl: String,
+    /** The hero's background, or null when the game has no still screenshot. */
+    val backdrop: BackdropImage?,
     val releaseDate: String?,
     val platforms: List<ParentPlatformType>,
     val stores: List<StoreTypeModel>,
     val genres: List<GenreTag>,
+)
+
+/** One screenshot at a smaller size for compact layouts and a larger one for wide layouts. */
+data class BackdropImage(
+    val compactUrl: String,
+    val wideUrl: String,
 )
 
 data class GenreTag(

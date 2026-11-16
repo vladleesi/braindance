@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
@@ -53,6 +54,14 @@ import dev.vladleesi.braindanceapp.ui.style.white
 private val ButtonMinHeight = 48.dp
 private val ButtonContentPadding = PaddingValues(horizontal = 24.dp, vertical = Dimens.compact)
 private val TrailingIconSize = 18.dp
+private val ProgressStrokeWidth = 2.dp
+
+// Material's disabled container: the content color at 12%.
+private const val DISABLED_CONTAINER_ALPHA = 0.12f
+
+// Material's disabled content emphasis (ContentAlpha.disabled, which can only be read in composition).
+private const val DISABLED_CONTENT_ALPHA = 0.38f
+private val DisabledContentColor = white.copy(alpha = DISABLED_CONTENT_ALPHA)
 
 // The Echo trail, as on the landing site's primary button: the button lifts by one step, and flat cyan, magenta, and
 // yellow copies appear one, two, and three steps behind it.
@@ -71,19 +80,30 @@ private const val OUTLINE_ARROW_ROTATION = 180f
  * the Echo trail appears behind it, the same effect as the landing site's primary button; touch screens have no hover,
  * so there it stays flat. Use it once per view, for the action the view exists for. [trailingIcon] marks what the
  * action does, for example opening another site; [trailingIconDescription] says so to screen readers.
+ *
+ * A disabled button is dimmed, for an action that is unavailable. While [loading], a progress indicator replaces the
+ * trailing icon and the button ignores presses but keeps its colors, because the action is underway, not unavailable.
  */
 @Composable
 fun PrimaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    loading: Boolean = false,
     trailingIcon: ImageVector? = null,
     trailingIconDescription: String? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val hovered = interactionSource.collectIsHoveredAsState()
+    val interactive = enabled && !loading
     // Read only while drawing, so hovering redraws the button without recomposing it.
-    val lift = animateFloatAsState(targetValue = if (hovered.value) 1f else 0f, animationSpec = tween(ECHO_MILLIS))
+    val lift =
+        animateFloatAsState(
+            targetValue = if (hovered.value && interactive) 1f else 0f,
+            animationSpec = tween(ECHO_MILLIS),
+        )
+    val contentColor = if (enabled) void else DisabledContentColor
     Button(
         onClick = onClick,
         modifier =
@@ -102,41 +122,76 @@ fun PrimaryButton(
                             drawRoundRect(EchoColors[index], Offset(offset, offset), size, corner)
                         }
                     }
-                }.pointerHoverIcon(PointerIcon.Hand),
+                }.pointerHoverIcon(if (interactive) PointerIcon.Hand else PointerIcon.Default),
+        enabled = interactive,
         interactionSource = interactionSource,
         elevation = null,
-        colors = ButtonDefaults.buttonColors(backgroundColor = white, contentColor = void),
+        colors =
+            ButtonDefaults.buttonColors(
+                backgroundColor = white,
+                contentColor = void,
+                disabledBackgroundColor = if (enabled) white else white.copy(alpha = DISABLED_CONTAINER_ALPHA),
+                disabledContentColor = contentColor,
+            ),
         contentPadding = ButtonContentPadding,
     ) {
         // The theme's text styles carry their own color, which would override the button's content color.
-        Text(text = text, style = MaterialTheme.typography.button, color = void)
-        if (trailingIcon != null) {
+        Text(text = text, style = MaterialTheme.typography.button, color = contentColor)
+        if (loading) {
+            Spacer(Modifier.width(Dimens.small))
+            ButtonProgress(color = contentColor)
+        } else if (trailingIcon != null) {
             Spacer(Modifier.width(Dimens.small))
             Icon(
                 imageVector = trailingIcon,
                 contentDescription = trailingIconDescription,
-                tint = void,
+                tint = contentColor,
                 modifier = Modifier.size(TrailingIconSize),
             )
         }
     }
 }
 
+/** A small indeterminate progress indicator sized like a button's trailing icon, for an action that is underway. */
+@Composable
+fun ButtonProgress(
+    color: Color,
+    modifier: Modifier = Modifier,
+) {
+    CircularProgressIndicator(
+        color = color,
+        strokeWidth = ProgressStrokeWidth,
+        modifier = modifier.size(TrailingIconSize),
+    )
+}
+
 /**
  * A secondary action: a quiet pill on the raised neutral, for actions that sit beside content or repeat in a list,
- * such as store links and Retry. [content] is the button's row, usually a label and sometimes an icon.
+ * such as store links and Retry. [content] is the button's row, usually a label and sometimes an icon. A disabled
+ * button dims its content; content that sets its own color should follow [enabled] too.
  */
 @Composable
 fun TonalButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit,
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.heightIn(min = ButtonMinHeight).pointerHoverIcon(PointerIcon.Hand),
+        modifier =
+            modifier
+                .heightIn(min = ButtonMinHeight)
+                .pointerHoverIcon(if (enabled) PointerIcon.Hand else PointerIcon.Default),
+        enabled = enabled,
         elevation = null,
-        colors = ButtonDefaults.buttonColors(backgroundColor = secondaryVariant, contentColor = white),
+        colors =
+            ButtonDefaults.buttonColors(
+                backgroundColor = secondaryVariant,
+                contentColor = white,
+                disabledBackgroundColor = secondaryVariant,
+                disabledContentColor = DisabledContentColor,
+            ),
         contentPadding = ButtonContentPadding,
         content = content,
     )
@@ -180,6 +235,8 @@ internal fun ButtonsPreview() {
         ) {
             PrimaryButton(text = "Explore games", onClick = {})
             PrimaryButton(text = "Get giveaway", onClick = {}, trailingIcon = OpenInNew)
+            PrimaryButton(text = "Add to collection", onClick = {}, loading = true)
+            PrimaryButton(text = "Add to collection", onClick = {}, enabled = false)
             TonalButton(onClick = {}) { Text(text = "Retry", style = MaterialTheme.typography.button) }
             OutlineButton(text = "Open Releases", onClick = {})
         }
