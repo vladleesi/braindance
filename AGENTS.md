@@ -241,6 +241,14 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   date.
   Keep the page's structured data (descriptions and FAQ answers) identical to its visible text, and add no
   hand-maintained version or date that can go stale.
+- Keep the landing site current in the same change as the work it describes, using only verified project facts:
+  - After a frontend version with user-visible changes, refresh Updates with the three latest notable entries from
+    `CHANGELOG.md`, newest first, in short plain language. Never invent features, announcements, or dates.
+  - When a platform's availability changes, update its status in Features, the hero's fine print, the FAQ, and the
+    structured data together.
+  - When features change, update the Features titles and lines and the structured data's `featureList`.
+  - When work moves to the next roadmap milestone, move `class="now"` and "In progress" to it. Keep milestones
+    without completion marks or dates.
 - Keep the human-readable code style in `docs/development.md#code-style` consistent with these conventions.
 - Follow `.editorconfig` and neighboring code: four-space indentation, 120-character lines, and trailing commas.
 - Use explicit imports and short names in Kotlin code instead of fully qualified references.

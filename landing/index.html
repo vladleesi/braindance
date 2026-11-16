@@ -40,7 +40,6 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
-  <link rel="preload" as="image" href="/img/app-home.webp" imagesrcset="/img/app-home-560.webp 560w, /img/app-home.webp 780w" imagesizes="(min-width: 721px) 372px, 340px" fetchpriority="high">
 
   <style>
     :root {
@@ -133,7 +132,7 @@
       .mobile-menu { display: block; }
     }
 
-    /* Buttons and tags are the round shapes; imagery and surfaces are square. The primary button is the logo in
+    /* Buttons are the round shapes; imagery and surfaces are square. The primary button is the logo in
        miniature: white on Ink, and the trail appears when it is hovered or focused. */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 26px; border-radius: 999px; font: inherit; font-weight: 600; font-size: .95rem; text-decoration: none; border: 1px solid transparent; transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
     .btn svg { width: 18px; height: 18px; flex: none; }
@@ -144,12 +143,6 @@
     .btn-line { background: transparent; color: var(--ink); border-color: var(--line-2); }
     .btn-line:hover { border-color: var(--ink); }
     .cta { display: flex; flex-wrap: wrap; gap: 12px; }
-
-    /* Tags */
-    .tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 12px; border: 1px solid var(--line-2); border-radius: 999px; color: var(--muted); }
-    .tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--magenta); }
-    .tag.live { background: var(--cyan); border-color: var(--cyan); color: var(--void); font-weight: 600; }
-    .tag.live::before { background: var(--void); }
 
     /* Hero */
     .hero { position: relative; overflow: hidden; isolation: isolate; }
@@ -162,32 +155,27 @@
     .lead { font-size: clamp(1.05rem, 1.5vw, 1.25rem); color: var(--soft); max-width: 33em; margin-bottom: 32px; }
     .lead b { color: var(--ink); font-weight: 600; }
     .fine { margin-top: 20px; font-size: .85rem; color: var(--muted); }
-    /* The hero plate: a real screenshot with the trail behind it, like the letters of the logo. */
-    .plate { justify-self: end; width: min(100%, 372px); margin: 0 30px 30px 0; }
-    .plate .frame { aspect-ratio: 3 / 4; overflow: hidden; background: var(--deep); outline: 1px solid var(--line-2); box-shadow: 10px 10px 0 var(--cyan), 20px 20px 0 var(--magenta), 30px 30px 0 var(--yellow); }
-    .plate img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
-    figcaption { margin-top: 14px; color: var(--muted); }
-    .plate figcaption { margin-top: 46px; }
-
-    /* Cover band: two rows of whole covers at their own 3:4 proportion, 144 x 192 like a game card in the app. Each
-       row is one strip of 16 covers (12 row heights wide) repeated three times, so moving by a third is exactly one
-       strip: a seamless loop at about 19px a second. 1x and 2x files are chosen by pixel density. */
-    .band { --h: 192px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; }
-    .band-row { height: var(--h); overflow: hidden; contain: strict; }
-    .band-track { width: calc(var(--h) * 36); height: 100%; background-repeat: repeat-x; background-size: calc(var(--h) * 12) var(--h); will-change: transform; animation: band-left 120s linear infinite; }
-    .band-row:nth-child(1) .band-track { background-image: url(/img/covers-1.webp); background-image: image-set(url(/img/covers-1.webp) 1x, url(/img/covers-1@2x.webp) 2x); }
-    .band-row:nth-child(2) .band-track { background-image: url(/img/covers-2.webp); background-image: image-set(url(/img/covers-2.webp) 1x, url(/img/covers-2@2x.webp) 2x); animation-name: band-right; animation-duration: 136s; }
-    @keyframes band-left { to { transform: translate3d(-33.3333%, 0, 0); } }
-    @keyframes band-right { from { transform: translate3d(-33.3333%, 0, 0); } to { transform: translate3d(0, 0, 0); } }
+    /* The hero reel: rows of whole covers at their own 3:4 proportion drifting in alternate directions, in a plate
+       with the trail behind it, like the letters of the logo. Each row is one strip of 16 covers (12 row heights wide)
+       repeated three times, so moving by a third is exactly one strip: a seamless loop. A grid in the plate's color
+       moves with each strip and parts the covers into tiles. 1x and 2x files are chosen by pixel density. */
+    .reel { --h: 168px; --seam: 6px; --trail: 10px; justify-self: end; display: grid; gap: var(--seam); width: min(100% - var(--trail) * 3, 440px); margin: 0 calc(var(--trail) * 3) calc(var(--trail) * 3) 0; overflow: hidden; background: var(--deep); outline: 1px solid var(--line-2); box-shadow: var(--trail) var(--trail) 0 var(--cyan), calc(var(--trail) * 2) calc(var(--trail) * 2) 0 var(--magenta), calc(var(--trail) * 3) calc(var(--trail) * 3) 0 var(--yellow); }
+    .reel-row { height: var(--h); overflow: hidden; contain: strict; }
+    .reel-track { position: relative; width: calc(var(--h) * 36); height: 100%; background-repeat: repeat-x; background-size: calc(var(--h) * 12) var(--h); will-change: transform; animation: reel-left 110s linear infinite; }
+    .reel-track::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--deep) 0 calc(var(--seam) / 2), transparent 0 calc(var(--h) * .75 - var(--seam) / 2), var(--deep) 0 calc(var(--h) * .75)); }
+    .reel .a { background-image: url(/img/covers-1.webp); background-image: image-set(url(/img/covers-1.webp) 1x, url(/img/covers-1@2x.webp) 2x); }
+    .reel .b { background-image: url(/img/covers-2.webp); background-image: image-set(url(/img/covers-2.webp) 1x, url(/img/covers-2@2x.webp) 2x); animation-name: reel-right; animation-duration: 126s; }
+    /* The third row repeats the first strip half a loop ahead, so the same covers never line up. */
+    .reel-row:nth-child(3) .reel-track { animation-delay: -55s; }
+    @keyframes reel-left { to { transform: translate3d(-33.3333%, 0, 0); } }
+    @keyframes reel-right { from { transform: translate3d(-33.3333%, 0, 0); } to { transform: translate3d(0, 0, 0); } }
 
     /* Sections */
     .sec { position: relative; padding: clamp(72px, 9.5vw, 136px) 0; border-top: 1px solid var(--line); }
-    .band + .sec { border-top: 0; }
     /* Registration marks where a section rule meets the page margins. */
     .sec::before, .sec::after { content: "+"; position: absolute; top: 0; transform: translate(-50%, -50%); font-size: 1rem; font-weight: 400; line-height: 1; color: var(--line-2); }
     .sec::before { left: max(var(--gutter), calc(50% - 660px)); }
     .sec::after { left: min(calc(100% - var(--gutter)), calc(50% + 660px)); }
-    .band + .sec::before, .band + .sec::after { content: none; }
     .num { display: flex; align-items: center; gap: 14px; color: var(--muted); margin-bottom: clamp(20px, 2.4vw, 32px); }
     .num span { color: var(--ink); }
     .num::after { content: ""; flex: none; width: 40px; height: 1px; background: var(--line-2); order: 1; }
@@ -205,10 +193,9 @@
     /* Every other section sits on the deeper ink, with the hero's dot grid fading in from the top right. */
     .sec.alt { background-color: var(--deep); background-image: linear-gradient(200deg, transparent, var(--deep) 45%), radial-gradient(var(--line-2) 1px, transparent 1.5px); background-size: auto, 28px 28px; }
 
-    /* Status tags: cyan for available, the magenta dot for in progress, an open dot for planned. */
-    .tag.plan::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
-
-    /* 01 Features: what works today in ruled columns, each opened by a short bar in the trail's colors. */
+    /* 01 Features: four features as short titles in ruled columns, each opened by a short bar in the trail's colors.
+       The platforms sit in the section head as a plain list in rollout order: a dot and text, with no border or fill,
+       so a status does not read as a button. Cyan dot: available; magenta: next; open: later. */
     .today { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
     .today li { padding: 28px 28px 32px 0; }
     .today li + li { padding-left: 28px; border-left: 1px solid var(--line); }
@@ -218,43 +205,39 @@
     .today li:nth-child(4) { --bar: var(--ink); }
     .today li:hover::before { width: 56px; }
     .today .label { color: var(--muted); margin-bottom: 10px; }
-    .today h3 { margin-bottom: 10px; }
-    .today p { color: var(--muted); }
+    .today p:not(.label) { margin-top: 8px; color: var(--muted); }
+    .avail { max-width: 32rem; }
+    .avail .label { color: var(--muted); margin-bottom: 8px; }
+    .avail ul { list-style: none; margin: 0; padding: 0; }
+    .avail li { display: grid; grid-template-columns: 10px minmax(0, 6.5em) minmax(0, 1fr); align-items: center; column-gap: 14px; padding: 9px 0; border-top: 1px solid var(--line); }
+    .avail li::before { content: ""; width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--muted); }
+    .avail .live::before { background: var(--cyan); box-shadow: none; }
+    .avail .next::before { background: var(--magenta); box-shadow: none; }
+    .avail b { font-weight: 600; }
+    .avail span { color: var(--muted); }
+    .avail .live span { color: var(--cyan); }
 
-    /* Platforms: one panel on the deeper ink, with a column per platform and its testing status. */
-    .avail { margin-top: clamp(56px, 7vw, 96px); padding: clamp(28px, 3.4vw, 48px); background: var(--deep); outline: 1px solid var(--line-2); outline-offset: -1px; }
-    .avail-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: clamp(32px, 6vw, 104px); row-gap: 12px; align-items: end; margin-bottom: clamp(28px, 3.4vw, 44px); }
-    .avail-head h3 { font-size: clamp(1.6rem, 3vw, 2.5rem); line-height: 1.1; letter-spacing: -.035em; font-weight: 700; text-wrap: balance; }
-    .avail-head p { color: var(--muted); }
-    .plat { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
-    .plat li { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 24px 24px 0 0; }
-    .plat li + li { padding-left: 24px; border-left: 1px solid var(--line); }
-    .plat h4 { font-size: clamp(2rem, 3.6vw, 3.25rem); line-height: 1; letter-spacing: -.05em; font-weight: 700; }
-    .plat p { color: var(--muted); max-width: 24em; }
-
-    /* 02 Roadmap: milestones on a dashed timeline. The current one has the pulsing dot and the brightest text, shipped
-       items carry a cyan check, and the release target sits apart in its own panel. */
-    .road { --ms: clamp(1.35rem, 2.4vw, 2rem); --node: calc(var(--ms) * .55); list-style: none; margin: 0; padding: 0; }
-    .road > li { position: relative; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: 24px; row-gap: 12px; padding: 0 0 clamp(32px, 3.6vw, 44px) 44px; }
+    /* 02 Roadmap: milestones on a dashed timeline. The current one has the pulsing dot and the brightest text, a hairline
+       parts each milestone from the next, features sit in two aligned columns, and the release target sits apart in its
+       own panel. */
+    .road { --ms: clamp(1.35rem, 2.4vw, 2rem); --node: calc(var(--ms) * .55); --space: clamp(28px, 3.2vw, 40px); --rail: 44px; list-style: none; margin: 0; padding: 0; }
+    .road > li { --pt: var(--space); position: relative; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: 24px; row-gap: 14px; padding: var(--pt) 0 var(--space) var(--rail); background: linear-gradient(var(--line), var(--line)) var(--rail) 0 / calc(100% - var(--rail)) 1px no-repeat; }
+    .road > li:first-child { --pt: 0px; background: none; }
     .road > li:last-child { padding-bottom: 0; }
-    .road > li::before { content: ""; position: absolute; z-index: 1; left: 0; top: calc(var(--node) - 8px); width: 16px; height: 16px; border-radius: 50%; background: var(--deep); box-shadow: inset 0 0 0 1.5px var(--line-2); }
-    .road > li:not(:last-child)::after { content: ""; position: absolute; left: 7.5px; top: var(--node); bottom: calc(var(--node) * -1); width: 1px; background: repeating-linear-gradient(to bottom, var(--line-2) 0 4px, transparent 4px 9px); }
+    .road > li::before { content: ""; position: absolute; z-index: 1; left: 0; top: calc(var(--pt) + var(--node) - 8px); width: 16px; height: 16px; border-radius: 50%; background: var(--deep); box-shadow: inset 0 0 0 1.5px var(--line-2); }
+    .road > li:not(:last-child)::after { content: ""; position: absolute; left: 7.5px; top: calc(var(--pt) + var(--node)); bottom: calc((var(--space) + var(--node)) * -1); width: 1px; background: repeating-linear-gradient(to bottom, var(--line-2) 0 4px, transparent 4px 9px); }
     .road > .now::before { background: var(--magenta); box-shadow: none; animation: pulse 2.4s ease-out infinite; }
     .road h3 { font-size: var(--ms); line-height: 1.1; letter-spacing: -.035em; color: var(--soft); }
     .road .now h3 { color: var(--ink); }
     .road .state { margin-top: 10px; color: var(--muted); }
     .road .now .state { color: var(--magenta); }
-    .road ul { list-style: none; margin: 0; padding: max(0px, calc(var(--node) - .8rem)) 0 0; display: flex; flex-wrap: wrap; gap: 8px 28px; color: var(--muted); }
+    .road ul { list-style: none; margin: 0; padding: max(0px, calc(var(--node) - .8rem)) 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 32px; align-content: start; color: var(--muted); }
     .road .now ul { color: var(--soft); }
     /* Markers sit beside the first line of an item, even when it wraps. */
-    .road ul li { display: inline-flex; align-items: flex-start; gap: 10px; }
+    .road ul li { display: flex; align-items: flex-start; gap: 12px; }
     .road ul li::before { content: ""; flex: none; width: 5px; height: 5px; margin-top: calc(.8em - 2.5px); border-radius: 50%; background: var(--line-2); }
-    .road ul .check { margin-top: calc(.8em - 8px); }
-    .road ul .done { color: var(--ink); }
-    .road ul .done::before { content: none; }
+    .road .now ul li::before { background: var(--muted); }
     .road .note { color: var(--muted); font-size: .85em; }
-    .check { flex: none; width: 16px; height: 16px; fill: none; stroke: var(--cyan); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-    .road-key { display: flex; align-items: center; gap: 10px; margin: clamp(28px, 3vw, 40px) 0 0 44px; color: var(--muted); font-size: .9rem; }
     .target { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: clamp(28px, 5vw, 80px); row-gap: 20px; align-items: center; margin-top: clamp(56px, 7vw, 96px); padding: clamp(28px, 4vw, 56px); background: var(--bg); outline: 1px solid var(--line-2); outline-offset: -1px; }
     .target-num { font-size: clamp(5rem, 13vw, 10.5rem); line-height: .85; letter-spacing: -.06em; font-weight: 700; padding-right: .12em; }
     .target .eyebrow { margin-bottom: 16px; }
@@ -330,26 +313,24 @@
     .signature img { position: absolute; left: -8.64%; top: -51.79%; width: 117.21%; max-width: none; height: auto; }
 
     @media (max-width: 900px) {
-      .split, .sec-head, .foot, .avail-head { grid-template-columns: minmax(0, 1fr); }
+      .split, .sec-head, .foot { grid-template-columns: minmax(0, 1fr); }
       .rail { position: static; }
       .hero-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 32px; align-items: center; }
       .today { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .today li, .today li + li { padding: 24px 24px 28px 0; border-left: 0; }
       .today li:nth-child(even) { padding-left: 24px; padding-right: 0; border-left: 1px solid var(--line); }
       .today li:nth-child(n+3) { border-top: 1px solid var(--line); }
+      .reel { --h: 140px; }
+      .road > li { grid-template-columns: minmax(0, 1fr); }
+      .road ul { padding-top: 0; }
     }
     @media (max-width: 720px) {
       :root { --gutter: 20px; }
       .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 48px; }
-      .plate { justify-self: start; margin-left: auto; width: min(100% - 30px, 340px); }
-      .band { --h: 144px; }
+      .reel { --h: 132px; --trail: 6px; justify-self: stretch; width: auto; }
+      .reel-row:nth-child(3) { display: none; }
       .statusbar .platforms { display: none; }
-      .plat { grid-template-columns: minmax(0, 1fr); border-top: 0; }
-      .plat li, .plat li + li { gap: 12px; padding: 20px 0; border-left: 0; border-top: 1px solid var(--line-2); }
-      .plat li:last-child { padding-bottom: 0; }
-      .road > li { grid-template-columns: minmax(0, 1fr); padding-left: 36px; }
-      .road ul { padding-top: 0; }
-      .road-key { margin-left: 36px; }
+      .road { --rail: 36px; }
       .target { grid-template-columns: minmax(0, 1fr); }
       .log li { grid-template-columns: minmax(0, 1fr); }
       .log .label { padding-top: 0; }
@@ -360,14 +341,17 @@
       .hubs .btn { align-self: stretch; }
     }
     @media (max-width: 560px) {
-      .today { grid-template-columns: minmax(0, 1fr); }
-      .today li, .today li + li, .today li:nth-child(even) { padding: 24px 0 28px; border-left: 0; }
-      .today li + li { border-top: 1px solid var(--line); }
+      .today li, .today li + li { padding: 20px 16px 24px 0; }
+      .today li:nth-child(even) { padding-left: 16px; padding-right: 0; }
+      .today li::before { margin-bottom: 16px; }
+      .today h3 { font-size: 1.1rem; }
+      .today p:not(.label) { font-size: .9rem; }
+      .road ul { grid-template-columns: minmax(0, 1fr); }
     }
-    .paused .band-track, .paused .marquee-track { animation-play-state: paused; }
+    .paused .reel-track, .paused .marquee-track { animation-play-state: paused; }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      .dot, .band-track, .marquee-track, .road > .now::before { animation: none; }
+      .dot, .reel-track, .marquee-track, .road > .now::before { animation: none; }
       .btn, .today li::before { transition: none; }
       .btn-primary:hover, .btn-primary:focus-visible { transform: none; }
     }
@@ -419,10 +403,10 @@
         "author": { "@type": "Person", "name": "vladleesi", "url": "https://github.com/vladleesi" },
         "publisher": { "@id": "https://braindancegg.com/#organization" },
         "featureList": [
-          "Popular Right Now and Most Anticipated games",
+          "Popular and upcoming games",
           "Game details and similar games",
-          "Giveaways with instructions and claim links",
-          "Shareable links to games and giveaways"
+          "Game giveaways",
+          "Links to any game"
         ]
       },
       {
@@ -509,16 +493,12 @@
           </div>
           <p class="fine">Use it in your browser today. Android alpha testing comes next, then iOS.</p>
         </div>
-        <figure class="plate">
-          <div class="frame"><img src="/img/app-home.webp" srcset="/img/app-home-560.webp 560w, /img/app-home.webp 780w" sizes="(min-width: 721px) 372px, 340px" alt="The Braindance Home screen on a phone, with a row of game covers under Popular Right Now" width="780" height="1040" fetchpriority="high"></div>
-          <figcaption class="label">Home, on a phone</figcaption>
-        </figure>
+        <div class="reel" aria-hidden="true">
+          <div class="reel-row"><div class="reel-track a"></div></div>
+          <div class="reel-row"><div class="reel-track b"></div></div>
+          <div class="reel-row"><div class="reel-track a"></div></div>
+        </div>
       </div>
-    </div>
-
-    <div class="band" aria-hidden="true">
-      <div class="band-row"><div class="band-track"></div></div>
-      <div class="band-row"><div class="band-track"></div></div>
     </div>
 
     <section class="sec" id="features" aria-labelledby="features-title">
@@ -526,54 +506,23 @@
         <div class="sec-head">
           <p class="num label"><span>01</span><i>Features</i></p>
           <h2 id="features-title">What you can try today</h2>
-          <p class="sub">Everything here works in the web app now, and the Android and iOS apps share the same features. Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>.</p>
+          <!-- Platforms in rollout order. When a status changes, update the item's class (live for available, next for
+               the upcoming one, none for later) and its status text. -->
+          <div class="avail">
+            <p class="label" id="platforms-title">One app, every platform</p>
+            <ul aria-labelledby="platforms-title">
+              <li class="live"><b>Web</b> <span>Available now</span></li>
+              <li class="next"><b>Android</b> <span>Alpha testing next</span></li>
+              <li><b>iOS</b> <span>After Android</span></li>
+            </ul>
+          </div>
         </div>
         <ul class="today">
-          <li>
-            <p class="label">Browse</p>
-            <h3>Popular and upcoming games</h3>
-            <p>Popular Right Now shows what people are playing and why each game is trending. Most Anticipated shows what is coming.</p>
-          </li>
-          <li>
-            <p class="label">Explore</p>
-            <h3>Game details</h3>
-            <p>Release date, platforms, genres, description and store links, plus similar games to try next.</p>
-          </li>
-          <li>
-            <p class="label">Claim</p>
-            <h3>Game giveaways</h3>
-            <p>Current giveaways from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>, with instructions and a link to claim.</p>
-          </li>
-          <li>
-            <p class="label">Share</p>
-            <h3>Links to games</h3>
-            <p>Share a game with a link that opens its page in the web app. Game and giveaway pages can be bookmarked.</p>
-          </li>
+          <li><p class="label">Browse</p><h3>Popular and upcoming games</h3><p>What is trending now and what is coming.</p></li>
+          <li><p class="label">Explore</p><h3>Game details and similar games</h3><p>Release dates, platforms and store links.</p></li>
+          <li><p class="label">Claim</p><h3>Game giveaways</h3><p>Current giveaways and how to claim them.</p></li>
+          <li><p class="label">Share</p><h3>Links to any game</h3><p>Share a game with a single link.</p></li>
         </ul>
-        <!-- Platform availability: update the tag and line of a platform when its testing status changes. -->
-        <div class="avail">
-          <div class="avail-head">
-            <h3 id="platforms-title">One app for Web, Android and iOS</h3>
-            <p>The same features and the same look on every platform. Only how soon you can get it differs.</p>
-          </div>
-          <ul class="plat" aria-labelledby="platforms-title">
-            <li>
-              <h4>Web</h4>
-              <span class="tag live label">Available now</span>
-              <p>Open it in any modern browser, on a computer or phone. Nothing to install.</p>
-            </li>
-            <li>
-              <h4>Android</h4>
-              <span class="tag label">Alpha testing next</span>
-              <p>The app is already running. Alpha testing starts here first; join the Discord to hear when it opens.</p>
-            </li>
-            <li>
-              <h4>iOS</h4>
-              <span class="tag plan label">After Android</span>
-              <p>The app is already running too. Testing access follows Android.</p>
-            </li>
-          </ul>
-        </div>
       </div>
     </section>
 
@@ -582,10 +531,9 @@
         <div class="sec-head">
           <p class="num label"><span>02</span><i>Roadmap</i></p>
           <h2 id="roadmap-title">What comes next</h2>
-          <p class="sub">The milestones the work focuses on next. They are not the whole plan for 1.0, and more features and improvements will follow.</p>
         </div>
-        <!-- One <li> per milestone, without dates. The current milestone gets class="now" and "In progress"; the others
-             say "Planned". Mark shipped items class="done" with the check, and wrap optional ones with the note in a <span>. -->
+        <!-- One <li> per milestone, in order, without dates or completion marks. The milestone being worked on gets
+             class="now" and "In progress"; the others say "Planned". Put "(optional)" in a note span. -->
         <ol class="road">
           <li class="now">
             <div>
@@ -596,8 +544,8 @@
               <li>Game compilations on Home</li>
               <li>Game search</li>
               <li>Paginated game lists</li>
-              <li class="done"><svg class="check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Game sharing<span class="sr-only"> (available now)</span></li>
-              <li class="done"><svg class="check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Links to games on the web<span class="sr-only"> (available now)</span></li>
+              <li>Game sharing</li>
+              <li>Links to games on the web</li>
               <li>Links that open the Android and iOS apps</li>
               <li><span>Gaming events on Home <span class="note">(optional)</span></span></li>
             </ul>
@@ -645,7 +593,6 @@
             </ul>
           </li>
         </ol>
-        <p class="road-key"><svg class="check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Already available</p>
         <div class="target">
           <p class="target-num echo" aria-hidden="true">1.0</p>
           <div>
@@ -667,24 +614,24 @@
         <!-- The three latest meaningful product updates from CHANGELOG.md: add the newest first, then drop the oldest. -->
         <ol class="log">
           <li>
+            <p class="label"><time datetime="2026-11-15">Nov 15, 2026</time> &middot; 0.18.2</p>
+            <div>
+              <h3>A tidier search on Discover</h3>
+              <p>The search field is now compact and moves to the top while you type on phones and tablets. Autocorrect stays off, so game titles stay as typed, and Back leaves search one step at a time. Search results come with the First Alpha.</p>
+            </div>
+          </li>
+          <li>
             <p class="label"><time datetime="2026-11-15">Nov 15, 2026</time> &middot; 0.18</p>
             <div>
-              <h3>A calmer look and a community</h3>
-              <p>Softer covers and cards, calmer surfaces and a clear main button on every screen. Discord and Reddit are now linked from Profile.</p>
+              <h3>A softer look, built on the new brand</h3>
+              <p>The new logo and colors arrived in 0.17. Now covers and cards are softly rounded, surfaces are calmer, and every screen has one clear white main button. Profile links to the Discord and Reddit.</p>
             </div>
           </li>
           <li>
-            <p class="label"><time datetime="2026-11-14">Nov 14, 2026</time> &middot; 0.17</p>
+            <p class="label"><time datetime="2026-11-13">Nov 13, 2026</time> &middot; 0.16</p>
             <div>
-              <h3>The new Braindance brand</h3>
-              <p>A new logo and app icon, a darker background, and the brand's cyan, magenta and yellow.</p>
-            </div>
-          </li>
-          <li>
-            <p class="label"><time datetime="2026-11-13">Nov 13, 2026</time> &middot; 0.15</p>
-            <div>
-              <h3>Share a game</h3>
-              <p>A Share button on every game page sends a link that opens the game in the web app.</p>
+              <h3>Getting ready for Android testing</h3>
+              <p>Android test builds can now be sent to testers, a step toward alpha testing. Release builds report crashes so they can be fixed; the apps collect no analytics.</p>
             </div>
           </li>
         </ol>
@@ -811,13 +758,13 @@
   </script>
 
   <script>
-    /* The cover band and the marquee only animate while they are on screen. */
+    /* The cover reel and the marquee only animate while they are on screen. */
     (function () {
       if (!("IntersectionObserver" in window)) return;
       var observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) { entry.target.classList.toggle("paused", !entry.isIntersecting); });
       });
-      document.querySelectorAll(".band, .marquee").forEach(function (el) { observer.observe(el); });
+      document.querySelectorAll(".reel, .marquee").forEach(function (el) { observer.observe(el); });
     })();
   </script>
 

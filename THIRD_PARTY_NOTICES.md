@@ -75,9 +75,8 @@ modifications, and applicable brand guidelines before redistributing them.
   wordmark's outline in `shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui/style/icons/BraindanceWordmark.kt`.
 - Copies of the kit on the landing site: `landing/favicon*`, `landing/apple-touch-icon.png`, `landing/icon-512.png`,
   `landing/mark.svg`, `landing/wordmark.svg`, and `landing/og-image.png`.
-- `landing/img/covers-*.webp`: the landing site's cover band, game covers from IGDB resized and re-encoded;
-  and `landing/img/app-*.webp`: screenshots of the Braindance app, which show game covers from IGDB and a giveaway
-  image from GamerPower. Each cover and image remains the property of its rights holders; see External data below.
+- `landing/img/covers-*.webp`: the landing site's hero cover reel, game covers from IGDB resized and re-encoded.
+  Each cover remains the property of its rights holders; see External data below.
 - `docs/branding/banner/social-header-cover-wall*.jpg`: social headers made from game covers from IGDB,
   resized and arranged. Each cover remains the property of its game's rights holders.
 

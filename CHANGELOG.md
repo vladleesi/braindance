@@ -21,6 +21,15 @@ The Braindance API is versioned and released separately.
 - Keep the screen in view while the keyboard is open. The keyboard now covers the navigation bar; on iOS, it
   used to squeeze the Discover screen down to its title.
 
+### Website and documentation
+
+- Move the game covers into the braindancegg.com hero as three drifting rows in place of the app screenshot.
+- Shorten the braindancegg.com features to four short titles with one line each, and list Web, Android, and iOS
+  beside the heading with their status as plain text instead of button-like tags.
+- Part the roadmap milestones with a thin line, list their features in two aligned columns, and drop the completion
+  marks.
+- Refresh the latest updates on braindancegg.com.
+
 ## 0.18.1 — 2026-11-15
 
 ### Android, iOS, and Web
