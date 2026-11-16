@@ -35,6 +35,12 @@
   <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+  <!-- The first reel strip is the largest paint of the first view. Its CSS background is found only after styles
+       apply, so it is requested here at high priority; each media query matches the reel's rules exactly. -->
+  <link rel="preload" as="image" href="/img/covers-1.webp" media="not all and (min-resolution: 1.5dppx)" fetchpriority="high">
+  <link rel="preload" as="image" href="/img/covers-1@2x.webp" media="(min-resolution: 1.5dppx) and (width > 900px)" fetchpriority="high">
+  <link rel="preload" as="image" href="/img/covers-1@1.5x.webp" media="(min-resolution: 1.5dppx) and (width <= 900px)" fetchpriority="high">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
@@ -158,13 +164,24 @@
     /* The hero reel: rows of whole covers at their own 3:4 proportion drifting in alternate directions, in a plate
        with the trail behind it, like the letters of the logo. Each row is one strip of 16 covers (12 row heights wide)
        repeated three times, so moving by a third is exactly one strip: a seamless loop. A grid in the plate's color
-       moves with each strip and parts the covers into tiles. 1x and 2x files are chosen by pixel density. */
+       moves with each strip and parts the covers into tiles. Media queries rather than image-set() choose each strip's
+       file (192, 288, or 384 pixels tall), so the preload in the head picks the same file and nothing loads twice:
+       1x below 1.5 device pixels per CSS pixel, and above it 2x for the 168px rows on wide screens or 1.5x for the
+       132-140px rows on narrower ones, about twice their height and half the 2x weight. */
     .reel { --h: 168px; --seam: 6px; --trail: 10px; justify-self: end; display: grid; gap: var(--seam); width: min(100% - var(--trail) * 3, 440px); margin: 0 calc(var(--trail) * 3) calc(var(--trail) * 3) 0; overflow: hidden; background: var(--deep); outline: 1px solid var(--line-2); box-shadow: var(--trail) var(--trail) 0 var(--cyan), calc(var(--trail) * 2) calc(var(--trail) * 2) 0 var(--magenta), calc(var(--trail) * 3) calc(var(--trail) * 3) 0 var(--yellow); }
     .reel-row { height: var(--h); overflow: hidden; contain: strict; }
     .reel-track { position: relative; width: calc(var(--h) * 36); height: 100%; background-repeat: repeat-x; background-size: calc(var(--h) * 12) var(--h); will-change: transform; animation: reel-left 110s linear infinite; }
     .reel-track::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--deep) 0 calc(var(--seam) / 2), transparent 0 calc(var(--h) * .75 - var(--seam) / 2), var(--deep) 0 calc(var(--h) * .75)); }
-    .reel .a { background-image: url(/img/covers-1.webp); background-image: image-set(url(/img/covers-1.webp) 1x, url(/img/covers-1@2x.webp) 2x); }
-    .reel .b { background-image: url(/img/covers-2.webp); background-image: image-set(url(/img/covers-2.webp) 1x, url(/img/covers-2@2x.webp) 2x); animation-name: reel-right; animation-duration: 126s; }
+    .reel .a { background-image: url(/img/covers-1.webp); }
+    .reel .b { background-image: url(/img/covers-2.webp); animation-name: reel-right; animation-duration: 126s; }
+    @media (min-resolution: 1.5dppx) and (width > 900px) {
+      .reel .a { background-image: url(/img/covers-1@2x.webp); }
+      .reel .b { background-image: url(/img/covers-2@2x.webp); }
+    }
+    @media (min-resolution: 1.5dppx) and (width <= 900px) {
+      .reel .a { background-image: url(/img/covers-1@1.5x.webp); }
+      .reel .b { background-image: url(/img/covers-2@1.5x.webp); }
+    }
     /* The third row repeats the first strip half a loop ahead, so the same covers never line up. */
     .reel-row:nth-child(3) .reel-track { animation-delay: -55s; }
     @keyframes reel-left { to { transform: translate3d(-33.3333%, 0, 0); } }
