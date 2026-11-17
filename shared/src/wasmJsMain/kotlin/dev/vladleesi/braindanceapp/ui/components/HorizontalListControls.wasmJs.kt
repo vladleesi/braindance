@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.horizontal_list_next
 import dev.vladleesi.braindanceapp.resources.horizontal_list_previous
+import dev.vladleesi.braindanceapp.system.hasTouchScreen
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.FocusVisibleIndication
 import kotlinx.coroutines.launch
@@ -91,9 +92,6 @@ actual fun HorizontalListControls(
         )
     }
 }
-
-@OptIn(ExperimentalWasmJsInterop::class)
-private fun hasTouchScreen(): Boolean = js("navigator.maxTouchPoints > 0")
 
 /**
  * Keeps a full-size touch target while drawing hover, focus, and press feedback only inside the visible circle,

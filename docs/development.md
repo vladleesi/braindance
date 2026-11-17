@@ -73,6 +73,7 @@ The rules are in the [brand guide](branding/README.md#in-the-product). Build new
 | `SurfaceCard`, `SurfaceTile` | `components/Surfaces.kt` | Containers: cards and panels, and compact tiles |
 | `Tag`, `ComingSoonLabel`, `ComingSoonCard` | `components/Tag.kt`, `ComingSoon.kt` | Status labels and placeholders for planned features |
 | `CardCover`, `CarouselSection` | `components/` | Game covers and horizontal rows of them |
+| `ShareButton` | `components/Share.kt` | Sharing a game, giveaway, or list; see [sharing](#sharing) |
 | `BraindanceWordmark`, `BrandAccentStrip` | `style/icons/`, `components/desktop/` | The logo and the three-color accent |
 
 ## Validation
@@ -132,6 +133,22 @@ Without the app, or before the platform has verified the domain, links open in t
   (`applinks:app.braindancegg.com`, set through `CODE_SIGN_ENTITLEMENTS`). The Web app must then also serve
   `.well-known/apple-app-site-association` with the team's app ID and `Content-Type: application/json`, through a
   `_headers` rule.
+
+### Sharing
+
+Content is shared as a short message with its link on the Web app. `ShareTarget` in
+`shared/.../navigation/ShareTarget.kt` names what can be shared (a game, a giveaway, or a Home section's full list)
+and builds each link from the paths above. It shares only a link that opens the same screen again, so an ID no
+screen accepts gets no share button. A giveaway links to its Braindance page, which shows its details and the claim
+link, not to GamerPower or the store.
+
+Share content with `ShareButton` (`ui/components/Share.kt`) in a screen's top bar: each full list, giveaway, and game
+has one, while Home's carousels and the cards stay without it. It opens the system share sheet through ShareKit:
+Android's chooser, iOS's activity sheet, or the Web Share API, which needs HTTPS and a click. Where there is no sheet,
+or it cannot open, the button copies the message and shows a check mark for two seconds; cancelling the sheet is not
+an error. `showsShareActions()` shows share buttons on every touch-screen device, including Web tablets and
+foldables in the desktop layout, and in the standard layout of narrow windows. It hides them only in the Web desktop
+layout on devices without a touch screen, whose address bar already holds the link. UI tests provide their own `ShareSheet` through `LocalShareSheet`, because the real sheet needs a running app.
 
 ## Optional independent hosting
 

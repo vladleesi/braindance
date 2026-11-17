@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.vladleesi.braindanceapp.data.DataError
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.ShareTarget
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
@@ -31,6 +32,7 @@ import dev.vladleesi.braindanceapp.ui.components.PagedGridPadding
 import dev.vladleesi.braindanceapp.ui.components.PagedGridSkeleton
 import dev.vladleesi.braindanceapp.ui.components.SectionEmpty
 import dev.vladleesi.braindanceapp.ui.components.SectionError
+import dev.vladleesi.braindanceapp.ui.components.ShareButton
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCard
@@ -39,6 +41,7 @@ import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardLabel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.background
@@ -66,6 +69,7 @@ fun CompilationScreen(
     when (compilation) {
         Compilation.Popular ->
             GameCompilation(
+                compilation = compilation,
                 title = stringResource(Res.string.home_screen_popular_right_now),
                 viewModel = koinViewModel<PopularGamesViewModel>(),
                 onBack = onBack,
@@ -74,6 +78,7 @@ fun CompilationScreen(
             )
         Compilation.Anticipated ->
             GameCompilation(
+                compilation = compilation,
                 title = stringResource(Res.string.home_screen_popular_most_anticipated),
                 viewModel = koinViewModel<AnticipatedGamesViewModel>(),
                 onBack = onBack,
@@ -84,8 +89,9 @@ fun CompilationScreen(
             val viewModel = koinViewModel<GiveawaysListViewModel>()
             LaunchedEffect(viewModel) { viewModel.load() }
             val state by viewModel.state.collectAsStateWithLifecycle()
+            val title = stringResource(Res.string.home_screen_popular_latest_giveaways)
             CompilationContent(
-                title = stringResource(Res.string.home_screen_popular_latest_giveaways),
+                title = title,
                 state = state,
                 onBack = onBack,
                 onLoadMore = viewModel::loadMore,
@@ -94,6 +100,7 @@ fun CompilationScreen(
                 cardWidth = PagedGridCardWidth.Giveaways,
                 skeleton = { GiveawayCardSkeleton() },
                 modifier = modifier,
+                shareTarget = ShareTarget.CompilationList(compilation, name = title),
             ) { giveaway ->
                 GiveawayCard(item = giveaway, onClick = { id -> navigator.navigate(GiveawayDetailsRoute(id)) })
             }
@@ -101,8 +108,10 @@ fun CompilationScreen(
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
 internal fun GameCompilation(
+    compilation: Compilation,
     title: String,
     viewModel: PagedListViewModel<GameCardModel>,
     onBack: () -> Unit,
@@ -122,6 +131,7 @@ internal fun GameCompilation(
         cardWidth = PagedGridCardWidth.Games,
         skeleton = { GameCardSkeleton(showTitle = true, titleLines = TITLE_LINES) },
         modifier = modifier,
+        shareTarget = ShareTarget.CompilationList(compilation, name = title),
     ) { game ->
         GameCard(card = game, onClick = onGameClick, showTitle = true, titleLines = TITLE_LINES)
     }
@@ -130,7 +140,8 @@ internal fun GameCompilation(
 /**
  * A titled list screen with a back button for any [PagedListState]: placeholders while the first page loads, then a
  * [PagedGrid] of [itemContent] cards, or a message when the list is empty or failed. The grid's scroll position is
- * kept across state changes and restored when the screen returns.
+ * kept across state changes and restored when the screen returns. With [shareTarget], the top bar shares a link to the
+ * list in layouts that [showsShareActions].
  */
 @Suppress("LongParameterList")
 @Composable
@@ -144,6 +155,7 @@ internal fun <T> CompilationContent(
     cardWidth: PagedGridCardWidth,
     skeleton: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    shareTarget: ShareTarget? = null,
     itemContent: @Composable (T) -> Unit,
 ) {
     val gridState = rememberLazyGridState()
@@ -154,6 +166,12 @@ internal fun <T> CompilationContent(
             titleStyle = MaterialTheme.typography.h2,
             showBackButton = true,
             onBackButtonPressed = onBack,
+            actions =
+                if (shareTarget != null && showsShareActions()) {
+                    { ShareButton(target = shareTarget, visible = true) }
+                } else {
+                    null
+                },
         )
         when (state) {
             PagedListState.Loading -> PagedGridSkeleton(skeleton = skeleton, cardWidth = cardWidth)
@@ -204,6 +222,7 @@ internal fun CompilationContentPreview() {
             cardWidth = PagedGridCardWidth.Games,
             skeleton = { GameCardSkeleton(showTitle = true, titleLines = TITLE_LINES) },
             modifier = Modifier.background(background).height(PreviewHeight),
+            shareTarget = ShareTarget.CompilationList(Compilation.Popular, name = "Popular Right Now"),
         ) { game ->
             GameCard(card = game, onClick = {}, showTitle = true, titleLines = TITLE_LINES)
         }

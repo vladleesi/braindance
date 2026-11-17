@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.ShareTarget
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.giveaway_details_not_found
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_about
@@ -44,10 +46,12 @@ import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
 import dev.vladleesi.braindanceapp.ui.components.PlatformLogoList
 import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
+import dev.vladleesi.braindanceapp.ui.components.ShareButton
 import dev.vladleesi.braindanceapp.ui.components.SpacerTopBarWithStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StaticText
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
+import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -100,6 +104,7 @@ fun GiveawayDetailsScreen(
 
         is GiveawayDetailsState.Success ->
             GiveawayDetailsScreen(
+                id = id,
                 state = currentState,
                 modifier = modifier,
                 onBackButtonPressed = { navigator.goBack() },
@@ -107,8 +112,10 @@ fun GiveawayDetailsScreen(
     }
 }
 
+/** The loaded giveaway [id]; its top bar offers Share in layouts that [showsShareActions]. */
 @Composable
 fun GiveawayDetailsScreen(
+    id: Int,
     state: GiveawayDetailsState.Success,
     modifier: Modifier,
     onBackButtonPressed: (() -> Unit),
@@ -186,16 +193,43 @@ fun GiveawayDetailsScreen(
             }
             item { Spacer(Modifier.height(Dimens.large)) }
         }
-        Column {
-            StatusBarOverlay(backgroundColor = topBarColor)
-            TopAppBar(
-                tabBarColor = topBarColor,
-                titleColor = topBarTitleColor,
-                showBackButton = true,
-                backButtonBackgroundColor = backButtonColor,
-                onBackButtonPressed = onBackButtonPressed,
-            )
-        }
+        GiveawayDetailsTopBar(
+            shareTarget = ShareTarget.Giveaway(id = id, name = state.giveawayDetails.title),
+            topBarColor = topBarColor,
+            backButtonColor = backButtonColor,
+            titleColor = topBarTitleColor,
+            onBackButtonPressed = onBackButtonPressed,
+        )
+    }
+}
+
+/**
+ * The bar over the scrolling content: back and, in layouts that [showsShareActions], Share, which links to the
+ * giveaway's page. Both are white icons on circular backdrops that blend into the bar once it fills.
+ */
+@Composable
+private fun GiveawayDetailsTopBar(
+    shareTarget: ShareTarget,
+    topBarColor: Color,
+    backButtonColor: Color,
+    titleColor: Color,
+    onBackButtonPressed: () -> Unit,
+) {
+    Column {
+        StatusBarOverlay(backgroundColor = topBarColor)
+        TopAppBar(
+            tabBarColor = topBarColor,
+            titleColor = titleColor,
+            showBackButton = true,
+            backButtonBackgroundColor = backButtonColor,
+            onBackButtonPressed = onBackButtonPressed,
+            actions =
+                if (showsShareActions()) {
+                    { ShareButton(target = shareTarget, backgroundColor = backButtonColor, visible = true) }
+                } else {
+                    null
+                },
+        )
     }
 }
 

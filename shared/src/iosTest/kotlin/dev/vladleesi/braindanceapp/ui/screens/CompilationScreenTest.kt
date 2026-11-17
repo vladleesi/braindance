@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.v2.runComposeUiTest
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
+import dev.vladleesi.braindanceapp.navigation.routes.Compilation
 import dev.vladleesi.braindanceapp.testing.mockBackendClient
 import dev.vladleesi.braindanceapp.testing.respondJson
 import dev.vladleesi.braindanceapp.ui.components.CarouselSection
@@ -87,6 +88,7 @@ class CompilationScreenTest {
             setContent {
                 BraindanceTheme {
                     GameCompilation(
+                        compilation = Compilation.Popular,
                         title = "Popular Right Now",
                         viewModel = viewModel,
                         onBack = { backs++ },

@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.ui.screens
 
-import Share
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +15,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.ShareTarget
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.game_details_not_found
@@ -36,6 +34,7 @@ import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.CarouselSection
 import dev.vladleesi.braindanceapp.ui.components.ExpandableText
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
+import dev.vladleesi.braindanceapp.ui.components.ShareButton
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.details.GameDetailsHero
@@ -43,18 +42,16 @@ import dev.vladleesi.braindanceapp.ui.components.details.LibraryActionsState
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
-import dev.vladleesi.braindanceapp.ui.components.rememberShareGameAction
+import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.RecommendationsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
-import dev.vladleesi.braindanceapp.utils.withCircleRippleEffect
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -209,9 +206,9 @@ private fun GameDetailsScreen(
 }
 
 /**
- * The bar over the scrolling content: back, the game's name, and Share, which links to the game's page. The title fades
- * in as the bar fills, but Share is always visible: like the back button it is a white icon on a circular backdrop
- * that is a dark chip over the artwork and blends into the bar once it fills.
+ * The bar over the scrolling content: back, the game's name, and, in layouts that [showsShareActions], Share, which
+ * links to the game's page. The title fades in as the bar fills, but Share is always visible: like the back button it
+ * is a white icon on a circular backdrop that is a dark chip over the artwork and blends into the bar once it fills.
  */
 @Composable
 private fun GameDetailsTopBar(
@@ -221,7 +218,7 @@ private fun GameDetailsTopBar(
     titleColor: Color,
     onBackButtonPressed: () -> Unit,
 ) {
-    val shareGame = rememberShareGameAction(gameId = gameDetails.id, gameName = gameDetails.name)
+    val shareTarget = ShareTarget.Game(id = gameDetails.id, name = gameDetails.name)
     Column {
         StatusBarOverlay(backgroundColor = topBarColor)
         TopAppBar(
@@ -231,18 +228,12 @@ private fun GameDetailsTopBar(
             backButtonBackgroundColor = backButtonColor,
             onBackButtonPressed = onBackButtonPressed,
             title = gameDetails.name,
-            actions = {
-                IconButton(
-                    modifier = Modifier.withCircleRippleEffect(backButtonColor),
-                    onClick = shareGame.share,
-                ) {
-                    Icon(
-                        imageVector = Share,
-                        contentDescription = stringResource(shareGame.label),
-                        tint = white,
-                    )
-                }
-            },
+            actions =
+                if (showsShareActions()) {
+                    { ShareButton(target = shareTarget, backgroundColor = backButtonColor, visible = true) }
+                } else {
+                    null
+                },
         )
     }
 }

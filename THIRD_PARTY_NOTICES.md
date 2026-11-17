@@ -37,7 +37,7 @@ with Material 3 Adaptive, WindowManager, Graphics Shapes, and annotation transit
 See the [Compose 1.12.2 component versions](https://kotlinlang.org/docs/multiplatform/whats-new-compose-112.html#dependencies).
 Retain the copyright, license, and any NOTICE material in the published artifacts when distributing them.
 
-Profile sharing uses [ShareKit 0.2.0](https://github.com/vladleesi/kmp-sharekit/tree/v0.2.0)
+Sharing uses [ShareKit 0.2.0](https://github.com/vladleesi/kmp-sharekit/tree/v0.2.0)
 (`dev.vladleesi:kmp-sharekit`) under [Apache-2.0](LICENSES/Apache-2.0.txt). Its only declared runtime dependency is
 the Kotlin standard library, already used by the application. Preserve any notices in the published artifacts.
 

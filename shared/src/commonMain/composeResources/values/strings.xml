@@ -38,6 +38,11 @@
     <string name="profile_support_copy">Copy invite</string>
     <string name="share_app_message">I'm checking out Braindance — a new place to discover trending games, upcoming releases, and free game giveaways. Check it out: %1$s</string>
     <string name="share_game_message">Check out %1$s on Braindance: %2$s</string>
+    <string name="share_giveaway_message">Free to claim: %1$s. Details on Braindance: %2$s</string>
+    <string name="share_compilation_message">%1$s on Braindance: %2$s</string>
+    <string name="share_content_description">Share %1$s</string>
+    <string name="share_copy_link_description">Copy link to %1$s</string>
+    <string name="share_link_copied">Link copied</string>
     <string name="profile_sign_in">Sign in</string>
     <string name="profile_statistics">Gaming statistics</string>
     <string name="profile_activity">Activity</string>

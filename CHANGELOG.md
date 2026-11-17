@@ -5,6 +5,25 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.22.0 — 2026-11-17
+
+### Android, iOS, and Web
+
+- Share Popular Right Now, Most Anticipated, and Latest Giveaways from the top of their full lists, and any giveaway
+  from the top of its page. Game pages keep their Share button. Each link opens the same screen in the Web app, and
+  in the Android app where it is installed.
+- Sharing opens your device's share sheet. Where a browser has none, the button copies the link and briefly shows a
+  check mark.
+
+### Web
+
+- Share buttons appear on phones, tablets, and foldables at any size, and in narrow windows. Wide windows on
+  computers without a touch screen leave them out, since the address bar already holds the link to every screen.
+
+### Website and documentation
+
+- List giveaway and list sharing among the features on braindancegg.com and refresh the latest updates.
+
 ## 0.21.0 — 2026-11-17
 
 ### Android, iOS, and Web
