@@ -10,6 +10,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
+import dev.vladleesi.braindanceapp.navigation.routes.Compilation
+import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -66,6 +68,9 @@ private val fixedPaths =
         BottomBarRoute.NewsRoute to "/news",
         BottomBarRoute.LibraryRoute to "/library",
         ProfileRoute to "/profile",
+        CompilationRoute(Compilation.Popular) to "/popular",
+        CompilationRoute(Compilation.Anticipated) to "/anticipated",
+        CompilationRoute(Compilation.Giveaways) to "/giveaways",
     )
 
 /** The address of [this] route; equal routes always produce the same path. Unknown routes map to Home. */

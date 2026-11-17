@@ -9,6 +9,10 @@ struct ContentView: View {
 			// Compose handles system insets and the keyboard, as on Android. SwiftUI's keyboard avoidance would shrink
 			// the view on top of Compose's keyboard inset and squeeze screens to their title.
 			.ignoresSafeArea()
+			// Universal Links to the Web app, at launch or while running; the shared code validates and opens them.
+			.onOpenURL { url in
+				BraindanceAppIOSKt.openAppLink(url: url.absoluteString)
+			}
 	}
 }
 

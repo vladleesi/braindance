@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
@@ -31,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
+import dev.vladleesi.braindanceapp.navigation.routes.Compilation
+import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -54,6 +57,7 @@ import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.components.CarouselSection
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
+import dev.vladleesi.braindanceapp.ui.components.SearchAction
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
@@ -134,30 +138,26 @@ private fun StandardHomeScreen(
                     .pullRefresh(pullState, enabled = !isMousePointer),
             verticalArrangement = Arrangement.spacedBy(Dimens.large),
         ) {
+            // The sections with real content come first, then the previews of planned ones, so the games are within
+            // a swipe or two rather than spread between placeholders. Desktop Home groups them the same way.
             item {
                 HomeHeader(
                     trendingNow = trendingNow,
                     onProfileClick = { navigator.navigate(ProfileRoute) },
+                    onSearchClick = navigator::openSearch,
                     onRetry = viewModel::loadTrendingNow,
+                    onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Popular)) },
                     onGameClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
                 )
             }
-            item { HomePreviewCard(Res.string.home_recommendations_title, Res.string.home_recommendations_description) }
             item {
                 GamesCarousel(
                     title = stringResource(Res.string.home_screen_popular_most_anticipated),
                     state = mostAnticipated,
                     onRetry = { viewModel.loadMostAnticipated() },
+                    onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Anticipated)) },
                     showTitles = false,
                     onGameClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
-                )
-            }
-            item {
-                HomePreviewCard(
-                    title = Res.string.releases_upcoming_title,
-                    description = Res.string.home_upcoming_releases_description,
-                    link = Res.string.home_open_releases,
-                    onLinkClick = { navigator.navigate(BottomBarRoute.ReleasesRoute) },
                 )
             }
             item {
@@ -165,18 +165,14 @@ private fun StandardHomeScreen(
                     title = stringResource(Res.string.home_screen_popular_latest_giveaways),
                     state = giveaways,
                     onRetry = { viewModel.loadGiveaways() },
+                    onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Giveaways)) },
                     onGiveawayClick = { id -> navigator.navigate(GiveawayDetailsRoute(id)) },
                 )
             }
-            item {
-                HomePreviewCard(
-                    title = Res.string.home_latest_news_title,
-                    description = Res.string.home_latest_news_description,
-                    link = Res.string.home_open_news,
-                    onLinkClick = { navigator.navigate(BottomBarRoute.NewsRoute) },
-                )
-            }
-            item { HomePreviewCard(Res.string.home_events_title, Res.string.home_events_description) }
+            homePreviewCards(
+                onOpenReleases = { navigator.navigate(BottomBarRoute.ReleasesRoute) },
+                onOpenNews = { navigator.navigate(BottomBarRoute.NewsRoute) },
+            )
             item { Spacer(Modifier.height(Dimens.large)) }
         }
         StatusBarOverlay(backgroundColor = overlayBlackWith80Alpha)
@@ -198,32 +194,40 @@ private const val GIVEAWAY_CARD_CONTENT_TYPE = "giveaway_card"
  * The top bar and the first section as one list item, so Popular Right Now starts right under the title, like the
  * content of every other screen, without the gap that separates sections.
  */
+@Suppress("LongParameterList")
 @Composable
 private fun HomeHeader(
     trendingNow: SectionState<GameCardModel>,
     onProfileClick: () -> Unit,
+    onSearchClick: () -> Unit,
     onRetry: () -> Unit,
+    onSeeAll: () -> Unit,
     onGameClick: (id: Int) -> Unit,
 ) {
     Column {
-        HomeTopBar(onProfileClick = onProfileClick)
+        HomeTopBar(onProfileClick = onProfileClick, onSearchClick = onSearchClick)
         GamesCarousel(
             title = stringResource(Res.string.home_screen_popular_right_now),
             state = trendingNow,
             onRetry = onRetry,
+            onSeeAll = onSeeAll,
             showTitles = true,
             onGameClick = onGameClick,
         )
     }
 }
 
-/** A carousel of game cards; [showTitles] adds each game's title and trending reason below its cover. */
-
+/**
+ * A carousel of game cards; [showTitles] adds each game's title and trending reason below its cover, and [onSeeAll]
+ * opens the section's full list.
+ */
+@Suppress("LongParameterList")
 @Composable
 private fun GamesCarousel(
     title: String,
     state: SectionState<GameCardModel>,
     onRetry: () -> Unit,
+    onSeeAll: () -> Unit,
     showTitles: Boolean,
     onGameClick: (id: Int) -> Unit,
 ) {
@@ -232,6 +236,7 @@ private fun GamesCarousel(
         title = title,
         state = state,
         onRetry = onRetry,
+        onSeeAll = onSeeAll,
         skeleton = { GameCardSkeleton(showTitle = showTitles, modifier = cardModifier) },
     ) { games ->
         items(games, key = { game -> game.id }, contentType = { GAME_CARD_CONTENT_TYPE }) { game ->
@@ -245,6 +250,7 @@ private fun GiveawaysCarousel(
     title: String,
     state: SectionState<GiveawayItemModel>,
     onRetry: () -> Unit,
+    onSeeAll: () -> Unit,
     onGiveawayClick: (id: Int) -> Unit,
 ) {
     val cardModifier = Modifier.width(Dimens.giveAwayCardWidth)
@@ -252,6 +258,7 @@ private fun GiveawaysCarousel(
         title = title,
         state = state,
         onRetry = onRetry,
+        onSeeAll = onSeeAll,
         skeleton = { GiveawayCardSkeleton(modifier = cardModifier) },
     ) { giveaways ->
         items(giveaways, key = { giveaway -> giveaway.id }, contentType = { GIVEAWAY_CARD_CONTENT_TYPE }) { giveaway ->
@@ -260,8 +267,12 @@ private fun GiveawaysCarousel(
     }
 }
 
+/** The title, a search action that starts a search on Discover, notifications, and the profile button. */
 @Composable
-private fun HomeTopBar(onProfileClick: () -> Unit) {
+private fun HomeTopBar(
+    onProfileClick: () -> Unit,
+    onSearchClick: () -> Unit,
+) {
     // One list item, so the list spacing starts below the bar rather than between it and the status bar.
     Column {
         SpacerStatusBarInsets()
@@ -269,6 +280,7 @@ private fun HomeTopBar(onProfileClick: () -> Unit) {
             title = stringResource(Res.string.navigation_home),
             onProfileClick = onProfileClick,
             actions = {
+                SearchAction(onClick = onSearchClick)
                 ComingSoonAction(
                     imageVector = Bell,
                     label = stringResource(Res.string.home_notifications_coming_soon),
@@ -276,6 +288,31 @@ private fun HomeTopBar(onProfileClick: () -> Unit) {
             },
         )
     }
+}
+
+/** Previews of planned Home sections, after the sections with real content. */
+private fun LazyListScope.homePreviewCards(
+    onOpenReleases: () -> Unit,
+    onOpenNews: () -> Unit,
+) {
+    item { HomePreviewCard(Res.string.home_recommendations_title, Res.string.home_recommendations_description) }
+    item {
+        HomePreviewCard(
+            title = Res.string.releases_upcoming_title,
+            description = Res.string.home_upcoming_releases_description,
+            link = Res.string.home_open_releases,
+            onLinkClick = onOpenReleases,
+        )
+    }
+    item {
+        HomePreviewCard(
+            title = Res.string.home_latest_news_title,
+            description = Res.string.home_latest_news_description,
+            link = Res.string.home_open_news,
+            onLinkClick = onOpenNews,
+        )
+    }
+    item { HomePreviewCard(Res.string.home_events_title, Res.string.home_events_description) }
 }
 
 /** A planned Home section; [link], when given, opens the destination that will host it through [onLinkClick]. */

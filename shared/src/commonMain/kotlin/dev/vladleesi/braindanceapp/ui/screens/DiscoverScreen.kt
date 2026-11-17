@@ -31,7 +31,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +38,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -58,7 +58,6 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
-import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.resources.Res
@@ -123,12 +122,18 @@ fun DiscoverScreen(
         viewModel.onQueryChange(query)
     }
 
-    val searchTabReselected by navigator.resultsFlow(BottomBarRoute.DiscoverRoute.RESULT_KEY).collectAsState(null)
-
-    LaunchedEffect(searchTabReselected) {
-        if (searchTabReselected == true) {
+    // A search action anywhere in the app (Navigator.openSearch) focuses the field, which opens the keyboard on touch
+    // devices; reaching Discover any other way leaves it closed. Asking again, such as after the keyboard was put away
+    // while the field kept focus, opens it again.
+    val isSearchFocusRequested by navigator.isSearchFocusRequested.collectAsStateWithLifecycle()
+    LaunchedEffect(isSearchFocusRequested) {
+        if (isSearchFocusRequested) {
             searchFocusRequester.requestFocus()
+            // The field starts its text input session in the frame after it gains focus; a keyboard request before
+            // then is dropped on Android when Discover has just been opened.
+            withFrameNanos {}
             keyboardController?.show()
+            navigator.onSearchFocused()
         }
     }
 
@@ -172,12 +177,8 @@ fun DiscoverScreen(
                     Modifier
                         .weight(1f)
                         .focusRequester(searchFocusRequester)
-                        .onFocusChanged { focusState ->
-                            isFocused = focusState.isFocused
-                            if (isFocused.not()) {
-                                navigator.setResult(BottomBarRoute.DiscoverRoute.RESULT_KEY, false)
-                            }
-                        }.onPreviewKeyEvent { event ->
+                        .onFocusChanged { focusState -> isFocused = focusState.isFocused }
+                        .onPreviewKeyEvent { event ->
                             // Escape leaves search on a hardware keyboard, as back and the chevron do.
                             val leaves = isFocused && event.key == Key.Escape && event.type == KeyEventType.KeyDown
                             if (leaves) leaveSearch()

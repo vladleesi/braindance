@@ -19,7 +19,9 @@ paths:
           description: The API is reachable.
   /v1/games/trending:
     get:
-      summary: Popular Right Now, ranked by the API.
+      summary: Popular Right Now, ranked by the API, 20 games per page.
+      parameters:
+        - $ref: '#/components/parameters/FeedPage'
       responses:
         '200':
           description: Ranked game cards.
@@ -33,16 +35,21 @@ paths:
     get:
       summary: Most Anticipated, as compact cards with id, name, and cover only.
       parameters:
+        - $ref: '#/components/parameters/FeedPage'
         - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
-          description: Upcoming games.
+          description: >-
+            Upcoming games. Pages after the first need pageSize 20 and must start within the first 200 games; a short
+            page is the last one.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/GameItem'
+        '400':
+          description: The page or page size is invalid.
   /v1/games/details:
     get:
       summary: One game's details.
@@ -149,6 +156,14 @@ components:
         type: integer
         minimum: 1
         maximum: 50
+    FeedPage:
+      name: page
+      in: query
+      description: >-
+        1-based page number of a feed. Clients leave it out for the first page, so it shares one cached URL with Home.
+      schema:
+        type: integer
+        minimum: 1
     Page:
       name: page
       in: query

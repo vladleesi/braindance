@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +38,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.vladleesi.braindanceapp.resources.Res
+import dev.vladleesi.braindanceapp.resources.discover_search_placeholder
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -47,6 +50,7 @@ import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.focusRing
 import dev.vladleesi.braindanceapp.utils.isFocusVisible
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.foundation.clickable as foundationClickable
 
 // Compact next to Material's 56 dp text field, and still the 44 dp touch height of iOS controls. The icon slots span
@@ -147,6 +151,24 @@ fun SearchFieldIcon(
     }
 }
 
+/**
+ * The search button of a top bar. It always searches games, wherever it appears, so the icon means the same thing on
+ * every screen; pass [Navigator.openSearch][dev.vladleesi.braindanceapp.navigation.Navigator.openSearch] as [onClick].
+ */
+@Composable
+fun SearchAction(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    IconButton(onClick = onClick, modifier = modifier.pointerHoverIcon(PointerIcon.Hand)) {
+        Icon(
+            imageVector = Search,
+            contentDescription = stringResource(Res.string.discover_search_placeholder),
+            tint = white,
+        )
+    }
+}
+
 /** The [SearchBar] trailing indicator while a search runs. */
 @Composable
 fun SearchFieldProgress(modifier: Modifier = Modifier) {
@@ -183,6 +205,7 @@ internal fun SearchBarPreview() {
                 modifier = Modifier.padding(top = Dimens.medium),
                 trailingIcon = { SearchFieldIcon(imageVector = X, label = "Clear search", onClick = {}) },
             )
+            SearchAction(onClick = {})
         }
     }
 }

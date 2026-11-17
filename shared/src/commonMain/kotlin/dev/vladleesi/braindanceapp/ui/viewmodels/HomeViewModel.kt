@@ -67,7 +67,7 @@ class HomeViewModel(
             }
     }
 
-    fun loadMostAnticipated(pageSize: Int = PAGE_SIZE) {
+    fun loadMostAnticipated(pageSize: Int = HomeRepo.ANTICIPATED_PAGE_SIZE) {
         mostAnticipatedJob =
             loadSection(mostAnticipatedJob, _mostAnticipated) {
                 homeRepo.mostAnticipated(pageSize = pageSize).map { it.toGameCardModels() }
@@ -108,18 +108,7 @@ class HomeViewModel(
     private fun List<GameItem>.toGameCardModels() = mapNotNull { it.toGameCardModel() }.distinctBy { it.id }
 
     private fun List<GiveawayResponse>.mapperGiveawayModel() =
-        mapNotNull { item ->
-            val id = item.id ?: return@mapNotNull null
-            GiveawayItemModel(
-                id = id,
-                title = item.title.orEmpty(),
-                image = item.image.orEmpty(),
-                worth = item.worth.takeIf { it != "N/A" }.orEmpty(),
-                endDate = item.endDate?.formatEndDate().orEmpty(),
-                platforms = item.platforms?.giveawayPlatforms().orEmpty(),
-                type = item.type.orEmpty(),
-            )
-        }.distinctBy { it.id }
+        mapNotNull { it.toGiveawayItemModel() }.distinctBy { it.id }
 
     private companion object {
         private const val PAGE_SIZE = 20
@@ -134,6 +123,20 @@ internal fun GameItem.toGameCardModel(label: GameCardLabel? = null): GameCardMod
         title = name.orEmpty(),
         backgroundImageUrl = cover?.url?.toCoverUrl(CoverSize.P_720).orEmpty(),
         label = label,
+    )
+}
+
+/** Maps a giveaway to its card, or null without an ID, since such a card cannot be opened. */
+internal fun GiveawayResponse.toGiveawayItemModel(): GiveawayItemModel? {
+    val id = id ?: return null
+    return GiveawayItemModel(
+        id = id,
+        title = title.orEmpty(),
+        image = image.orEmpty(),
+        worth = worth.takeIf { it != "N/A" }.orEmpty(),
+        endDate = endDate?.formatEndDate().orEmpty(),
+        platforms = platforms?.giveawayPlatforms().orEmpty(),
+        type = type.orEmpty(),
     )
 }
 

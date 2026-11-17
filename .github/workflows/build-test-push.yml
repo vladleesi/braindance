@@ -159,6 +159,8 @@ jobs:
         with:
           name: web-app-production
           path: webApp/build/dist/wasmJs/productionExecutable
+          # .well-known/assetlinks.json verifies Android App Links; artifacts leave out hidden files by default.
+          include-hidden-files: true
           retention-days: 1
 
   android-instrumented-tests:

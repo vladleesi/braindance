@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
+import dev.vladleesi.braindanceapp.navigation.APP_LINK_ORIGIN
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.toWebPath
 import dev.vladleesi.braindanceapp.resources.Res
@@ -21,7 +22,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 private const val REPOSITORY_URL = "https://github.com/vladleesi/braindance"
-private const val APP_URL = "https://app.braindancegg.com/"
+private const val APP_URL = "$APP_LINK_ORIGIN/"
 private const val IGDB_URL = "https://www.igdb.com/"
 private const val GAMERPOWER_URL = "https://www.gamerpower.com/"
 private const val RELEASES_URL = "$REPOSITORY_URL/releases"
@@ -90,7 +91,10 @@ fun rememberProjectLinks(): ProjectLinks {
     }
 }
 
-/** Shares the game [gameId] ("[gameName]") with a link to its page in the Web app. */
+/**
+ * Shares the game [gameId] ("[gameName]") with a link to its page in the Web app, which opens the mobile app instead
+ * where it is installed and handles the link.
+ */
 @Composable
 fun rememberShareGameAction(
     gameId: Int,

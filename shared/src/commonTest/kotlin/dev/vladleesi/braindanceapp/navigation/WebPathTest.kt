@@ -4,6 +4,8 @@ package dev.vladleesi.braindanceapp.navigation
 
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
+import dev.vladleesi.braindanceapp.navigation.routes.Compilation
+import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -18,10 +20,12 @@ class WebPathTest {
 
     @Test
     fun everyRouteRoundTripsThroughItsPath() {
-        val routes = tabs + listOf(ProfileRoute, GameDetailsRoute(42), GiveawayDetailsRoute(7))
+        val compilations = Compilation.entries.map(::CompilationRoute)
+        val routes = tabs + listOf(ProfileRoute, GameDetailsRoute(42), GiveawayDetailsRoute(7)) + compilations
         for (route in routes) {
             assertEquals(route, webPathToRoute(route.toWebPath()), route.toWebPath())
         }
+        assertEquals(listOf("/popular", "/anticipated", "/giveaways"), compilations.map { it.toWebPath() })
         assertEquals(
             listOf("/", "/discover", "/releases", "/news", "/library", "/profile"),
             (BottomBarRoute.routes + ProfileRoute).map { it.toWebPath() },

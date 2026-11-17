@@ -27,9 +27,17 @@ class GamesRemote(
                 parameter("id", id)
             }.body()
 
-    suspend fun mostAnticipated(pageSize: Int): List<GameItem> =
+    /**
+     * Page [page] (1-based) of [pageSize] Most Anticipated games. The first page leaves `page` out, so Home and the
+     * full list share one edge-cache URL.
+     */
+    suspend fun mostAnticipated(
+        pageSize: Int,
+        page: Int = 1,
+    ): List<GameItem> =
         backendHttpClient
             .get(ApiConfig.Endpoints.MOST_ANTICIPATED) {
+                if (page > 1) parameter("page", page)
                 parameter("pageSize", pageSize)
             }.body()
 
@@ -49,6 +57,14 @@ class GamesRemote(
                 parameter("pageSize", pageSize)
             }.body()
 
-    /** The backend ranks and hydrates the whole feed, so one request returns the finished cards. */
-    suspend fun trendingNow(): List<TrendingGameItem> = backendHttpClient.get(ApiConfig.Endpoints.TRENDING).body()
+    /**
+     * Page [page] (1-based) of the ranked feed, at the API's default page size. The backend ranks and hydrates the
+     * whole feed, so one request returns the finished cards. The first page sends no parameters, so Home and the full
+     * list share one edge-cache URL.
+     */
+    suspend fun trendingNow(page: Int = 1): List<TrendingGameItem> =
+        backendHttpClient
+            .get(ApiConfig.Endpoints.TRENDING) {
+                if (page > 1) parameter("page", page)
+            }.body()
 }

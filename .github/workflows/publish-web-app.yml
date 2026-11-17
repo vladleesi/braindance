@@ -94,12 +94,14 @@ jobs:
           path: ${{ env.DIST_DIR }}
 
       # Cloudflare Pages serves index.html for unknown paths only when the site has no top-level 404.html, and the page
-      # must load the content-hashed bundle that _headers lets browsers cache forever.
+      # must load the content-hashed bundle that _headers lets browsers cache forever. Android verifies App Links
+      # against .well-known/assetlinks.json, which an artifact without hidden files would lose.
       - name: Check Web App Files
         run: |
           cd "$DIST_DIR"
           test -f index.html || { echo "index.html is missing." >&2; exit 1; }
           test -f _headers || { echo "_headers is missing." >&2; exit 1; }
+          test -f .well-known/assetlinks.json || { echo ".well-known/assetlinks.json is missing." >&2; exit 1; }
           if [ -e 404.html ]; then
             echo "404.html would turn off single-page routing on Cloudflare Pages." >&2
             exit 1

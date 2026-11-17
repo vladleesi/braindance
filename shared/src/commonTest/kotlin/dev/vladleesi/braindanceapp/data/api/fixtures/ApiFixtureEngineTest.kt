@@ -71,6 +71,34 @@ class ApiFixtureEngineTest {
         }
 
     @Test
+    fun feedsPageLikeTheApi() =
+        runTest(dispatcher) {
+            val popular = homeRepo.popularPage(page = 1).successValue()
+            assertTrue(popular.items.isNotEmpty() && popular.isLast)
+            assertEquals(homeRepo.trendingNow().successValue(), popular.items)
+            assertTrue(
+                homeRepo
+                    .popularPage(page = 2)
+                    .successValue()
+                    .items
+                    .isEmpty(),
+            )
+
+            val anticipated = homeRepo.anticipatedPage(page = 1).successValue()
+            assertEquals(
+                homeRepo.mostAnticipated(pageSize = HomeRepo.ANTICIPATED_PAGE_SIZE).successValue(),
+                anticipated.items,
+            )
+            assertTrue(
+                homeRepo
+                    .anticipatedPage(page = 2)
+                    .successValue()
+                    .items
+                    .isEmpty(),
+            )
+        }
+
+    @Test
     fun searchPagesThroughMatchingGamesThatOpen() =
         runTest(dispatcher) {
             val loaded = mutableListOf<SearchPage>()
@@ -129,6 +157,10 @@ class ApiFixtureEngineTest {
             assertEquals(HttpStatusCode.BadRequest, status("v1/giveaways/abc"))
             assertEquals(HttpStatusCode.BadRequest, status("v1/games/search?q=a&page=1&pageSize=20"))
             assertEquals(HttpStatusCode.BadRequest, status("v1/games/search?q=doom&page=11&pageSize=20"))
+            assertEquals(HttpStatusCode.BadRequest, status("v1/games/trending?page=6"))
+            assertEquals(HttpStatusCode.BadRequest, status("v1/games/trending?page=0"))
+            assertEquals(HttpStatusCode.BadRequest, status("v1/games/anticipated?page=2&pageSize=21"))
+            assertEquals(HttpStatusCode.BadRequest, status("v1/games/anticipated?page=11&pageSize=20"))
             assertEquals(HttpStatusCode.NotFound, status("v1/unknown"))
             assertEquals(HttpStatusCode.MethodNotAllowed, client.post("v1/giveaways") { expectSuccess = false }.status)
         }

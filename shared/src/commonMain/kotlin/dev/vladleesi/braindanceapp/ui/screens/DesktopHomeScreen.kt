@@ -49,6 +49,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
+import dev.vladleesi.braindanceapp.navigation.routes.Compilation
+import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -79,6 +81,7 @@ import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.OutlineButton
 import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
+import dev.vladleesi.braindanceapp.ui.components.SearchAction
 import dev.vladleesi.braindanceapp.ui.components.SurfaceCard
 import dev.vladleesi.braindanceapp.ui.components.UserAvatar
 import dev.vladleesi.braindanceapp.ui.components.desktop.BrandAccentStrip
@@ -168,6 +171,7 @@ internal fun DesktopHomeScreen(
                 DesktopHomeHeader(
                     showProfileButton = !layout.hasSidebar,
                     onProfileClick = { navigator.navigate(ProfileRoute) },
+                    onSearchClick = navigator::openSearch,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.large)) {
                     DesktopHomeMainColumn(
@@ -208,9 +212,13 @@ private fun DesktopHomeMainColumn(
         DesktopHero(
             trendingNow = trendingNow,
             visibleTrendingCount = columns.games,
-            onExploreClick = { navigator.navigate(BottomBarRoute.DiscoverRoute) },
+            // Discover is where games are found, so the call to explore starts there, ready to type a search.
+            onExploreClick = navigator::openSearch,
         )
-        DesktopSection(title = stringResource(Res.string.home_screen_popular_right_now)) {
+        DesktopSection(
+            title = stringResource(Res.string.home_screen_popular_right_now),
+            onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Popular)) },
+        ) {
             DesktopCardRow(
                 state = trendingNow,
                 columns = columns.games,
@@ -220,7 +228,10 @@ private fun DesktopHomeMainColumn(
                 GameCard(card = card, onClick = onGameClick, showTitle = true, modifier = itemModifier)
             }
         }
-        DesktopSection(title = stringResource(Res.string.home_screen_popular_most_anticipated)) {
+        DesktopSection(
+            title = stringResource(Res.string.home_screen_popular_most_anticipated),
+            onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Anticipated)) },
+        ) {
             DesktopCardRow(
                 state = mostAnticipated,
                 columns = columns.anticipated,
@@ -230,7 +241,10 @@ private fun DesktopHomeMainColumn(
                 GameCard(card = card, onClick = onGameClick, showTitle = false, modifier = itemModifier)
             }
         }
-        DesktopSection(title = stringResource(Res.string.home_screen_popular_latest_giveaways)) {
+        DesktopSection(
+            title = stringResource(Res.string.home_screen_popular_latest_giveaways),
+            onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Giveaways)) },
+        ) {
             DesktopCardRow(
                 state = giveaways,
                 columns = columns.giveaways,
@@ -253,10 +267,12 @@ private fun DesktopHomeMainColumn(
     }
 }
 
+/** The tagline, a search action that starts a search on Discover as on every Home, notifications, and Profile. */
 @Composable
 private fun DesktopHomeHeader(
     showProfileButton: Boolean,
     onProfileClick: () -> Unit,
+    onSearchClick: () -> Unit,
 ) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
@@ -267,6 +283,7 @@ private fun DesktopHomeHeader(
                     .weight(1f)
                     .semantics { heading() },
         )
+        SearchAction(onClick = onSearchClick)
         ComingSoonAction(imageVector = Bell, label = stringResource(Res.string.home_notifications_coming_soon))
         // The sidebar links to Profile, so the button only appears in the layout without a sidebar.
         if (showProfileButton) {
@@ -492,7 +509,7 @@ private fun PreviewCard(
 internal fun DesktopHomeHeaderPreview() {
     BraindanceTheme {
         Box(modifier = Modifier.background(background).padding(Dimens.large)) {
-            DesktopHomeHeader(showProfileButton = true, onProfileClick = {})
+            DesktopHomeHeader(showProfileButton = true, onProfileClick = {}, onSearchClick = {})
         }
     }
 }

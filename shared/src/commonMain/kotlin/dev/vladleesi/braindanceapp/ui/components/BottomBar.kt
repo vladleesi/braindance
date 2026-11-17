@@ -39,6 +39,7 @@ import androidx.navigation3.ui.NavDisplay
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.Navigator
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
+import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -217,6 +218,7 @@ fun NavigationGraph(modifier: Modifier) {
                         registerNestedRoute<ProfileRoute>()
                         registerNestedRoute<GameDetailsRoute>()
                         registerNestedRoute<GiveawayDetailsRoute>()
+                        registerNestedRoute<CompilationRoute>()
                     },
             ),
         modifier = modifier,

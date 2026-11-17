@@ -12,8 +12,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Records the code paths of a cold start, of browsing Home, and of searching games on Discover, which the release
- * build then precompiles. The journeys wait for live data, so run them with the backend reachable.
+ * Records the code paths of a cold start, of browsing Home and a section's full list, and of searching games
+ * on Discover, which the release build then precompiles. The journeys wait for live data, so run them with the
+ * backend reachable.
  */
 @RunWith(AndroidJUnit4::class)
 class BaselineProfileGenerator {
@@ -32,6 +33,23 @@ class BaselineProfileGenerator {
             for (direction in listOf(Direction.DOWN, Direction.UP)) {
                 val home = device.findObject(By.scrollable(true)) ?: return@collect
                 home.fling(direction)
+                device.waitForIdle()
+            }
+        }
+
+    @Test
+    fun browseFullList() =
+        rule.collect(packageName = PACKAGE_NAME) {
+            pressHome()
+            startActivityAndWait()
+            // See all names its section; the first one opens Popular Right Now.
+            device.wait(Until.findObject(By.descStartsWith(SEE_ALL_PREFIX)), CONTENT_TIMEOUT_MILLIS)?.click()
+                ?: return@collect
+            device.wait(Until.hasObject(By.descStartsWith(COVER_DESCRIPTION_PREFIX)), CONTENT_TIMEOUT_MILLIS)
+            // Scrolling renders list cards and loads further pages; the grid is looked up again before each fling.
+            for (direction in listOf(Direction.DOWN, Direction.DOWN, Direction.UP)) {
+                val list = device.findObject(By.scrollable(true)) ?: return@collect
+                list.fling(direction)
                 device.waitForIdle()
             }
         }
@@ -60,6 +78,7 @@ class BaselineProfileGenerator {
         const val PACKAGE_NAME = "dev.vladleesi.braindanceapp"
         const val CONTENT_TIMEOUT_MILLIS = 15_000L
         const val DISCOVER_LABEL = "Discover"
+        const val SEE_ALL_PREFIX = "See all "
         const val EDIT_TEXT_CLASS = "android.widget.EditText"
 
         // A broad title with many results, so the journey pages through them.

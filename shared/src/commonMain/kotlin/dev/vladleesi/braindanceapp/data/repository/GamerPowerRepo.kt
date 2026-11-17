@@ -14,7 +14,7 @@ class GamerPowerRepo(
     private val gamerPowerRemote: GamerPowerRemote,
 ) {
     // The giveaways the last successful list load returned, by ID. List items carry every field the details screen
-    // shows, so a giveaway opened from the list needs no second request. It holds at most one page, has no time limit
+    // shows, so a giveaway opened from the list needs no second request. It holds at most one list, has no time limit
     // (it is as fresh as the cards on screen), and each successful list load replaces it.
     @Volatile
     private var listedGiveaways: Map<Int, GiveawayResponse> = emptyMap()
@@ -30,6 +30,12 @@ class GamerPowerRepo(
         }
         return outcome
     }
+
+    /**
+     * Every giveaway; the backend returns the whole list in one response, so it is one page. Like [giveaways], a
+     * successful load replaces what [listedGiveaway] returns.
+     */
+    suspend fun allGiveaways(): Outcome<List<GiveawayResponse>> = giveaways(pageSize = Int.MAX_VALUE)
 
     /** Giveaway [id] as the last successful list load returned it, or null when that list did not include it. */
     fun listedGiveaway(id: Int): GiveawayResponse? = listedGiveaways[id]

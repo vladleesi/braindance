@@ -13,6 +13,7 @@ import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import dev.vladleesi.braindanceapp.data.models.games.WebsiteType
 import dev.vladleesi.braindanceapp.data.models.games.Websites
 import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
+import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import kotlin.random.Random
 
 /**
@@ -33,20 +34,24 @@ internal object ApiFixtureData {
     }
     private val giveaways: List<GiveawayResponse> by lazy { giveawayTitles.mapIndexed(::sampleGiveaway) }
 
-    val trendingJson: String by lazy {
-        backendJson.encodeToString(
-            games.take(TRENDING_COUNT).mapIndexed { index, game ->
-                val reason = trendingReasons[index % trendingReasons.size]
-                TrendingGameItem(
-                    id = game.id ?: 0,
-                    name = game.name,
-                    cover = game.cover,
-                    reason = reason,
-                    platform = if (reason == "new_platform") "Switch 2" else null,
-                )
-            },
-        )
+    private val trending: List<TrendingGameItem> by lazy {
+        games.take(TRENDING_COUNT).mapIndexed { index, game ->
+            val reason = trendingReasons[index % trendingReasons.size]
+            TrendingGameItem(
+                id = game.id ?: 0,
+                name = game.name,
+                cover = game.cover,
+                reason = reason,
+                platform = if (reason == "new_platform") "Switch 2" else null,
+            )
+        }
     }
+
+    /** Page [page] (1-based) of the trending feed at the API's default page size; past the end it is empty. */
+    fun trendingJson(page: Int): String =
+        backendJson.encodeToString(
+            trending.drop((page - 1) * HomeRepo.POPULAR_PAGE_SIZE).take(HomeRepo.POPULAR_PAGE_SIZE),
+        )
 
     // The anticipated feed sends compact cards: ID, name, and cover only.
     private val anticipated: List<GameItem> by lazy {
@@ -55,7 +60,11 @@ internal object ApiFixtureData {
 
     val giveawaysJson: String by lazy { backendJson.encodeToString(giveaways) }
 
-    fun anticipatedJson(pageSize: Int): String = backendJson.encodeToString(anticipated.take(pageSize))
+    /** Page [page] (1-based) of [pageSize] anticipated games; past the end it is empty. */
+    fun anticipatedJson(
+        pageSize: Int,
+        page: Int = 1,
+    ): String = backendJson.encodeToString(anticipated.drop((page - 1) * pageSize).take(pageSize))
 
     /** Like the API, an unknown ID is an empty list. */
     fun gameDetailsJson(id: Int): String = backendJson.encodeToString(listOfNotNull(gamesById[id]))

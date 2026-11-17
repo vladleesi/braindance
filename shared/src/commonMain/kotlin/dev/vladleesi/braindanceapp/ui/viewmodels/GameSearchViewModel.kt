@@ -52,22 +52,6 @@ sealed interface SearchState {
     ) : SearchState
 }
 
-/** Whether further results follow the loaded ones. */
-sealed interface MoreResults {
-    /** More exist; they load as the list nears its end. */
-    data object Available : MoreResults
-
-    data object Loading : MoreResults
-
-    /** The next page failed; it loads again only on [GameSearchViewModel.retry], so a failure is never repeated. */
-    data class Failed(
-        val error: DataError,
-    ) : MoreResults
-
-    /** Every result is loaded. */
-    data object None : MoreResults
-}
-
 /**
  * Searches games as the user types. Typing waits [DEBOUNCE] before a request, so one is sent per pause rather than per
  * keystroke; a new query cancels the running request, so an older response can never replace a newer one. Text that

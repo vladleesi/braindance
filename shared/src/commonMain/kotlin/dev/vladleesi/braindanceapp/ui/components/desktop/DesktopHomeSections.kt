@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.components.SectionEmpty
 import dev.vladleesi.braindanceapp.ui.components.SectionError
+import dev.vladleesi.braindanceapp.ui.components.SeeAllButton
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardLabel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
@@ -64,19 +66,28 @@ data class DesktopGridColumns(
     }
 }
 
-/** A titled Home section; [content] is usually a [DesktopCardRow]. */
+/**
+ * A titled Home section; [content] is usually a [DesktopCardRow]. With [onSeeAll], the title row links to the
+ * section's full list.
+ */
 @Composable
 fun DesktopSection(
     title: String,
     modifier: Modifier = Modifier,
+    onSeeAll: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.compact)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.h3,
-            modifier = Modifier.semantics { heading() },
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.h3,
+                modifier = Modifier.weight(1f).semantics { heading() },
+            )
+            if (onSeeAll != null) {
+                SeeAllButton(sectionTitle = title, onClick = onSeeAll)
+            }
+        }
         content()
     }
 }
@@ -141,7 +152,7 @@ internal fun DesktopSectionPreview() {
                     backgroundImageUrl = "",
                     label = GameCardLabel.NewRelease,
                 )
-            DesktopSection(title = "Popular Right Now") {
+            DesktopSection(title = "Popular Right Now", onSeeAll = {}) {
                 DesktopCardRow(
                     state = SectionState.Success(listOf(game, game.copy(id = 2, label = null))),
                     columns = DesktopGridColumns.forWidth(PreviewSectionWidth).games,

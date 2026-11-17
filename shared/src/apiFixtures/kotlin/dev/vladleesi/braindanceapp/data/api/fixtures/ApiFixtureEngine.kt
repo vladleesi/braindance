@@ -4,6 +4,7 @@ package dev.vladleesi.braindanceapp.data.api.fixtures
 
 import dev.vladleesi.braindanceapp.data.config.ApiConfig
 import dev.vladleesi.braindanceapp.data.repository.GameSearchRepo
+import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import dev.vladleesi.braindanceapp.data.repository.SearchQuery
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.mock.MockEngine
@@ -60,13 +61,9 @@ private fun MockRequestHandleScope.respondApi(
     val json =
         when {
             path == ApiConfig.Endpoints.HEALTH -> return respond("", HttpStatusCode.OK)
-            path == ApiConfig.Endpoints.TRENDING -> ApiFixtureData.trendingJson
+            path == ApiConfig.Endpoints.TRENDING -> trendingJsonOrNull(parameters)
             path == ApiConfig.Endpoints.GIVEAWAYS -> ApiFixtureData.giveawaysJson
-            path == ApiConfig.Endpoints.MOST_ANTICIPATED ->
-                when (val pageSize = parameters["pageSize"]) {
-                    null -> ApiFixtureData.anticipatedJson(Int.MAX_VALUE)
-                    else -> pageSize.toPositiveIntOrNull()?.let(ApiFixtureData::anticipatedJson)
-                }
+            path == ApiConfig.Endpoints.MOST_ANTICIPATED -> anticipatedJsonOrNull(parameters)
             path == ApiConfig.Endpoints.GAME_DETAILS ->
                 parameters.positiveIntOrNull("id")?.let(ApiFixtureData::gameDetailsJson)
             path == ApiConfig.Endpoints.GAME_RECOMMENDATIONS ->
@@ -83,16 +80,39 @@ private fun MockRequestHandleScope.respondApi(
     return if (json == null) respondError(HttpStatusCode.BadRequest) else respond(json, HttpStatusCode.OK, jsonHeaders)
 }
 
+/** Follows the API's feed rules: an optional `page`, at the default page size, that starts within the ranked games. */
+private fun trendingJsonOrNull(parameters: Parameters): String? {
+    if (parameters.names().any { it != "page" }) return null
+    val page = parameters["page"]?.let { it.toPositiveIntOrNull() ?: return null } ?: 1
+    if ((page - 1) * HomeRepo.POPULAR_PAGE_SIZE >= HomeRepo.POPULAR_MAX_GAMES) return null
+    return ApiFixtureData.trendingJson(page)
+}
+
+/**
+ * Follows the API's Most Anticipated paging: pages after the first only at Home's page size, starting within the games
+ * the API serves. Like earlier fixtures, the first page takes any `pageSize`, or every game without one, so tests can
+ * list the whole feed.
+ */
+private fun anticipatedJsonOrNull(parameters: Parameters): String? {
+    val pageSize =
+        parameters["pageSize"]?.let { it.toPositiveIntOrNull() ?: return null }
+            ?: return ApiFixtureData.anticipatedJson(Int.MAX_VALUE)
+    val page = parameters["page"]?.let { it.toPositiveIntOrNull() ?: return null } ?: 1
+    val laterPageValid =
+        pageSize == HomeRepo.ANTICIPATED_PAGE_SIZE && (page - 1) * pageSize < HomeRepo.ANTICIPATED_MAX_GAMES
+    return if (page == 1 || laterPageValid) ApiFixtureData.anticipatedJson(pageSize, page) else null
+}
+
 /** Follows the API's search rules: a valid query, `pageSize` up to 50, and pages that start within 200 results. */
 private fun searchJsonOrNull(parameters: Parameters): String? {
     val query = parameters["q"]?.let(SearchQuery::normalize) ?: return null
     val page = parameters["page"]?.toPositiveIntOrNull() ?: return null
-    val pageSize = parameters["pageSize"]?.toPositiveIntOrNull()?.takeIf { it <= MAX_SEARCH_PAGE_SIZE } ?: return null
+    val pageSize = parameters["pageSize"]?.toPositiveIntOrNull()?.takeIf { it <= MAX_PAGE_SIZE } ?: return null
     if ((page - 1) * pageSize >= GameSearchRepo.MAX_RESULTS) return null
     return ApiFixtureData.searchJson(query, page, pageSize)
 }
 
-private const val MAX_SEARCH_PAGE_SIZE = 50
+private const val MAX_PAGE_SIZE = 50
 
 private fun Parameters.positiveIntOrNull(name: String): Int? = get(name)?.toPositiveIntOrNull()
 

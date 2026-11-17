@@ -4,13 +4,11 @@ package dev.vladleesi.braindanceapp.navigation
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavKey
-import dev.vladleesi.braindanceapp.logger.BLogger
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.SingleInstanceRoute
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Handles navigation events (forward and back) by updating the navigation state.
@@ -48,17 +46,53 @@ class Navigator(
     }
 
     /**
+     * Opens a screen from a link, as an address typed into the browser does: a tab's link switches to that tab, and
+     * any other screen opens on top of the current tab, unless it is already showing there.
+     */
+    fun openLink(route: NavKey) {
+        if (route !in state.backStacks.keys && state.backStacks[state.topLevelRoute]?.lastOrNull() == route) return
+        navigate(route)
+    }
+
+    /**
      * Handles a tap on a tab in the bottom bar, rail, or sidebar. Another tab opens with its own stack as it was left.
      * Tapping the current tab returns it to its root screen; on Discover's root screen, it focuses the search field
-     * instead.
+     * instead, as [openSearch] does.
      */
     fun selectTab(route: BottomBarRoute) {
         val isAtRoot = state.backStacks[route]?.singleOrNull() == route
         if (route == state.topLevelRoute && route is BottomBarRoute.DiscoverRoute && isAtRoot) {
-            setResult(BottomBarRoute.DiscoverRoute.RESULT_KEY, true)
+            openSearch()
         } else {
             navigate(route)
         }
+    }
+
+    private val searchFocusRequest = MutableStateFlow(false)
+
+    /** True from [openSearch] until Discover's search field has taken focus and reports it with [onSearchFocused]. */
+    val isSearchFocusRequested: StateFlow<Boolean> = searchFocusRequest.asStateFlow()
+
+    /**
+     * The one way every search action starts a search: shows Discover's root screen, whatever tab or screen is open,
+     * and asks its search field to take focus, which opens the software keyboard on touch devices. Discover stays a
+     * single screen, so repeating the action only focuses the field again.
+     */
+    fun openSearch() {
+        val discover = BottomBarRoute.DiscoverRoute
+        state.backStacks[discover]?.let { stack ->
+            if (stack.singleOrNull() != discover) {
+                stack.clear()
+                stack.add(discover)
+            }
+        }
+        state.topLevelRoute = discover
+        searchFocusRequest.value = true
+    }
+
+    /** Discover's search field took the focus [openSearch] asked for. */
+    fun onSearchFocused() {
+        searchFocusRequest.value = false
     }
 
     fun goBack() {
@@ -72,34 +106,6 @@ class Navigator(
             currentStack.removeLastOrNull()
         }
     }
-
-    private val resultsFlow = MutableStateFlow<Map<String, Any?>>(emptyMap())
-
-    fun setResult(
-        key: String,
-        value: Any?,
-    ) {
-        resultsFlow.update { it + (key to value) }
-    }
-
-    /**
-     * Observes updates for [key] and calls [onResult] on each emission.
-     */
-    suspend fun observeResult(
-        key: String,
-        onResult: (Any?) -> Unit,
-    ) {
-        resultsFlow(key)
-            .collect(onResult)
-    }
-
-    /**
-     * Returns a flow that emits values for [key] whenever they change.
-     */
-    fun resultsFlow(key: String) =
-        resultsFlow
-            .mapNotNull { it[key] }
-            .catch { BLogger.error(throwable = it, message = "Result observation failed for key: $key") }
 }
 
 val LocalNavigator =

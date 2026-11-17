@@ -12,10 +12,13 @@ import dev.vladleesi.braindanceapp.data.repository.GameSearchRepo
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
+import dev.vladleesi.braindanceapp.ui.viewmodels.AnticipatedGamesViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameSearchViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
+import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawaysListViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
+import dev.vladleesi.braindanceapp.ui.viewmodels.PopularGamesViewModel
 import io.ktor.client.HttpClient
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
@@ -68,6 +71,9 @@ private val repositoryModule =
 private val viewModelModule =
     module {
         viewModelOf(::HomeViewModel)
+        viewModelOf(::PopularGamesViewModel)
+        viewModelOf(::AnticipatedGamesViewModel)
+        viewModelOf(::GiveawaysListViewModel)
         viewModel { GameSearchViewModel(searchRepo = get()) }
         viewModel { (id: Int) -> GameDetailsViewModel(gameId = id, gameDetailsRepo = get()) }
         viewModel { (id: Int) -> GiveawayDetailsViewModel(giveawayId = id, gamerPowerRepo = get()) }

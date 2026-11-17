@@ -5,6 +5,32 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.21.0 — 2026-11-17
+
+### Android, iOS, and Web
+
+- See all next to Popular Right Now, Most Anticipated, and Latest Giveaways opens the whole list: up to 100 popular
+  games, 200 anticipated ones, and every current giveaway. More load before you reach the end, and if a page fails,
+  the games above it stay and Retry loads it again. Coming back from a game keeps your place in the list.
+- Home now shows its games and giveaways first, with previews of upcoming features below them.
+- The search buttons on Home and Library open Discover with the search field ready to type in, and the keyboard
+  opens on phones. Library's button searched nothing before. Tapping Discover while it is open does the same, now
+  also after the keyboard was put away.
+
+### Android
+
+- Links to games, giveaways, and the full lists on app.braindancegg.com open in the tester app, on top of the screen
+  you were on, so Back returns to it. Without the app, they keep opening in the browser.
+
+### Web
+
+- The wide Home layout has the search button too, and Explore games also starts a search on Discover. Each full list has its own address, such as
+  `/popular`, that you can bookmark or share.
+
+### Website and documentation
+
+- Refresh the latest updates on braindancegg.com.
+
 ## 0.20.1 — 2026-11-17
 
 ### Android

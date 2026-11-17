@@ -8,10 +8,10 @@ import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class NavigatorTest {
     private val home = BottomBarRoute.HomeRoute
@@ -73,16 +73,67 @@ class NavigatorTest {
     }
 
     @Test
-    fun tappingDiscoverOnItsRootScreenFocusesSearch() =
-        runTest {
-            val navigator = navigator()
-            navigator.navigate(discover)
+    fun tappingDiscoverOnItsRootScreenFocusesSearch() {
+        val navigator = navigator()
+        navigator.navigate(discover)
 
-            navigator.selectTab(discover)
+        navigator.selectTab(discover)
 
-            assertEquals(listOf(discover), navigator.stack(discover))
-            assertEquals(true, navigator.resultsFlow(BottomBarRoute.DiscoverRoute.RESULT_KEY).first())
-        }
+        assertEquals(listOf(discover), navigator.stack(discover))
+        assertTrue(navigator.isSearchFocusRequested.value)
+    }
+
+    @Test
+    fun switchingToDiscoverDoesNotFocusSearch() {
+        val navigator = navigator()
+
+        navigator.selectTab(discover)
+        navigator.navigate(home)
+        navigator.navigate(discover)
+
+        assertEquals(discover, navigator.state.topLevelRoute)
+        assertFalse(navigator.isSearchFocusRequested.value)
+    }
+
+    @Test
+    fun aSearchActionOpensDiscoversRootScreenFromAnyTabAndFocusesSearch() {
+        val navigator = navigator()
+        navigator.navigate(discover)
+        navigator.navigate(GameDetailsRoute(1))
+        navigator.navigate(home)
+        navigator.navigate(GameDetailsRoute(2))
+
+        navigator.openSearch()
+
+        assertEquals(discover, navigator.state.topLevelRoute)
+        assertEquals(listOf(discover), navigator.stack(discover))
+        // The tab the search started from keeps its screen, so Back from Discover returns to Home as it was.
+        assertEquals(listOf(home, GameDetailsRoute(2)), navigator.stack(home))
+        assertTrue(navigator.isSearchFocusRequested.value)
+    }
+
+    @Test
+    fun aRepeatedSearchActionAsksForFocusAgainOnceTheFieldTookIt() {
+        val navigator = navigator()
+        navigator.openSearch()
+        navigator.onSearchFocused()
+        assertFalse(navigator.isSearchFocusRequested.value)
+
+        navigator.openSearch()
+
+        assertEquals(listOf(discover), navigator.stack(discover))
+        assertTrue(navigator.isSearchFocusRequested.value)
+    }
+
+    @Test
+    fun backFromASearchStartedOnAnotherTabReturnsToTheStartTab() {
+        val navigator = navigator()
+        navigator.openSearch()
+
+        navigator.goBack()
+
+        assertEquals(home, navigator.state.topLevelRoute)
+    }
 
     @Test
     fun tappingAnotherTabKeepsItsStack() {

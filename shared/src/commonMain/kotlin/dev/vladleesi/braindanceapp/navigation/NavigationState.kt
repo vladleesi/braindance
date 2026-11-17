@@ -26,18 +26,21 @@ import kotlinx.serialization.PolymorphicSerializer
 
 /**
  * Create a navigation state that persists config changes and process death, and browser page reloads on the web.
+ * [launchRoute] is the screen of the link that launched the app, if any; it opens on top of the start screen.
  */
 @Composable
 fun rememberNavigationState(
     startRoute: NavKey,
     topLevelRoutes: Set<NavKey>,
+    launchRoute: NavKey? = null,
 ): NavigationState {
-    // Only used as initial values; platform saved state, where it exists, still takes precedence. In a browser, the
-    // address the page opened at wins over the stored navigation, so shared and bookmarked links open their screen.
+    // Only used as initial values; platform saved state, where it exists, still takes precedence, so a recreated app
+    // never opens its launch link again. In a browser, the address the page opened at wins over the stored
+    // navigation, so shared and bookmarked links open their screen.
     val restored =
         remember(topLevelRoutes) {
             val stored = decodeNavigationSnapshot(navigationPersistence?.read(), topLevelRoutes)
-            val linked = browserLocation?.let { webPathToRoute(it.read()) }
+            val linked = browserLocation?.let { webPathToRoute(it.read()) } ?: launchRoute
             applyDeepLink(stored, linked, startRoute, topLevelRoutes)
         }
 

@@ -102,6 +102,37 @@ client's endpoints or models differ.
 
 Version and changelog rules are in [releases.md](releases.md#version-changes).
 
+## Links
+
+Every screen a link can open has one address on the Web app, `https://app.braindancegg.com`. `webPathToRoute` in
+`shared/.../navigation/BrowserHistory.kt` is the only parser, so the browser, Android, and iOS open the same screen
+for the same link:
+
+| Path | Screen |
+| --- | --- |
+| `/`, `/discover`, `/releases`, `/news`, `/library` | A tab, at its root |
+| `/games/{id}` (also the earlier `/game/{id}`), `/giveaway/{id}` | Game or giveaway details |
+| `/popular`, `/anticipated`, `/giveaways` | The full list behind a Home section's See all |
+| `/profile` | Profile |
+
+A link opens its screen on top of the current tab, and a tab's link switches to that tab, so Back returns to where
+the user was; at launch, the screen opens on top of Home. Mobile apps accept only `https` links to that exact host
+(`appLinkRoute` in `AppLinks.kt`) and only turn them into routes; an unknown or invalid path opens nothing new.
+Without the app, or before the platform has verified the domain, links open in the browser.
+
+- **Android App Links:** the intent filter in `androidApp/src/main/AndroidManifest.xml` lists the paths above; keep
+  it in step with the parser. Android verifies the domain against
+  `webApp/src/wasmJsMain/resources/.well-known/assetlinks.json`, which names each package and the SHA-256 fingerprint
+  of its signing certificate (`apksigner verify --print-certs <apk>`). It covers the staging build; add the store
+  build's package and its signing (or Play App Signing) certificate when it ships. Debug builds are not verified: test
+  them with `adb shell am start -a android.intent.action.VIEW -d "https://app.braindancegg.com/games/1942"
+  dev.vladleesi.braindanceapp`.
+- **iOS Universal Links:** `ContentView.swift` forwards links to the shared code, but iOS hands them to the app only
+  once a paid Apple Developer team signs it with the Associated Domains entitlement
+  (`applinks:app.braindancegg.com`, set through `CODE_SIGN_ENTITLEMENTS`). The Web app must then also serve
+  `.well-known/apple-app-site-association` with the team's app ID and `Content-Type: application/json`, through a
+  `_headers` rule.
+
 ## Optional independent hosting
 
 Hosting your own Web build needs your own API that implements [openapi.yaml](openapi.yaml); this repository does

@@ -46,10 +46,9 @@ import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.ui.components.NavigationScaffold
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -266,7 +265,8 @@ class NavEntryViewModelScopeTest {
 
                 onNodeWithText("Discover").performClick()
                 runOnIdle {
-                    recorder.navigator.setResult(BottomBarRoute.DiscoverRoute.RESULT_KEY, false)
+                    // These stand-in screens have no search field, so the test plays the field taking focus.
+                    recorder.navigator.onSearchFocused()
                     recorder.navigator.navigate(GameDetailsRoute(2))
                 }
                 waitForIdle()
@@ -278,17 +278,11 @@ class NavEntryViewModelScopeTest {
                         recorder.navigator.state.backStacks[BottomBarRoute.DiscoverRoute]
                             ?.toList(),
                     )
-                    assertEquals(
-                        false,
-                        runBlocking { recorder.navigator.resultsFlow(BottomBarRoute.DiscoverRoute.RESULT_KEY).first() },
-                    )
+                    assertFalse(recorder.navigator.isSearchFocusRequested.value)
                 }
                 onNodeWithText("Discover").performClick()
                 runOnIdle {
-                    assertEquals(
-                        true,
-                        runBlocking { recorder.navigator.resultsFlow(BottomBarRoute.DiscoverRoute.RESULT_KEY).first() },
-                    )
+                    assertTrue(recorder.navigator.isSearchFocusRequested.value)
                 }
             }
         }

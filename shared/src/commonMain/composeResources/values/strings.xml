@@ -59,6 +59,9 @@
     <string name="home_events_title">Gaming events</string>
     <string name="home_events_description">Showcases, festivals, and live events in one place.</string>
     <string name="home_section_empty">Nothing to show here right now.</string>
+    <string name="home_see_all">See all</string>
+    <!-- Read by screen readers instead of "See all", naming the section: "See all Popular Right Now" -->
+    <string name="home_see_all_description">See all %1$s</string>
 
     <!-- Desktop Web Home and navigation -->
     <string name="app_name">Braindance</string>
@@ -102,9 +105,8 @@
     <string name="news_feed_description">Gaming news from the sources you choose will appear here.</string>
 
     <!-- Library screen -->
-    <string name="library_search_coming_soon">Search your library, coming soon</string>
     <string name="library_statuses_title">Your games</string>
-    <string name="library_statuses_description">Track what you are playing, have finished, and plan to play.</string>
+    <string name="library_statuses_description">Track and search what you are playing, have finished, and plan to play.</string>
     <string name="library_status_playing">Playing</string>
     <string name="library_status_completed">Completed</string>
     <string name="library_status_backlog">Backlog</string>

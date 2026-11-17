@@ -3,7 +3,6 @@
 package dev.vladleesi.braindanceapp.ui.screens
 
 import Plus
-import Search
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,7 +34,6 @@ import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.library_create_list_coming_soon
 import dev.vladleesi.braindanceapp.resources.library_custom_lists_description
 import dev.vladleesi.braindanceapp.resources.library_custom_lists_title
-import dev.vladleesi.braindanceapp.resources.library_search_coming_soon
 import dev.vladleesi.braindanceapp.resources.library_status_backlog
 import dev.vladleesi.braindanceapp.resources.library_status_completed
 import dev.vladleesi.braindanceapp.resources.library_status_playing
@@ -43,9 +41,9 @@ import dev.vladleesi.braindanceapp.resources.library_status_wishlist
 import dev.vladleesi.braindanceapp.resources.library_statuses_description
 import dev.vladleesi.braindanceapp.resources.library_statuses_title
 import dev.vladleesi.braindanceapp.resources.navigation_library
-import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
+import dev.vladleesi.braindanceapp.ui.components.SearchAction
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.SurfaceTile
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
@@ -69,12 +67,8 @@ fun LibraryScreen(modifier: Modifier) {
             TopLevelTopAppBar(
                 title = stringResource(Res.string.navigation_library),
                 onProfileClick = { navigator.navigate(ProfileRoute) },
-                actions = {
-                    ComingSoonAction(
-                        imageVector = Search,
-                        label = stringResource(Res.string.library_search_coming_soon),
-                    )
-                },
+                // Searches games, as on Home; searching your own games is announced with the statuses below.
+                actions = { SearchAction(onClick = navigator::openSearch) },
             )
             Column(
                 modifier = Modifier.padding(horizontal = Dimens.medium),
