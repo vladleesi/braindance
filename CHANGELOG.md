@@ -5,6 +5,13 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.19.2 — 2026-11-16
+
+### Web
+
+- Return visits load fonts, text, and icons from the browser's cache without checking with the server first, so
+  text appears sooner on slow connections. They stay cached across releases until they change.
+
 ## 0.19.1 — 2026-11-16
 
 ### Android and iOS

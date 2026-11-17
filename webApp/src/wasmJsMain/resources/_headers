@@ -12,12 +12,19 @@
   Strict-Transport-Security: max-age=31536000
 
 # Webpack names these files by their content, so a changed file always gets a new name and browsers can keep them.
-# Everything else, including the page and the version-queried Compose resources, keeps Pages' default of revalidating.
 /*.wasm
   Cache-Control: public, max-age=31536000, immutable
 
 /webApp.*
   Cache-Control: public, max-age=31536000, immutable
+
+# Compose resources keep their names, but the app requests them with a fingerprint of their content in the `v` query
+# (VersionedWebResources.kt), so a changed file always gets a new URL. Browsers and the edge, whose cache key includes
+# the query, can keep them too. To force new copies, change the fingerprint's salt in the root build script.
+/composeResources/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Everything else, including the page, keeps Pages' default of revalidating.
 
 # Only the custom domain should be indexed, not the project's pages.dev address.
 https://:project.pages.dev/*

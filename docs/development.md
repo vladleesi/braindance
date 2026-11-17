@@ -110,8 +110,9 @@ serve `webApp/build/dist/wasmJs/productionExecutable` over HTTPS with compressio
 type. The API's CORS allowlist must include the site's exact origin.
 
 Serve `index.html` for any path that is not a file, so deep links such as `/games/42` load the app. Cache
-fingerprinted assets (`*.wasm`, `webApp.*`) immutably and keep HTML revalidatable. The distribution's `_headers`
-file sets these lifetimes and the security headers on Cloudflare Pages; mirror them on other hosts.
+fingerprinted assets (`*.wasm`, `webApp.*`, and `composeResources/`, whose URLs carry a content fingerprint in the
+`v` query) immutably, include the query in any CDN cache key, and keep HTML revalidatable. The distribution's
+`_headers` file sets these lifetimes and the security headers on Cloudflare Pages; mirror them on other hosts.
 
 Before enabling publication workflows for your own infrastructure, replace or disable their existing deployment
 steps; they do not configure a new host automatically.

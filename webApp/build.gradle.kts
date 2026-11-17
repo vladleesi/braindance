@@ -67,13 +67,15 @@ val startupResourceSources =
         "font/poppins_semibold.ttf" to "font/poppins_semibold.ttf",
         "values/strings.commonMain.cvr" to "values/strings.xml",
     )
+// The same `v` query the app adds to Compose resource URLs (shared's WEB_RESOURCES_FINGERPRINT).
+val webResourcesFingerprint = rootProject.extra["webResourcesFingerprint"] as String
 val resourcePreloads: String =
     startupResourceSources
         .map { (servedPath, sourcePath) ->
             val source = rootProject.file("shared/src/commonMain/composeResources/$sourcePath")
             require(source.isFile) { "Preloaded Compose resource source is missing: $source" }
             // Matches configureVersionedWebResources(): same path and `v` query, fetched in CORS mode.
-            val href = "composeResources/dev.vladleesi.braindanceapp.resources/$servedPath?v=$version"
+            val href = "composeResources/dev.vladleesi.braindanceapp.resources/$servedPath?v=$webResourcesFingerprint"
             """    <link rel="preload" href="$href" as="fetch" crossorigin>"""
         }.joinToString("\n")
 

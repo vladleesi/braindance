@@ -196,6 +196,12 @@ buildkonfig {
             "APP_VERSION",
             frontendVersionProperties.getProperty("MARKETING_VERSION"),
         )
+        // The `v` query of Compose resource URLs on Web; the root build script computes it from their content.
+        buildConfigField(
+            FieldSpec.Type.STRING,
+            "WEB_RESOURCES_FINGERPRINT",
+            rootProject.extra["webResourcesFingerprint"] as String,
+        )
         buildConfigField(
             FieldSpec.Type.STRING,
             backendBaseUrlProperty,

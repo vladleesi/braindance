@@ -36,6 +36,76 @@ plugins {
 
 val detektTaskName = "detekt"
 
+/**
+ * A fingerprint of what the Web app serves under `composeResources/`, used as the `v` query of those URLs (see the
+ * shared module's `VersionedWebResources.kt` and the web module's preloads). The files keep their names across
+ * releases, so the query is what lets browsers and the edge keep them as immutable: any change gives new URLs, and an
+ * unchanged release keeps every cached copy.
+ *
+ * It covers every module's own resource files and the build scripts that configure their compilation, and the version
+ * catalog, which pins the library resources and the Compose plugin that compiles the strings. Changing
+ * [WEB_RESOURCES_FINGERPRINT_SALT] forces new URLs if a cached copy ever needs replacing without a content change.
+ *
+ * It is a [ValueSource] so the configuration cache stays correct: Gradle computes it again before reusing a cached
+ * configuration and discards the cache when it differs. A plain directory walk in the script would miss added files.
+ */
+abstract class WebResourcesFingerprint : ValueSource<String, WebResourcesFingerprint.Parameters> {
+    interface Parameters : ValueSourceParameters {
+        val rootDirectory: DirectoryProperty
+    }
+
+    override fun obtain(): String {
+        val root = parameters.rootDirectory.get().asFile
+        // Every module's `src/<source set>/composeResources`, so a module that gains resources is covered too.
+        val resourceDirs =
+            root
+                .listFiles { dir -> dir.isDirectory && !dir.name.startsWith(".") && dir.name != "build" }
+                .orEmpty()
+                .flatMap { module ->
+                    module
+                        .resolve("src")
+                        .listFiles { dir -> dir.isDirectory }
+                        .orEmpty()
+                        .toList()
+                }.map { sourceSet -> sourceSet.resolve("composeResources") }
+                .filter { it.isDirectory }
+        val resourceFiles =
+            resourceDirs.flatMap { dir ->
+                dir.walkTopDown().filter { it.isFile && !it.name.startsWith(".") }.toList()
+            }
+        // The build scripts of those modules configure how their resources are compiled.
+        val buildScripts =
+            resourceDirs
+                .map { dir ->
+                    dir.parentFile.parentFile.parentFile
+                        .resolve("build.gradle.kts")
+                }.filter { it.isFile }
+                .distinct()
+        val inputs = resourceFiles + buildScripts + root.resolve("gradle/libs.versions.toml")
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+        digest.update(WEB_RESOURCES_FINGERPRINT_SALT.toByteArray())
+        // Sorted relative paths make the result independent of file system order and of the checkout location.
+        inputs.sortedBy { it.relativeTo(root).invariantSeparatorsPath }.forEach { input ->
+            digest.update(input.relativeTo(root).invariantSeparatorsPath.toByteArray())
+            digest.update(0)
+            digest.update(input.readBytes())
+            digest.update(0)
+        }
+        // 48 bits: far more than enough to tell releases apart, and short in every resource URL.
+        return digest.digest().take(FINGERPRINT_BYTES).joinToString("") { byte -> "%02x".format(byte) }
+    }
+
+    private companion object {
+        const val WEB_RESOURCES_FINGERPRINT_SALT = "1"
+        const val FINGERPRINT_BYTES = 6
+    }
+}
+
+extra["webResourcesFingerprint"] =
+    providers
+        .of(WebResourcesFingerprint::class) { parameters.rootDirectory.set(layout.projectDirectory) }
+        .get()
+
 plugins.withType<WasmYarnPlugin> {
     extensions.configure<WasmYarnRootExtension> {
         // GHSA-96hv-2xvq-fx4p: Kotlin's WebSocket dependency needs bounded fragment buffering.

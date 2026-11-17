@@ -314,6 +314,14 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   to the deployment's debugging and exposure policy.
 - Deploy the generated production distribution as static files with HTTPS, compression, and the correct
   `application/wasm` MIME type.
+- `_headers` serves `composeResources/` as immutable because the app requests those files with a content
+  fingerprint in the `v` query (`WebResourcesFingerprint` in the root build script, applied by
+  `configureVersionedWebResources()` and the page's preloads). An unfingerprinted request would keep a stale file for
+  a year. So whenever you upgrade Compose Multiplatform, Kotlin, Coil, Koin, or any other library that serves Compose
+  resources, or change how resources are loaded, preloaded, or served, check the production distribution in a
+  browser: every `composeResources/` request ends in the same `?v=` as the preloads, each file loads once, and the
+  console reports no unused preload. If not, stop and fix the mapping first. Any new input that changes resource
+  contents must feed the fingerprint; if a cached copy must be replaced without a content change, bump its salt.
 
 ## Deployment safeguards
 - Preserve approved capacity, billing, and security settings. Verify shared upstream rate limiting across all active
