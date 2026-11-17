@@ -60,6 +60,9 @@ private const val GAME_PREFIX = "/games/"
 // Game links published before the `/games/` address; still opened, then rewritten to the current address.
 private const val LEGACY_GAME_PREFIX = "/game/"
 private const val GIVEAWAY_PREFIX = "/giveaway/"
+
+// Each fixed path also needs a page in webPages (webApp/build.gradle.kts), and the ID paths a route in the Web app's
+// _routes.json and _worker.js, so Cloudflare Pages answers them with the app instead of a 404.
 private val fixedPaths =
     mapOf<NavKey, String>(
         BottomBarRoute.HomeRoute to "/",

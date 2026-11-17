@@ -170,6 +170,36 @@ an error. `showsShareActions()` shows share buttons on every touch-screen device
 foldables in the desktop layout, and in the standard layout of narrow windows. It hides them only in the Web desktop
 layout on devices without a touch screen, whose address bar already holds the link. UI tests provide their own `ShareSheet` through `LocalShareSheet`, because the real sheet needs a running app.
 
+### Search and link previews
+
+The Web app draws into a canvas, so search engines and link previews read only each page's HTML head. Every address
+therefore gets its own title, description, canonical link, and preview image:
+
+| Pages | Served by | Indexed |
+| --- | --- | --- |
+| `/`, `/popular`, `/anticipated`, `/giveaways` | Files written by the build (`popular.html` is served at `/popular`) | Yes, and listed in `sitemap.xml` |
+| `/discover`, `/releases`, `/news`, `/library`, `/profile` | Files written by the build | No: placeholders or personal pages |
+| `/games/{id}`, `/game/{id}`, `/giveaway/{id}` | `_worker.js`, a Cloudflare Pages Function, from the API | No: previews for shared links |
+| Any other address, or an ID the API does not know | `404.html` or `_worker.js`, with status 404 | No |
+
+- **Fixed pages:** `webPages` in `webApp/build.gradle.kts` holds their titles and descriptions. The build copies the
+  final `index.html` for each, replacing the tags between its `page-meta` markers, and writes `sitemap.xml` and
+  `404.html`. `WEB_PUBLIC_URL` (default `https://app.braindancegg.com`) sets the canonical and image addresses.
+- **Game and giveaway pages:** `_routes.json` runs `_worker.js` only on their paths; every other request stays a free
+  static file. It serves the same app page with the game's or giveaway's title, description, and image, read from
+  the API through its edge cache and kept per data center for a day (games) or an hour (giveaways and unknown IDs).
+  It never caches the page itself, which names the current deployment's bundle. When the API fails, the page keeps a
+  generic preview. If the Function does not run, for example after the free daily allowance (100,000 requests) is
+  used up, `_redirects` still serves the app on those paths.
+- **Abuse:** the zone's per-IP rate limit covers these paths with the API's per-game routes and search. Each preview
+  costs at most one API request per data center and day, and an unknown ID one per hour.
+- **Checks:** `node --test webApp/src/edgeTest/*.test.mjs` tests the worker. To try the whole site locally, serve
+  the production distribution with `npx wrangler@4.161.0 pages dev <dist>`; the app's own API requests then fail
+  CORS, but the HTML, statuses, and previews are the same as on Cloudflare.
+
+A new fixed path needs an entry in `webPages`; a new ID path needs the worker's routes, `_routes.json`, and
+`_redirects`. Otherwise the address answers 404.
+
 ## Optional independent hosting
 
 Hosting your own Web build needs your own API that implements [openapi.yaml](openapi.yaml); this repository does
@@ -177,7 +207,10 @@ not include one. Set its HTTPS URL as `BACKEND_BASE_URL`, run `./gradlew :webApp
 serve `webApp/build/dist/wasmJs/productionExecutable` over HTTPS with compression and the `application/wasm` MIME
 type. The API's CORS allowlist must include the site's exact origin.
 
-Serve `index.html` for any path that is not a file, so deep links such as `/games/42` load the app. Cache
+Serve the fixed pages' files at their paths without the extension (`popular.html` at `/popular`), `index.html` for
+`/games/*`, `/game/*`, and `/giveaway/*`, and `404.html` with status 404 for anything else; `_worker.js`,
+`_routes.json`, and `_redirects` do this on Cloudflare Pages only. Set `WEB_PUBLIC_URL` to the site's own origin, so
+canonical links and the sitemap do not point to the Braindance Web app. Cache
 fingerprinted assets (`*.wasm`, `webApp.*`, and `composeResources/`, whose URLs carry a content fingerprint in the
 `v` query) immutably, include the query in any CDN cache key, and keep HTML revalidatable. The distribution's
 `_headers` file sets these lifetimes and the security headers on Cloudflare Pages; mirror them on other hosts.

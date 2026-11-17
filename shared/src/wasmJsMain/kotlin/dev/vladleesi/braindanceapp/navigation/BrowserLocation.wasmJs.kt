@@ -7,15 +7,26 @@ import kotlinx.browser.window
 import org.w3c.dom.events.Event
 import org.w3c.dom.url.URL
 
+// The tab title for screens other than the one the page was opened at.
+private const val APP_TITLE = "Braindance"
+
 /**
  * Real paths such as `/games/42` under the page's base path (`<base href>`), for example `/` or `/braindance/`.
- * The host serves the page for any path that is not a file (Cloudflare Pages does this when the site has no
- * `404.html`), so a reload or a shared link still loads the app.
+ * The host serves the app's page at every address the app opens, so a reload or a shared link still loads it.
+ *
+ * Each address's page has its own title, such as a game's name. The tab keeps it while the app shows that screen and
+ * shows the app's name on any other, so history entries and tabs never carry a title that no longer applies.
  */
 @OptIn(ExperimentalWasmJsInterop::class)
 internal actual val browserLocation: BrowserLocation? =
     object : BrowserLocation {
         private val basePath: String = URL(document.baseURI).pathname.let { if (it.endsWith("/")) it else "$it/" }
+        private val openedRoute = webPathToRoute(read())
+        private val openedTitle = document.title
+
+        private fun updateTitle(path: String?) {
+            document.title = if (webPathToRoute(path) == openedRoute) openedTitle else APP_TITLE
+        }
 
         override fun read(): String? {
             val relative =
@@ -33,6 +44,7 @@ internal actual val browserLocation: BrowserLocation? =
             snapshotJson: String,
         ) {
             window.history.pushState(entryState(index, snapshotJson), "", url(path))
+            updateTitle(path)
         }
 
         override fun replace(
@@ -41,6 +53,7 @@ internal actual val browserLocation: BrowserLocation? =
             snapshotJson: String,
         ) {
             window.history.replaceState(entryState(index, snapshotJson), "", url(path))
+            updateTitle(path)
         }
 
         override fun back() {
@@ -51,7 +64,9 @@ internal actual val browserLocation: BrowserLocation? =
         override fun observe(onChange: (path: String?, index: Int?, snapshotJson: String?) -> Unit): () -> Unit {
             val listener: (Event) -> Unit = {
                 val state = window.history.state
-                onChange(read(), entryIndex(state).takeIf { it >= 0 }, entrySnapshot(state))
+                val path = read()
+                updateTitle(path)
+                onChange(path, entryIndex(state).takeIf { it >= 0 }, entrySnapshot(state))
             }
             window.addEventListener("popstate", listener)
             return { window.removeEventListener("popstate", listener) }

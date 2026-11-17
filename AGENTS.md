@@ -296,6 +296,10 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
 - Avoid hard-coded mobile widths, user-agent branching, and assumptions about filesystem, threading, or process
   lifetime in browser code.
 - Keep browser route serialization deterministic.
+- Give every fixed Web address a page in `webPages` (`webApp/build.gradle.kts`) and every ID address a route in
+  `_worker.js`, `_routes.json`, and `_redirects`; other addresses answer 404. Keep the link-preview worker free of
+  dependencies, never cache HTML in it, and test it with `node --test webApp/src/edgeTest/*.test.mjs`. See
+  `docs/development.md#search-and-link-previews`.
 - Kotlin/Wasm requires modern browsers with WasmGC. Add a Kotlin/JS compatibility target only when supported-browser
   requirements demand it; if added, share web code through the default `webMain` hierarchy instead of duplicating it.
 - Treat Compose web and Kotlin/Wasm as Beta platform surfaces: check release notes before upgrades and avoid

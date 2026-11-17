@@ -5,6 +5,21 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.24.0 — 2026-11-17
+
+### Web
+
+- Links to a game or giveaway show its name, description, and picture when you share them in chats and on social
+  networks, instead of a generic Braindance card.
+- Popular Right Now, Most Anticipated, Latest Giveaways, and the other pages have their own titles and descriptions
+  in search results, link previews, and browser tabs.
+- An address that does not exist now reports "page not found" to browsers and search engines, while still opening
+  the app.
+
+### Website and documentation
+
+- Refresh the latest updates on braindancegg.com.
+
 ## 0.23.0 — 2026-11-17
 
 ### Android, iOS, and Web

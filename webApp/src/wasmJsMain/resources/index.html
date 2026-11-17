@@ -11,7 +11,12 @@
          the bundled fonts lack; IGDB serves game covers. -->
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ${backendOrigin} https://images.igdb.com https://fonts.gstatic.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
-    <meta name="description" content="Braindance helps you discover games: what is popular right now, the most anticipated releases, similar games, and current free giveaways.">
+    <!-- What search engines and link previews read. The production build writes this block for every fixed page, and
+         the edge worker for game and giveaway pages; keep both markers. -->
+    <!-- page-meta:start -->
+    <title>Braindance</title>
+    <meta name="description" content="Discover popular and upcoming games, explore similar titles, and find free game giveaways in one place.">
+    <!-- page-meta:end -->
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#0A0D14">
     <link rel="icon" href="favicon.ico" sizes="48x48">
@@ -22,7 +27,6 @@
     <!-- Text needs these, but the app requests them only after the Wasm bundle starts; preloading downloads them in
          parallel with it. Each URL matches the app's request exactly, including its version query. -->
 ${resourcePreloads}
-    <title>Braindance</title>
     <style>
         html,
         body,

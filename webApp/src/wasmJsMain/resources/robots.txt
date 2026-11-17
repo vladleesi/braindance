@@ -1,4 +1,7 @@
-# Crawlers may read the whole app. The pages.dev preview address stays out of search results through the
+# Search engines, AI search, and link previews may read every page. Game and giveaway pages are for link previews and
+# ask not to be indexed in their own head; the pages.dev preview address stays out of search results through the
 # X-Robots-Tag header in _headers.
 User-agent: *
 Allow: /
+
+Sitemap: ${sitemapUrl}

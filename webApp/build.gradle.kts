@@ -27,6 +27,7 @@ version = frontendVersionProperties.getProperty("MARKETING_VERSION")
 // The page loads the bundle under this name in development. Production bundles are named by their content instead
 // (webApp.<hash>.js), so browsers can cache them forever and a new build never reuses an old name.
 val webBundleName = "webApp.js"
+val webPageFile = "index.html"
 val hashedWebBundleName = "webApp.[contenthash].js"
 val hashedWebBundlePattern = Regex("""webApp\.[0-9a-f]+\.js""")
 
@@ -50,6 +51,20 @@ val webBasePath: String =
         ?.let { path -> "/" + path.trim('/') + "/" }
         ?.replace("//", "/")
         ?: "/"
+// The public address of the site, for canonical links, link previews, and the sitemap. It defaults to the Braindance
+// Web app, as the shared module's APP_LINK_ORIGIN does; independent hosts set WEB_PUBLIC_URL to their own origin.
+val webPublicOrigin: String =
+    providers
+        .gradleProperty("WEB_PUBLIC_URL")
+        .orNull
+        ?.takeIf(String::isNotBlank)
+        .let { url ->
+            val uri = URI((url ?: "https://app.braindancegg.com").trim())
+            require(uri.scheme == "https" && !uri.host.isNullOrEmpty()) { "WEB_PUBLIC_URL must be an HTTPS URL" }
+            "https://${uri.host}${if (uri.port == -1) "" else ":${uri.port}"}"
+        }
+val webSiteUrl: String = webPublicOrigin + webBasePath.removeSuffix("/")
+
 val backendOrigin: String =
     backendBaseUrl.takeIf(String::isNotBlank)?.let { url ->
         val uri = URI(url.trim())
@@ -86,6 +101,156 @@ val bootIconDataUri: String =
         "data:image/svg+xml;base64," + Base64.getEncoder().encodeToString(icon.readBytes())
     }
 
+/** A fixed page of the Web app: its address, file, and what search engines and link previews show for it. */
+data class WebPage(
+    val path: String,
+    val file: String,
+    val title: String,
+    val description: String,
+    val indexed: Boolean,
+)
+
+// Every fixed address the app opens (see fixedPaths in BrowserHistory.kt). Pages with real public content are indexed
+// and listed in the sitemap; placeholders for planned features and personal pages are not. Game and giveaway pages
+// are written at the edge by _worker.js.
+val webPages =
+    listOf(
+        WebPage(
+            path = "/",
+            file = webPageFile,
+            title = "Braindance: find what to play next",
+            description =
+                "Discover popular and upcoming games, explore similar titles, and find free game giveaways in one " +
+                    "place. Free, with no account needed.",
+            indexed = true,
+        ),
+        WebPage(
+            path = "/popular",
+            file = "popular.html",
+            title = "Popular games right now | Braindance",
+            description =
+                "The games players are paying attention to right now, with new releases, full launches, and games " +
+                    "that just arrived on a new platform.",
+            indexed = true,
+        ),
+        WebPage(
+            path = "/anticipated",
+            file = "anticipated.html",
+            title = "Most anticipated upcoming games | Braindance",
+            description = "Upcoming games ranked by how many players are looking forward to them.",
+            indexed = true,
+        ),
+        WebPage(
+            path = "/giveaways",
+            file = "giveaways.html",
+            title = "Free game giveaways | Braindance",
+            description =
+                "Current free games, DLC, and early access giveaways, with when each one ends and how to claim it.",
+            indexed = true,
+        ),
+        WebPage(
+            path = "/discover",
+            file = "discover.html",
+            title = "Discover games | Braindance",
+            description = "Search games by title and find what to play next.",
+            indexed = false,
+        ),
+        WebPage(
+            path = "/releases",
+            file = "releases.html",
+            title = "Release calendar | Braindance",
+            description = "A calendar of upcoming game releases is coming to Braindance.",
+            indexed = false,
+        ),
+        WebPage(
+            path = "/news",
+            file = "news.html",
+            title = "Game news | Braindance",
+            description = "A game news feed is coming to Braindance.",
+            indexed = false,
+        ),
+        WebPage(
+            path = "/library",
+            file = "library.html",
+            title = "Your library | Braindance",
+            description = "Track the games you are playing, have finished, and plan to play.",
+            indexed = false,
+        ),
+        WebPage(
+            path = "/profile",
+            file = "profile.html",
+            title = "Profile | Braindance",
+            description = "Your Braindance profile, community links, and app information.",
+            indexed = false,
+        ),
+    )
+
+// The 404 page is the app's own page, so a mistyped address still opens the app, but it is never indexed.
+val notFoundPage =
+    WebPage(
+        path = "",
+        file = "404.html",
+        title = "Page not found | Braindance",
+        description = webPages.first().description,
+        indexed = false,
+    )
+
+fun canonicalUrl(
+    page: WebPage,
+    siteUrl: String,
+): String = if (page.path == "/") "$siteUrl/" else siteUrl + page.path
+
+/** The head tags for [page]; the same set _worker.js writes for game and giveaway pages. */
+fun pageMeta(
+    page: WebPage,
+    siteUrl: String,
+): String {
+    val image = "$siteUrl/og-image.png"
+    val socialTitle = page.title.removeSuffix(" | Braindance")
+    val tags =
+        buildList {
+            add("<title>${escapeHtml(page.title)}</title>")
+            add("""<meta name="description" content="${escapeHtml(page.description)}">""")
+            if (!page.indexed) add("""<meta name="robots" content="noindex">""")
+            if (page.path.isNotEmpty()) {
+                add("""<link rel="canonical" href="${escapeHtml(canonicalUrl(page, siteUrl))}">""")
+            }
+            add("""<meta property="og:site_name" content="Braindance">""")
+            add("""<meta property="og:type" content="website">""")
+            add("""<meta property="og:title" content="${escapeHtml(socialTitle)}">""")
+            add("""<meta property="og:description" content="${escapeHtml(page.description)}">""")
+            if (page.path.isNotEmpty()) {
+                add("""<meta property="og:url" content="${escapeHtml(canonicalUrl(page, siteUrl))}">""")
+            }
+            add("""<meta property="og:image" content="${escapeHtml(image)}">""")
+            add("""<meta property="og:image:alt" content="Braindance logo">""")
+            add("""<meta name="twitter:card" content="summary_large_image">""")
+        }
+    return tags.joinToString("\n") { tag -> "    $tag" }
+}
+
+fun escapeHtml(value: String): String =
+    value
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\"", "&quot;")
+        .replace("'", "&#39;")
+
+// Rendered while configuring, so the distribution task only splices strings into the page.
+val webPageMetaBlocks: Map<String, String> =
+    (webPages + notFoundPage).associate { page -> page.file to pageMeta(page, webSiteUrl) }
+val webSitemap: String =
+    webPages
+        .filter(WebPage::indexed)
+        .joinToString(
+            separator = "\n",
+            prefix =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n",
+            postfix = "\n</urlset>\n",
+        ) { page -> "  <url><loc>${escapeHtml(canonicalUrl(page, webSiteUrl))}</loc></url>" }
+
 kotlin {
     val bundleName = webBundleName
     val hashedBundleName = hashedWebBundleName
@@ -119,11 +284,16 @@ tasks.named<ProcessResources>("wasmJsProcessResources") {
     val basePath = webBasePath
     val preloads = resourcePreloads
     val bootIcon = bootIconDataUri
+    val siteUrl = webSiteUrl
+    val publicOrigin = webPublicOrigin
+    val backendUrl = backendBaseUrl.trim().removeSuffix("/")
     inputs.property("webBundleName", bundleName)
     inputs.property("backendOrigin", origin)
     inputs.property("webBasePath", basePath)
     inputs.property("resourcePreloads", preloads)
     inputs.property("bootIconDataUri", bootIcon)
+    inputs.property("webSiteUrl", siteUrl)
+    inputs.property("backendBaseUrl", backendUrl)
     val placeholders =
         mapOf(
             "webBundleName" to bundleName,
@@ -132,8 +302,19 @@ tasks.named<ProcessResources>("wasmJsProcessResources") {
             "resourcePreloads" to preloads,
             "bootIconDataUri" to bootIcon,
         )
-    filesMatching("index.html") {
+    filesMatching(webPageFile) {
         expand(placeholders)
+    }
+    filesMatching("robots.txt") {
+        expand("sitemapUrl" to "$siteUrl/sitemap.xml")
+    }
+    // The edge worker's JavaScript uses ${...} itself, so its two placeholders are plain tokens.
+    filesMatching("_worker.js") {
+        filter { line ->
+            line
+                .replace("__BACKEND_BASE_URL__", backendUrl.takeIf { it.startsWith("https://") }.orEmpty())
+                .replace("__PUBLIC_ORIGIN__", publicOrigin)
+        }
     }
 }
 
@@ -142,15 +323,36 @@ tasks.named<ProcessResources>("wasmJsProcessResources") {
 tasks.named<Sync>("wasmJsBrowserDistribution") {
     val bundleName = webBundleName
     val hashedBundlePattern = hashedWebBundlePattern
+    val pageFile = webPageFile
+    val metaBlocks = webPageMetaBlocks
+    val sitemap = webSitemap
+    inputs.property("webPageMetaBlocks", metaBlocks)
+    inputs.property("webSitemap", sitemap)
     doLast {
         val bundles = destinationDir.listFiles { file -> hashedBundlePattern.matches(file.name) }.orEmpty()
         val bundle =
             bundles.singleOrNull()
                 ?: error("Expected one hashed web bundle in $destinationDir, found ${bundles.map { it.name }}")
-        val page = destinationDir.resolve("index.html")
+        val page = destinationDir.resolve(pageFile)
         val reference = """src="$bundleName""""
         val html = page.readText()
         check(html.contains(reference)) { "index.html does not load $bundleName" }
-        page.writeText(html.replace(reference, """src="${bundle.name}""""))
+        val shell = html.replace(reference, """src="${bundle.name}"""")
+
+        // A copy of the page for every fixed address and for 404, each with its own head tags between the page-meta
+        // markers. Cloudflare Pages serves `popular.html` at `/popular`; with a top-level 404.html, any address
+        // without a file gets that page with status 404 instead of the app's start page.
+        val start = "<!-- page-meta:start -->"
+        val end = "<!-- page-meta:end -->"
+        val startIndex = shell.indexOf(start)
+        val endIndex = shell.indexOf(end)
+        check(startIndex >= 0 && endIndex > startIndex && shell.indexOf(start, startIndex + 1) == -1) {
+            "index.html needs one page-meta block"
+        }
+        metaBlocks.forEach { (file, tags) ->
+            val head = shell.substring(0, startIndex + start.length)
+            destinationDir.resolve(file).writeText(head + "\n" + tags + "\n    " + shell.substring(endIndex))
+        }
+        destinationDir.resolve("sitemap.xml").writeText(sitemap)
     }
 }

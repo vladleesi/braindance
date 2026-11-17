@@ -121,8 +121,28 @@ jobs:
             exit 1
           fi
 
+      # The link-preview worker runs on Cloudflare Pages; its tests need only the Node.js the runner provides.
+      - name: Test Link Preview Worker
+        run: node --test webApp/src/edgeTest/*.test.mjs
+
       - name: Build Web App
         run: ./gradlew :webApp:wasmJsBrowserDistribution --stacktrace
+
+      # Cloudflare Pages serves the fixed pages as files, game and giveaway pages through _worker.js, and 404.html with
+      # status 404 for every other address. Fail when the build leaves out one of them or a worker placeholder.
+      - name: Check Web Pages
+        working-directory: webApp/build/dist/wasmJs/productionExecutable
+        run: |
+          fail() { echo "$1" >&2; exit 1; }
+          for file in index.html 404.html popular.html anticipated.html giveaways.html sitemap.xml robots.txt \
+            _worker.js _routes.json _redirects og-image.png; do
+            [ -f "$file" ] || fail "$file is missing."
+          done
+          if grep -q '__[A-Z_]*__' _worker.js; then fail "_worker.js still has a build placeholder."; fi
+          for page in *.html; do
+            [ "$(grep -c '<title>' "$page")" -eq 1 ] || fail "$page must have exactly one title."
+          done
+          grep -q '<meta name="robots" content="noindex">' 404.html || fail "404.html must not be indexed."
 
       # The page's content security policy and the Cloudflare Pages headers are the browser's main defenses. Fail when
       # a change weakens them; a deliberate change updates this check together with the policy.
