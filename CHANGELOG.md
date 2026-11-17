@@ -5,6 +5,13 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.20.1 — 2026-11-17
+
+### Android
+
+- Precompile the code for searching games on Discover and scrolling through results, so the first search after an
+  install or update runs smoothly. The startup and Home profile is refreshed as well.
+
 ## 0.20.0 — 2026-11-16
 
 ### Android, iOS, and Web
