@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +27,8 @@ import dev.vladleesi.braindanceapp.resources.ic_platform_logo_switch
 import dev.vladleesi.braindanceapp.resources.ic_platform_logo_windows
 import dev.vladleesi.braindanceapp.resources.ic_platform_logo_xbox
 import dev.vladleesi.braindanceapp.ui.components.TonalButton
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.white
@@ -43,7 +44,7 @@ fun LazyListScope.storesBlockItem(stores: List<StoreTypeModel>) {
         Text(
             text = stringResource(Res.string.game_details_screen_where_to_buy),
             style = MaterialTheme.typography.h3,
-            modifier = Modifier.padding(start = Dimens.medium, end = Dimens.medium),
+            modifier = Modifier.pageColumn(pageGutter()),
         )
     }
     item {
@@ -57,8 +58,8 @@ fun StoreButtonsRow(storeList: List<StoreTypeModel>) {
     FlowRow(
         modifier =
             Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Dimens.medium),
+                .pageColumn(pageGutter())
+                .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Dimens.small),
         verticalArrangement = Arrangement.spacedBy(Dimens.small),
     ) {

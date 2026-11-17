@@ -5,6 +5,38 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.23.0 — 2026-11-17
+
+### Android, iOS, and Web
+
+- Giveaway pages are redesigned. The giveaway's artwork fills the top, with what it is (a game, DLC, or early
+  access), the price you save, and the button to get it. Wide windows show its details in a panel beside the text.
+- See when a giveaway ends, with the days left in its last month, how many players claimed it, when it was added,
+  and every platform and store it is for, including those without a logo.
+- Claim instructions are numbered steps, and a new link opens the giveaway's page on GamerPower.
+- A giveaway that has ended says so, and its button is turned off.
+
+### Website and documentation
+
+- Refresh the latest updates on braindancegg.com.
+
+## 0.22.1 — 2026-11-17
+
+### Android, iOS, and Web
+
+- Profile and giveaway pages are a single centered column on tablets and wide windows, with the back button and
+  title right above their content instead of at the window's edge.
+- Library's game statuses and the Releases week view keep a compact width on tablets and wide windows, so the
+  month's arrows stay next to its name.
+
+### Web
+
+- In wide windows, every screen lines its content up with Home: the same margins, and the title and buttons stay in
+  place as you switch tabs. On very wide monitors, content stays centered at a comfortable width instead of
+  stretching across the screen.
+- Full lists, search results, and game pages start at the same edge as Home. The arrows for a game's similar games
+  sit at the end of their row instead of at the window's edge.
+
 ## 0.22.0 — 2026-11-17
 
 ### Android, iOS, and Web

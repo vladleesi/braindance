@@ -3,69 +3,57 @@
 package dev.vladleesi.braindanceapp.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.ShareTarget
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.giveaway_details_not_found
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_about
-import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_free
-import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_get_giveaway
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_instruction
-import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
-import dev.vladleesi.braindanceapp.ui.components.PlatformLogoList
-import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
 import dev.vladleesi.braindanceapp.ui.components.ShareButton
-import dev.vladleesi.braindanceapp.ui.components.SpacerTopBarWithStatusBarInsets
-import dev.vladleesi.braindanceapp.ui.components.StaticText
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
+import dev.vladleesi.braindanceapp.ui.components.giveaways.ClaimSteps
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayFactsCard
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayHero
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawaySection
+import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawaySourceButton
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageContentWidth
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
-import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
-import dev.vladleesi.braindanceapp.ui.style.icons.OpenInNew
-import dev.vladleesi.braindanceapp.ui.style.icons.Users
-import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
 import dev.vladleesi.braindanceapp.utils.openExternalUrl
-import dev.vladleesi.braindanceapp.utils.toContentDescription
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -112,89 +100,53 @@ fun GiveawayDetailsScreen(
     }
 }
 
-/** The loaded giveaway [id]; its top bar offers Share in layouts that [showsShareActions]. */
+/**
+ * The loaded giveaway [id]: a hero over its artwork with the action that opens it, then its facts, description, and
+ * claim steps, and a link to its page on GamerPower. Wide windows put the facts in a panel beside the text. Its top
+ * bar offers Share in layouts that [showsShareActions].
+ */
 @Composable
 fun GiveawayDetailsScreen(
     id: Int,
     state: GiveawayDetailsState.Success,
     modifier: Modifier,
     onBackButtonPressed: (() -> Unit),
+    uriHandler: UriHandler = LocalUriHandler.current,
 ) {
-    Box(
+    val details = state.giveawayDetails
+    val gutter = pageGutter()
+    BoxWithConstraints(
         modifier =
             modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .background(background),
     ) {
         val lazyListState = rememberLazyListState()
         val (topBarColor, backButtonColor, topBarTitleColor) =
             lazyListState.calculateScrollTopBarColors()
-        val isLargeWindow = isLargeWindow()
+        val contentWidth = pageContentWidth(maxWidth, gutter)
 
-        // TODO: Rework (wip: large devices, timer, platforms, new ui model data class)
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier.fillMaxSize().padding(horizontal = Dimens.medium),
-        ) {
-            item { SpacerTopBarWithStatusBarInsets() }
-            item {
-                GiveawayDetailsImage(
-                    state = state,
-                    modifier = Modifier.padding(top = Dimens.medium),
+        LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
+            item(key = HERO_KEY) {
+                GiveawayHero(
+                    id = id,
+                    details = details,
+                    expanded = contentWidth >= HeroBesideImageMinWidth,
+                    onGetGiveaway = details.openUrl?.let { url -> { uriHandler.openExternalUrl(url) } },
                 )
             }
-            item { Spacer(Modifier.height(Dimens.small)) }
-            item {
-                Text(
-                    text = state.giveawayDetails.title,
-                    style = MaterialTheme.typography.h2,
+            item(key = BODY_KEY) {
+                GiveawayBody(
+                    details = details,
+                    withSidePanel = contentWidth >= SidePanelLayoutMinWidth,
+                    onOpenSource = details.sourceUrl?.let { url -> { uriHandler.openExternalUrl(url) } },
+                    modifier = Modifier.pageColumn(gutter).padding(bottom = Dimens.large),
                 )
             }
-            item { Spacer(Modifier.height(Dimens.small)) }
-            item {
-                WorthInfo(state = state)
-            }
-            val claimed = state.giveawayDetails.claimedCount
-            if (claimed > 0) {
-                item { Spacer(Modifier.height(Dimens.small)) }
-                item {
-                    UsersClaimed(claimed, Modifier.fillParentMaxWidth())
-                }
-            }
-            val platforms = state.giveawayDetails.platforms
-            if (platforms.isNotEmpty()) {
-                item { Spacer(Modifier.height(Dimens.small)) }
-                item {
-                    PlatformLogoList(
-                        platforms = platforms,
-                        imageSize = 20.dp,
-                        horizontalSpacing = Dimens.small,
-                    )
-                }
-            }
-            item { Spacer(Modifier.height(Dimens.large)) }
-            item {
-                SummaryText(
-                    title = stringResource(Res.string.giveaway_details_screen_about),
-                    description = state.giveawayDetails.description,
-                )
-            }
-            item { Spacer(Modifier.height(Dimens.small)) }
-            item {
-                SummaryText(
-                    title = stringResource(Res.string.giveaway_details_screen_instruction),
-                    description = state.giveawayDetails.instructions,
-                )
-            }
-            item { Spacer(Modifier.height(Dimens.medium)) }
-            // Only a safe HTTPS link gets a button; a missing or unsafe link shows none.
-            state.giveawayDetails.openUrl?.let { url ->
-                item { OpenGiveawayButton(url = url) }
-            }
-            item { Spacer(Modifier.height(Dimens.large)) }
         }
         GiveawayDetailsTopBar(
-            shareTarget = ShareTarget.Giveaway(id = id, name = state.giveawayDetails.title),
+            title = details.title,
+            shareTarget = ShareTarget.Giveaway(id = id, name = details.title),
             topBarColor = topBarColor,
             backButtonColor = backButtonColor,
             titleColor = topBarTitleColor,
@@ -203,12 +155,92 @@ fun GiveawayDetailsScreen(
     }
 }
 
+private const val HERO_KEY = "hero"
+private const val BODY_KEY = "body"
+
+// The text beside the image needs room for a few words a line next to it.
+private val HeroBesideImageMinWidth = 720.dp
+
+// The facts panel beside the text, and the narrowest the text may get next to it.
+private val SidePanelWidth = 320.dp
+private val SidePanelLayoutMinWidth = 560.dp + Dimens.large + SidePanelWidth
+
 /**
- * The bar over the scrolling content: back and, in layouts that [showsShareActions], Share, which links to the
- * giveaway's page. Both are white icons on circular backdrops that blend into the bar once it fills.
+ * The facts, the description, the claim steps, and the source link. [withSidePanel] puts the facts and the source
+ * beside the text at the column's end; otherwise the facts come first, since when a giveaway ends decides whether
+ * the rest is worth reading.
  */
 @Composable
+private fun GiveawayBody(
+    details: GiveawayDetails,
+    withSidePanel: Boolean,
+    onOpenSource: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    val facts =
+        @Composable {
+            GiveawayFactsCard(
+                ending = details.ending,
+                claimedCount = details.claimedCount,
+                addedOn = details.addedOn,
+                platformNames = details.platformNames,
+            )
+        }
+    val source = @Composable { onOpenSource?.let { onClick -> GiveawaySourceButton(onClick = onClick) } }
+    if (withSidePanel) {
+        Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            GiveawayText(
+                details = details,
+                modifier = Modifier.weight(1f, fill = false).widthIn(max = Dimens.readableTextWidth),
+            )
+            Column(
+                modifier = Modifier.padding(start = Dimens.large).width(SidePanelWidth),
+                verticalArrangement = Arrangement.spacedBy(Dimens.medium),
+            ) {
+                facts()
+                source()
+            }
+        }
+    } else {
+        Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Dimens.large)) {
+            facts()
+            GiveawayText(details = details, modifier = Modifier.widthIn(max = Dimens.readableTextWidth))
+            source()
+        }
+    }
+}
+
+/** The description and the claim steps, each left out when GamerPower sends none. */
+@Composable
+private fun GiveawayText(
+    details: GiveawayDetails,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Dimens.large)) {
+        if (details.description.isNotEmpty()) {
+            GiveawaySection(title = stringResource(Res.string.giveaway_details_screen_about)) {
+                SelectionContainer {
+                    Text(text = details.description, style = MaterialTheme.typography.body2, color = white)
+                }
+            }
+        }
+        if (details.claimSteps.isNotEmpty()) {
+            GiveawaySection(title = stringResource(Res.string.giveaway_details_screen_instruction)) {
+                ClaimSteps(steps = details.claimSteps)
+            }
+        }
+    }
+}
+
+/**
+ * The bar over the scrolling content: back, the giveaway's title, which fades in as the bar fills, and, in layouts
+ * that [showsShareActions], Share, which links to the giveaway's page. Back and Share are white icons on circular
+ * backdrops that blend into the bar once it fills.
+ */
+@Suppress("LongParameterList")
+@Composable
 private fun GiveawayDetailsTopBar(
+    title: String,
     shareTarget: ShareTarget,
     topBarColor: Color,
     backButtonColor: Color,
@@ -219,6 +251,7 @@ private fun GiveawayDetailsTopBar(
         StatusBarOverlay(backgroundColor = topBarColor)
         TopAppBar(
             tabBarColor = topBarColor,
+            title = title,
             titleColor = titleColor,
             showBackButton = true,
             backButtonBackgroundColor = backButtonColor,
@@ -231,110 +264,4 @@ private fun GiveawayDetailsTopBar(
                 },
         )
     }
-}
-
-@Composable
-private fun GiveawayDetailsImage(
-    state: GiveawayDetailsState.Success,
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier = modifier) {
-        AsyncImage(
-            modifier =
-                Modifier
-                    .height(Dimens.giveAwayCardDetailsHeight)
-                    .width(Dimens.giveAwayCardDetailsWidth)
-                    .clip(CornerShapes.small),
-            model = state.giveawayDetails.imageUrl,
-            contentScale = ContentScale.Crop,
-            contentDescription = state.giveawayDetails.title.toContentDescription(),
-        )
-    }
-}
-
-@Composable
-private fun WorthInfo(
-    state: GiveawayDetailsState.Success,
-    modifier: Modifier = Modifier,
-) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
-        Text(
-            text = stringResource(Res.string.giveaway_details_screen_free),
-            color = white,
-            style = MaterialTheme.typography.body2,
-        )
-        val worth = state.giveawayDetails.worth
-        if (worth.isNotEmpty()) {
-            Spacer(modifier = Modifier.width(Dimens.tiny))
-            Text(
-                text = worth,
-                style = MaterialTheme.typography.body2,
-                color = secondaryText,
-                textDecoration = TextDecoration.LineThrough,
-            )
-        }
-    }
-}
-
-@Composable
-private fun UsersClaimed(
-    claimed: Int,
-    modifier: Modifier = Modifier,
-) {
-    Row(modifier = modifier) {
-        Icon(
-            imageVector = Users,
-            contentDescription = "$claimed+ users claimed this".toContentDescription(),
-            modifier = Modifier.size(20.dp),
-            tint = accent,
-        )
-        Spacer(Modifier.width(Dimens.tiny))
-        Text(
-            text = "$claimed+",
-            style = MaterialTheme.typography.body2,
-            color = accent,
-        )
-        Spacer(Modifier.width(Dimens.tiny))
-        Text(
-            text = "Claimed",
-            style = MaterialTheme.typography.body2,
-            color = white,
-        )
-    }
-}
-
-@Composable
-private fun SummaryText(
-    title: String,
-    description: String,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier.widthIn(max = Dimens.readableTextWidth)) {
-        StaticText(
-            text = title,
-            style = MaterialTheme.typography.h3,
-        )
-        Spacer(Modifier.height(Dimens.micro))
-        SelectionContainer {
-            Text(
-                text = description,
-                style = MaterialTheme.typography.body2,
-            )
-        }
-    }
-}
-
-@Composable
-private fun OpenGiveawayButton(
-    url: String,
-    modifier: Modifier = Modifier,
-    uriHandler: UriHandler = LocalUriHandler.current,
-) {
-    PrimaryButton(
-        text = stringResource(Res.string.giveaway_details_screen_get_giveaway),
-        onClick = { uriHandler.openExternalUrl(url) },
-        modifier = modifier,
-        trailingIcon = OpenInNew,
-        trailingIconDescription = url.toContentDescription(),
-    )
 }

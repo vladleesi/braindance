@@ -257,6 +257,8 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   build files. Keep the catalog's existing grouping and naming style. Do not remove unused dependencies.
 - Use existing `Dimens` values for Compose padding and spacing instead of raw `dp` values when an appropriate value
   already exists. Add a new shared dimension only when it represents a reusable design-system value.
+- Lay out screen content in the page column (`ui/components/PageColumn.kt`) with `pageGutter()` instead of fixed side
+  padding, and give the top bar the same `maxContentWidth`. Follow `docs/development.md#page-layout` for widths.
 - Follow the product design rules in `docs/branding/README.md#in-the-product`. In the app, use `CornerShapes`
   (`ui/style/CornerShapes.kt`): `small` for imagery, tiles, and rows, `large` for cards and panels, `pill` for
   buttons, chips, and tags, and `CircleShape` for icon buttons. Do not create `RoundedCornerShape` in composables.

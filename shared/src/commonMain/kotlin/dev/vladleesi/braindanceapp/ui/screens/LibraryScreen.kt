@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -47,6 +48,8 @@ import dev.vladleesi.braindanceapp.ui.components.SearchAction
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.SurfaceTile
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.white
@@ -61,6 +64,7 @@ private val fabSize = 56.dp
 fun LibraryScreen(modifier: Modifier) {
     val navigator = LocalNavigator.current
     // The scaffold's content area ends above the bottom bar and beside the rail, and already respects window insets.
+    val gutter = pageGutter()
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             SpacerStatusBarInsets()
@@ -71,10 +75,11 @@ fun LibraryScreen(modifier: Modifier) {
                 actions = { SearchAction(onClick = navigator::openSearch) },
             )
             Column(
-                modifier = Modifier.padding(horizontal = Dimens.medium),
+                modifier = Modifier.pageColumn(gutter),
                 verticalArrangement = Arrangement.spacedBy(Dimens.large),
             ) {
-                StatusSection()
+                // Four short labels read as one group at a readable width instead of tiles across a wide window.
+                StatusSection(modifier = Modifier.widthIn(max = Dimens.readableTextWidth))
                 ComingSoonCard(
                     title = stringResource(Res.string.library_custom_lists_title),
                     description = stringResource(Res.string.library_custom_lists_description),
@@ -83,19 +88,25 @@ fun LibraryScreen(modifier: Modifier) {
             // Lets the last section scroll clear of the button.
             Spacer(Modifier.height(fabSize + Dimens.large))
         }
-        CreateListButton(
+        // At the end of the page column rather than in a far corner of a wide window.
+        Box(
             modifier =
                 Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(Dimens.medium),
-        )
+                    .align(Alignment.BottomCenter)
+                    .pageColumn(gutter)
+                    .fillMaxWidth()
+                    .padding(bottom = Dimens.medium),
+            contentAlignment = Alignment.BottomEnd,
+        ) {
+            CreateListButton()
+        }
     }
 }
 
 /** Game statuses, kept apart from custom lists: each game has one status but can be in any number of lists. */
 @Composable
-private fun StatusSection() {
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.small)) {
+private fun StatusSection(modifier: Modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Dimens.small)) {
         ComingSoonLabel()
         Text(
             text = stringResource(Res.string.library_statuses_title),
@@ -136,7 +147,7 @@ private fun StatusCard(
 
 /** Shown disabled until list creation exists; Material's FloatingActionButton cannot be disabled. */
 @Composable
-private fun CreateListButton(modifier: Modifier) {
+private fun CreateListButton(modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
         shape = CircleShape,

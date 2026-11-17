@@ -67,6 +67,9 @@ import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayItemModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
+import dev.vladleesi.braindanceapp.ui.components.pageWidth
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith80Alpha
@@ -122,6 +125,9 @@ private fun StandardHomeScreen(
     var isMousePointer by remember { mutableStateOf(false) }
     // Each Home item is a whole section, such as a carousel with its images, so composing one costs a frame.
     val listState = rememberCachedLazyListState()
+    // Carousels scroll through the gutter, so they take the page column's width and inset their own cards by it.
+    val gutter = pageGutter()
+    val carouselModifier = Modifier.pageWidth(gutter)
 
     Box(
         modifier =
@@ -148,6 +154,7 @@ private fun StandardHomeScreen(
                     onRetry = viewModel::loadTrendingNow,
                     onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Popular)) },
                     onGameClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
+                    carouselModifier = carouselModifier,
                 )
             }
             item {
@@ -158,6 +165,7 @@ private fun StandardHomeScreen(
                     onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Anticipated)) },
                     showTitles = false,
                     onGameClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
+                    modifier = carouselModifier,
                 )
             }
             item {
@@ -167,11 +175,13 @@ private fun StandardHomeScreen(
                     onRetry = { viewModel.loadGiveaways() },
                     onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Giveaways)) },
                     onGiveawayClick = { id -> navigator.navigate(GiveawayDetailsRoute(id)) },
+                    modifier = carouselModifier,
                 )
             }
             homePreviewCards(
                 onOpenReleases = { navigator.navigate(BottomBarRoute.ReleasesRoute) },
                 onOpenNews = { navigator.navigate(BottomBarRoute.NewsRoute) },
+                cardModifier = Modifier.pageColumn(gutter),
             )
             item { Spacer(Modifier.height(Dimens.large)) }
         }
@@ -203,6 +213,7 @@ private fun HomeHeader(
     onRetry: () -> Unit,
     onSeeAll: () -> Unit,
     onGameClick: (id: Int) -> Unit,
+    carouselModifier: Modifier,
 ) {
     Column {
         HomeTopBar(onProfileClick = onProfileClick, onSearchClick = onSearchClick)
@@ -213,6 +224,7 @@ private fun HomeHeader(
             onSeeAll = onSeeAll,
             showTitles = true,
             onGameClick = onGameClick,
+            modifier = carouselModifier,
         )
     }
 }
@@ -230,11 +242,13 @@ private fun GamesCarousel(
     onSeeAll: () -> Unit,
     showTitles: Boolean,
     onGameClick: (id: Int) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val cardModifier = Modifier.width(Dimens.gameCardWidth)
     CarouselSection(
         title = title,
         state = state,
+        modifier = modifier,
         onRetry = onRetry,
         onSeeAll = onSeeAll,
         skeleton = { GameCardSkeleton(showTitle = showTitles, modifier = cardModifier) },
@@ -252,11 +266,13 @@ private fun GiveawaysCarousel(
     onRetry: () -> Unit,
     onSeeAll: () -> Unit,
     onGiveawayClick: (id: Int) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val cardModifier = Modifier.width(Dimens.giveAwayCardWidth)
     CarouselSection(
         title = title,
         state = state,
+        modifier = modifier,
         onRetry = onRetry,
         onSeeAll = onSeeAll,
         skeleton = { GiveawayCardSkeleton(modifier = cardModifier) },
@@ -294,12 +310,20 @@ private fun HomeTopBar(
 private fun LazyListScope.homePreviewCards(
     onOpenReleases: () -> Unit,
     onOpenNews: () -> Unit,
+    cardModifier: Modifier,
 ) {
-    item { HomePreviewCard(Res.string.home_recommendations_title, Res.string.home_recommendations_description) }
+    item {
+        HomePreviewCard(
+            title = Res.string.home_recommendations_title,
+            description = Res.string.home_recommendations_description,
+            modifier = cardModifier,
+        )
+    }
     item {
         HomePreviewCard(
             title = Res.string.releases_upcoming_title,
             description = Res.string.home_upcoming_releases_description,
+            modifier = cardModifier,
             link = Res.string.home_open_releases,
             onLinkClick = onOpenReleases,
         )
@@ -308,11 +332,18 @@ private fun LazyListScope.homePreviewCards(
         HomePreviewCard(
             title = Res.string.home_latest_news_title,
             description = Res.string.home_latest_news_description,
+            modifier = cardModifier,
             link = Res.string.home_open_news,
             onLinkClick = onOpenNews,
         )
     }
-    item { HomePreviewCard(Res.string.home_events_title, Res.string.home_events_description) }
+    item {
+        HomePreviewCard(
+            title = Res.string.home_events_title,
+            description = Res.string.home_events_description,
+            modifier = cardModifier,
+        )
+    }
 }
 
 /** A planned Home section; [link], when given, opens the destination that will host it through [onLinkClick]. */
@@ -320,13 +351,14 @@ private fun LazyListScope.homePreviewCards(
 private fun HomePreviewCard(
     title: StringResource,
     description: StringResource,
+    modifier: Modifier = Modifier,
     link: StringResource? = null,
     onLinkClick: (() -> Unit)? = null,
 ) {
     ComingSoonCard(
         title = stringResource(title),
         description = stringResource(description),
-        modifier = Modifier.padding(horizontal = Dimens.medium),
+        modifier = modifier,
         action =
             if (link != null && onLinkClick != null) {
                 {

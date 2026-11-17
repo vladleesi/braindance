@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -42,6 +41,9 @@ import dev.vladleesi.braindanceapp.ui.components.details.LibraryActionsState
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
+import dev.vladleesi.braindanceapp.ui.components.pageWidth
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -118,6 +120,7 @@ private fun GameDetailsScreen(
     val (topBarColor, backButtonColor, topBarTitleColor) =
         lazyListState.calculateScrollTopBarColors()
     val isLargeWindow = isLargeWindow()
+    val gutter = pageGutter()
 
     Box(
         modifier =
@@ -147,9 +150,9 @@ private fun GameDetailsScreen(
                         text = state.gameDetails.summary,
                         modifier =
                             Modifier
+                                .pageColumn(gutter)
                                 .widthIn(max = Dimens.readableTextWidth)
-                                .fillMaxWidth()
-                                .padding(start = Dimens.medium, end = Dimens.medium),
+                                .fillMaxWidth(),
                     )
                 }
                 item { Spacer(modifier = Modifier.size(Dimens.large)) }
@@ -180,7 +183,9 @@ private fun GameDetailsScreen(
                         // Never shown: the section has no error state.
                         onRetry = {},
                         skeleton = { GameCardSkeleton(showTitle = true, modifier = cardModifier) },
+                        modifier = Modifier.pageWidth(gutter),
                         titleStyle = MaterialTheme.typography.h3,
+                        horizontalPadding = gutter,
                     ) { games ->
                         items(games, key = { game -> game.id }, contentType = { SIMILAR_GAME_CONTENT_TYPE }) { game ->
                             GameCard(

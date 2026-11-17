@@ -81,6 +81,9 @@ import dev.vladleesi.braindanceapp.ui.components.SearchBar
 import dev.vladleesi.braindanceapp.ui.components.SearchFieldIcon
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
+import dev.vladleesi.braindanceapp.ui.components.pageWidth
 import dev.vladleesi.braindanceapp.ui.components.search.SearchError
 import dev.vladleesi.braindanceapp.ui.components.search.SearchNoResults
 import dev.vladleesi.braindanceapp.ui.components.search.SearchResultsGrid
@@ -309,14 +312,16 @@ private fun DiscoverTitle(
 
 /**
  * The row under the title that holds the search field and its actions. The space under it is where [scrolledContent]
- * passes out of view, and a hairline marks that edge only while something is scrolled under it. The scroll position is
- * read while drawing, so scrolling does not recompose the header.
+ * passes out of view, and a hairline across the whole width marks that edge only while something is scrolled under
+ * it. The scroll position is read while drawing, so scrolling does not recompose the header. The field starts at the
+ * page column's edge and keeps a readable width.
  */
 @Composable
 private fun SearchHeader(
     scrolledContent: ScrollableState,
     content: @Composable RowScope.() -> Unit,
 ) {
+    val gutter = pageGutter()
     Box(
         modifier =
             Modifier
@@ -327,7 +332,9 @@ private fun SearchHeader(
                         val y = size.height - stroke / 2
                         drawLine(secondary, Offset(0f, y), Offset(size.width, y), stroke)
                     }
-                }.padding(start = Dimens.medium, end = Dimens.tiny, bottom = Dimens.compact),
+                }.pageWidth(gutter)
+                // The trailing icon button's own inset completes the gutter, as in the top bar.
+                .padding(start = gutter, end = gutter - Dimens.compact, bottom = Dimens.compact),
     ) {
         Row(
             modifier = Modifier.widthIn(max = Dimens.readableTextWidth),
@@ -348,7 +355,8 @@ private fun DiscoverPlaceholders(
                 // While the keyboard is open, the content ends at its top edge and can still scroll clear of it.
                 .keyboardPadding()
                 .verticalScroll(scrollState)
-                .padding(start = Dimens.medium, top = Dimens.tiny, end = Dimens.medium, bottom = Dimens.large),
+                .pageColumn(pageGutter())
+                .padding(top = Dimens.tiny, bottom = Dimens.large),
         verticalArrangement = Arrangement.spacedBy(Dimens.medium),
     ) {
         PlaceholderChips(

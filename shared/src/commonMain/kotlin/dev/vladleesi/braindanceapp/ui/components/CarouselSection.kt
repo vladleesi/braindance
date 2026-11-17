@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.home_see_all
@@ -50,7 +51,8 @@ private const val SKELETON_COUNT = 8
  * One section as a titled horizontal carousel for narrow layouts. Loading shows [skeleton]s, an error offers
  * [onRetry], and success lays out the items through [content], which adds them with keys and content types. Pointer
  * devices on Web also get previous and next buttons. With [onSeeAll], the header links to the section's full list in
- * every state, so it never shifts the layout when the items arrive.
+ * every state, so it never shifts the layout when the items arrive. The title, the cards, and any message are inset by
+ * [horizontalPadding], usually the page gutter: the row scrolls through it, so cards slide out at the row's edge.
  */
 @Suppress("LongParameterList")
 @Composable
@@ -62,6 +64,7 @@ fun <T> CarouselSection(
     modifier: Modifier = Modifier,
     titleStyle: TextStyle = MaterialTheme.typography.h2,
     onSeeAll: (() -> Unit)? = null,
+    horizontalPadding: Dp = Dimens.medium,
     content: LazyListScope.(items: List<T>) -> Unit,
 ) {
     Crossfade(targetState = state, modifier = modifier) { target ->
@@ -69,12 +72,18 @@ fun <T> CarouselSection(
         // it is attached to nothing, and the controls render disabled at their loaded size.
         val listState = rememberLazyListState()
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.small)) {
-            CarouselHeader(title = title, titleStyle = titleStyle, listState = listState, onSeeAll = onSeeAll)
+            CarouselHeader(
+                title = title,
+                titleStyle = titleStyle,
+                listState = listState,
+                onSeeAll = onSeeAll,
+                horizontalPadding = horizontalPadding,
+            )
             when (target) {
                 SectionState.Loading ->
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(Dimens.small),
-                        contentPadding = PaddingValues(horizontal = Dimens.medium),
+                        contentPadding = PaddingValues(horizontal = horizontalPadding),
                         userScrollEnabled = false,
                     ) {
                         items(SKELETON_COUNT) { skeleton() }
@@ -82,12 +91,12 @@ fun <T> CarouselSection(
 
                 is SectionState.Success ->
                     if (target.items.isEmpty()) {
-                        SectionEmpty(modifier = Modifier.padding(horizontal = Dimens.medium))
+                        SectionEmpty(modifier = Modifier.padding(horizontal = horizontalPadding))
                     } else {
                         LazyRow(
                             state = listState,
                             horizontalArrangement = Arrangement.spacedBy(Dimens.small),
-                            contentPadding = PaddingValues(horizontal = Dimens.medium),
+                            contentPadding = PaddingValues(horizontal = horizontalPadding),
                         ) {
                             content(target.items)
                         }
@@ -97,7 +106,7 @@ fun <T> CarouselSection(
                     SectionError(
                         message = target.error.userMessage(),
                         onRetry = onRetry,
-                        modifier = Modifier.padding(horizontal = Dimens.medium),
+                        modifier = Modifier.padding(horizontal = horizontalPadding),
                     )
             }
         }
@@ -110,9 +119,13 @@ private fun CarouselHeader(
     titleStyle: TextStyle,
     listState: LazyListState,
     onSeeAll: (() -> Unit)?,
+    horizontalPadding: Dp,
 ) {
+    // The trailing controls carry their own inset for the standard margin; a wider padding adds the difference.
+    val seeAllInset = if (onSeeAll == null) 0.dp else Dimens.tiny
+    val endPadding = seeAllInset + (horizontalPadding - Dimens.medium).coerceAtLeast(0.dp)
     Row(
-        modifier = Modifier.fillMaxWidth().padding(end = if (onSeeAll == null) 0.dp else Dimens.tiny),
+        modifier = Modifier.fillMaxWidth().padding(end = endPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         StaticText(
@@ -121,7 +134,7 @@ private fun CarouselHeader(
             modifier =
                 Modifier
                     .weight(1f)
-                    .padding(horizontal = Dimens.medium)
+                    .padding(start = horizontalPadding, end = Dimens.medium)
                     .semantics { heading() },
         )
         HorizontalListControls(listState = listState)

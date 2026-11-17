@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
@@ -23,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.BuildKonfig
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.data_attribution_gamerpower
@@ -59,6 +57,8 @@ import dev.vladleesi.braindanceapp.ui.components.IGDB_NAME
 import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.profile.ProfileDivider
 import dev.vladleesi.braindanceapp.ui.components.profile.ProfileLinkRow
 import dev.vladleesi.braindanceapp.ui.components.profile.ProfileRowTextInset
@@ -78,9 +78,6 @@ import dev.vladleesi.braindanceapp.ui.style.icons.ThreadsLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.XLogo
 import org.jetbrains.compose.resources.stringResource
 
-// Wide windows keep the lists at a readable width instead of stretching them across the screen.
-private val ContentMaxWidth = 640.dp
-
 @Composable
 fun ProfileScreen(
     onBackButtonPressed: () -> Unit,
@@ -97,7 +94,9 @@ fun ProfileScreen(
 
 /**
  * Profile, grouped the way a settings list is: the account features that are coming, then the community links, then
- * what the app is built on, with the app version and its development stage as a quiet footer at the bottom.
+ * what the app is built on, with the app version and its development stage as a quiet footer at the bottom. Rows of
+ * one list read best at a readable width, so the page is a single centered column, its title included, instead of
+ * rows stretched across a wide window.
  */
 @Composable
 internal fun ProfileContent(
@@ -107,6 +106,7 @@ internal fun ProfileContent(
     onBackButtonPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val gutter = pageGutter()
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         Column(
             modifier =
@@ -116,21 +116,20 @@ internal fun ProfileContent(
                     .heightIn(min = maxHeight)
                     .padding(bottom = Dimens.medium),
             verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column {
                 SpacerStatusBarInsets()
                 TopAppBar(
                     title = stringResource(Res.string.profile_screen_title),
                     titleStyle = MaterialTheme.typography.h2,
                     showBackButton = true,
                     onBackButtonPressed = onBackButtonPressed,
+                    maxContentWidth = Dimens.readableTextWidth,
                 )
                 Column(
                     modifier =
                         Modifier
-                            .widthIn(max = ContentMaxWidth)
-                            .padding(horizontal = Dimens.medium)
+                            .pageColumn(gutter, maxContentWidth = Dimens.readableTextWidth)
                             .padding(top = Dimens.small),
                     verticalArrangement = Arrangement.spacedBy(Dimens.large),
                 ) {
@@ -144,9 +143,9 @@ internal fun ProfileContent(
                 statusLabel = stringResource(Res.string.profile_development_status),
                 modifier =
                     Modifier
-                        .widthIn(max = ContentMaxWidth)
-                        // Lines up with the row content: the sections' own margin plus the row padding.
-                        .padding(horizontal = Dimens.large)
+                        .pageColumn(gutter, maxContentWidth = Dimens.readableTextWidth)
+                        // Lines up with the row content: the page gutter plus the row padding.
+                        .padding(horizontal = Dimens.medium)
                         .padding(top = Dimens.large),
             )
         }

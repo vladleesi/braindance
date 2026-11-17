@@ -51,9 +51,15 @@ private const val CARD_CONTENT_TYPE = "card"
 private const val SKELETON_CONTENT_TYPE = "card_skeleton"
 private const val FOOTER_CONTENT_TYPE = "footer"
 
-/** The padding around a [PagedGrid], also used by messages shown in its place so they line up with its cards. */
-val PagedGridPadding =
-    PaddingValues(start = Dimens.medium, top = Dimens.tiny, end = Dimens.medium, bottom = Dimens.large)
+private val GridTopPadding = Dimens.tiny
+private val GridBottomPadding = Dimens.large
+
+/**
+ * Places a message shown in a [PagedGrid]'s place, such as an empty list or an error, where its first card would
+ * start: in the page column with the [gutter], below the same top padding.
+ */
+fun Modifier.pagedGridMessage(gutter: Dp): Modifier =
+    pageColumn(gutter).padding(top = GridTopPadding, bottom = GridBottomPadding)
 
 /** Cards in a [PagedGrid] are at least this wide; the grid fits as many columns as the window allows. */
 data class PagedGridCardWidth(
@@ -138,8 +144,9 @@ fun PagedGridSkeleton(
 }
 
 /**
- * The grid every paged state shares, so placeholders and cards line up. It fits as many columns as the window allows
- * and passes their count to [content]. While the keyboard is open, the last rows can still scroll clear of it.
+ * The grid every paged state shares, so placeholders and cards line up. It fits as many columns as the page column
+ * allows and passes their count to [content]. The grid spans the whole width, so it also scrolls from the margins,
+ * and insets its cards to the page column. While the keyboard is open, the last rows can still scroll clear of it.
  */
 @Composable
 private fun CardGrid(
@@ -150,13 +157,16 @@ private fun CardGrid(
     content: LazyGridScope.(columns: Int) -> Unit,
 ) {
     val minCardWidth = if (isLargeWindow()) cardWidth.large else cardWidth.compact
+    val gutter = pageGutter()
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val columns = columnsFor(maxWidth - Dimens.medium * 2, minCardWidth)
+        val columns = columnsFor(pageContentWidth(maxWidth, gutter), minCardWidth)
+        val sidePadding = pageSidePadding(maxWidth, gutter)
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             state = state,
             modifier = Modifier.fillMaxSize().keyboardPadding(),
-            contentPadding = PagedGridPadding,
+            contentPadding =
+                PaddingValues(start = sidePadding, top = GridTopPadding, end = sidePadding, bottom = GridBottomPadding),
             horizontalArrangement = Arrangement.spacedBy(ColumnGap),
             verticalArrangement = Arrangement.spacedBy(RowGap),
             userScrollEnabled = userScrollEnabled,

@@ -5,7 +5,6 @@ package dev.vladleesi.braindanceapp.ui.components.search
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.MaterialTheme
@@ -18,13 +17,14 @@ import dev.vladleesi.braindanceapp.data.DataError
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.discover_search_no_results
 import dev.vladleesi.braindanceapp.ui.components.PagedGrid
-import dev.vladleesi.braindanceapp.ui.components.PagedGridPadding
 import dev.vladleesi.braindanceapp.ui.components.PagedGridSkeleton
 import dev.vladleesi.braindanceapp.ui.components.SectionError
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardLabel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
+import dev.vladleesi.braindanceapp.ui.components.pagedGridMessage
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.background
@@ -74,7 +74,7 @@ fun SearchNoResults(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(Res.string.discover_search_no_results),
         style = MaterialTheme.typography.body2,
-        modifier = modifier.padding(PagedGridPadding),
+        modifier = modifier.pagedGridMessage(pageGutter()),
     )
 }
 
@@ -85,7 +85,7 @@ fun SearchError(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SectionError(message = error.userMessage(), onRetry = onRetry, modifier = modifier.padding(PagedGridPadding))
+    SectionError(message = error.userMessage(), onRetry = onRetry, modifier = modifier.pagedGridMessage(pageGutter()))
 }
 
 private const val PREVIEW_GAME_COUNT = 7

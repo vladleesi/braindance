@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
@@ -39,6 +40,8 @@ import dev.vladleesi.braindanceapp.ui.components.PlaceholderChips
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.SurfaceTile
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import org.jetbrains.compose.resources.stringResource
 
@@ -66,12 +69,14 @@ fun ReleasesScreen(modifier: Modifier) {
                 Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Dimens.medium)
+                    .pageColumn(pageGutter())
                     .padding(bottom = Dimens.medium),
             verticalArrangement = Arrangement.spacedBy(Dimens.medium),
         ) {
-            MonthHeader()
-            WeekStrip()
+            // The month's arrows stay beside its name, and the days under it, rather than spread across a wide window.
+            val calendarModifier = Modifier.widthIn(max = Dimens.readableTextWidth)
+            MonthHeader(modifier = calendarModifier)
+            WeekStrip(modifier = calendarModifier)
             PlaceholderChips(
                 labels =
                     listOf(
@@ -89,8 +94,8 @@ fun ReleasesScreen(modifier: Modifier) {
 }
 
 @Composable
-private fun MonthHeader() {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+private fun MonthHeader(modifier: Modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         ComingSoonAction(
             imageVector = ChevronLeft,
             label = stringResource(Res.string.releases_previous_month_coming_soon),
@@ -111,9 +116,9 @@ private fun MonthHeader() {
 
 /** Empty day cells that outline the week view; dates arrive with the calendar itself. */
 @Composable
-private fun WeekStrip() {
+private fun WeekStrip(modifier: Modifier) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Dimens.tiny),
     ) {
         repeat(DAYS_IN_WEEK) {

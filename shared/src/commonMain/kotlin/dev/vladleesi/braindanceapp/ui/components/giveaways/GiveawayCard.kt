@@ -41,7 +41,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 // GamerPower images are 460 x 215.
-private const val GIVEAWAY_IMAGE_ASPECT_RATIO = 460f / 215f
+internal const val GIVEAWAY_IMAGE_ASPECT_RATIO = 460f / 215f
 private const val SKELETON_TITLE_FRACTION = 0.7f
 private const val SKELETON_CAPTION_FRACTION = 0.4f
 

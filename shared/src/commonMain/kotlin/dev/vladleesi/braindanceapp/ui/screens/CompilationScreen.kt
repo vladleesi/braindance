@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -28,7 +27,6 @@ import dev.vladleesi.braindanceapp.resources.home_screen_popular_most_anticipate
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_right_now
 import dev.vladleesi.braindanceapp.ui.components.PagedGrid
 import dev.vladleesi.braindanceapp.ui.components.PagedGridCardWidth
-import dev.vladleesi.braindanceapp.ui.components.PagedGridPadding
 import dev.vladleesi.braindanceapp.ui.components.PagedGridSkeleton
 import dev.vladleesi.braindanceapp.ui.components.SectionEmpty
 import dev.vladleesi.braindanceapp.ui.components.SectionError
@@ -41,6 +39,8 @@ import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardLabel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
+import dev.vladleesi.braindanceapp.ui.components.pagedGridMessage
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
@@ -187,12 +187,12 @@ internal fun <T> CompilationContent(
                     cardWidth = cardWidth,
                     itemContent = itemContent,
                 )
-            PagedListState.Empty -> SectionEmpty(modifier = Modifier.padding(PagedGridPadding))
+            PagedListState.Empty -> SectionEmpty(modifier = Modifier.pagedGridMessage(pageGutter()))
             is PagedListState.Error ->
                 SectionError(
                     message = state.error.userMessage(),
                     onRetry = onRetry,
-                    modifier = Modifier.padding(PagedGridPadding),
+                    modifier = Modifier.pagedGridMessage(pageGutter()),
                 )
         }
     }

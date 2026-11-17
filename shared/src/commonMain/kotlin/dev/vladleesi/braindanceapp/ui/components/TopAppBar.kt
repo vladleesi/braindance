@@ -20,11 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.back_button_content_description
@@ -40,8 +43,9 @@ import org.jetbrains.compose.resources.stringResource
 // Without actions, the title keeps the same end margin as its start margin beside the back button.
 private val titleEndPaddingWithoutActions = 64.dp
 
-// An icon button's 48 dp target insets its 24 dp icon by 12 dp; this lines the last icon up with the 16 dp margin.
-private val actionsEndPadding = Dimens.tiny
+// An icon button's 48 dp target insets its 24 dp icon by 12 dp; the end padding leaves that out of the page gutter, so
+// the last icon lines up with the content's edge.
+private val iconButtonInset = Dimens.compact
 
 @Composable
 fun TopAppBar(
@@ -57,14 +61,19 @@ fun TopAppBar(
     backButtonColor: Color = white,
     onBackButtonPressed: () -> Unit = {},
     actions: (@Composable RowScope.() -> Unit)? = null,
+    maxContentWidth: Dp = Dimens.pageMaxWidth,
 ) {
+    val gutter = pageGutter()
+    // The color spans the whole width; the back button, title, and actions line up with the page column below, which
+    // has the same [maxContentWidth].
     Row(
         modifier =
             modifier
                 .fillMaxWidth()
                 .height(Dimens.topBarHeight)
                 .background(tabBarColor)
-                .padding(start = Dimens.medium, end = if (actions == null) Dimens.medium else actionsEndPadding),
+                .pageWidth(gutter, maxContentWidth)
+                .padding(start = gutter, end = if (actions == null) gutter else gutter - iconButtonInset),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (showBackButton) {
@@ -134,7 +143,7 @@ fun TopLevelTopAppBar(
         actions = {
             actions()
             if (showProfileButton) {
-                IconButton(onClick = onProfileClick) {
+                IconButton(onClick = onProfileClick, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)) {
                     UserAvatar(contentDescription = stringResource(Res.string.profile_screen_title))
                 }
             }

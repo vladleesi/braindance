@@ -29,8 +29,13 @@ object Dimens {
 
     val topBarHeight = 82.dp
 
-    // The widest a block of running text gets: about 80 characters a line, however wide the window is.
+    // The widest a block of running text gets: about 80 characters a line, however wide the window is. Pages that are
+    // a single column of text or rows, such as Profile, use it as their width.
     val readableTextWidth = 720.dp
+
+    // The widest the content of a page gets. Wider windows center it, so on ultrawide monitors the grids keep their
+    // card sizes and the top bar's title and actions stay at the content's edges.
+    val pageMaxWidth = 1440.dp
 
     val statusBarInsets
         @Composable

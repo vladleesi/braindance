@@ -152,6 +152,24 @@
     <!-- Giveaway details screen -->
     <string name="giveaway_details_screen_free">FREE</string>
     <string name="giveaway_details_screen_about">About this giveaway</string>
-    <string name="giveaway_details_screen_instruction">Instruction</string>
-    <string name="giveaway_details_screen_get_giveaway">Get Giveaway</string>
+    <string name="giveaway_details_screen_instruction">How to claim</string>
+    <string name="giveaway_details_screen_get_giveaway">Get giveaway</string>
+    <string name="giveaway_details_free">Free</string>
+    <string name="giveaway_details_worth">Worth %1$s</string>
+    <string name="giveaway_details_ended_action">Giveaway ended</string>
+    <string name="giveaway_details_view_on_gamerpower">View on GamerPower</string>
+    <string name="giveaway_details_section_details">Details</string>
+    <string name="giveaway_details_ends">Ends</string>
+    <string name="giveaway_details_ended">Ended</string>
+    <string name="giveaway_details_no_end_date">No end date</string>
+    <string name="giveaway_details_ends_today">Ends today</string>
+    <string name="giveaway_details_ends_tomorrow">Ends tomorrow</string>
+    <plurals name="giveaway_details_days_left">
+        <item quantity="one">%1$d day left</item>
+        <item quantity="other">%1$d days left</item>
+    </plurals>
+    <string name="giveaway_details_claimed_by">Claimed by</string>
+    <string name="giveaway_details_claimed_count">%1$s+ players</string>
+    <string name="giveaway_details_added">Added</string>
+    <string name="giveaway_details_platforms">Platforms</string>
 </resources>

@@ -42,6 +42,8 @@ import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.ui.components.COVER_ASPECT_RATIO
 import dev.vladleesi.braindanceapp.ui.components.PlatformLogoList
 import dev.vladleesi.braindanceapp.ui.components.SpacerTopBarWithStatusBarInsets
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -109,7 +111,8 @@ fun GameDetailsHero(
             imageUrl = details.backdrop?.let { if (expanded) it.wideUrl else it.compactUrl },
             modifier = Modifier.matchParentSize(),
         )
-        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.medium)) {
+        // The artwork spans the whole width; the cover and text line up with the page column below.
+        Column(modifier = Modifier.pageColumn(pageGutter()).fillMaxWidth()) {
             SpacerTopBarWithStatusBarInsets()
             Row(verticalAlignment = Alignment.Bottom) {
                 // A game without a cover leaves the title the whole width rather than beside an empty tile.

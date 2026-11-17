@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -38,8 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -72,7 +69,6 @@ import dev.vladleesi.braindanceapp.resources.home_screen_popular_latest_giveaway
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_most_anticipated
 import dev.vladleesi.braindanceapp.resources.home_screen_popular_right_now
 import dev.vladleesi.braindanceapp.resources.home_upcoming_releases_description
-import dev.vladleesi.braindanceapp.resources.profile_screen_title
 import dev.vladleesi.braindanceapp.resources.releases_upcoming_title
 import dev.vladleesi.braindanceapp.system.DesktopLayout
 import dev.vladleesi.braindanceapp.ui.components.COVER_ASPECT_RATIO
@@ -83,7 +79,7 @@ import dev.vladleesi.braindanceapp.ui.components.OutlineButton
 import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
 import dev.vladleesi.braindanceapp.ui.components.SearchAction
 import dev.vladleesi.braindanceapp.ui.components.SurfaceCard
-import dev.vladleesi.braindanceapp.ui.components.UserAvatar
+import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
 import dev.vladleesi.braindanceapp.ui.components.desktop.BrandAccentStrip
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopCardRow
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopGridColumns
@@ -93,6 +89,9 @@ import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageContentWidth
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -105,8 +104,6 @@ import dev.vladleesi.braindanceapp.utils.rememberCachedImageRequest
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-// Keeps rows of cards from stretching across very wide windows.
-private val MainColumnMaxWidth = 1120.dp
 private val ContextColumnWidth = 280.dp
 private val HeroMinHeight = 220.dp
 private val ContextIconSize = 20.dp
@@ -129,8 +126,9 @@ private val HeroScrim =
     )
 
 /**
- * The Home screen for wide Web windows: a header, a discovery hero, fixed card grids for each section, and previews
- * of planned features. It renders the same [HomeViewModel] state and navigation as the standard Home screen.
+ * The Home screen for wide Web windows: the tabs' top bar with the tagline, a discovery hero, fixed card grids for
+ * each section, and previews of planned features. It renders the same [HomeViewModel] state and navigation as the
+ * standard Home screen.
  */
 @Composable
 internal fun DesktopHomeScreen(
@@ -151,41 +149,44 @@ internal fun DesktopHomeScreen(
                 .fillMaxSize()
                 .background(background),
     ) {
-        val horizontalPadding = Dimens.large
+        val gutter = pageGutter()
         val contextWidth = if (layout.hasContextColumn) ContextColumnWidth + Dimens.large else 0.dp
-        val mainWidth = (maxWidth - horizontalPadding * 2 - contextWidth).coerceIn(0.dp, MainColumnMaxWidth)
+        val mainWidth = (pageContentWidth(maxWidth, gutter) - contextWidth).coerceAtLeast(0.dp)
         val columns = remember(mainWidth) { DesktopGridColumns.forWidth(mainWidth) }
 
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = horizontalPadding, vertical = Dimens.large),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Column(
-                modifier = Modifier.width(mainWidth + contextWidth),
-                verticalArrangement = Arrangement.spacedBy(Dimens.large),
-            ) {
-                DesktopHomeHeader(
-                    showProfileButton = !layout.hasSidebar,
-                    onProfileClick = { navigator.navigate(ProfileRoute) },
-                    onSearchClick = navigator::openSearch,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.large)) {
-                    DesktopHomeMainColumn(
-                        layout = layout,
-                        viewModel = viewModel,
-                        columns = columns,
-                        modifier = Modifier.width(mainWidth),
+        // The scroll container spans the whole width, so the wheel also scrolls from the margins.
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            // The same bar as every other tab, so switching tabs keeps the title and actions in place.
+            TopLevelTopAppBar(
+                title = stringResource(Res.string.desktop_tagline),
+                onProfileClick = { navigator.navigate(ProfileRoute) },
+                actions = {
+                    // Starts a search on Discover, as on every Home.
+                    SearchAction(onClick = navigator::openSearch)
+                    ComingSoonAction(
+                        imageVector = Bell,
+                        label = stringResource(Res.string.home_notifications_coming_soon),
                     )
-                    if (layout.hasContextColumn) {
-                        DesktopContextColumn(
-                            onOpenReleases = { navigator.navigate(BottomBarRoute.ReleasesRoute) },
-                            modifier = Modifier.width(ContextColumnWidth),
-                        )
-                    }
+                },
+            )
+            Row(
+                modifier =
+                    Modifier
+                        .pageColumn(gutter)
+                        .padding(top = Dimens.tiny, bottom = Dimens.large),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.large),
+            ) {
+                DesktopHomeMainColumn(
+                    layout = layout,
+                    viewModel = viewModel,
+                    columns = columns,
+                    modifier = Modifier.width(mainWidth),
+                )
+                if (layout.hasContextColumn) {
+                    DesktopContextColumn(
+                        onOpenReleases = { navigator.navigate(BottomBarRoute.ReleasesRoute) },
+                        modifier = Modifier.width(ContextColumnWidth),
+                    )
                 }
             }
         }
@@ -264,33 +265,6 @@ private fun DesktopHomeMainColumn(
             onOpenReleases = { navigator.navigate(BottomBarRoute.ReleasesRoute) },
             onOpenNews = { navigator.navigate(BottomBarRoute.NewsRoute) },
         )
-    }
-}
-
-/** The tagline, a search action that starts a search on Discover as on every Home, notifications, and Profile. */
-@Composable
-private fun DesktopHomeHeader(
-    showProfileButton: Boolean,
-    onProfileClick: () -> Unit,
-    onSearchClick: () -> Unit,
-) {
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = stringResource(Res.string.desktop_tagline),
-            style = MaterialTheme.typography.h2,
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .semantics { heading() },
-        )
-        SearchAction(onClick = onSearchClick)
-        ComingSoonAction(imageVector = Bell, label = stringResource(Res.string.home_notifications_coming_soon))
-        // The sidebar links to Profile, so the button only appears in the layout without a sidebar.
-        if (showProfileButton) {
-            IconButton(onClick = onProfileClick, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)) {
-                UserAvatar(contentDescription = stringResource(Res.string.profile_screen_title))
-            }
-        }
     }
 }
 
@@ -502,16 +476,6 @@ private fun PreviewCard(
                 null
             },
     )
-}
-
-@Preview
-@Composable
-internal fun DesktopHomeHeaderPreview() {
-    BraindanceTheme {
-        Box(modifier = Modifier.background(background).padding(Dimens.large)) {
-            DesktopHomeHeader(showProfileButton = true, onProfileClick = {}, onSearchClick = {})
-        }
-    }
 }
 
 @Preview

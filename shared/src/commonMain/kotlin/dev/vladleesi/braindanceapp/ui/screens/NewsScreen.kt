@@ -5,7 +5,6 @@ package dev.vladleesi.braindanceapp.ui.screens
 import Rss
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
@@ -23,6 +22,8 @@ import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.PlaceholderChips
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
+import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import org.jetbrains.compose.resources.stringResource
 
@@ -39,7 +40,7 @@ fun NewsScreen(modifier: Modifier) {
             },
         )
         Column(
-            modifier = Modifier.padding(horizontal = Dimens.medium),
+            modifier = Modifier.pageColumn(pageGutter()),
             verticalArrangement = Arrangement.spacedBy(Dimens.medium),
         ) {
             PlaceholderChips(

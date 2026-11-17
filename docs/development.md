@@ -69,12 +69,32 @@ The rules are in the [brand guide](branding/README.md#in-the-product). Build new
 | Piece | Where | Use |
 | --- | --- | --- |
 | Colors, `CornerShapes`, `Dimens`, typography | `style/` | Tokens: color roles, the three corner shapes, spacing, text styles |
+| `pageColumn`, `pageWidth`, `pageGutter` | `components/PageColumn.kt` | Page layout; see [page layout](#page-layout) |
 | `PrimaryButton`, `TonalButton`, `OutlineButton` | `components/Buttons.kt` | The main action, secondary actions, and links inside cards |
 | `SurfaceCard`, `SurfaceTile` | `components/Surfaces.kt` | Containers: cards and panels, and compact tiles |
 | `Tag`, `ComingSoonLabel`, `ComingSoonCard` | `components/Tag.kt`, `ComingSoon.kt` | Status labels and placeholders for planned features |
 | `CardCover`, `CarouselSection` | `components/` | Game covers and horizontal rows of them |
 | `ShareButton` | `components/Share.kt` | Sharing a game, giveaway, or list; see [sharing](#sharing) |
 | `BraindanceWordmark`, `BrandAccentStrip` | `style/icons/`, `components/desktop/` | The logo and the three-color accent |
+
+### Page layout
+
+Every screen lays out its content in one page column, centered beside the navigation, so the content's edges stay in
+place between screens of the same width. Its side margin, `pageGutter()`, is 16 dp on phones and tablets and 32 dp in
+the desktop layout of wide Web windows. Pick the column's width by what the page shows, not per screen:
+
+| Page | Column width | Screens |
+| --- | --- | --- |
+| Grids, rows of cards, or a hero | `Dimens.pageMaxWidth` (1440 dp) | Every tab, the lists behind See all, game and giveaway details |
+| One list or a text | `Dimens.readableTextWidth` (720 dp) | Profile |
+
+- The top bar takes the page's width as `maxContentWidth`, so its back button, title, and actions line up with the
+  content. Backgrounds and full-bleed artwork, such as the game details hero, still span the whole width.
+- Inside the wide column, running text, the search field, and placeholder cards keep their readable widths, aligned
+  to its start.
+- Scrolling containers span the whole width so the wheel also works over the margins: apply `pageColumn` after
+  `verticalScroll`, inset lazy grids and lists with `pageSidePadding`, and let carousels take `pageWidth` and inset
+  their cards by the gutter.
 
 ## Validation
 
