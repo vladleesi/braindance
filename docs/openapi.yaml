@@ -76,6 +76,29 @@ paths:
                   $ref: '#/components/schemas/SimilarGame'
         '400':
           $ref: '#/components/responses/BadRequest'
+  /v1/games/search:
+    get:
+      summary: Games whose titles match a search, best match first, one page at a time.
+      description: >-
+        Results come from one ranking per query, so pages never overlap. A page shorter than pageSize is the last; a
+        page must start within the first 200 results. Clients send q, page, and pageSize in this order, with q in
+        normalized form, so equal searches share a cache entry; other forms are answered but not cached publicly.
+      parameters:
+        - $ref: '#/components/parameters/SearchQuery'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Compact cards with id, name, cover, and first_release_date; empty past the last result.
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 50
+                items:
+                  $ref: '#/components/schemas/GameItem'
+        '400':
+          description: The query is missing or invalid, or the page is out of range.
   /v1/giveaways:
     get:
       summary: All current giveaways.
@@ -125,6 +148,25 @@ components:
       schema:
         type: integer
         minimum: 1
+        maximum: 50
+    Page:
+      name: page
+      in: query
+      description: 1-based page number. Clients always send it.
+      schema:
+        type: integer
+        minimum: 1
+    SearchQuery:
+      name: q
+      in: query
+      required: true
+      description: >-
+        Search text in normalized form: lowercase, with double quotes, backslashes, and control characters replaced by
+        spaces, whitespace runs collapsed to one space, and no space at either end. It needs a letter or digit.
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 64
   responses:
     BadRequest:
       description: The ID is missing or invalid.

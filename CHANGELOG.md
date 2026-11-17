@@ -5,6 +5,24 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.20.0 — 2026-11-16
+
+### Android, iOS, and Web
+
+- Search games by title on Discover. Results appear as you type, best match first, and show each game's release
+  year, so games that share a title are easy to tell apart. Placeholders fill the space while the first results
+  load, and clearing the search brings back Discover.
+- Scroll through up to 200 results without waiting: more load before you reach the end. If a page fails to load, the
+  results above it stay and a Retry button loads it again.
+- Going back to a recent search, such as after deleting a letter, shows its results at once.
+- Scrolling search results puts the keyboard away and keeps your search.
+- Games without a cover, or whose cover fails to load, show their title on the card instead of an empty tile, and
+  their page gives the title the full width instead of leaving an empty space for the cover.
+
+### Website and documentation
+
+- List game search among the features on braindancegg.com and refresh its latest updates.
+
 ## 0.19.2 — 2026-11-16
 
 ### Web

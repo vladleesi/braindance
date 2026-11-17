@@ -8,8 +8,10 @@ import dev.vladleesi.braindanceapp.data.api.clients.BackendClient
 import dev.vladleesi.braindanceapp.data.api.remote.GamerPowerRemote
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
+import dev.vladleesi.braindanceapp.data.repository.GameSearchRepo
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
+import dev.vladleesi.braindanceapp.data.repository.SearchPage
 import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.imageHttpClient
 import dev.vladleesi.braindanceapp.utils.largeCoverUrlAtOrNull
@@ -43,6 +45,7 @@ class ApiFixtureEngineTest {
     private val homeRepo = HomeRepo(GamesRemote(client))
     private val detailsRepo = GameDetailsRepo(GamesRemote(client))
     private val giveawaysRepo = GamerPowerRepo(GamerPowerRemote(client))
+    private val searchRepo = GameSearchRepo(GamesRemote(client))
 
     @Test
     fun everyListedGameOpensWithRecommendations() =
@@ -65,6 +68,30 @@ class ApiFixtureEngineTest {
     fun anticipatedFeedHonoursPageSize() =
         runTest(dispatcher) {
             assertEquals(3, homeRepo.mostAnticipated(pageSize = 3).successValue().size)
+        }
+
+    @Test
+    fun searchPagesThroughMatchingGamesThatOpen() =
+        runTest(dispatcher) {
+            val loaded = mutableListOf<SearchPage>()
+            do {
+                loaded += searchRepo.search("sample", page = loaded.size + 1).successValue()
+            } while (!loaded.last().isLast)
+            val games = loaded.flatMap { it.games }
+            assertEquals(3, loaded.size, "several pages to scroll through")
+            assertEquals(games.size, games.mapNotNull { it.id }.toSet().size)
+            assertTrue(games.all { it.name.orEmpty().contains("Sample") && it.firstReleaseDate != null })
+            games.forEach { game -> detailsRepo.gameDetails(game.id ?: fail("Result without an ID")).successValue() }
+
+            val narrow = searchRepo.search("sample game ele", 1).successValue()
+            assertEquals(listOf("Sample Game Eleven"), narrow.games.map { it.name })
+            assertTrue(
+                searchRepo
+                    .search("no such game", 1)
+                    .successValue()
+                    .games
+                    .isEmpty(),
+            )
         }
 
     @Test
@@ -100,6 +127,8 @@ class ApiFixtureEngineTest {
                     }.status,
             )
             assertEquals(HttpStatusCode.BadRequest, status("v1/giveaways/abc"))
+            assertEquals(HttpStatusCode.BadRequest, status("v1/games/search?q=a&page=1&pageSize=20"))
+            assertEquals(HttpStatusCode.BadRequest, status("v1/games/search?q=doom&page=11&pageSize=20"))
             assertEquals(HttpStatusCode.NotFound, status("v1/unknown"))
             assertEquals(HttpStatusCode.MethodNotAllowed, client.post("v1/giveaways") { expectSuccess = false }.status)
         }

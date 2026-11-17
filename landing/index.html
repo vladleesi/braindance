@@ -213,7 +213,7 @@
     /* 01 Features: four features as short titles in ruled columns, each opened by a short bar in the trail's colors.
        The platforms sit in the section head as a plain list in rollout order: a dot and text, with no border or fill,
        so a status does not read as a button. Cyan dot: available; magenta: next; open: later. */
-    .today { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
+    .today { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
     .today li { padding: 28px 28px 32px 0; }
     .today li + li { padding-left: 28px; border-left: 1px solid var(--line); }
     .today li::before { content: ""; display: block; width: 28px; height: 3px; margin-bottom: 22px; background: var(--bar, var(--cyan)); transition: width .2s ease; }
@@ -422,6 +422,7 @@
         "featureList": [
           "Popular and upcoming games",
           "Game details and similar games",
+          "Game search",
           "Game giveaways",
           "Links to any game"
         ]
@@ -537,6 +538,7 @@
         <ul class="today">
           <li><p class="label">Browse</p><h3>Popular and upcoming games</h3><p>What is trending now and what is coming.</p></li>
           <li><p class="label">Explore</p><h3>Game details and similar games</h3><p>Release dates, platforms and store links.</p></li>
+          <li><p class="label">Search</p><h3>Game search</h3><p>Find any game by its title as you type.</p></li>
           <li><p class="label">Claim</p><h3>Game giveaways</h3><p>Current giveaways and how to claim them.</p></li>
           <li><p class="label">Share</p><h3>Links to any game</h3><p>Share a game with a single link.</p></li>
         </ul>
@@ -631,6 +633,13 @@
         <!-- The three latest meaningful product updates from CHANGELOG.md: add the newest first, then drop the oldest. -->
         <ol class="log">
           <li>
+            <p class="label"><time datetime="2026-11-16">Nov 16, 2026</time> &middot; 0.20</p>
+            <div>
+              <h3>Search for any game</h3>
+              <p>Type a title on Discover and results appear as you type, best match first, with each game's release year. Keep scrolling and more results load on their own.</p>
+            </div>
+          </li>
+          <li>
             <p class="label"><time datetime="2026-11-16">Nov 16, 2026</time> &middot; 0.19</p>
             <div>
               <h3>A new look for game pages</h3>
@@ -641,14 +650,7 @@
             <p class="label"><time datetime="2026-11-15">Nov 15, 2026</time> &middot; 0.18.2</p>
             <div>
               <h3>A tidier search on Discover</h3>
-              <p>The search field is now compact and moves to the top while you type on phones and tablets. Autocorrect stays off, so game titles stay as typed, and Back leaves search one step at a time. Search results come with the First Alpha.</p>
-            </div>
-          </li>
-          <li>
-            <p class="label"><time datetime="2026-11-15">Nov 15, 2026</time> &middot; 0.18</p>
-            <div>
-              <h3>A softer look, built on the new brand</h3>
-              <p>The new logo and colors arrived in 0.17. Now covers and cards are softly rounded, surfaces are calmer, and every screen has one clear white main button. Profile links to the Discord and Reddit.</p>
+              <p>The search field is now compact and moves to the top while you type on phones and tablets. Autocorrect stays off, so game titles stay as typed, and Back leaves search one step at a time.</p>
             </div>
           </li>
         </ol>

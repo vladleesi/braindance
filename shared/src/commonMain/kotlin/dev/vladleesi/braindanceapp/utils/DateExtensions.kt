@@ -32,6 +32,11 @@ fun Long.formatDate(): String? {
     return runCatching { Instant.fromEpochSeconds(this).format(format) }.getOrNull()
 }
 
+/** The UTC year of these Unix seconds, such as a game's first release date, or null when out of range. */
+@OptIn(ExperimentalTime::class)
+fun Long.utcYearOrNull(): Int? =
+    runCatching { Instant.fromEpochSeconds(this).toLocalDateTime(TimeZone.UTC).year }.getOrNull()
+
 @OptIn(ExperimentalTime::class)
 fun String.formatEndDate(): String? {
     val formattedEndDate = this.replace(" ", "T")

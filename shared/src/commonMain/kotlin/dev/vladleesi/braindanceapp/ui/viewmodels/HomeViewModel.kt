@@ -104,20 +104,8 @@ class HomeViewModel(
         }
     }
 
-    // Cards without an ID cannot be opened, and lazy lists need unique keys.
-    private fun List<GameItem>.toGameCardModels() =
-        mapNotNull { item ->
-            val id = item.id ?: return@mapNotNull null
-            GameCardModel(
-                id = id,
-                title = item.name.orEmpty(),
-                backgroundImageUrl =
-                    item.cover
-                        ?.url
-                        ?.toCoverUrl(CoverSize.P_720)
-                        .orEmpty(),
-            )
-        }.distinctBy { it.id }
+    // Lazy lists need unique keys.
+    private fun List<GameItem>.toGameCardModels() = mapNotNull { it.toGameCardModel() }.distinctBy { it.id }
 
     private fun List<GiveawayResponse>.mapperGiveawayModel() =
         mapNotNull { item ->
@@ -136,6 +124,17 @@ class HomeViewModel(
     private companion object {
         private const val PAGE_SIZE = 20
     }
+}
+
+/** Maps a game to its card with an optional [label], or null without an ID, since such a card cannot be opened. */
+internal fun GameItem.toGameCardModel(label: GameCardLabel? = null): GameCardModel? {
+    val id = id ?: return null
+    return GameCardModel(
+        id = id,
+        title = name.orEmpty(),
+        backgroundImageUrl = cover?.url?.toCoverUrl(CoverSize.P_720).orEmpty(),
+        label = label,
+    )
 }
 
 /** Maps a trending card; a reason this client does not know is omitted rather than shown generically. */

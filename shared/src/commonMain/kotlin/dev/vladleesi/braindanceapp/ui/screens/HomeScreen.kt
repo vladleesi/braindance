@@ -28,9 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
@@ -72,6 +69,7 @@ import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith80Alpha
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
+import dev.vladleesi.braindanceapp.utils.observePointerType
 import dev.vladleesi.braindanceapp.utils.rememberCachedLazyListState
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -261,20 +259,6 @@ private fun GiveawaysCarousel(
         }
     }
 }
-
-/**
- * Reports whether each pointer event, including wheel scrolls, comes from a mouse or trackpad. It observes events
- * before its children without consuming them.
- */
-private fun Modifier.observePointerType(onPointerType: (isMouse: Boolean) -> Unit): Modifier =
-    pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                val event = awaitPointerEvent(PointerEventPass.Initial)
-                onPointerType(event.changes.any { change -> change.type == PointerType.Mouse })
-            }
-        }
-    }
 
 @Composable
 private fun HomeTopBar(onProfileClick: () -> Unit) {

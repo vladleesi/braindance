@@ -3,6 +3,8 @@
 package dev.vladleesi.braindanceapp.data.api.fixtures
 
 import dev.vladleesi.braindanceapp.data.config.ApiConfig
+import dev.vladleesi.braindanceapp.data.repository.GameSearchRepo
+import dev.vladleesi.braindanceapp.data.repository.SearchQuery
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockEngineConfig
@@ -69,6 +71,7 @@ private fun MockRequestHandleScope.respondApi(
                 parameters.positiveIntOrNull("id")?.let(ApiFixtureData::gameDetailsJson)
             path == ApiConfig.Endpoints.GAME_RECOMMENDATIONS ->
                 parameters.positiveIntOrNull("id")?.let(ApiFixtureData::recommendationsJson)
+            path == ApiConfig.Endpoints.GAME_SEARCH -> searchJsonOrNull(parameters)
             path.startsWith(giveawayPathPrefix) -> {
                 val id =
                     path.removePrefix(giveawayPathPrefix).toPositiveIntOrNull()
@@ -79,6 +82,17 @@ private fun MockRequestHandleScope.respondApi(
         }
     return if (json == null) respondError(HttpStatusCode.BadRequest) else respond(json, HttpStatusCode.OK, jsonHeaders)
 }
+
+/** Follows the API's search rules: a valid query, `pageSize` up to 50, and pages that start within 200 results. */
+private fun searchJsonOrNull(parameters: Parameters): String? {
+    val query = parameters["q"]?.let(SearchQuery::normalize) ?: return null
+    val page = parameters["page"]?.toPositiveIntOrNull() ?: return null
+    val pageSize = parameters["pageSize"]?.toPositiveIntOrNull()?.takeIf { it <= MAX_SEARCH_PAGE_SIZE } ?: return null
+    if ((page - 1) * pageSize >= GameSearchRepo.MAX_RESULTS) return null
+    return ApiFixtureData.searchJson(query, page, pageSize)
+}
+
+private const val MAX_SEARCH_PAGE_SIZE = 50
 
 private fun Parameters.positiveIntOrNull(name: String): Int? = get(name)?.toPositiveIntOrNull()
 

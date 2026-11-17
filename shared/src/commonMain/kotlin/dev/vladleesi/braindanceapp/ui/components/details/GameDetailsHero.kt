@@ -112,8 +112,11 @@ fun GameDetailsHero(
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.medium)) {
             SpacerTopBarWithStatusBarInsets()
             Row(verticalAlignment = Alignment.Bottom) {
-                HeroCover(details = details, modifier = Modifier.width(metrics.coverWidth))
-                Spacer(Modifier.width(if (expanded) Dimens.large else Dimens.medium))
+                // A game without a cover leaves the title the whole width rather than beside an empty tile.
+                if (details.coverImageUrl.isNotBlank()) {
+                    HeroCover(details = details, modifier = Modifier.width(metrics.coverWidth))
+                    Spacer(Modifier.width(if (expanded) Dimens.large else Dimens.medium))
+                }
                 Column(
                     modifier = Modifier.weight(1f, fill = false).widthIn(max = Dimens.readableTextWidth),
                     verticalArrangement = Arrangement.spacedBy(Dimens.small),
@@ -160,7 +163,7 @@ fun GameDetailsHero(
 
 /**
  * The cover at the hero's width and the covers' 3:4 ratio. Its size is fixed before the image loads, so nothing
- * moves when it arrives, and the raised neutral shows until then or when the game has no cover.
+ * moves when it arrives, and the raised neutral shows until then or if it fails to load.
  */
 @Composable
 private fun HeroCover(

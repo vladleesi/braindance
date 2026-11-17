@@ -26,9 +26,10 @@ Web clients, built with Kotlin Multiplatform and Compose Multiplatform. The API 
 
 - **Popular Right Now** and **Most Anticipated** game feeds.
 - **Game details** with similar games.
+- **Game search** by title on Discover, with continuous scrolling through results.
 - **Giveaways** with instructions and claim links.
 
-Not available yet: personal tracking, collections, search results, news, and accounts. Game data comes from
+Not available yet: personal tracking, collections, search filters, news, and accounts. Game data comes from
 [IGDB](https://www.igdb.com/), and giveaways from [GamerPower](https://www.gamerpower.com/).
 
 ## 📱 Platforms
@@ -58,9 +59,9 @@ configuration, code style, and validation.
 
 - **Clients (this repository):** the Android, iOS, and Web apps share UI and application logic in `shared`, with
   thin platform hosts in `androidApp`, `iosApp`, and `webApp`.
-- **Braindance API (private):** developed and deployed separately. It ranks the trending feed and similar-game
-  recommendations and keeps Twitch credentials server-side. The [API contract](docs/openapi.yaml) describes
-  what the clients use.
+- **Braindance API (private):** developed and deployed separately. It ranks the trending feed, similar-game
+  recommendations, and search results, and keeps Twitch credentials server-side. The
+  [API contract](docs/openapi.yaml) describes what the clients use.
 - **Third-party data:** game data from IGDB and giveaways from GamerPower, served through the API.
 
 ## 📚 Documentation
@@ -76,7 +77,7 @@ configuration, code style, and validation.
 | [Landing site](landing/) | The static page served at [braindancegg.com](https://braindancegg.com/). |
 
 The current frontend source version is
-[0.19.2](https://github.com/vladleesi/braindance/releases/tag/app-v0.19.2).
+[0.20.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.20.0).
 GitHub releases provide source code, not store-ready mobile downloads.
 The Web publication badge shows checks for the revision on `master`.
 

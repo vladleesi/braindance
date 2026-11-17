@@ -21,7 +21,16 @@ import kotlin.random.Random
  */
 internal object ApiFixtureData {
     private val games: List<GameItem> by lazy { gameNames.mapIndexed(::sampleGame) }
-    private val gamesById: Map<Int, GameItem> by lazy { games.associateBy { game -> game.id ?: 0 } }
+
+    // Only search finds these, so a broad search has several pages while the feeds stay as they are.
+    private val searchOnlyGames: List<GameItem> by lazy {
+        List(SEARCH_ONLY_COUNT) { index ->
+            sampleGame(gameNames.size + index, "Sample Series Game ${index + 1}")
+        }
+    }
+    private val gamesById: Map<Int, GameItem> by lazy {
+        (games + searchOnlyGames).associateBy { game -> game.id ?: 0 }
+    }
     private val giveaways: List<GiveawayResponse> by lazy { giveawayTitles.mapIndexed(::sampleGiveaway) }
 
     val trendingJson: String by lazy {
@@ -65,6 +74,41 @@ internal object ApiFixtureData {
         return backendJson.encodeToString(similar)
     }
 
+    /**
+     * Like the API, a page of compact cards whose names contain every word of [query] (from SearchQuery.normalize),
+     * with names that start with the query first; a page past the end is empty.
+     */
+    fun searchJson(
+        query: String,
+        page: Int,
+        pageSize: Int,
+    ): String {
+        val words = query.split(' ')
+        val matches =
+            (games + searchOnlyGames)
+                .filter { game ->
+                    words.all { word ->
+                        game.name
+                            .orEmpty()
+                            .lowercase()
+                            .contains(word)
+                    }
+                }.sortedByDescending { game ->
+                    game.name
+                        .orEmpty()
+                        .lowercase()
+                        .startsWith(query)
+                }
+        val cards =
+            matches
+                .drop((page - 1) * pageSize)
+                .take(pageSize)
+                .map { game ->
+                    compactGame(game.id, game.name, game.cover).copy(firstReleaseDate = game.firstReleaseDate)
+                }
+        return backendJson.encodeToString(cards)
+    }
+
     fun giveawayJsonOrNull(id: Int): String? =
         giveaways.firstOrNull { giveaway -> giveaway.id == id }?.let(backendJson::encodeToString)
 }
@@ -74,6 +118,7 @@ private const val FIRST_GIVEAWAY_ID = 501
 private const val TRENDING_COUNT = 8
 private const val ANTICIPATED_OFFSET = 4
 private const val RECOMMENDATION_COUNT = 6
+private const val SEARCH_ONLY_COUNT = 40
 private const val NO_COVER_INDEX = 9
 private const val FIRST_RELEASE_SECONDS = 1_773_273_600L // Mar 12, 2026
 private const val RELEASE_STEP_SECONDS = 41L * 24 * 60 * 60

@@ -8,10 +8,12 @@ import dev.vladleesi.braindanceapp.data.api.remote.GamerPowerRemote
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
 import dev.vladleesi.braindanceapp.data.api.warmUpBackend
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
+import dev.vladleesi.braindanceapp.data.repository.GameSearchRepo
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
+import dev.vladleesi.braindanceapp.ui.viewmodels.GameSearchViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
 import io.ktor.client.HttpClient
@@ -60,11 +62,13 @@ private val repositoryModule =
         singleOf(::HomeRepo)
         singleOf(::GamerPowerRepo)
         singleOf(::GameDetailsRepo)
+        singleOf(::GameSearchRepo)
     }
 
 private val viewModelModule =
     module {
         viewModelOf(::HomeViewModel)
+        viewModel { GameSearchViewModel(searchRepo = get()) }
         viewModel { (id: Int) -> GameDetailsViewModel(gameId = id, gameDetailsRepo = get()) }
         viewModel { (id: Int) -> GiveawayDetailsViewModel(giveawayId = id, gamerPowerRepo = get()) }
     }

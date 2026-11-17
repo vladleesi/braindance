@@ -33,6 +33,22 @@ class GamesRemote(
                 parameter("pageSize", pageSize)
             }.body()
 
+    /**
+     * One page of search results for a [query] in the API's canonical form, best match first. Every parameter is sent
+     * explicitly, in a fixed order, so equal searches share one edge-cache URL.
+     */
+    suspend fun search(
+        query: String,
+        page: Int,
+        pageSize: Int,
+    ): List<GameItem> =
+        backendHttpClient
+            .get(ApiConfig.Endpoints.GAME_SEARCH) {
+                parameter("q", query)
+                parameter("page", page)
+                parameter("pageSize", pageSize)
+            }.body()
+
     /** The backend ranks and hydrates the whole feed, so one request returns the finished cards. */
     suspend fun trendingNow(): List<TrendingGameItem> = backendHttpClient.get(ApiConfig.Endpoints.TRENDING).body()
 }

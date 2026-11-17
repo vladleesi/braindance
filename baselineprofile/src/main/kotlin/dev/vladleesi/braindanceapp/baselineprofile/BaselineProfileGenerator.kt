@@ -12,8 +12,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Records the code paths of a cold start and of browsing Home, which the release build then precompiles. The journey
- * waits for live data, so run it with the backend reachable.
+ * Records the code paths of a cold start, of browsing Home, and of searching games on Discover, which the release
+ * build then precompiles. The journeys wait for live data, so run them with the backend reachable.
  */
 @RunWith(AndroidJUnit4::class)
 class BaselineProfileGenerator {
@@ -36,8 +36,34 @@ class BaselineProfileGenerator {
             }
         }
 
+    @Test
+    fun searchGames() =
+        rule.collect(packageName = PACKAGE_NAME) {
+            pressHome()
+            startActivityAndWait()
+            device.wait(Until.findObject(By.text(DISCOVER_LABEL)), CONTENT_TIMEOUT_MILLIS)?.click() ?: return@collect
+            // Compose exposes the search field as the screen's only EditText.
+            val field =
+                device.wait(Until.findObject(By.clazz(EDIT_TEXT_CLASS)), CONTENT_TIMEOUT_MILLIS) ?: return@collect
+            field.text = SEARCH_QUERY
+            // Result cards describe their covers; they replace the placeholders once the search has answered.
+            device.wait(Until.hasObject(By.descStartsWith(COVER_DESCRIPTION_PREFIX)), CONTENT_TIMEOUT_MILLIS)
+            // Scrolling renders result cards and loads further pages; the grid is looked up again before each fling.
+            for (direction in listOf(Direction.DOWN, Direction.DOWN, Direction.UP)) {
+                val results = device.findObject(By.scrollable(true)) ?: return@collect
+                results.fling(direction)
+                device.waitForIdle()
+            }
+        }
+
     private companion object {
         const val PACKAGE_NAME = "dev.vladleesi.braindanceapp"
         const val CONTENT_TIMEOUT_MILLIS = 15_000L
+        const val DISCOVER_LABEL = "Discover"
+        const val EDIT_TEXT_CLASS = "android.widget.EditText"
+
+        // A broad title with many results, so the journey pages through them.
+        const val SEARCH_QUERY = "mario"
+        const val COVER_DESCRIPTION_PREFIX = "Image: "
     }
 }
