@@ -4,6 +4,8 @@ package dev.vladleesi.braindanceapp.utils
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.layout.LazyLayoutCacheWindow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -44,6 +46,24 @@ fun rememberCachedLazyListState(
             LazyLayoutCacheWindow(aheadFraction = aheadFraction, behindFraction = behindFraction)
         }
     return rememberLazyListState(cacheWindow = cacheWindow)
+}
+
+/**
+ * Creates a [LazyGridState] whose grid keeps rows composed within a window around the viewport, like
+ * [rememberCachedLazyListState]: rows within [aheadFraction] viewport heights are composed, and their images start
+ * loading, during idle frame time before they scroll into view, and rows within [behindFraction] stay composed.
+ */
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+fun rememberCachedLazyGridState(
+    aheadFraction: Float = LAZY_CACHE_WINDOW_VIEWPORT_FRACTION,
+    behindFraction: Float = LAZY_CACHE_WINDOW_VIEWPORT_FRACTION,
+): LazyGridState {
+    val cacheWindow =
+        remember(aheadFraction, behindFraction) {
+            LazyLayoutCacheWindow(aheadFraction = aheadFraction, behindFraction = behindFraction)
+        }
+    return rememberLazyGridState(cacheWindow = cacheWindow)
 }
 
 @Composable

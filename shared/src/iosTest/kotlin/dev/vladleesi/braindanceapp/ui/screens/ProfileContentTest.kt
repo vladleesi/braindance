@@ -32,6 +32,7 @@ class ProfileContentTest {
                                 share = { opened += "share" },
                                 openIgdb = { opened += "igdb" },
                                 openGamerPower = { opened += "gamerpower" },
+                                emailSupport = { opened += "support" },
                             ),
                         community =
                             CommunityLinks(
@@ -56,6 +57,7 @@ class ProfileContentTest {
                 "Threads",
                 "Star on GitHub",
                 "Share",
+                "Contact support",
                 "Release notes",
                 "Game data by IGDB",
                 "Giveaways by GamerPower",
@@ -70,6 +72,7 @@ class ProfileContentTest {
                     "threads",
                     "github",
                     "share",
+                    "support",
                     "releases",
                     "igdb",
                     "gamerpower",
@@ -91,6 +94,7 @@ class ProfileContentTest {
                                 share = {},
                                 openIgdb = {},
                                 openGamerPower = {},
+                                emailSupport = {},
                             ),
                         community =
                             CommunityLinks(

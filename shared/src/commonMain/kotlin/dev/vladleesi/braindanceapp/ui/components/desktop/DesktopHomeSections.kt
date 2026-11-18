@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.ui.components.SectionEmpty
 import dev.vladleesi.braindanceapp.ui.components.SectionError
 import dev.vladleesi.braindanceapp.ui.components.SeeAllButton
@@ -68,13 +69,14 @@ data class DesktopGridColumns(
 
 /**
  * A titled Home section; [content] is usually a [DesktopCardRow]. With [onSeeAll], the title row links to the
- * section's full list.
+ * section's full list, at [seeAllRoute].
  */
 @Composable
 fun DesktopSection(
     title: String,
     modifier: Modifier = Modifier,
     onSeeAll: (() -> Unit)? = null,
+    seeAllRoute: NavKey? = null,
     content: @Composable () -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.compact)) {
@@ -85,7 +87,7 @@ fun DesktopSection(
                 modifier = Modifier.weight(1f).semantics { heading() },
             )
             if (onSeeAll != null) {
-                SeeAllButton(sectionTitle = title, onClick = onSeeAll)
+                SeeAllButton(sectionTitle = title, onClick = onSeeAll, route = seeAllRoute)
             }
         }
         content()

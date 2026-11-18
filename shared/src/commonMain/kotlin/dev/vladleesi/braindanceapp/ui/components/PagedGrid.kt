@@ -34,6 +34,7 @@ import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.viewmodels.MoreResults
 import dev.vladleesi.braindanceapp.utils.keyboardPadding
+import dev.vladleesi.braindanceapp.utils.rememberCachedLazyGridState
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -91,7 +92,7 @@ fun <T> PagedGrid(
     onRetry: () -> Unit,
     skeleton: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    state: LazyGridState = rememberLazyGridState(),
+    state: LazyGridState = rememberCachedLazyGridState(),
     cardWidth: PagedGridCardWidth = PagedGridCardWidth.Games,
     itemContent: @Composable (T) -> Unit,
 ) {

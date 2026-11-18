@@ -26,6 +26,10 @@ private const val BLUESKY_URL = "https://bsky.app/profile/braindancegg.com"
 private const val REDDIT_URL = "https://www.reddit.com/r/BraindanceGG/"
 private const val DISCORD_URL = "https://discord.gg/XawnYAVdzj"
 
+/** The public address for questions and problems with the apps; Profile shows it. */
+internal const val SUPPORT_EMAIL = "support@braindancegg.com"
+private const val SUPPORT_MAIL_URL = "mailto:$SUPPORT_EMAIL"
+
 // Provider names are brands, so they are not translated; the attribution strings place them in a sentence.
 internal const val IGDB_NAME = "IGDB"
 internal const val GAMERPOWER_NAME = "GamerPower"
@@ -34,15 +38,18 @@ internal const val GAMERPOWER_NAME = "GamerPower"
  * The project's promotion actions. [openRepository] opens the GitHub repository; [share] recommends the Braindance
  * Web app with a short message and its link, through the system share sheet where the platform supports it, otherwise
  * by copying the same message. [shareLabel] names whichever of the two [share] does. [openIgdb] and [openGamerPower]
- * open the providers of the game data and the giveaways for the data attributions.
+ * open the providers of the game data and the giveaways for the data attributions. [emailSupport] starts an email to
+ * [SUPPORT_EMAIL] in the system's mail app.
  */
 @Immutable
+@Suppress("LongParameterList")
 class ProjectLinks(
     val shareLabel: StringResource,
     val openRepository: () -> Unit,
     val share: () -> Unit,
     val openIgdb: () -> Unit,
     val openGamerPower: () -> Unit,
+    val emailSupport: () -> Unit,
 )
 
 /**
@@ -75,6 +82,7 @@ fun rememberProjectLinks(): ProjectLinks {
             share = { shareApp.share() },
             openIgdb = { uriHandler.openExternalUrl(IGDB_URL) },
             openGamerPower = { uriHandler.openExternalUrl(GAMERPOWER_URL) },
+            emailSupport = { uriHandler.openExternalUrl(SUPPORT_MAIL_URL) },
         )
     }
 }

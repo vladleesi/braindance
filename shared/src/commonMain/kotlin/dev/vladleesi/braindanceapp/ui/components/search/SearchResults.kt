@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +28,7 @@ import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.viewmodels.MoreResults
+import dev.vladleesi.braindanceapp.utils.rememberCachedLazyGridState
 import org.jetbrains.compose.resources.stringResource
 
 /** Titles tell results apart, and a narrow card cuts one line after a few words, so results show two. */
@@ -46,7 +46,7 @@ fun SearchResultsGrid(
     onLoadMore: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    state: LazyGridState = rememberLazyGridState(),
+    state: LazyGridState = rememberCachedLazyGridState(),
 ) {
     PagedGrid(
         items = games,

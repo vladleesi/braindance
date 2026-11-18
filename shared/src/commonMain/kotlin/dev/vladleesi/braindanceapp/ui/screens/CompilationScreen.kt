@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +50,7 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.MoreResults
 import dev.vladleesi.braindanceapp.ui.viewmodels.PagedListState
 import dev.vladleesi.braindanceapp.ui.viewmodels.PagedListViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.PopularGamesViewModel
+import dev.vladleesi.braindanceapp.utils.rememberCachedLazyGridState
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -158,7 +158,7 @@ internal fun <T> CompilationContent(
     shareTarget: ShareTarget? = null,
     itemContent: @Composable (T) -> Unit,
 ) {
-    val gridState = rememberLazyGridState()
+    val gridState = rememberCachedLazyGridState()
     Column(modifier = modifier.fillMaxSize()) {
         SpacerStatusBarInsets()
         TopAppBar(

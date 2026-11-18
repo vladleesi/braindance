@@ -279,8 +279,8 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
 ## Compose rendering
 - `NavigationScaffold` owns the app background, and `MainActivity` removes the redundant Android window background;
   keep both when changing the root composable or the hosts.
-- The cache-window helper is `rememberCachedLazyListState()` in `utils/LazyListStateExtensions.kt`; it works on every
-  target. The image loader is `rememberCachedImagePainter`.
+- The cache-window helpers are `rememberCachedLazyListState()` and `rememberCachedLazyGridState()` in
+  `utils/LazyListStateExtensions.kt`; they work on every target. The image loader is `rememberCachedImagePainter`.
 - Measure Android rendering with the `benchmarkRelease` build or a release build. Baseline Profile coverage lives in
   `BaselineProfileGenerator` (`baselineprofile`). Regenerate the profile on a connected device with the backend
   reachable: `./gradlew :androidApp:generateReleaseBaselineProfile`.
@@ -293,6 +293,9 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   images, strings, UI, and business logic in `shared` Compose resources and common source sets.
 - Isolate browser APIs and JavaScript interop in `wasmJsMain` or small `webApp` adapters.
 - Integrate URL/history, document metadata, external links, clipboard, and storage through browser-specific code.
+- Keep `WebAppHost` around the Web app's content: it supplies resource loading, lazy-layout prefetching, and link
+  handling that Compose's Web host lacks. Give every element that opens a screen `Modifier.routeLink(route)` (cards get
+  it through `cardClickable`). See `docs/development.md#web-app-runtime`.
 - Avoid hard-coded mobile widths, user-agent branching, and assumptions about filesystem, threading, or process
   lifetime in browser code.
 - Keep browser route serialization deterministic.

@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_free
 import dev.vladleesi.braindanceapp.ui.components.CardCover
@@ -56,7 +57,7 @@ fun GiveawayCard(
     modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    Column(modifier = modifier.cardClickable(interactionSource) { onClick(item.id) }) {
+    Column(modifier = modifier.cardClickable(interactionSource, GiveawayDetailsRoute(item.id)) { onClick(item.id) }) {
         CardCover(
             imageUrl = item.image,
             memoryCacheKey = "gwc-${item.id}",

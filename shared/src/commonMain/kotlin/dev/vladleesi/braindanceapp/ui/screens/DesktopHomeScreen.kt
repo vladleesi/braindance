@@ -219,6 +219,7 @@ private fun DesktopHomeMainColumn(
         DesktopSection(
             title = stringResource(Res.string.home_screen_popular_right_now),
             onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Popular)) },
+            seeAllRoute = CompilationRoute(Compilation.Popular),
         ) {
             DesktopCardRow(
                 state = trendingNow,
@@ -232,6 +233,7 @@ private fun DesktopHomeMainColumn(
         DesktopSection(
             title = stringResource(Res.string.home_screen_popular_most_anticipated),
             onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Anticipated)) },
+            seeAllRoute = CompilationRoute(Compilation.Anticipated),
         ) {
             DesktopCardRow(
                 state = mostAnticipated,
@@ -245,6 +247,7 @@ private fun DesktopHomeMainColumn(
         DesktopSection(
             title = stringResource(Res.string.home_screen_popular_latest_giveaways),
             onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Giveaways)) },
+            seeAllRoute = CompilationRoute(Compilation.Giveaways),
         ) {
             DesktopCardRow(
                 state = giveaways,

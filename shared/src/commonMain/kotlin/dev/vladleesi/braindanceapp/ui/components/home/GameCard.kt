@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.trending_reason_full_release
 import dev.vladleesi.braindanceapp.resources.trending_reason_new_platform
@@ -51,7 +52,7 @@ fun GameCard(
     titleLines: Int = 1,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    Column(modifier = modifier.cardClickable(interactionSource) { onClick(card.id) }) {
+    Column(modifier = modifier.cardClickable(interactionSource, GameDetailsRoute(card.id)) { onClick(card.id) }) {
         CardCover(
             imageUrl = card.backgroundImageUrl,
             // Each style has its own key: a desktop row shows them at different sizes, and a shared key would make

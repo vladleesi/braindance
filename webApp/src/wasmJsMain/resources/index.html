@@ -53,12 +53,15 @@ ${resourcePreloads}
             overflow: hidden;
         }
 
-        /* Matches the app's own loading indicator, so the hand-off to the first Compose frame is seamless. */
+        /* Covers the app until its first frame with text: Compose draws below it, and WebAppHost removes it once the
+           fonts and strings are loaded. It matches the app's own loading indicator, so the hand-off is seamless. */
         .boot {
+            position: fixed;
+            inset: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
+            background-color: #0A0D14;
         }
 
         /* The icon sits above the spinner without moving it off-center. As an image it also gives browsers and
@@ -109,16 +112,16 @@ ${resourcePreloads}
 </head>
 <body>
     <noscript>Braindance needs JavaScript and a browser with WebAssembly garbage collection, such as current Chrome, Edge, Firefox, or Safari.</noscript>
-    <main id="webApp">
-        <!-- Shown while the Wasm bundle downloads; Compose clears this container when it starts. -->
-        <div class="boot" role="status">
-            <div class="boot-indicator">
-                <img class="boot-icon" src="${bootIconDataUri}" alt="" width="72" height="72">
-                <div class="boot-spinner"></div>
-            </div>
-            <span class="visually-hidden">Loading Braindance…</span>
+    <main id="webApp"></main>
+    <!-- Shown while the Wasm bundle downloads and the app loads its fonts and text. It sits outside the app's
+         container, which Compose clears when it starts; WebAppHost removes it once the app's first screen is drawn. -->
+    <div id="boot" class="boot" role="status">
+        <div class="boot-indicator">
+            <img class="boot-icon" src="${bootIconDataUri}" alt="" width="72" height="72">
+            <div class="boot-spinner"></div>
         </div>
-    </main>
+        <span class="visually-hidden">Loading Braindance…</span>
+    </div>
     <script src="${webBundleName}"></script>
 </body>
 </html>

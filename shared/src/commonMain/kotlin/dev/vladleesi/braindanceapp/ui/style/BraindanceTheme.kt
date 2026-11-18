@@ -20,6 +20,7 @@ import dev.vladleesi.braindanceapp.resources.poppins_medium
 import dev.vladleesi.braindanceapp.resources.poppins_regular
 import dev.vladleesi.braindanceapp.resources.poppins_semibold
 import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.FontResource
 
 @Composable
 fun BraindanceTheme(
@@ -36,13 +37,7 @@ fun BraindanceTheme(
             medium = CornerShapes.large,
             large = CornerShapes.large,
         )
-    // Only the weights the typography uses: the Web app downloads every listed font before it can show text.
-    val fonts =
-        FontFamily(
-            Font(Res.font.poppins_regular, FontWeight.Normal),
-            Font(Res.font.poppins_medium, FontWeight.Medium),
-            Font(Res.font.poppins_semibold, FontWeight.SemiBold),
-        )
+    val fonts = FontFamily(AppFonts.map { font -> Font(font.resource, font.weight) })
 
     MaterialTheme(
         colors = DarkColors,
@@ -63,6 +58,23 @@ fun BraindanceTheme(
 }
 
 private val AppIndication = FocusVisibleIndication(ripple())
+
+/** A bundled font file and the weight the typography uses it for. */
+internal class AppFont(
+    val resource: FontResource,
+    val weight: FontWeight,
+)
+
+/**
+ * Only the weights the typography uses: the Web app downloads every listed font before it shows the first screen, and
+ * waits for exactly these (see `WebAppHost`).
+ */
+internal val AppFonts =
+    listOf(
+        AppFont(Res.font.poppins_regular, FontWeight.Normal),
+        AppFont(Res.font.poppins_medium, FontWeight.Medium),
+        AppFont(Res.font.poppins_semibold, FontWeight.SemiBold),
+    )
 
 /**
  * Compact headings and readable body styles, using only the three bundled Poppins weights. Headings are set tight,

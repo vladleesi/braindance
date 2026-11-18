@@ -5,6 +5,31 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.26.0 — 2026-11-18
+
+### Web
+
+- Games, giveaways, lists, and the sidebar's destinations open in a new tab with a middle click or Ctrl-click
+  (⌘-click on a Mac), and in a new window with Shift-click. A normal click still opens them in the app.
+- Text shows from the first screen: the loading screen stays until the app's fonts and text are ready, instead of
+  showing pages without text or in a fallback font. Repeat visits start faster, without the cache the app used to
+  rebuild on every load.
+- Scrolling lists and game grids does less work per mouse-wheel step: items about to scroll into view are prepared
+  between frames instead of while the page moves.
+- Pages from links, such as stores, open in a new tab that cannot reach back to the app, and the support email
+  opens the mail app without an empty tab.
+
+### Android, iOS, and Web
+
+- Profile lists the support address, support@braindancegg.com, under About.
+- Game and giveaway grids, such as Popular Right Now and search results, prepare about a screen of cards ahead, so
+  covers start loading before they scroll into view.
+
+### Website and documentation
+
+- braindancegg.com lists the support address in the footer and the community section, and its latest updates are
+  refreshed.
+
 ## 0.25.0 — 2026-11-18
 
 ### Android, iOS, and Web

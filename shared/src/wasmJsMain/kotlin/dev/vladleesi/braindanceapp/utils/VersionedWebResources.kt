@@ -17,6 +17,12 @@ import org.jetbrains.compose.resources.configureWebResources
 @OptIn(ExperimentalResourceApi::class)
 fun configureVersionedWebResources() {
     configureWebResources {
-        resourcePathMapping { path -> "./$path?v=${BuildKonfig.WEB_RESOURCES_FINGERPRINT}" }
+        resourcePathMapping(::versionedResourceUrl)
     }
 }
+
+/**
+ * The address of the Compose resource at [path], relative to the page's base and with the content fingerprint. The
+ * page's preloads use the same address, so the app's request is served by them.
+ */
+internal fun versionedResourceUrl(path: String): String = "./$path?v=${BuildKonfig.WEB_RESOURCES_FINGERPRINT}"

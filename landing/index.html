@@ -310,12 +310,12 @@
     .foot { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 40px clamp(32px, 6vw, 104px); padding: clamp(48px, 6vw, 80px) 0 40px; }
     .foot p { max-width: 34em; }
     .foot .about { font-size: 1.05rem; color: var(--soft); }
-    .foot .powered { margin-top: 10px; }
-    .foot .powered a { color: var(--ink); font-weight: 600; }
+    .foot .powered, .foot .contact { margin-top: 10px; }
+    .foot .powered a, .foot .contact a { color: var(--ink); font-weight: 600; }
     .foot ul { list-style: none; margin: 0; padding: 0; }
     .foot nav[aria-label="Footer"] ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
     .foot a { text-decoration: none; }
-    .foot nav a:hover, .foot .powered a:hover { color: var(--ink); text-decoration: underline var(--cyan); text-underline-offset: 4px; }
+    .foot nav a:hover, .foot .powered a:hover, .foot .contact a:hover { color: var(--ink); text-decoration: underline var(--cyan); text-underline-offset: 4px; }
     .social { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 28px; }
     .social .handle { color: var(--ink); font-weight: 600; }
     .social ul { display: flex; gap: 4px; }
@@ -395,6 +395,7 @@
         "name": "Braindance",
         "url": "https://braindancegg.com/",
         "logo": "https://braindancegg.com/icon-512.png",
+        "email": "support@braindancegg.com",
         "sameAs": [
           "https://discord.gg/XawnYAVdzj",
           "https://www.reddit.com/r/BraindanceGG/",
@@ -633,6 +634,13 @@
         <!-- The three latest meaningful product updates from CHANGELOG.md: add the newest first, then drop the oldest. -->
         <ol class="log">
           <li>
+            <p class="label"><time datetime="2026-11-18">Nov 18, 2026</time> &middot; 0.26</p>
+            <div>
+              <h3>A web app that works like a website</h3>
+              <p>Open games and lists in a new tab with a middle click or Ctrl-click. Text appears with the first screen, and long lists scroll more smoothly.</p>
+            </div>
+          </li>
+          <li>
             <p class="label"><time datetime="2026-11-18">Nov 18, 2026</time> &middot; 0.25</p>
             <div>
               <h3>Editions, updates, and DLC</h3>
@@ -644,13 +652,6 @@
             <div>
               <h3>Better previews for shared links</h3>
               <p>A game or giveaway you share now shows its name, description, and picture in chats and on social networks, and each list has its own title in search results.</p>
-            </div>
-          </li>
-          <li>
-            <p class="label"><time datetime="2026-11-17">Nov 17, 2026</time> &middot; 0.23</p>
-            <div>
-              <h3>Redesigned giveaway pages</h3>
-              <p>Each giveaway now shows when it ends and how many days are left, how many players claimed it, and every platform and store it is for. Claim steps are numbered, and a giveaway that has ended says so.</p>
             </div>
           </li>
         </ol>
@@ -686,7 +687,7 @@
             <li><a class="btn btn-line btn-sm" href="https://www.threads.com/@braindancegg" rel="noopener" target="_blank"><svg class="brand-threads" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><use href="#i-threads"/></svg>Threads</a></li>
           </ul>
         </div>
-        <p class="elsewhere">The apps are open source: <a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">share feedback</a> or <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">read the code</a> on GitHub.</p>
+        <p class="elsewhere">The apps are open source: <a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">report a bug</a>, <a href="https://github.com/vladleesi/braindance/issues/new?template=feature_or_feedback.md" rel="noopener" target="_blank">share feedback</a> or <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">read the code</a> on GitHub. For anything else, email <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>.</p>
       </div>
     </section>
 
@@ -723,6 +724,7 @@
         <div>
           <p class="about">Game discovery app for Android, iOS and Web, in development.</p>
           <p class="powered">Powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a></p>
+          <p class="contact">Questions or problems? Email <a href="mailto:support@braindancegg.com">support@braindancegg.com</a></p>
           <nav class="social" aria-labelledby="follow-title">
             <p id="follow-title">Follow <span class="handle">@braindancegg</span></p>
             <ul>

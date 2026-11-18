@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
@@ -152,7 +153,8 @@ private fun StandardHomeScreen(
                     onProfileClick = { navigator.navigate(ProfileRoute) },
                     onSearchClick = navigator::openSearch,
                     onRetry = viewModel::loadTrendingNow,
-                    onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Popular)) },
+                    seeAllRoute = CompilationRoute(Compilation.Popular),
+                    onSeeAll = navigator::navigate,
                     onGameClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
                     carouselModifier = carouselModifier,
                 )
@@ -162,7 +164,8 @@ private fun StandardHomeScreen(
                     title = stringResource(Res.string.home_screen_popular_most_anticipated),
                     state = mostAnticipated,
                     onRetry = { viewModel.loadMostAnticipated() },
-                    onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Anticipated)) },
+                    seeAllRoute = CompilationRoute(Compilation.Anticipated),
+                    onSeeAll = navigator::navigate,
                     showTitles = false,
                     onGameClick = { id -> navigator.navigate(GameDetailsRoute(id)) },
                     modifier = carouselModifier,
@@ -173,7 +176,8 @@ private fun StandardHomeScreen(
                     title = stringResource(Res.string.home_screen_popular_latest_giveaways),
                     state = giveaways,
                     onRetry = { viewModel.loadGiveaways() },
-                    onSeeAll = { navigator.navigate(CompilationRoute(Compilation.Giveaways)) },
+                    seeAllRoute = CompilationRoute(Compilation.Giveaways),
+                    onSeeAll = navigator::navigate,
                     onGiveawayClick = { id -> navigator.navigate(GiveawayDetailsRoute(id)) },
                     modifier = carouselModifier,
                 )
@@ -211,7 +215,8 @@ private fun HomeHeader(
     onProfileClick: () -> Unit,
     onSearchClick: () -> Unit,
     onRetry: () -> Unit,
-    onSeeAll: () -> Unit,
+    seeAllRoute: NavKey,
+    onSeeAll: (NavKey) -> Unit,
     onGameClick: (id: Int) -> Unit,
     carouselModifier: Modifier,
 ) {
@@ -221,6 +226,7 @@ private fun HomeHeader(
             title = stringResource(Res.string.home_screen_popular_right_now),
             state = trendingNow,
             onRetry = onRetry,
+            seeAllRoute = seeAllRoute,
             onSeeAll = onSeeAll,
             showTitles = true,
             onGameClick = onGameClick,
@@ -231,7 +237,7 @@ private fun HomeHeader(
 
 /**
  * A carousel of game cards; [showTitles] adds each game's title and trending reason below its cover, and [onSeeAll]
- * opens the section's full list.
+ * opens the section's full list at [seeAllRoute].
  */
 @Suppress("LongParameterList")
 @Composable
@@ -239,7 +245,8 @@ private fun GamesCarousel(
     title: String,
     state: SectionState<GameCardModel>,
     onRetry: () -> Unit,
-    onSeeAll: () -> Unit,
+    seeAllRoute: NavKey,
+    onSeeAll: (NavKey) -> Unit,
     showTitles: Boolean,
     onGameClick: (id: Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -250,7 +257,8 @@ private fun GamesCarousel(
         state = state,
         modifier = modifier,
         onRetry = onRetry,
-        onSeeAll = onSeeAll,
+        onSeeAll = { onSeeAll(seeAllRoute) },
+        seeAllRoute = seeAllRoute,
         skeleton = { GameCardSkeleton(showTitle = showTitles, modifier = cardModifier) },
     ) { games ->
         items(games, key = { game -> game.id }, contentType = { GAME_CARD_CONTENT_TYPE }) { game ->
@@ -259,12 +267,14 @@ private fun GamesCarousel(
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun GiveawaysCarousel(
     title: String,
     state: SectionState<GiveawayItemModel>,
     onRetry: () -> Unit,
-    onSeeAll: () -> Unit,
+    seeAllRoute: NavKey,
+    onSeeAll: (NavKey) -> Unit,
     onGiveawayClick: (id: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -274,7 +284,8 @@ private fun GiveawaysCarousel(
         state = state,
         modifier = modifier,
         onRetry = onRetry,
-        onSeeAll = onSeeAll,
+        onSeeAll = { onSeeAll(seeAllRoute) },
+        seeAllRoute = seeAllRoute,
         skeleton = { GiveawayCardSkeleton(modifier = cardModifier) },
     ) { giveaways ->
         items(giveaways, key = { giveaway -> giveaway.id }, contentType = { GIVEAWAY_CARD_CONTENT_TYPE }) { giveaway ->

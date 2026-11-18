@@ -39,6 +39,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.data.models.games.GameKind
+import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.game_details_related
 import dev.vladleesi.braindanceapp.resources.game_details_related_contents
@@ -291,7 +292,11 @@ fun RelatedGameRow(
     val kind = game.kind.takeIf { it != GameKind.GAME && it != GameKind.OTHER }?.text()
     val meta = listOfNotNull(kind, game.year?.toString()).joinToString(" · ")
     Row(
-        modifier = modifier.cardClickable(interactionSource) { onClick(game.id) }.padding(vertical = Dimens.tiny),
+        modifier =
+            modifier
+                .cardClickable(interactionSource, GameDetailsRoute(game.id)) {
+                    onClick(game.id)
+                }.padding(vertical = Dimens.tiny),
         horizontalArrangement = Arrangement.spacedBy(Dimens.compact),
         verticalAlignment = Alignment.CenterVertically,
     ) {

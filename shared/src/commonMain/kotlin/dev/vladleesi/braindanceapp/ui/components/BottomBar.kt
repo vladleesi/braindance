@@ -38,6 +38,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.Navigator
+import dev.vladleesi.braindanceapp.navigation.routeLink
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
@@ -106,6 +107,7 @@ internal fun NavigationScaffold(
                 selected = selected,
                 colors = itemColors,
                 onClick = { navigator.selectTab(route) },
+                modifier = Modifier.routeLink(route),
             )
         }
     }

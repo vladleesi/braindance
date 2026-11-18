@@ -202,6 +202,38 @@ therefore gets its own title, description, canonical link, and preview image:
 A new fixed path needs an entry in `webPages`; a new ID path needs the worker's routes, `_routes.json`, and
 `_redirects`. Otherwise the address answers 404.
 
+## Web app runtime
+
+The Web app draws every screen into one canvas with Compose. `WebAppHost` (`shared/src/wasmJsMain`), which
+`webApp`'s `main` wraps around the app, supplies the browser behavior Compose's Web host lacks:
+
+- **Startup:** the page's loading screen (`#boot` in `index.html`) sits outside the app's container and stays until
+  every string and the typography's fonts (`AppFonts`) are in Compose's resource caches; it is removed in the same
+  frame as the first screen, so no page shows empty text or a fallback font. `WebResourceReader` reads the
+  resources at their fingerprinted addresses (served by the page's preloads and the browser cache) and keeps the
+  strings file in memory. Compose's default reader keeps a Cache Storage copy that it clears on every load and then
+  reads each string through it in turn; the app deletes that copy. If a resource fails to load, the app starts
+  without waiting.
+- **Scrolling:** Compose's Web host drops lazy layouts' prefetch requests, so items were composed only once they
+  scrolled into view, inside the wheel event. `WebPrefetchScheduler` runs those requests in the time each animation
+  frame leaves, which also lets cache windows (`rememberCachedLazyListState`, `rememberCachedLazyGridState`) prepare
+  items ahead. It implements Compose's `@InternalComposeUiApi` `PlatformPrefetchScheduler`: after a Compose upgrade,
+  check that it still compiles and that scrolling a long grid keeps wheel handling short, and remove it once Compose
+  Web schedules prefetching itself.
+- **Links:** apply `Modifier.routeLink(route)` to anything that opens a screen (cards use it through
+  `cardClickable`). On the Web, a middle click, Ctrl-click (⌘-click on Apple systems), or Shift-click opens the
+  route's address with `window.open`, so the browser chooses the tab or window as for a real link. Elsewhere it does
+  nothing. Inline text links (`LinkAnnotation`) do not get this behavior.
+- **External links:** `WebUriHandler` opens pages in a new tab with `noopener` and `mailto:` addresses from the
+  current tab.
+
+Some browser behavior is out of reach while Compose draws into a canvas: middle-click autoscrolling needs a scrollable
+page element, so it does not start; a right click shows no browser menu, because the browser offers its link menu
+only over a real link element, and Compose has no link role for elements to place one for (Compose blocks the menu on
+its canvas); text is selectable only inside Compose selection containers; and a mouse wheel
+moves lists by the distance the browser reports in its wheel events, which Compose converts without a setting for
+the app to tune, so one notch can move a list less than the same browser scrolls a page.
+
 ## Optional independent hosting
 
 Hosting your own Web build needs your own API that implements [openapi.yaml](openapi.yaml); this repository does

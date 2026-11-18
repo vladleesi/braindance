@@ -34,7 +34,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.navigation3.runtime.NavKey
 import coil3.compose.AsyncImage
+import dev.vladleesi.braindanceapp.navigation.routeLink
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
@@ -128,14 +130,17 @@ private fun BoxScope.MissingCoverTitle(title: String) {
 }
 
 /**
- * Makes a whole card one click target, so its title opens it too. The [CardCover] that shares [interactionSource]
- * shows the press, hover, and focus feedback.
+ * Makes a whole card one click target that opens [route], so its title opens it too; on the Web the card also acts as a
+ * link to the route's address (see [routeLink]). The [CardCover] that shares [interactionSource] shows the press,
+ * hover, and focus feedback.
  */
 fun Modifier.cardClickable(
     interactionSource: MutableInteractionSource,
+    route: NavKey,
     onClick: () -> Unit,
 ): Modifier =
     pointerHoverIcon(PointerIcon.Hand)
+        .routeLink(route)
         .clickable(interactionSource = interactionSource, indication = null, role = Role.Button, onClick = onClick)
 
 /** A loading placeholder with the geometry of a [CardCover]. */

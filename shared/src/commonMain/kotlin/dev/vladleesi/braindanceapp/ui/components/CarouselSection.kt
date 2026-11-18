@@ -31,6 +31,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavKey
+import dev.vladleesi.braindanceapp.navigation.routeLink
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.home_see_all
 import dev.vladleesi.braindanceapp.resources.home_see_all_description
@@ -64,6 +66,7 @@ fun <T> CarouselSection(
     modifier: Modifier = Modifier,
     titleStyle: TextStyle = MaterialTheme.typography.h2,
     onSeeAll: (() -> Unit)? = null,
+    seeAllRoute: NavKey? = null,
     horizontalPadding: Dp = Dimens.medium,
     content: LazyListScope.(items: List<T>) -> Unit,
 ) {
@@ -77,6 +80,7 @@ fun <T> CarouselSection(
                 titleStyle = titleStyle,
                 listState = listState,
                 onSeeAll = onSeeAll,
+                seeAllRoute = seeAllRoute,
                 horizontalPadding = horizontalPadding,
             )
             when (target) {
@@ -113,12 +117,14 @@ fun <T> CarouselSection(
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun CarouselHeader(
     title: String,
     titleStyle: TextStyle,
     listState: LazyListState,
     onSeeAll: (() -> Unit)?,
+    seeAllRoute: NavKey?,
     horizontalPadding: Dp,
 ) {
     // The trailing controls carry their own inset for the standard margin; a wider padding adds the difference.
@@ -139,20 +145,22 @@ private fun CarouselHeader(
         )
         HorizontalListControls(listState = listState)
         if (onSeeAll != null) {
-            SeeAllButton(sectionTitle = title, onClick = onSeeAll)
+            SeeAllButton(sectionTitle = title, onClick = onSeeAll, route = seeAllRoute)
         }
     }
 }
 
 /**
- * Opens the full list of the section titled [sectionTitle]. It is set in the secondary text color, so the white
- * section title stays the stronger element; screen readers name the section it opens.
+ * Opens the full list of the section titled [sectionTitle], at [route] when given, which also makes it a link on the
+ * Web (see [routeLink]). It is set in the secondary text color, so the white section title stays the stronger
+ * element; screen readers name the section it opens.
  */
 @Composable
 fun SeeAllButton(
     sectionTitle: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    route: NavKey? = null,
 ) {
     val description = stringResource(Res.string.home_see_all_description, sectionTitle)
     TextButton(
@@ -160,6 +168,7 @@ fun SeeAllButton(
         modifier =
             modifier
                 .pointerHoverIcon(PointerIcon.Hand)
+                .then(if (route != null) Modifier.routeLink(route) else Modifier)
                 .semantics { contentDescription = description },
     ) {
         Text(

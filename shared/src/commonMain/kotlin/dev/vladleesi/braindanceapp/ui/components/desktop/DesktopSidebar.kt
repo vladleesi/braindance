@@ -38,7 +38,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
+import dev.vladleesi.braindanceapp.navigation.routeLink
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
+import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.app_name
 import dev.vladleesi.braindanceapp.resources.profile_screen_title
@@ -109,6 +111,7 @@ fun DesktopSidebar(
                     // The profile opens on top of the current tab, so only one row is highlighted at a time.
                     selected = route == selectedRoute && !isProfileSelected,
                     onClick = { onRouteClick(route) },
+                    modifier = Modifier.routeLink(route),
                 ) { contentColor ->
                     Icon(
                         imageVector = route.imageVector,
@@ -123,7 +126,7 @@ fun DesktopSidebar(
             label = stringResource(Res.string.profile_screen_title),
             selected = isProfileSelected,
             onClick = onProfileClick,
-            modifier = Modifier.padding(top = Dimens.small),
+            modifier = Modifier.padding(top = Dimens.small).routeLink(ProfileRoute),
         ) {
             // A little larger than the icons, so the picture reads as a picture; the item keeps its icon-slot size.
             UserAvatar(size = ProfileAvatarSize, modifier = Modifier.requiredSize(ProfileAvatarSize))

@@ -28,6 +28,7 @@ import dev.vladleesi.braindanceapp.resources.data_attribution_gamerpower
 import dev.vladleesi.braindanceapp.resources.data_attribution_igdb
 import dev.vladleesi.braindanceapp.resources.profile_activity
 import dev.vladleesi.braindanceapp.resources.profile_bluesky_handle
+import dev.vladleesi.braindanceapp.resources.profile_contact_support
 import dev.vladleesi.braindanceapp.resources.profile_development_status
 import dev.vladleesi.braindanceapp.resources.profile_link_bluesky
 import dev.vladleesi.braindanceapp.resources.profile_link_discord
@@ -55,6 +56,7 @@ import dev.vladleesi.braindanceapp.ui.components.CommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.GAMERPOWER_NAME
 import dev.vladleesi.braindanceapp.ui.components.IGDB_NAME
 import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
+import dev.vladleesi.braindanceapp.ui.components.SUPPORT_EMAIL
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
@@ -73,6 +75,7 @@ import dev.vladleesi.braindanceapp.ui.style.icons.Database
 import dev.vladleesi.braindanceapp.ui.style.icons.DiscordLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.FileText
 import dev.vladleesi.braindanceapp.ui.style.icons.Gift
+import dev.vladleesi.braindanceapp.ui.style.icons.Mail
 import dev.vladleesi.braindanceapp.ui.style.icons.RedditLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.ThreadsLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.XLogo
@@ -227,13 +230,23 @@ private fun CommunitySection(
     }
 }
 
-/** What changed in the app and the services its data comes from, credited as their terms ask. */
+/**
+ * How to reach the team, what changed in the app, and the services its data comes from, credited as their terms ask.
+ */
 @Composable
 private fun AboutSection(
     links: ProjectLinks,
     community: CommunityLinks,
 ) {
     ProfileSection(title = stringResource(Res.string.profile_section_about)) {
+        // The address is shown too, for people who write from a mail account other than the system's mail app.
+        ProfileLinkRow(
+            title = stringResource(Res.string.profile_contact_support),
+            supportingText = SUPPORT_EMAIL,
+            imageVector = Mail,
+            onClick = links.emailSupport,
+        )
+        ProfileDivider(inset = ProfileRowTextInset)
         ProfileLinkRow(
             title = stringResource(Res.string.profile_release_notes),
             imageVector = FileText,
@@ -283,6 +296,7 @@ internal fun ProfileScreenPreview() {
                         share = {},
                         openIgdb = {},
                         openGamerPower = {},
+                        emailSupport = {},
                     ),
                 community =
                     CommunityLinks(
