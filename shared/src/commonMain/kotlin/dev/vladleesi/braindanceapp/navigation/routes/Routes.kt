@@ -28,6 +28,12 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 sealed interface Route : NavKey {
+    /**
+     * Identifies the screen's content, its saved state, and its ViewModel. Routes with the same key are one screen:
+     * replacing one with another updates the screen in place, without a transition.
+     */
+    val contentKey: String get() = toString()
+
     @Composable
     fun Content(
         modifier: Modifier,
@@ -48,6 +54,7 @@ inline fun <reified T : Route> EntryProviderScope<in Route>.registerNestedRoute(
 
 inline fun <reified T : Route> EntryProviderScope<in Route>.registerRoute(routeType: RouteType) {
     entry<T>(
+        clazzContentKey = { route -> route.contentKey },
         metadata =
             NavDisplay.transitionSpec { routeTransform(routeType, forward = true) } +
                 NavDisplay.popTransitionSpec { routeTransform(routeType, forward = false) } +

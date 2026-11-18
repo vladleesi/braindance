@@ -5,6 +5,36 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.25.0 — 2026-11-18
+
+### Android, iOS, and Web
+
+- A game's editions and updates, such as a Game of the Year Edition or a free next-gen update, appear as one row of
+  choices under the game. The one you are viewing is marked, with what kind of version it is, and the page shows
+  its own name, cover, platforms, genres, stores, and description, with the game's for anything it lacks; the base
+  game is one tap away. Switching between them updates the page in place, without opening a new screen or losing
+  your place; placeholders show the details that are changing while a slower version loads. Back leaves the game
+  instead of stepping through each one. Sharing the page keeps that edition or update.
+- A single Related section lists the game's DLC and expansions, remasters and ports, and the bundles that include it,
+  as compact rows with tabs for each kind. A bundle lists the games it contains.
+- On phones, more than two versions or Related tabs collapse to the selected one and a "+N more" chip that shows the
+  rest, so each takes one line.
+- Genres use the same chips as versions and tabs.
+- A DLC, expansion, or remaster says what it is and links its game right under its title, such as "Expansion for
+  The Witcher 3: Wild Hunt".
+- Similar games on an edition's or update's page are those of its game.
+- Opening the game right under the current page, such as an expansion's game after coming from it, goes back to it
+  instead of opening another copy.
+
+### Web
+
+- Search engines treat an edition's or update's page as its game's page, while a shared link still shows the
+  edition or update.
+
+### Website and documentation
+
+- Refresh the latest updates on braindancegg.com.
+
 ## 0.24.0 — 2026-11-17
 
 ### Web

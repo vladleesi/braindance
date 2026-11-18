@@ -83,7 +83,9 @@ async function previewPage(request, url, env, context) {
             meta = notFoundMeta();
         } else {
             meta = preview.status === "found" ? preview.meta : genericMeta();
-            meta.canonical = `${PUBLIC_ORIGIN}/${target.kind === "game" ? "games" : "giveaway"}/${target.id}`;
+            // An edition's or update's page shows its game, so search engines index the game's address instead.
+            const canonicalId = target.kind === "game" ? (meta.canonicalId ?? target.id) : target.id;
+            meta.canonical = `${PUBLIC_ORIGIN}/${target.kind === "game" ? "games" : "giveaway"}/${canonicalId}`;
         }
     }
 
@@ -176,7 +178,10 @@ async function fetchPreview(target) {
     return meta ? { status: "found", meta } : { status: "unavailable" };
 }
 
-/** The preview of an API game, or null without a name. */
+/**
+ * The preview of an API game, or null without a name. A shared edition or update keeps its own name and cover, so the
+ * link card shows what was shared; only its canonical address is its game's.
+ */
 function gameMeta(game) {
     const name = text(game?.name, TITLE_MAX_LENGTH);
     if (!name) return null;
@@ -195,7 +200,13 @@ function gameMeta(game) {
         // Covers are portrait, which wide link cards would crop, so they get the compact card.
         largeImage: false,
         index: false,
+        canonicalId: gameId(game.canonical_id),
     };
+}
+
+/** [value] when it is an ID the app opens, otherwise null. */
+function gameId(value) {
+    return Number.isInteger(value) && value > 0 && value <= MAX_ID ? value : null;
 }
 
 /** The preview of an API giveaway, or null without a title. */

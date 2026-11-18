@@ -25,7 +25,7 @@ Web clients, built with Kotlin Multiplatform and Compose Multiplatform. The API 
 ## ✨ Features
 
 - **Popular Right Now** and **Most Anticipated** game feeds.
-- **Game details** with similar games.
+- **Game details** with editions, updates, DLC, related releases, and similar games.
 - **Game search** by title on Discover, with continuous scrolling through results.
 - **Giveaways** with instructions and claim links.
 
@@ -77,7 +77,7 @@ configuration, code style, and validation.
 | [Landing site](landing/) | The static page served at [braindancegg.com](https://braindancegg.com/). |
 
 The current frontend source version is
-[0.24.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.24.0).
+[0.25.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.25.0).
 GitHub releases provide source code, not store-ready mobile downloads.
 The Web publication badge shows checks for the revision on `master`.
 

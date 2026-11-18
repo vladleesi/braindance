@@ -4,7 +4,10 @@ package dev.vladleesi.braindanceapp.data.api.fixtures
 
 import dev.vladleesi.braindanceapp.data.api.backendJson
 import dev.vladleesi.braindanceapp.data.models.games.Cover
+import dev.vladleesi.braindanceapp.data.models.games.FamilyGame
+import dev.vladleesi.braindanceapp.data.models.games.GameFamily
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.GameKind
 import dev.vladleesi.braindanceapp.data.models.games.Genre
 import dev.vladleesi.braindanceapp.data.models.games.Platform
 import dev.vladleesi.braindanceapp.data.models.games.ReleaseDate
@@ -66,8 +69,98 @@ internal object ApiFixtureData {
         page: Int = 1,
     ): String = backendJson.encodeToString(anticipated.drop((page - 1) * pageSize).take(pageSize))
 
-    /** Like the API, an unknown ID is an empty list. */
-    fun gameDetailsJson(id: Int): String = backendJson.encodeToString(listOfNotNull(gamesById[id]))
+    /**
+     * Like the API, an unknown ID is an empty list. Every game names its family; Sample Game One has an edition, an
+     * update, an expansion, a remaster, and a bundle with Sample Game Two, and each member answers as the API does.
+     */
+    fun gameDetailsJson(id: Int): String {
+        val member = familyMembers[id]
+        val details =
+            when {
+                gamesById[id] != null -> asCanonical(checkNotNull(gamesById[id]))
+                member == null -> null
+                member.kind == GameKind.EDITION || member.kind == GameKind.UPDATE -> {
+                    val base = asCanonical(checkNotNull(gamesById[FIRST_GAME_ID]))
+                    member.copy(canonicalId = FIRST_GAME_ID, canonical = base.copy(family = null), family = base.family)
+                }
+                else -> member.copy(canonicalId = id, family = memberFamily(member))
+            }
+        return backendJson.encodeToString(listOfNotNull(details))
+    }
+
+    private val familyMembers: Map<Int, GameItem> by lazy {
+        val base = gameNames.first()
+        listOf(
+            familyMember(EDITION_ID, "$base: Deluxe Edition", GameKind.EDITION),
+            familyMember(UPDATE_ID, "$base - Free Next-Gen Update", GameKind.UPDATE),
+            familyMember(EXPANSION_ID, "$base: Sample Expansion", GameKind.EXPANSION),
+            familyMember(REMASTER_ID, "$base Remastered", GameKind.REMASTER),
+            familyMember(BUNDLE_ID, "$base + Two Bundle", GameKind.BUNDLE),
+        ).associateBy { member -> member.id ?: 0 }
+    }
+
+    /** A game of its own, with its family as the API sends it. */
+    private fun asCanonical(game: GameItem): GameItem {
+        val id = game.id ?: 0
+        val members = if (id == FIRST_GAME_ID) familyMembers.values.toList() else emptyList()
+
+        fun ofKind(vararg kinds: GameKind) =
+            members.filter { it.kind in kinds }.map { it.toFamilyGame(labelled = true) }
+        val bundles =
+            if (id == FIRST_GAME_ID || id == FIRST_GAME_ID + 1) {
+                listOfNotNull(familyMembers[BUNDLE_ID]?.toFamilyGame(labelled = false))
+            } else {
+                emptyList()
+            }
+        return game.copy(
+            kind = GameKind.GAME,
+            canonicalId = id,
+            family =
+                GameFamily(
+                    variants = ofKind(GameKind.EDITION, GameKind.UPDATE),
+                    extras = ofKind(GameKind.EXPANSION),
+                    otherVersions = ofKind(GameKind.REMASTER),
+                    includedIn = bundles,
+                    contents = emptyList(),
+                ),
+        )
+    }
+
+    /** The family of an expansion, remaster, or bundle, each a game of its own. */
+    private fun memberFamily(member: GameItem): GameFamily {
+        val base = checkNotNull(gamesById[FIRST_GAME_ID])
+        val contents =
+            if (member.id == BUNDLE_ID) {
+                listOfNotNull(gamesById[FIRST_GAME_ID], gamesById[FIRST_GAME_ID + 1]).map { game ->
+                    game.copy(kind = GameKind.GAME).toFamilyGame(labelled = false)
+                }
+            } else {
+                emptyList()
+            }
+        return GameFamily(
+            parent = base.copy(kind = GameKind.GAME).toFamilyGame(labelled = false).takeIf { member.id != BUNDLE_ID },
+            variants = emptyList(),
+            extras = emptyList(),
+            otherVersions = emptyList(),
+            includedIn = emptyList(),
+            contents = contents,
+        )
+    }
+
+    /** A family card; [labelled] cards name the entry without the base game's name, as the API does. */
+    private fun GameItem.toFamilyGame(labelled: Boolean) =
+        FamilyGame(
+            id = id,
+            name = name,
+            kind = kind,
+            label =
+                name
+                    ?.removePrefix(gameNames.first())
+                    ?.trimStart(' ', ':', '-')
+                    ?.takeIf { labelled && it.isNotEmpty() && it != name },
+            cover = cover,
+            firstReleaseDate = firstReleaseDate,
+        )
 
     fun recommendationsJson(id: Int): String {
         val similar =
@@ -123,6 +216,14 @@ internal object ApiFixtureData {
 }
 
 private const val FIRST_GAME_ID = 101
+
+// Sample Game One's family, with IDs outside the sample games' range.
+private const val FAMILY_FIRST_ID = 801
+private const val EDITION_ID = FAMILY_FIRST_ID
+private const val UPDATE_ID = FAMILY_FIRST_ID + 1
+private const val EXPANSION_ID = FAMILY_FIRST_ID + 2
+private const val REMASTER_ID = FAMILY_FIRST_ID + 3
+private const val BUNDLE_ID = FAMILY_FIRST_ID + 4
 private const val FIRST_GIVEAWAY_ID = 501
 private const val TRENDING_COUNT = 8
 private const val ANTICIPATED_OFFSET = 4
@@ -278,3 +379,13 @@ private fun sampleGiveaway(
         openGiveaway = link,
     )
 }
+
+private fun familyMember(
+    id: Int,
+    name: String,
+    kind: GameKind,
+) = compactGame(id, name, sampleCover(id)).copy(
+    firstReleaseDate = FIRST_RELEASE_SECONDS + (id - FAMILY_FIRST_ID + 1) * RELEASE_STEP_SECONDS,
+    summary = "Sample data for developer builds; this ${kind.apiName.replace('_', ' ')} does not exist.",
+    kind = kind,
+)

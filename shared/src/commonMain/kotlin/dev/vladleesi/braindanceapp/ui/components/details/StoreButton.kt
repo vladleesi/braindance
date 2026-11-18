@@ -30,16 +30,22 @@ import dev.vladleesi.braindanceapp.ui.components.TonalButton
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
+import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.StoreTypeModel
 import dev.vladleesi.braindanceapp.utils.openExternalUrl
+import dev.vladleesi.braindanceapp.utils.placeholder
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
-fun LazyListScope.storesBlockItem(stores: List<StoreTypeModel>) {
+/** "Where to buy" and [stores]; while [placeholder], each button is a shimmer of its own size and does nothing. */
+fun LazyListScope.storesBlockItem(
+    stores: List<StoreTypeModel>,
+    placeholder: Boolean = false,
+) {
     item {
         Text(
             text = stringResource(Res.string.game_details_screen_where_to_buy),
@@ -48,12 +54,15 @@ fun LazyListScope.storesBlockItem(stores: List<StoreTypeModel>) {
         )
     }
     item {
-        StoreButtonsRow(stores)
+        StoreButtonsRow(stores, placeholder)
     }
 }
 
 @Composable
-fun StoreButtonsRow(storeList: List<StoreTypeModel>) {
+fun StoreButtonsRow(
+    storeList: List<StoreTypeModel>,
+    placeholder: Boolean = false,
+) {
     Spacer(modifier = Modifier.size(Dimens.small))
     FlowRow(
         modifier =
@@ -68,6 +77,8 @@ fun StoreButtonsRow(storeList: List<StoreTypeModel>) {
                 store = store.name,
                 image = store.image,
                 url = store.url,
+                enabled = !placeholder,
+                modifier = Modifier.placeholder(visible = placeholder, shape = CornerShapes.pill),
             )
         }
     }
@@ -79,9 +90,10 @@ fun StoreButton(
     image: DrawableResource?,
     url: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     uriHandler: UriHandler = LocalUriHandler.current,
 ) {
-    TonalButton(onClick = { uriHandler.openExternalUrl(url) }, modifier = modifier) {
+    TonalButton(onClick = { uriHandler.openExternalUrl(url) }, modifier = modifier, enabled = enabled) {
         Text(text = store, style = MaterialTheme.typography.subtitle1)
         if (image != null) {
             Spacer(Modifier.width(Dimens.small))

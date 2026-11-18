@@ -7,6 +7,7 @@ import dev.vladleesi.braindanceapp.data.Outcome
 import dev.vladleesi.braindanceapp.data.api.clients.BackendClient
 import dev.vladleesi.braindanceapp.data.api.remote.GamerPowerRemote
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
+import dev.vladleesi.braindanceapp.data.models.games.GameKind
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.data.repository.GameSearchRepo
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
@@ -62,6 +63,48 @@ class ApiFixtureEngineTest {
                     detailsRepo.gameDetails(recommendedId).successValue()
                 }
             }
+        }
+
+    @Test
+    fun sampleGameOnesFamilyOpensLikeTheApi() =
+        runTest(dispatcher) {
+            val game = detailsRepo.gameDetails(FIRST_GAME_ID).successValue()
+            assertEquals(FIRST_GAME_ID, game.canonicalId)
+            assertEquals(null, game.canonical, "a game is its own canonical game")
+            val family = game.family ?: fail("No family")
+            assertEquals(listOf(GameKind.EDITION, GameKind.UPDATE), family.variants.orEmpty().map { it.kind })
+            assertEquals(listOf("Deluxe Edition", "Free Next-Gen Update"), family.variants.orEmpty().map { it.label })
+            val members = family.variants.orEmpty() + family.extras.orEmpty() + family.otherVersions.orEmpty()
+            assertEquals(4, members.size)
+            for (member in members) {
+                val entry = detailsRepo.gameDetails(member.id ?: fail("Member without an ID")).successValue()
+                val variant = member.kind == GameKind.EDITION || member.kind == GameKind.UPDATE
+                // Variants open their game; extras and other versions are games of their own with a parent.
+                assertEquals(if (variant) FIRST_GAME_ID else member.id, entry.canonicalId, member.name)
+                assertEquals(if (variant) FIRST_GAME_ID else null, entry.canonical?.id, member.name)
+                if (!variant) assertEquals(FIRST_GAME_ID, entry.family?.parent?.id, member.name)
+            }
+            val bundleId =
+                family.includedIn
+                    .orEmpty()
+                    .single()
+                    .id ?: fail("Bundle without an ID")
+            val bundle = detailsRepo.gameDetails(bundleId).successValue()
+            assertEquals(
+                listOf(FIRST_GAME_ID, FIRST_GAME_ID + 1),
+                bundle.family
+                    ?.contents
+                    .orEmpty()
+                    .map { it.id },
+            )
+            assertEquals(
+                emptyList(),
+                detailsRepo
+                    .gameDetails(FIRST_GAME_ID + 2)
+                    .successValue()
+                    .family
+                    ?.variants,
+            )
         }
 
     @Test
@@ -240,6 +283,9 @@ class ApiFixtureEngineTest {
     private companion object {
         const val ALL = 1_000
         const val UNKNOWN_ID = 999_999
+
+        // Sample Game One, the fixture game with a family.
+        const val FIRST_GAME_ID = 101
         val PNG_SIGNATURE = listOf<Byte>(-119, 80, 78, 71, 13, 10, 26, 10)
     }
 }

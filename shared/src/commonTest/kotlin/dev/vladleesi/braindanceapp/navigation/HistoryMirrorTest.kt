@@ -9,7 +9,9 @@ import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class HistoryMirrorTest {
     /** Session history as a browser keeps it: entries and the current position. */
@@ -141,6 +143,56 @@ class HistoryMirrorTest {
         assertEquals(
             listOf<NavKey>(BottomBarRoute.LibraryRoute),
             state.backStacks.getValue(BottomBarRoute.LibraryRoute).toList(),
+        )
+    }
+
+    @Test
+    fun aReplacedScreenRewritesTheCurrentEntry() {
+        val browser = FakeBrowser()
+        val mirror = HistoryMirror(browser)
+        mirror.start("home", "/")
+        mirror.onNavigated("home>75", "/games/75")
+
+        mirror.onNavigated("home>45180", "/games/45180", replaced = true)
+        mirror.onNavigated("home>75", "/games/75", replaced = true)
+
+        assertEquals(listOf("/", "/games/75"), browser.entries.map { it.path })
+        assertEquals(1, browser.position)
+        assertEquals("home", browser.pressBack(mirror, appSnapshot = "home>75"), "Back leaves the game")
+    }
+
+    @Test
+    fun onlyAChangedCurrentScreenIsAReplacement() {
+        val home = BottomBarRoute.HomeRoute
+        val discover = BottomBarRoute.DiscoverRoute
+
+        fun snapshot(
+            tab: NavKey,
+            vararg stacks: List<NavKey>,
+        ) = NavigationSnapshot(NavigationSnapshot.VERSION, tab, stacks.toList())
+        val game = snapshot(home, listOf(home, GameDetailsRoute(75)), listOf(discover))
+
+        assertTrue(isReplacement(game, snapshot(home, listOf(home, GameDetailsRoute(45180)), listOf(discover))))
+        assertFalse(isReplacement(null, game), "the first state")
+        assertFalse(isReplacement(game, game), "nothing changed")
+        assertFalse(
+            isReplacement(
+                game,
+                snapshot(home, listOf(home, GameDetailsRoute(75), GameDetailsRoute(1)), listOf(discover)),
+            ),
+            "a push",
+        )
+        assertFalse(
+            isReplacement(game, snapshot(discover, listOf(home, GameDetailsRoute(75)), listOf(discover))),
+            "a tab",
+        )
+        assertFalse(isReplacement(snapshot(home, listOf(home)), snapshot(home, listOf(discover))), "a root")
+        assertFalse(
+            isReplacement(
+                game,
+                snapshot(home, listOf(home, GameDetailsRoute(45180)), listOf(discover, GameDetailsRoute(2))),
+            ),
+            "another tab changed too",
         )
     }
 }

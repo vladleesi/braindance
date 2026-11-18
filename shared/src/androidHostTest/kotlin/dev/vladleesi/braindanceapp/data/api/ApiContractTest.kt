@@ -4,6 +4,8 @@ package dev.vladleesi.braindanceapp.data.api
 
 import dev.vladleesi.braindanceapp.data.config.ApiConfig
 import dev.vladleesi.braindanceapp.data.models.games.Cover
+import dev.vladleesi.braindanceapp.data.models.games.FamilyGame
+import dev.vladleesi.braindanceapp.data.models.games.GameFamily
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
 import dev.vladleesi.braindanceapp.data.models.games.Genre
 import dev.vladleesi.braindanceapp.data.models.games.Platform
@@ -41,6 +43,8 @@ class ApiContractTest {
             mapOf(
                 "TrendingGameItem" to TrendingGameItem.serializer().descriptor,
                 "GameItem" to GameItem.serializer().descriptor,
+                "GameFamily" to GameFamily.serializer().descriptor,
+                "FamilyGame" to FamilyGame.serializer().descriptor,
                 "SimilarGame" to SimilarGame.serializer().descriptor,
                 "Cover" to Cover.serializer().descriptor,
                 "ReleaseDate" to ReleaseDate.serializer().descriptor,

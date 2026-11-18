@@ -143,6 +143,32 @@ describe("game pages", () => {
         assert.equal(canonical(html), `${PUBLIC_ORIGIN}/games/1942`);
     });
 
+    it("point an edition's or update's page at its game, and keep its own preview", async () => {
+        const update = {
+            id: 230102,
+            name: "The Witcher 3: Wild Hunt - Free Next-Gen Update",
+            kind: "update",
+            canonical_id: 1942,
+            canonical: witcher,
+        };
+        apiResponses.set(`${API}/v1/games/details?id=230102`, json([update]));
+        const { html } = await open("/games/230102");
+
+        assert.equal(title(html), "The Witcher 3: Wild Hunt - Free Next-Gen Update | Braindance");
+        assert.equal(canonical(html), `${PUBLIC_ORIGIN}/games/1942`);
+    });
+
+    it("keep a game's own address when its canonical ID is missing or invalid", async () => {
+        for (const [id, canonicalId] of [[11, undefined], [12, 0], [13, "1942"], [14, 2147483648]]) {
+            apiResponses.set(
+                `${API}/v1/games/details?id=${id}`,
+                json([{ id, name: "Game", canonical_id: canonicalId }]),
+            );
+            const { html } = await open(`/games/${id}`);
+            assert.equal(canonical(html), `${PUBLIC_ORIGIN}/games/${id}`, String(canonicalId));
+        }
+    });
+
     it("use Braindance's share image without a cover, and describe a game without a summary", async () => {
         apiResponses.set(
             `${API}/v1/games/details?id=7`,

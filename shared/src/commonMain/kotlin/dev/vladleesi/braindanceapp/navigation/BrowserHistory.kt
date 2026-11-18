@@ -115,7 +115,7 @@ internal fun applyDeepLink(
     val topLevel = snapshot?.topLevelRoute ?: startRoute
     val stacks = snapshot?.backStacks ?: listOf(listOf(startRoute))
     val current = snapshot?.backStack(topLevel) ?: listOf(topLevel)
-    if (current.last() == linked) return snapshot
+    if (current.last().isSameScreen(linked)) return snapshot
     if (linked in topLevelRoutes) {
         // A tab's address is that tab's root screen, so its stack starts over at the root.
         val withTab = stacks.filterNot { it.first() == linked } + listOf(listOf(linked))
@@ -151,10 +151,14 @@ internal class HistoryMirror(
         location.replace(path, index, snapshotJson)
     }
 
-    /** The app's navigation changed to [snapshotJson], showing [path]. */
+    /**
+     * The app's navigation changed to [snapshotJson], showing [path]. A [replaced] screen ([Navigator.replace])
+     * rewrites the current entry instead of adding one, so Back skips the screen it replaced, as in the app.
+     */
     fun onNavigated(
         snapshotJson: String,
         path: String,
+        replaced: Boolean = false,
     ) {
         if (snapshotJson == restoring) {
             restoring = null
@@ -164,6 +168,11 @@ internal class HistoryMirror(
         if (index > 0 && entries[index - 1] == snapshotJson) {
             index -= 1
             location.back()
+            return
+        }
+        if (replaced) {
+            store(index, snapshotJson)
+            location.replace(path, index, snapshotJson)
             return
         }
         index += 1
@@ -243,8 +252,35 @@ internal fun BrowserHistorySync(
         onDispose { dispose() }
     }
     LaunchedEffect(state, location) {
-        snapshotFlow { snapshot() to path() }.collect { (snapshotJson, routePath) ->
-            mirror.onNavigated(snapshotJson, routePath)
+        var shown: NavigationSnapshot? = null
+        snapshotFlow { Triple(snapshot(), path(), state.toSnapshot()) }.collect { (snapshotJson, routePath, current) ->
+            mirror.onNavigated(snapshotJson, routePath, replaced = isReplacement(shown, current))
+            shown = current
         }
     }
+}
+
+private fun NavigationState.toSnapshot() =
+    NavigationSnapshot(NavigationSnapshot.VERSION, topLevelRoute, backStacks.values.map { it.toList() })
+
+/**
+ * Whether [after] differs from [before] only in the current screen of the same tab, as [Navigator.replace] leaves
+ * it. A push or pop changes the stack's depth, and a tab switch the selected tab, so neither counts.
+ */
+internal fun isReplacement(
+    before: NavigationSnapshot?,
+    after: NavigationSnapshot,
+): Boolean {
+    before ?: return false
+    if (before.topLevelRoute != after.topLevelRoute || before.backStacks.size != after.backStacks.size) return false
+    val tab = after.topLevelRoute
+    val old = before.backStack(tab) ?: return false
+    val new = after.backStack(tab) ?: return false
+    val othersEqual =
+        before.backStacks.filter { it.first() != tab } == after.backStacks.filter { it.first() != tab }
+    return othersEqual &&
+        old.size == new.size &&
+        old.size > 1 &&
+        old.dropLast(1) == new.dropLast(1) &&
+        old.last() != new.last()
 }

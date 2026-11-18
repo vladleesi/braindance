@@ -21,7 +21,10 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,7 +57,9 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.BackdropImage
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GenreTag
 import dev.vladleesi.braindanceapp.utils.ParentPlatformType
+import dev.vladleesi.braindanceapp.utils.placeholder
 import dev.vladleesi.braindanceapp.utils.rememberCachedImageRequest
+import dev.vladleesi.braindanceapp.utils.textPlaceholder
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 
 /** How the hero arranges itself in the space it has; the cover stays on the left in both. */
@@ -95,6 +101,9 @@ private val ExpandedMetrics
  * [expanded] is for tablets and wide windows: the cover grows to poster size and the actions and genres join the
  * column beside it. On phones the genres and then the actions span the width under the cover, where the actions are
  * easy to reach. The hero has no state of its own; [libraryActions] and the callbacks come from the screen.
+ * [relation] goes right under the title, such as the game an expansion belongs to. While [loadingRelease], another
+ * version's cover, title, facts, and genres are loading: the current ones keep their place as shimmering
+ * placeholders of their exact size, so nothing moves until the new ones arrive.
  */
 @Composable
 fun GameDetailsHero(
@@ -104,6 +113,8 @@ fun GameDetailsHero(
     onLibraryStatusChange: (LibraryStatus) -> Unit,
     onGenreClick: ((GenreTag) -> Unit)?,
     modifier: Modifier = Modifier,
+    relation: (@Composable () -> Unit)? = null,
+    loadingRelease: Boolean = false,
 ) {
     val metrics = if (expanded) ExpandedMetrics else CompactMetrics
     Box(modifier = modifier.fillMaxWidth()) {
@@ -117,21 +128,34 @@ fun GameDetailsHero(
             Row(verticalAlignment = Alignment.Bottom) {
                 // A game without a cover leaves the title the whole width rather than beside an empty tile.
                 if (details.coverImageUrl.isNotBlank()) {
-                    HeroCover(details = details, modifier = Modifier.width(metrics.coverWidth))
+                    HeroCover(
+                        details = details,
+                        modifier =
+                            Modifier
+                                .width(metrics.coverWidth)
+                                .placeholder(visible = loadingRelease, shape = CornerShapes.small),
+                    )
                     Spacer(Modifier.width(if (expanded) Dimens.large else Dimens.medium))
                 }
                 Column(
                     modifier = Modifier.weight(1f, fill = false).widthIn(max = Dimens.readableTextWidth),
                     verticalArrangement = Arrangement.spacedBy(Dimens.small),
                 ) {
-                    HeroTitle(name = details.name, metrics = metrics)
-                    HeroFacts(releaseDate = details.releaseDate, platforms = details.platforms, metrics = metrics)
+                    HeroTitle(name = details.name, metrics = metrics, placeholder = loadingRelease)
+                    relation?.invoke()
+                    HeroFacts(
+                        releaseDate = details.releaseDate,
+                        platforms = details.platforms,
+                        metrics = metrics,
+                        placeholder = loadingRelease,
+                    )
                     if (expanded) {
                         if (details.genres.isNotEmpty()) {
                             GenreTags(
                                 genres = details.genres,
                                 onGenreClick = onGenreClick,
                                 modifier = Modifier.padding(top = Dimens.tiny),
+                                placeholder = loadingRelease,
                             )
                         }
                         LibraryActions(
@@ -150,6 +174,7 @@ fun GameDetailsHero(
                         genres = details.genres,
                         onGenreClick = onGenreClick,
                         modifier = Modifier.padding(top = Dimens.medium),
+                        placeholder = loadingRelease,
                     )
                 }
                 LibraryActions(
@@ -175,8 +200,13 @@ private fun HeroCover(
 ) {
     AsyncImage(
         // Its own memory key: the hero shows the cover at another size than the cards, which would otherwise swap the
-        // decoded size in the memory cache back and forth. The download itself is shared with the card's.
-        model = rememberCachedImageRequest(data = details.coverImageUrl, memoryCacheKey = "gdc-${details.id}"),
+        // decoded size in the memory cache back and forth. The download itself is shared with the card's. Keyed by the
+        // image, not the page: a game's versions share the page but each has its own cover.
+        model =
+            rememberCachedImageRequest(
+                data = details.coverImageUrl,
+                memoryCacheKey = "gdc-${details.coverImageUrl}",
+            ),
         contentDescription = details.name.toContentDescription(),
         contentScale = ContentScale.Crop,
         modifier =
@@ -196,7 +226,9 @@ private fun HeroCover(
 private fun HeroTitle(
     name: String,
     metrics: HeroMetrics,
+    placeholder: Boolean,
 ) {
+    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val style =
         remember(metrics.titleStyle) {
             val titleStyle = metrics.titleStyle
@@ -211,7 +243,8 @@ private fun HeroTitle(
             remember(metrics.titleMinFontSize, metrics.titleStyle.fontSize) {
                 FitMaxLines(minFontSize = metrics.titleMinFontSize, maxFontSize = metrics.titleStyle.fontSize)
             },
-        modifier = Modifier.semantics { heading() },
+        onTextLayout = { layout = it },
+        modifier = Modifier.semantics { heading() }.textPlaceholder(visible = placeholder) { layout },
     )
 }
 
@@ -248,10 +281,12 @@ private fun HeroFacts(
     releaseDate: String?,
     platforms: List<ParentPlatformType>,
     metrics: HeroMetrics,
+    placeholder: Boolean,
 ) {
     val hasLogos = platforms.any { platform -> platform.iconRes != null }
     if (releaseDate == null && !hasLogos) return
     FlowRow(
+        modifier = Modifier.placeholder(visible = placeholder, shape = CornerShapes.small),
         horizontalArrangement = Arrangement.spacedBy(Dimens.compact),
         verticalArrangement = Arrangement.spacedBy(Dimens.small),
         itemVerticalAlignment = Alignment.CenterVertically,

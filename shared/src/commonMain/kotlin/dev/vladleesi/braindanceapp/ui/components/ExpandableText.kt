@@ -10,10 +10,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,9 +23,14 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.utils.textPlaceholder
 
 const val DEFAULT_MINIMUM_TEXT_LINE = 4
 
+/**
+ * [text] cut to [collapsedMaxLines] with a control that shows the rest. While [placeholder], each line, and the
+ * control, is a shimmering bar at its own place and length, and nothing responds to input.
+ */
 @Composable
 fun ExpandableText(
     text: String,
@@ -35,9 +42,12 @@ fun ExpandableText(
     expandTextStyle: TextStyle = MaterialTheme.typography.body2,
     expandTextColor: Color = secondaryText,
     modifier: Modifier = Modifier,
+    placeholder: Boolean = false,
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var isTextOverflowing by rememberSaveable { mutableStateOf(false) }
+    var textLayout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    var controlLayout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     Column(modifier) {
         Text(
@@ -47,8 +57,10 @@ fun ExpandableText(
             maxLines = if (isExpanded) Int.MAX_VALUE else collapsedMaxLines,
             overflow = if (isExpanded) TextOverflow.Visible else TextOverflow.Ellipsis,
             onTextLayout = { textLayoutResult ->
+                textLayout = textLayoutResult
                 isTextOverflowing = textLayoutResult.hasVisualOverflow || isExpanded
             },
+            modifier = Modifier.textPlaceholder(visible = placeholder) { textLayout },
         )
 
         // Show "Show more" only if the text overflows
@@ -57,10 +69,12 @@ fun ExpandableText(
                 text = if (isExpanded) collapseText else expandText,
                 style = expandTextStyle,
                 color = expandTextColor,
+                onTextLayout = { controlLayout = it },
                 modifier =
                     Modifier
-                        .clickable { isExpanded = !isExpanded }
-                        .padding(top = Dimens.tiny),
+                        .clickable(enabled = !placeholder) { isExpanded = !isExpanded }
+                        .padding(top = Dimens.tiny)
+                        .textPlaceholder(visible = placeholder) { controlLayout },
             )
         }
     }

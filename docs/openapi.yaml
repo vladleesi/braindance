@@ -52,12 +52,19 @@ paths:
           description: The page or page size is invalid.
   /v1/games/details:
     get:
-      summary: One game's details.
+      summary: One game's details, with where it belongs among IGDB's related entries.
+      description: >-
+        IGDB lists a game's editions, updates, and add-ons as separate entries. Editions and updates are variants:
+        clients show them on their canonical game's page with the variant selected. The response keeps the requested
+        entry at the top level, so a variant's own fields describe the selection.
       parameters:
         - $ref: '#/components/parameters/GameId'
       responses:
         '200':
-          description: A list with the game, or an empty list when the ID is unknown.
+          description: >-
+            A list with the game, or an empty list when the ID is unknown. When the API cannot load a variant's
+            canonical game, the variant comes without canonical_id, canonical, and family, and clients show it as a
+            game of its own.
           content:
             application/json:
               schema:
@@ -242,6 +249,72 @@ components:
           type: string
         storyline:
           type: string
+        kind:
+          type: string
+          description: >-
+            Game details only. What the entry is: edition or update for a variant of another game, otherwise its
+            IGDB type, such as game, dlc, expansion, bundle, remake, remaster, or port. Clients treat unknown values
+            as other.
+        canonical_id:
+          type: integer
+          description: >-
+            Game details only. The game whose page shows this entry: an edition's or update's game, otherwise the
+            entry itself.
+        canonical:
+          $ref: '#/components/schemas/GameItem'
+          description: Game details only. The canonical game's details, sent only when it is not this entry.
+        family:
+          $ref: '#/components/schemas/GameFamily'
+    GameFamily:
+      type: object
+      description: Game details only. The canonical game's related entries, at most 50 per list, oldest first.
+      properties:
+        parent:
+          $ref: '#/components/schemas/FamilyGame'
+          description: The game a DLC, remaster, or port belongs to.
+        variants:
+          type: array
+          description: Editions and updates, shown on the canonical game's page.
+          items:
+            $ref: '#/components/schemas/FamilyGame'
+        extras:
+          type: array
+          description: DLC, expansions, packs, episodes, and seasons.
+          items:
+            $ref: '#/components/schemas/FamilyGame'
+        other_versions:
+          type: array
+          description: Remakes, remasters, expanded games, ports, forks, and standalone expansions.
+          items:
+            $ref: '#/components/schemas/FamilyGame'
+        included_in:
+          type: array
+          description: Bundles that contain the game, except its own editions.
+          items:
+            $ref: '#/components/schemas/FamilyGame'
+        contents:
+          type: array
+          description: The games a bundle contains.
+          items:
+            $ref: '#/components/schemas/FamilyGame'
+    FamilyGame:
+      type: object
+      required: [id, name, kind]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        kind:
+          type: string
+        label:
+          type: string
+          description: A short name on the canonical game's page, sent only for variants, extras, and other versions.
+        cover:
+          $ref: '#/components/schemas/Cover'
+        first_release_date:
+          type: integer
+          description: Unix time in seconds.
     SimilarGame:
       type: object
       properties:

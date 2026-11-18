@@ -68,6 +68,13 @@ class WebPathTest {
     }
 
     @Test
+    fun aReloadKeepsAPageSwitchedToAnotherVersion() {
+        val switched = GameDetailsRoute(1).withVersion(2)
+        val restored = NavigationSnapshot(NavigationSnapshot.VERSION, home, listOf(listOf(home, switched)))
+        assertSame(restored, applyDeepLink(restored, webPathToRoute(switched.toWebPath()), home, tabs))
+    }
+
+    @Test
     fun aLinkedDetailScreenOpensOnTopOfTheCurrentTab() {
         val restored = NavigationSnapshot(NavigationSnapshot.VERSION, home, listOf(listOf(home)))
         val linked = applyDeepLink(restored, GiveawayDetailsRoute(9), home, tabs)

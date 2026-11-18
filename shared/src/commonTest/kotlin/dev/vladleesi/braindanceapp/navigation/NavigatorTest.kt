@@ -146,4 +146,80 @@ class NavigatorTest {
         assertEquals(home, navigator.state.topLevelRoute)
         assertEquals(listOf(home, GameDetailsRoute(1)), navigator.stack(home))
     }
+
+    @Test
+    fun switchingVersionsReplacesTheScreenSoBackLeavesTheGame() {
+        val navigator = navigator()
+        navigator.navigate(GameDetailsRoute(75))
+
+        navigator.replace(GameDetailsRoute(45180))
+        navigator.replace(GameDetailsRoute(202174))
+        navigator.replace(GameDetailsRoute(75))
+
+        assertEquals(listOf(home, GameDetailsRoute(75)), navigator.stack(home))
+        navigator.replace(GameDetailsRoute(75))
+        assertEquals(listOf(home, GameDetailsRoute(75)), navigator.stack(home), "the shown version is kept")
+        navigator.goBack()
+        assertEquals(listOf<NavKey>(home), navigator.stack(home))
+    }
+
+    @Test
+    fun replacingWithTheScreenUnderneathReturnsToIt() {
+        val navigator = navigator()
+        navigator.navigate(GameDetailsRoute(1))
+        navigator.navigate(GameDetailsRoute(2))
+
+        navigator.replace(GameDetailsRoute(1))
+
+        assertEquals(listOf(home, GameDetailsRoute(1)), navigator.stack(home))
+    }
+
+    @Test
+    fun aTabsRootAndTabsAreNeverReplaced() {
+        val navigator = navigator()
+        navigator.replace(GameDetailsRoute(1))
+        assertEquals(listOf(home, GameDetailsRoute(1)), navigator.stack(home), "opens on top of the root")
+
+        navigator.replace(discover)
+        assertEquals(discover, navigator.state.topLevelRoute)
+        assertEquals(listOf(home, GameDetailsRoute(1)), navigator.stack(home))
+    }
+
+    @Test
+    fun openingTheScreenUnderneathReturnsToItInsteadOfStackingACopy() {
+        val navigator = navigator()
+        navigator.navigate(GameDetailsRoute(1942))
+        navigator.open(GameDetailsRoute(12503))
+
+        navigator.open(GameDetailsRoute(1942))
+        assertEquals(listOf(home, GameDetailsRoute(1942)), navigator.stack(home))
+
+        navigator.open(GameDetailsRoute(12503))
+        navigator.open(GameDetailsRoute(13166))
+        assertEquals(
+            listOf(home, GameDetailsRoute(1942), GameDetailsRoute(12503), GameDetailsRoute(13166)),
+            navigator.stack(home),
+            "other screens open on top",
+        )
+    }
+
+    @Test
+    fun aVersionSwitchKeepsTheScreenAndItsAddressFollowsTheVersion() {
+        val navigator = navigator()
+        val page = GameDetailsRoute(75)
+        navigator.navigate(page)
+
+        navigator.replace(page.withVersion(45180))
+
+        val shown = navigator.stack(home).last() as GameDetailsRoute
+        assertEquals(45180, shown.id)
+        assertEquals(page.contentKey, shown.contentKey, "one screen: no transition, same state and ViewModel")
+        assertEquals("/games/45180", shown.toWebPath())
+        assertTrue(shown.isSameScreen(GameDetailsRoute(45180)))
+        assertFalse(shown.isSameScreen(page))
+
+        // A link to the version already shown does not open it again.
+        navigator.openLink(GameDetailsRoute(45180))
+        assertEquals(2, navigator.stack(home).size)
+    }
 }

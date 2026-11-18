@@ -148,6 +148,39 @@
     <string name="game_details_on_wishlist">On wishlist</string>
     <string name="game_details_add_to_collection_coming_soon">Add to collection, coming soon</string>
     <string name="game_details_wishlist_coming_soon">Wishlist, coming soon</string>
+    <string name="game_details_versions">Editions and updates</string>
+    <string name="game_details_version_base">Base game</string>
+    <string name="game_details_related">Related</string>
+    <string name="game_details_related_extras">DLC and expansions</string>
+    <string name="game_details_related_other_versions">Other versions</string>
+    <string name="game_details_related_included_in">Bundles</string>
+    <string name="game_details_related_contents">In this bundle</string>
+    <string name="game_details_related_tab">%1$s, %2$d</string>
+    <string name="game_details_show_all">Show all %1$d</string>
+    <string name="game_details_show_fewer">Show fewer</string>
+    <string name="game_details_show_more_choices">+%1$d more</string>
+    <string name="game_relation_for">%1$s for %2$s</string>
+    <string name="game_relation_of">%1$s of %2$s</string>
+    <string name="game_relation_part_of">Part of %1$s</string>
+
+    <!-- What a game entry is, as cards and the variant banner name it -->
+    <string name="game_kind_game">Game</string>
+    <string name="game_kind_edition">Edition</string>
+    <string name="game_kind_update">Update</string>
+    <string name="game_kind_dlc">DLC</string>
+    <string name="game_kind_expansion">Expansion</string>
+    <string name="game_kind_pack">Pack</string>
+    <string name="game_kind_episode">Episode</string>
+    <string name="game_kind_season">Season</string>
+    <string name="game_kind_bundle">Bundle</string>
+    <string name="game_kind_standalone_expansion">Standalone expansion</string>
+    <string name="game_kind_remake">Remake</string>
+    <string name="game_kind_remaster">Remaster</string>
+    <string name="game_kind_expanded_game">Expanded edition</string>
+    <string name="game_kind_port">Port</string>
+    <string name="game_kind_fork">Fork</string>
+    <string name="game_kind_mod">Mod</string>
+    <string name="game_kind_other">Version</string>
 
     <!-- Giveaway details screen -->
     <string name="giveaway_details_screen_free">FREE</string>

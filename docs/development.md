@@ -188,7 +188,9 @@ therefore gets its own title, description, canonical link, and preview image:
 - **Game and giveaway pages:** `_routes.json` runs `_worker.js` only on their paths; every other request stays a free
   static file. It serves the same app page with the game's or giveaway's title, description, and image, read from
   the API through its edge cache and kept per data center for a day (games) or an hour (giveaways and unknown IDs).
-  It never caches the page itself, which names the current deployment's bundle. When the API fails, the page keeps a
+  An edition's or update's page keeps its own preview but names its game's address as canonical, since the app shows
+  it as a version of that game, selected among the game's versions. It never caches the page itself, which names the current deployment's
+  bundle. When the API fails, the page keeps a
   generic preview. If the Function does not run, for example after the free daily allowance (100,000 requests) is
   used up, `_redirects` still serves the app on those paths.
 - **Abuse:** the zone's per-IP rate limit covers these paths with the API's per-game routes and search. Each preview
