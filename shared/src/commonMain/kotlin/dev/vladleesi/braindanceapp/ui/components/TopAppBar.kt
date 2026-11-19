@@ -29,6 +29,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.vladleesi.braindanceapp.navigation.routeLink
+import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.back_button_content_description
 import dev.vladleesi.braindanceapp.resources.profile_screen_title
@@ -143,7 +145,10 @@ fun TopLevelTopAppBar(
         actions = {
             actions()
             if (showProfileButton) {
-                IconButton(onClick = onProfileClick, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)) {
+                IconButton(
+                    onClick = onProfileClick,
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand).routeLink(ProfileRoute),
+                ) {
                     UserAvatar(contentDescription = stringResource(Res.string.profile_screen_title))
                 }
             }

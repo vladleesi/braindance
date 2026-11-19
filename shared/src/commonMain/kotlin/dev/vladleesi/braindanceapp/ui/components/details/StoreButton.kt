@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.vladleesi.braindanceapp.navigation.externalLink
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.game_details_screen_where_to_buy
 import dev.vladleesi.braindanceapp.resources.ic_platform_logo_playstation
@@ -93,7 +94,8 @@ fun StoreButton(
     enabled: Boolean = true,
     uriHandler: UriHandler = LocalUriHandler.current,
 ) {
-    TonalButton(onClick = { uriHandler.openExternalUrl(url) }, modifier = modifier, enabled = enabled) {
+    val open = { uriHandler.openExternalUrl(url) }
+    TonalButton(onClick = open, modifier = modifier.externalLink(open), enabled = enabled) {
         Text(text = store, style = MaterialTheme.typography.subtitle1)
         if (image != null) {
             Spacer(Modifier.width(Dimens.small))

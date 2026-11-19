@@ -5,6 +5,29 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.27.0 — 2026-11-19
+
+### Android, iOS, and Web
+
+- The app's fonts are about an eighth of their former size. On the Web, a first visit downloads about 175 KB less
+  and opens sooner on slow connections. The fonts now cover English and Spanish. Other letters, such as Polish or
+  Japanese ones, appear in a fallback font.
+
+### Web
+
+- On Windows, a middle click on a page that scrolls starts autoscrolling, as on other websites. Move the mouse up or
+  down from the marker to scroll, faster the farther you go. A click, Esc, or the mouse wheel stops it. If you hold
+  the middle button while moving, releasing it stops autoscrolling.
+- A middle click or Ctrl-click (⌘-click on a Mac) opens more links in a new tab: the game named under a DLC's or
+  remaster's title, a game's versions, the profile and search buttons, Explore games, Open Releases, and Open News.
+  A middle click also opens store, giveaway, community, and data-source links in a new tab.
+- When the server can't be reached, for example while offline, Home and other screens say so and offer Retry
+  instead of loading forever.
+
+### Website and documentation
+
+- braindancegg.com's latest updates are refreshed.
+
 ## 0.26.1 — 2026-11-19
 
 ### Web

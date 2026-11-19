@@ -52,7 +52,17 @@ suspend fun <T> safeCall(block: suspend () -> T): Outcome<T> =
         if (e.isTimeout()) Outcome.Failure(DataError.Timeout, e) else throw e
     } catch (e: Exception) {
         Outcome.Failure(e.toDataError(), e)
+    } catch (e: Error) {
+        // Any other Error is a programming or runtime fault, not a failed request.
+        if (e.isEngineFetchFailure()) Outcome.Failure(DataError.Network, e) else throw e
     }
+
+/**
+ * True when the HTTP engine reports a request that never got a response as an [Error] instead of an [Exception].
+ * Ktor's browser engine does this when `fetch` rejects (offline, DNS failure, a blocked or CORS-rejected request), so
+ * catching only [Exception] would let the failure escape the caller and leave its screen loading.
+ */
+internal expect fun Throwable.isEngineFetchFailure(): Boolean
 
 /** Maps a successful value, keeping a failure as it is. */
 inline fun <T, R> Outcome<T>.map(transform: (T) -> R): Outcome<R> =

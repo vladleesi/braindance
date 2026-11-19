@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.allPluralStringResources
 import dev.vladleesi.braindanceapp.resources.allStringResources
+import dev.vladleesi.braindanceapp.ui.components.PageAutoscrollHost
 import dev.vladleesi.braindanceapp.ui.style.AppFonts
 import dev.vladleesi.braindanceapp.utils.WebPrefetchScheduler
 import dev.vladleesi.braindanceapp.utils.WebResourceReader
@@ -31,8 +32,8 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * Hosts [content] in the Web app: it reads resources with [WebResourceReader], runs lazy layouts' prefetching with
- * [WebPrefetchScheduler], opens links with [WebUriHandler], and shows [content] only once its fonts and strings are
- * loaded.
+ * [WebPrefetchScheduler], opens links with [WebUriHandler], adds middle-click autoscrolling with [PageAutoscrollHost],
+ * and shows [content] only once its fonts and strings are loaded.
  *
  * On the Web, Compose loads fonts and strings asynchronously and draws empty text, then text in a fallback font, until
  * they arrive. The page's loading screen (`#boot` in index.html) therefore stays up until every string and the
@@ -48,7 +49,7 @@ fun WebAppHost(content: @Composable () -> Unit) {
         LocalUriHandler provides WebUriHandler,
     ) {
         if (rememberStartupResourcesLoaded()) {
-            content()
+            PageAutoscrollHost(content)
             // Runs once this composition is applied. Compose draws it in the same animation frame, before the browser
             // paints, so that paint shows the content without the loading screen.
             SideEffect(::removeLoadingScreen)

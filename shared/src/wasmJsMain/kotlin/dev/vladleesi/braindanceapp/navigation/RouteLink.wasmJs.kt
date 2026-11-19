@@ -6,6 +6,7 @@ package dev.vladleesi.braindanceapp.navigation
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -60,32 +61,58 @@ internal fun linkPress(
  * example, a background tab for a middle click in Chrome), and consumes the release so the element's click handler
  * does not also navigate.
  */
-internal actual fun Modifier.browserLink(path: String): Modifier = pointerInput(path) { handleLinkPresses(path) }
+internal actual fun Modifier.browserLink(
+    path: String,
+    contains: ((Offset) -> Boolean)?,
+): Modifier =
+    pointerInput(path, contains) {
+        handleLinkPresses(contains, middleClickOnly = false) { openInNewTab(webAddress(path)) }
+    }
 
-private suspend fun PointerInputScope.handleLinkPresses(path: String) {
+// A click on an external link already opens a new tab through WebUriHandler, so only the middle click needs adding.
+actual fun Modifier.externalLink(open: () -> Unit): Modifier =
+    pointerInput(open) { handleLinkPresses(contains = null, middleClickOnly = true, openInNewTab = open) }
+
+private suspend fun PointerInputScope.handleLinkPresses(
+    contains: ((Offset) -> Boolean)?,
+    middleClickOnly: Boolean,
+    openInNewTab: () -> Unit,
+) {
     awaitEachGesture {
         // The initial pass runs before the element's own click handler, which listens in the main pass.
         val press = awaitPointerEvent(PointerEventPass.Initial)
-        if (press.type != PointerEventType.Press || press.changes.first().type != PointerType.Mouse) {
-            return@awaitEachGesture
-        }
-        when (press.linkPress()) {
+        val change = press.changes.first()
+        if (press.type != PointerEventType.Press || change.type != PointerType.Mouse) return@awaitEachGesture
+        if (contains != null && !contains(change.position)) return@awaitEachGesture
+        val middle = press.buttons.isTertiaryPressed
+        val action = if (middleClickOnly && !middle) LinkPress.Activate else press.linkPress()
+        when (action) {
             LinkPress.Activate -> Unit
-            LinkPress.Ignore -> consumeRelease(press)
-            LinkPress.OpenInNewTab -> if (consumeRelease(press)) openInNewTab(webAddress(path))
+            LinkPress.Ignore -> consumeRelease(press, contains)
+            LinkPress.OpenInNewTab -> {
+                // A middle press on a link belongs to the link, so the page's autoscroll (PageAutoscroll) leaves it.
+                if (middle) change.consume()
+                if (consumeRelease(press, contains)) openInNewTab()
+            }
         }
     }
 }
 
-/** Waits for the press's pointer to be released and consumes the release; returns whether it was over this element. */
-private suspend fun AwaitPointerEventScope.consumeRelease(press: PointerEvent): Boolean {
+/**
+ * Waits for the press's pointer to be released and consumes the release; returns whether it was over this element
+ * and, with [contains], over the link.
+ */
+private suspend fun AwaitPointerEventScope.consumeRelease(
+    press: PointerEvent,
+    contains: ((Offset) -> Boolean)?,
+): Boolean {
     val pointer = press.changes.first().id
     while (true) {
         val event = awaitPointerEvent(PointerEventPass.Initial)
         val change = event.changes.firstOrNull { it.id == pointer } ?: return false
         if (!change.pressed) {
             change.consume()
-            return !change.isOutOfBounds(size, extendedTouchPadding)
+            return !change.isOutOfBounds(size, extendedTouchPadding) && contains?.invoke(change.position) != false
         }
     }
 }

@@ -3,6 +3,7 @@
 package dev.vladleesi.braindanceapp.data.api
 
 import dev.vladleesi.braindanceapp.data.config.ApiConfig
+import dev.vladleesi.braindanceapp.data.isEngineFetchFailure
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.retry
 import io.ktor.client.request.prepareGet
@@ -32,6 +33,8 @@ internal fun warmUpBackend(client: () -> HttpClient) {
                 throw e
             } catch (_: Exception) {
                 // Best effort only; normal requests and UI readiness are independent of this request.
+            } catch (e: Error) {
+                if (!e.isEngineFetchFailure()) throw e
             }
         }.invokeOnCompletion { scope.cancel() }
 }

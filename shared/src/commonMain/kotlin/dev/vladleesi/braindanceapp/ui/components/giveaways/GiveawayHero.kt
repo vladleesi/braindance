@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import dev.vladleesi.braindanceapp.navigation.externalLink
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.giveaway_details_ended
 import dev.vladleesi.braindanceapp.resources.giveaway_details_ended_action
@@ -155,7 +156,8 @@ private fun HeroText(
                 modifier =
                     Modifier
                         .padding(top = Dimens.compact)
-                        .then(if (expanded) Modifier else Modifier.fillMaxWidth()),
+                        .then(if (expanded) Modifier else Modifier.fillMaxWidth())
+                        .then(onGetGiveaway?.takeUnless { ended }?.let { Modifier.externalLink(it) } ?: Modifier),
             )
         }
     }

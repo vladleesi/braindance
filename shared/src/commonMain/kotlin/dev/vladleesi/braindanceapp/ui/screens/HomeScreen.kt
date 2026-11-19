@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.routeLink
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
@@ -339,6 +340,7 @@ private fun LazyListScope.homePreviewCards(
             modifier = cardModifier,
             link = Res.string.home_open_releases,
             onLinkClick = onOpenReleases,
+            linkRoute = BottomBarRoute.ReleasesRoute,
         )
     }
     item {
@@ -348,6 +350,7 @@ private fun LazyListScope.homePreviewCards(
             modifier = cardModifier,
             link = Res.string.home_open_news,
             onLinkClick = onOpenNews,
+            linkRoute = BottomBarRoute.NewsRoute,
         )
     }
     item {
@@ -359,7 +362,10 @@ private fun LazyListScope.homePreviewCards(
     }
 }
 
-/** A planned Home section; [link], when given, opens the destination that will host it through [onLinkClick]. */
+/**
+ * A planned Home section; [link], when given, opens the destination that will host it through [onLinkClick], and
+ * [linkRoute] is that destination's route, so the link also opens in a new browser tab.
+ */
 @Composable
 private fun HomePreviewCard(
     title: StringResource,
@@ -367,6 +373,7 @@ private fun HomePreviewCard(
     modifier: Modifier = Modifier,
     link: StringResource? = null,
     onLinkClick: (() -> Unit)? = null,
+    linkRoute: NavKey? = null,
 ) {
     ComingSoonCard(
         title = stringResource(title),
@@ -375,7 +382,10 @@ private fun HomePreviewCard(
         action =
             if (link != null && onLinkClick != null) {
                 {
-                    TextButton(onClick = onLinkClick) {
+                    TextButton(
+                        onClick = onLinkClick,
+                        modifier = linkRoute?.let { Modifier.routeLink(it) } ?: Modifier,
+                    ) {
                         Text(stringResource(link), color = white)
                     }
                 }

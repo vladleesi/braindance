@@ -28,9 +28,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
@@ -38,7 +40,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.data.models.games.GameKind
+import dev.vladleesi.braindanceapp.navigation.routeLink
+import dev.vladleesi.braindanceapp.navigation.routeTextLink
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.game_details_related
@@ -113,28 +118,53 @@ fun OriginLine(
                 focusedStyle = SpanStyle(color = accent, textDecoration = TextDecoration.Underline),
             )
         }
+    // The name is found in the formatted sentence, so translations may place it anywhere.
+    val nameStart = sentence.lastIndexOf(origin.gameName)
+    val nameRange = if (nameStart < 0) null else nameStart until nameStart + origin.gameName.length
     val text =
         remember(sentence, origin) {
-            // The name is found in the formatted sentence, so translations may place it anywhere.
-            val start = sentence.lastIndexOf(origin.gameName)
             buildAnnotatedString {
-                if (start < 0) {
+                if (nameRange == null) {
                     append(sentence)
                 } else {
-                    append(sentence.substring(0, start))
+                    append(sentence.substring(0, nameRange.first))
                     val link = LinkAnnotation.Clickable(tag = "game", styles = linkStyles) { openGame(origin.gameId) }
                     withLink(link) { append(origin.gameName) }
-                    append(sentence.substring(start + origin.gameName.length))
+                    append(sentence.substring(nameRange.last + 1))
                 }
             }
         }
-    Text(text = text, style = MaterialTheme.typography.subtitle1, color = secondaryText, modifier = modifier)
+    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    val linkModifier =
+        nameRange?.let { range ->
+            Modifier.routeTextLink(
+                GameDetailsRoute(origin.gameId),
+            ) { position -> layout?.hits(position, range) == true }
+        } ?: Modifier
+    Text(
+        text = text,
+        style = MaterialTheme.typography.subtitle1,
+        color = secondaryText,
+        onTextLayout = { layout = it },
+        modifier = modifier.then(linkModifier),
+    )
+}
+
+/** Whether [position] is over one of the characters in [range]. */
+internal fun TextLayoutResult.hits(
+    position: Offset,
+    range: IntRange,
+): Boolean {
+    // The offset nearest to the position is a caret position, so the character before it may be the one hit.
+    val offset = getOffsetForPosition(position)
+    return (offset - 1..offset).any { index -> index in range && getBoundingBox(index).contains(position) }
 }
 
 /**
  * The game's versions as one row of chips: the base game and its editions and updates. The selected chip is the
  * version the page shows, marked by a check, an accent outline, and the selected state for screen readers; the line
- * under the chips says what kind of version it is. Every other chip opens its version, so each keeps its own address.
+ * under the chips says what kind of version it is. Every other chip opens its version, which has its own address:
+ * [versionRoute] of the version's ID. On the Web, a middle click or Ctrl-click opens that address in a new tab.
  *
  * In a [compact] layout, more than two versions collapse to the selected one and a chip that shows the rest, so the
  * row stays one line on a phone; wide layouts show up to [WIDE_SHOWN_CHOICES] before collapsing.
@@ -145,6 +175,7 @@ fun GameVersionSelector(
     selector: VersionSelector,
     compact: Boolean,
     onSelect: (Int) -> Unit,
+    versionRoute: (Int) -> NavKey,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Dimens.small)) {
@@ -163,6 +194,7 @@ fun GameVersionSelector(
                 text = option.text(),
                 selected = selected,
                 onClick = { if (!selected) onSelect(option.id) },
+                modifier = Modifier.routeLink(versionRoute(option.id)),
             )
         }
         // What the selected version is; its release date is the page's, shown under the title.
@@ -368,8 +400,18 @@ internal fun GameRelationsPreview() {
                 origin = GameOrigin(GameKind.EXPANSION, OriginRelation.FOR, gameId = 1, gameName = "Sample Game"),
                 onOpenGame = {},
             )
-            GameVersionSelector(selector = PreviewSelector, compact = true, onSelect = {})
-            GameVersionSelector(selector = PreviewSelector, compact = false, onSelect = {})
+            GameVersionSelector(
+                selector = PreviewSelector,
+                compact = true,
+                onSelect = {},
+                versionRoute = ::GameDetailsRoute,
+            )
+            GameVersionSelector(
+                selector = PreviewSelector,
+                compact = false,
+                onSelect = {},
+                versionRoute = ::GameDetailsRoute,
+            )
             RelatedHeader(groups = PreviewRelated, selected = RelatedCategory.EXTRAS, compact = true, onSelect = {})
             PreviewRelated.first().games.forEach { game -> RelatedGameRow(game = game, onClick = {}) }
         }

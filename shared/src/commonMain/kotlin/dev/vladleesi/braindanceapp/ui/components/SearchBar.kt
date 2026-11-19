@@ -38,6 +38,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.vladleesi.braindanceapp.navigation.routeLink
+import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.discover_search_placeholder
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
@@ -160,7 +162,11 @@ fun SearchAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    IconButton(onClick = onClick, modifier = modifier.pointerHoverIcon(PointerIcon.Hand)) {
+    // Search lives on Discover, so the action links to it.
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.pointerHoverIcon(PointerIcon.Hand).routeLink(BottomBarRoute.DiscoverRoute),
+    ) {
         Icon(
             imageVector = Search,
             contentDescription = stringResource(Res.string.discover_search_placeholder),

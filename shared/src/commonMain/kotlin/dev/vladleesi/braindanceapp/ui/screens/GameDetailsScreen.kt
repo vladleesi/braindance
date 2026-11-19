@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.ShareTarget
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
@@ -202,6 +203,7 @@ private fun GameDetailsScreen(
                 compact = !isLargeWindow,
                 gutter = gutter,
                 onSelect = selectVersion,
+                versionRoute = route::withVersion,
             )
             releaseItems(state.gameDetails, gutter, placeholder = loadingRelease)
             relatedItems(
@@ -317,6 +319,7 @@ private fun LazyListScope.versionSelectorItem(
     compact: Boolean,
     gutter: Dp,
     onSelect: (Int) -> Unit,
+    versionRoute: (Int) -> NavKey,
 ) {
     selector ?: return
     item(key = VERSIONS_KEY) {
@@ -324,6 +327,7 @@ private fun LazyListScope.versionSelectorItem(
             selector = selector,
             compact = compact,
             onSelect = onSelect,
+            versionRoute = versionRoute,
             modifier = Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth),
         )
     }

@@ -43,8 +43,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.routeLink
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
@@ -344,7 +346,12 @@ private fun DesktopHero(
                 color = secondaryText,
             )
             Spacer(Modifier.height(Dimens.tiny))
-            PrimaryButton(text = stringResource(Res.string.desktop_hero_action), onClick = onExploreClick)
+            PrimaryButton(
+                text = stringResource(Res.string.desktop_hero_action),
+                onClick = onExploreClick,
+                // Exploring starts on Discover, so the button links to it.
+                modifier = Modifier.routeLink(BottomBarRoute.DiscoverRoute),
+            )
         }
     }
 }
@@ -362,6 +369,7 @@ private fun DesktopContextColumn(
             description = stringResource(Res.string.home_upcoming_releases_description),
             link = Res.string.home_open_releases,
             onLinkClick = onOpenReleases,
+            linkRoute = BottomBarRoute.ReleasesRoute,
         )
         ContextCard(
             imageVector = Star,
@@ -371,7 +379,10 @@ private fun DesktopContextColumn(
     }
 }
 
-/** A planned feature in the context column; [link], when given, opens the destination that will host it. */
+/**
+ * A planned feature in the context column; [link], when given, opens the destination that will host it, whose route is
+ * [linkRoute].
+ */
 @Composable
 private fun ContextCard(
     imageVector: ImageVector,
@@ -379,6 +390,7 @@ private fun ContextCard(
     description: String,
     link: StringResource? = null,
     onLinkClick: (() -> Unit)? = null,
+    linkRoute: NavKey? = null,
 ) {
     SurfaceCard(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -402,7 +414,11 @@ private fun ContextCard(
             )
             Text(text = description, style = MaterialTheme.typography.caption, color = secondaryText)
             if (link != null && onLinkClick != null) {
-                OutlineButton(text = stringResource(link), onClick = onLinkClick)
+                OutlineButton(
+                    text = stringResource(link),
+                    onClick = onLinkClick,
+                    modifier = linkRoute?.let { Modifier.routeLink(it) } ?: Modifier,
+                )
             }
         }
     }
@@ -423,6 +439,7 @@ private fun DesktopPreviewGrid(
                     description = Res.string.home_upcoming_releases_description,
                     link = Res.string.home_open_releases,
                     onLinkClick = onOpenReleases,
+                    linkRoute = BottomBarRoute.ReleasesRoute,
                     modifier = previewCell(),
                 )
                 PreviewCard(
@@ -438,6 +455,7 @@ private fun DesktopPreviewGrid(
                 description = Res.string.home_latest_news_description,
                 link = Res.string.home_open_news,
                 onLinkClick = onOpenNews,
+                linkRoute = BottomBarRoute.NewsRoute,
                 modifier = previewCell(),
             )
             PreviewCard(
@@ -468,6 +486,7 @@ private fun PreviewCard(
     modifier: Modifier = Modifier,
     link: StringResource? = null,
     onLinkClick: (() -> Unit)? = null,
+    linkRoute: NavKey? = null,
 ) {
     ComingSoonCard(
         title = title,
@@ -476,7 +495,11 @@ private fun PreviewCard(
         action =
             if (link != null && onLinkClick != null) {
                 {
-                    OutlineButton(text = stringResource(link), onClick = onLinkClick)
+                    OutlineButton(
+                        text = stringResource(link),
+                        onClick = onLinkClick,
+                        modifier = linkRoute?.let { Modifier.routeLink(it) } ?: Modifier,
+                    )
                 }
             } else {
                 null

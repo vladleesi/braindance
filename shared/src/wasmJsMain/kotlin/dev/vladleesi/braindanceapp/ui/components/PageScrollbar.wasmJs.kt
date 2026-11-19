@@ -87,6 +87,8 @@ private val PageScrollbarStyle =
 
 @Composable
 internal actual fun BoxScope.PageScrollbar(state: ScrollableState) {
+    // Middle-click autoscrolling works in every layout, wherever a mouse is used.
+    PageAutoscrollTarget(state)
     if (desktopLayout() == null) return
 
     val canScroll by remember(state) {

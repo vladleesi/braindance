@@ -221,16 +221,26 @@ The Web app draws every screen into one canvas with Compose. `WebAppHost` (`shar
   check that it still compiles and that scrolling a long grid keeps wheel handling short, and remove it once Compose
   Web schedules prefetching itself.
 - **Links:** apply `Modifier.routeLink(route)` to anything that opens a screen (cards use it through
-  `cardClickable`). On the Web, a middle click, Ctrl-click (⌘-click on Apple systems), or Shift-click opens the
-  route's address with `window.open`, so the browser chooses the tab or window as for a real link. Elsewhere it does
-  nothing. Inline text links (`LinkAnnotation`) do not get this behavior.
+  `cardClickable`), including buttons such as "Open Releases" and chips such as a game's versions. On the Web, a
+  middle click, Ctrl-click (⌘-click on Apple systems), or Shift-click opens the route's address with `window.open`,
+  so the browser chooses the tab or window as for a real link. Elsewhere it does nothing. For a link inside a text,
+  such as a `LinkAnnotation` span, apply `Modifier.routeTextLink(route) { position -> ... }` to the text, with a
+  check of whether the position is over the link (`TextLayoutResult.hits` in `GameRelations.kt`).
 - **External links:** `WebUriHandler` opens pages in a new tab with `noopener` and `mailto:` addresses from the
-  current tab.
+  current tab. Give elements that open them `Modifier.externalLink(open)` with the same action as their click, so a
+  middle click opens them too.
+- **Autoscrolling:** on Windows, a middle press that no link takes, over a page that can scroll, starts the
+  browser-style autoscroll (`PageAutoscrollHost`). A marker appears at the press point, and the page scrolls faster
+  the farther the pointer moves from it. After a click, autoscrolling continues until the next click, Esc, a wheel
+  scroll, or the window losing focus. That click does nothing else. A press that moves past the dead zone scrolls
+  only until it is released. Pages take part through `PageScrollbar(state)`, so a new scrolling screen needs only
+  that call. Autoscrolling moves the page's own vertical scroll, not horizontal rows inside it. Only Windows gets it:
+  macOS has no such convention, and Linux pastes on a middle click.
 
-Some browser behavior is out of reach while Compose draws into a canvas: middle-click autoscrolling needs a scrollable
-page element, so it does not start; a right click shows no browser menu, because the browser offers its link menu
-only over a real link element, and Compose has no link role for elements to place one for (Compose blocks the menu on
-its canvas); text is selectable only inside Compose selection containers; and a mouse wheel
+Some browser behavior is out of reach while Compose draws into a canvas: a right click shows no browser menu, because
+the browser offers its link menu only over a real link element, and Compose has no link role for elements to place
+one for (Compose blocks the menu on its canvas); for the same reason, hovering a link shows no address in the
+browser's status area; text is selectable only inside Compose selection containers; and a mouse wheel
 moves lists by the distance the browser reports in its wheel events, which Compose converts without a setting for
 the app to tune, so one notch can move a list less than the same browser scrolls a page.
 

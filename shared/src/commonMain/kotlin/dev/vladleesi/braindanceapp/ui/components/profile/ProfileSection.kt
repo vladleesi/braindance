@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.vladleesi.braindanceapp.navigation.externalLink
 import dev.vladleesi.braindanceapp.ui.components.SurfaceCard
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -109,6 +110,7 @@ fun ProfileLinkRow(
                 .heightIn(min = RowMinHeight)
                 .focusRing(interactionSource.isFocusVisible(), RectangleShape)
                 .pointerHoverIcon(PointerIcon.Hand)
+                .then(if (opensExternally) Modifier.externalLink(onClick) else Modifier)
                 .clickable(
                     interactionSource = interactionSource,
                     indication = LocalIndication.current,
