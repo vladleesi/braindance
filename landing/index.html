@@ -210,31 +210,22 @@
     /* Every other section sits on the deeper ink, with the hero's dot grid fading in from the top right. */
     .sec.alt { background-color: var(--deep); background-image: linear-gradient(200deg, transparent, var(--deep) 45%), radial-gradient(var(--line-2) 1px, transparent 1.5px); background-size: auto, 28px 28px; }
 
-    /* 01 Features: four features as short titles in ruled columns, each opened by a short bar in the trail's colors.
-       The platforms sit in the section head as a plain list in rollout order: a dot and text, with no border or fill,
-       so a status does not read as a button. Cyan dot: available; magenta: next; open: later. */
-    .today { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
-    .today li { padding: 28px 28px 32px 0; }
-    .today li + li { padding-left: 28px; border-left: 1px solid var(--line); }
-    .today li::before { content: ""; display: block; width: 28px; height: 3px; margin-bottom: 22px; background: var(--bar, var(--cyan)); transition: width .2s ease; }
-    .today li:nth-child(2) { --bar: var(--magenta); }
-    .today li:nth-child(3) { --bar: var(--yellow); }
-    .today li:nth-child(4) { --bar: var(--ink); }
-    .today li:hover::before { width: 56px; }
-    .today .label { color: var(--muted); margin-bottom: 10px; }
-    .today p:not(.label) { margin-top: 8px; color: var(--muted); }
+    /* 01 Roadmap, platforms: the rollout steps sit in the section head as a plain numbered list in rollout order, with no
+       border or fill, so a status does not read as a button. Cyan number: available; magenta: the current step, matching
+       the current milestone below; outlined: later. */
     .avail { max-width: 32rem; }
     .avail .label { color: var(--muted); margin-bottom: 8px; }
-    .avail ul { list-style: none; margin: 0; padding: 0; }
-    .avail li { display: grid; grid-template-columns: 10px minmax(0, 6.5em) minmax(0, 1fr); align-items: center; column-gap: 14px; padding: 9px 0; border-top: 1px solid var(--line); }
-    .avail li::before { content: ""; width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--muted); }
-    .avail .live::before { background: var(--cyan); box-shadow: none; }
-    .avail .next::before { background: var(--magenta); box-shadow: none; }
+    .avail ol { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+    .avail li { counter-increment: step; display: grid; grid-template-columns: 22px minmax(0, 6.5em) minmax(0, 1fr); align-items: center; column-gap: 14px; padding: 9px 0; border-top: 1px solid var(--line); }
+    .avail li::before { content: counter(step); display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font-size: .72rem; font-weight: 600; line-height: 1; color: var(--muted); box-shadow: inset 0 0 0 1.5px var(--muted); }
+    .avail .live::before { background: var(--cyan); color: var(--void); box-shadow: none; }
+    .avail .next::before { background: var(--magenta); color: var(--void); box-shadow: none; }
     .avail b { font-weight: 600; }
     .avail span { color: var(--muted); }
     .avail .live span { color: var(--cyan); }
+    .avail .next span { color: var(--magenta); }
 
-    /* 02 Roadmap: milestones on a dashed timeline. The current one has the pulsing dot and the brightest text, a hairline
+    /* 01 Roadmap, milestones: milestones on a dashed timeline. The current one has the pulsing dot and the brightest text, a hairline
        parts each milestone from the next, features sit in two aligned columns, and the release target sits apart in its
        own panel. */
     .road { --ms: clamp(1.35rem, 2.4vw, 2rem); --node: calc(var(--ms) * .55); --space: clamp(28px, 3.2vw, 40px); --rail: 44px; list-style: none; margin: 0; padding: 0; }
@@ -261,7 +252,7 @@
     .target h3 { font-size: clamp(1.6rem, 3vw, 2.5rem); line-height: 1.1; letter-spacing: -.035em; font-weight: 700; text-wrap: balance; }
     .target-note { margin-top: 14px; color: var(--muted); max-width: 36em; }
 
-    /* 03 Updates: the latest few changelog highlights, the newest dated in cyan. */
+    /* 02 Updates: the latest few changelog highlights, the newest dated in cyan. */
     .log { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-2); }
     .log li { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 8fr); column-gap: 24px; row-gap: 8px; padding: 24px 0; border-bottom: 1px solid var(--line); }
     .log .label { color: var(--muted); padding-top: .35em; }
@@ -269,7 +260,7 @@
     .log h3 { margin-bottom: 6px; }
     .log div p { color: var(--muted); }
 
-    /* 04 Community: Discord and Reddit in two ruled columns; X, Bluesky and Threads as small outlined buttons below. */
+    /* 03 Community: Discord and Reddit in two ruled columns; X, Bluesky and Threads as small outlined buttons below. */
     .hubs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
     .hubs article { display: flex; flex-direction: column; align-items: flex-start; padding: 28px 28px 32px 0; }
     .hubs article + article { padding-left: 28px; border-left: 1px solid var(--line); }
@@ -288,7 +279,7 @@
     .brand-x, .brand-threads { color: var(--ink); }
     .elsewhere { margin-top: 20px; color: var(--muted); max-width: 52em; }
 
-    /* 05 FAQ */
+    /* 04 FAQ */
     details { border-bottom: 1px solid var(--line); }
     details:first-of-type { border-top: 1px solid var(--line-2); }
     summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 24px; align-items: baseline; padding: 22px 0; font-weight: 600; font-size: clamp(1.05rem, 1.6vw, 1.3rem); letter-spacing: -.02em; }
@@ -333,10 +324,6 @@
       .split, .sec-head, .foot { grid-template-columns: minmax(0, 1fr); }
       .rail { position: static; }
       .hero-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 32px; align-items: center; }
-      .today { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .today li, .today li + li { padding: 24px 24px 28px 0; border-left: 0; }
-      .today li:nth-child(even) { padding-left: 24px; padding-right: 0; border-left: 1px solid var(--line); }
-      .today li:nth-child(n+3) { border-top: 1px solid var(--line); }
       .reel { --h: 140px; }
       .road > li { grid-template-columns: minmax(0, 1fr); }
       .road ul { padding-top: 0; }
@@ -358,18 +345,13 @@
       .hubs .btn { align-self: stretch; }
     }
     @media (max-width: 560px) {
-      .today li, .today li + li { padding: 20px 16px 24px 0; }
-      .today li:nth-child(even) { padding-left: 16px; padding-right: 0; }
-      .today li::before { margin-bottom: 16px; }
-      .today h3 { font-size: 1.1rem; }
-      .today p:not(.label) { font-size: .9rem; }
       .road ul { grid-template-columns: minmax(0, 1fr); }
     }
     .paused .reel-track, .paused .marquee-track { animation-play-state: paused; }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .dot, .reel-track, .marquee-track, .road > .now::before { animation: none; }
-      .btn, .today li::before { transition: none; }
+      .btn { transition: none; }
       .btn-primary:hover, .btn-primary:focus-visible { transform: none; }
     }
   </style>
@@ -422,10 +404,12 @@
         "publisher": { "@id": "https://braindancegg.com/#organization" },
         "featureList": [
           "Popular and upcoming games",
-          "Game details and similar games",
-          "Game search",
-          "Game giveaways",
-          "Links to games, giveaways, and lists"
+          "Game details",
+          "Editions, updates, and DLC",
+          "Similar games",
+          "Game search, with results as you type",
+          "Game giveaways and how to claim them",
+          "Sharing links to games, giveaways, and lists"
         ]
       },
       {
@@ -433,7 +417,7 @@
         "mainEntity": [
           { "@type": "Question", "name": "What is Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "It's an app for finding your next game. You can see what's popular and what's coming out, look up games similar to ones you like, and keep an eye on free game giveaways." } },
           { "@type": "Question", "name": "When will Braindance be released?", "acceptedAnswer": { "@type": "Answer", "text": "Braindance is still in development. Version 1.0 is planned for Q2 2027, but that's a target, not a fixed date, and work continues after it. You can already use the web app at app.braindancegg.com as an experimental version." } },
-          { "@type": "Question", "name": "Can I use Braindance on my phone?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The web app works in an up-to-date Chrome, Edge, Firefox or Safari, on a phone or a computer. Older browser versions can't run it. The Android and iOS apps already work too. Android alpha testing through Firebase App Distribution comes next, and iOS testing after that." } },
+          { "@type": "Question", "name": "Can I use Braindance on my phone?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The web app works in an up-to-date Chrome, Edge, Firefox or Safari, on a phone or a computer. Older browser versions can't run it. It is still an experimental version. The Android and iOS apps already work too. Android alpha testing through Firebase App Distribution comes next, and iOS testing after that." } },
           { "@type": "Question", "name": "Where does the game and giveaway data come from?", "acceptedAnswer": { "@type": "Answer", "text": "Game data is powered by IGDB, and giveaways come from GamerPower." } },
           { "@type": "Question", "name": "Is Braindance open source?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Android, iOS and Web apps are open source under the MPL-2.0 license, and their code is on GitHub." } },
           { "@type": "Question", "name": "How can I help improve Braindance?", "acceptedAnswer": { "@type": "Answer", "text": "Join the Braindance Discord or r/BraindanceGG on Reddit to try early versions, share feedback and suggest features. You don't need any technical knowledge. You can also report bugs on GitHub, and developers are welcome to contribute code." } }
@@ -466,7 +450,6 @@
     <div class="wrap bar">
       <a class="brand" href="/" aria-label="Braindance home"><img src="/wordmark.svg" alt="Braindance" width="152" height="44"></a>
       <nav class="links label" aria-label="Primary">
-        <a href="#features">Features</a>
         <a href="#roadmap">Roadmap</a>
         <a href="#community">Community</a>
         <a href="#faq">FAQ</a>
@@ -481,7 +464,6 @@
     <div class="mobile-menu" id="mobile-menu" hidden>
       <div class="wrap">
         <ul>
-          <li><a href="#features">Features</a></li>
           <li><a href="#roadmap">Roadmap</a></li>
           <li><a href="#updates">Updates</a></li>
           <li><a href="#community">Community</a></li>
@@ -510,7 +492,7 @@
               Join the Discord
             </a>
           </div>
-          <p class="fine">You can use it in your browser right now. Android alpha testing comes next, then iOS.</p>
+          <p class="fine">You can use the experimental web app in your browser right now. Android alpha testing comes next, then iOS.</p>
         </div>
         <div class="reel" aria-hidden="true">
           <div class="reel-row"><div class="reel-track a"></div></div>
@@ -520,51 +502,42 @@
       </div>
     </div>
 
-    <section class="sec" id="features" aria-labelledby="features-title">
-      <div class="wrap">
-        <div class="sec-head">
-          <p class="num label"><span>01</span><i>Features</i></p>
-          <h2 id="features-title">What you can try today</h2>
-          <!-- Platforms in rollout order. When a status changes, update the item's class (live for available, next for
-               the upcoming one, none for later) and its status text. -->
-          <div class="avail">
-            <p class="label" id="platforms-title">One app, every platform</p>
-            <ul aria-labelledby="platforms-title">
-              <li class="live"><b>Web</b> <span>Available now</span></li>
-              <li class="next"><b>Android</b> <span>Alpha testing next</span></li>
-              <li><b>iOS</b> <span>After Android</span></li>
-            </ul>
-          </div>
-        </div>
-        <ul class="today">
-          <li><p class="label">Browse</p><h3>Popular and upcoming games</h3><p>What people are playing now, and what's coming soon.</p></li>
-          <li><p class="label">Explore</p><h3>Game details and similar games</h3><p>Release dates, platforms, store links, editions, and DLC.</p></li>
-          <li><p class="label">Search</p><h3>Game search</h3><p>Start typing a title and results show up as you go.</p></li>
-          <li><p class="label">Claim</p><h3>Game giveaways</h3><p>Free games you can grab right now, and how to claim them.</p></li>
-          <li><p class="label">Share</p><h3>Links to games, giveaways, and lists</h3><p>Send a friend a link to a game or a giveaway, or to a whole list.</p></li>
-        </ul>
-      </div>
-    </section>
-
     <section class="sec alt" id="roadmap" aria-labelledby="roadmap-title">
       <div class="wrap">
         <div class="sec-head">
-          <p class="num label"><span>02</span><i>Roadmap</i></p>
-          <h2 id="roadmap-title">What comes next</h2>
+          <p class="num label"><span>01</span><i>Roadmap</i></p>
+          <h2 id="roadmap-title">What it does and what comes next</h2>
+          <!-- Platforms in rollout order; the current step is the one the current milestone is building toward. When a
+               status changes, update the item's class (live for available, next for the current step, none for later)
+               and its status text. -->
+          <div class="avail">
+            <p class="label" id="platforms-title">One app, every platform</p>
+            <ol aria-labelledby="platforms-title">
+              <li class="live"><b>Web</b> <span>Available now, experimental</span></li>
+              <li class="next"><b>Android</b> <span>Alpha testing next</span></li>
+              <li><b>iOS</b> <span>After Android</span></li>
+            </ol>
+          </div>
         </div>
         <!-- One <li> per milestone, in order, without dates or completion marks. The milestone being worked on gets
-             class="now" and "In progress"; the others say "Planned". Put "(optional)" in a note span. -->
+             class="now" and "In progress"; the others say "Planned". The first alpha lists every feature of the app,
+             finished or not. Put "(optional)" in a note span. -->
         <ol class="road">
           <li class="now">
             <div>
               <h3>First Alpha</h3>
-              <p class="state label">In progress</p>
+              <p class="state label">In progress &middot; You are here</p>
             </div>
             <ul>
+              <li>Popular and upcoming games</li>
               <li>Game compilations on Home</li>
-              <li>Game search</li>
               <li>Paginated game lists</li>
-              <li>Game sharing</li>
+              <li>Game details</li>
+              <li>Editions, updates, and DLC</li>
+              <li>Similar games</li>
+              <li>Game search, with results as you type</li>
+              <li>Game giveaways and how to claim them</li>
+              <li>Sharing links to games, giveaways, and lists</li>
               <li>Links to games on the web</li>
               <li>Links that open the Android and iOS apps</li>
               <li><span>Gaming events on Home <span class="note">(optional)</span></span></li>
@@ -627,7 +600,7 @@
     <section class="sec" id="updates" aria-labelledby="updates-title">
       <div class="wrap split">
         <div class="rail">
-          <p class="num label"><span>03</span><i>Updates</i></p>
+          <p class="num label"><span>02</span><i>Updates</i></p>
           <h2 id="updates-title">Recent updates</h2>
           <p class="sub">The latest changes, in short. The <a href="https://github.com/vladleesi/braindance/blob/master/CHANGELOG.md" rel="noopener" target="_blank">full changelog</a> has all of them.</p>
         </div>
@@ -661,7 +634,7 @@
     <section class="sec alt" id="community" aria-labelledby="community-title">
       <div class="wrap">
         <div class="sec-head">
-          <p class="num label"><span>04</span><i>Community</i></p>
+          <p class="num label"><span>03</span><i>Community</i></p>
           <h2 id="community-title">Help shape Braindance</h2>
           <p class="sub">Testing, feedback, feature ideas and plain game talk all happen on Discord and Reddit. Anyone can join, and you don't need to know anything technical.</p>
         </div>
@@ -694,14 +667,14 @@
     <section class="sec" id="faq" aria-labelledby="faq-title">
       <div class="wrap split">
         <div class="rail">
-          <p class="num label"><span>05</span><i>FAQ</i></p>
+          <p class="num label"><span>04</span><i>FAQ</i></p>
           <h2 id="faq-title">Frequently asked questions</h2>
           <p class="sub">Short answers about Braindance and where it stands.</p>
         </div>
         <div>
           <details><summary>What is Braindance?</summary><p>It's an app for finding your next game. You can see what's popular and what's coming out, look up games similar to ones you like, and keep an eye on free game giveaways.</p></details>
           <details><summary>When will Braindance be released?</summary><p>Braindance is still in development. Version 1.0 is planned for Q2 2027, but that's a target, not a fixed date, and work continues after it. You can already use the web app at <a href="https://app.braindancegg.com/" rel="noopener" target="_blank">app.braindancegg.com</a> as an experimental version.</p></details>
-          <details><summary>Can I use Braindance on my phone?</summary><p>Yes. The web app works in an up-to-date Chrome, Edge, Firefox or Safari, on a phone or a computer. Older browser versions can't run it. The Android and iOS apps already work too. Android alpha testing through Firebase App Distribution comes next, and iOS testing after that.</p></details>
+          <details><summary>Can I use Braindance on my phone?</summary><p>Yes. The web app works in an up-to-date Chrome, Edge, Firefox or Safari, on a phone or a computer. Older browser versions can't run it. It is still an experimental version. The Android and iOS apps already work too. Android alpha testing through Firebase App Distribution comes next, and iOS testing after that.</p></details>
           <details><summary>Where does the game and giveaway data come from?</summary><p>Game data is powered by <a href="https://www.igdb.com/" rel="noopener" target="_blank">IGDB</a>, and giveaways come from <a href="https://www.gamerpower.com/" rel="noopener" target="_blank">GamerPower</a>.</p></details>
           <details><summary>Is Braindance open source?</summary><p>Yes. The Android, iOS and Web apps are open source under the <a href="https://www.mozilla.org/MPL/2.0/" rel="noopener" target="_blank">MPL-2.0</a> license, and their code is on <a href="https://github.com/vladleesi/braindance" rel="noopener" target="_blank">GitHub</a>.</p></details>
           <details><summary>How can I help improve Braindance?</summary><p>Join the <a href="https://discord.gg/XawnYAVdzj" rel="noopener" target="_blank">Braindance Discord</a> or <a href="https://www.reddit.com/r/BraindanceGG/" rel="noopener" target="_blank">r/BraindanceGG</a> on Reddit to try early versions, share feedback and suggest features. You don't need any technical knowledge. You can also <a href="https://github.com/vladleesi/braindance/issues/new?template=bug_report.md" rel="noopener" target="_blank">report bugs</a> on GitHub, and developers are welcome to <a href="https://github.com/vladleesi/braindance/blob/master/CONTRIBUTING.md" rel="noopener" target="_blank">contribute code</a>.</p></details>

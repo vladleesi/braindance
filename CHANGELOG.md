@@ -27,6 +27,8 @@ The Braindance API is versioned and released separately.
 ### Website and documentation
 
 - braindancegg.com's latest updates are refreshed.
+- braindancegg.com combines Features and Roadmap into one Roadmap section. It shows the rollout steps for Web,
+  Android, and iOS at the top and lists every feature under the current First Alpha milestone.
 
 ## 0.26.1 — 2026-11-19
 
