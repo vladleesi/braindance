@@ -76,6 +76,7 @@ import dev.vladleesi.braindanceapp.resources.navigation_discover
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
+import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.PlaceholderChips
 import dev.vladleesi.braindanceapp.ui.components.SearchBar
 import dev.vladleesi.braindanceapp.ui.components.SearchFieldIcon
@@ -349,31 +350,34 @@ private fun DiscoverPlaceholders(
     scrollState: ScrollState,
     modifier: Modifier,
 ) {
-    Column(
-        modifier =
-            modifier
-                // While the keyboard is open, the content ends at its top edge and can still scroll clear of it.
-                .keyboardPadding()
-                .verticalScroll(scrollState)
-                .pageColumn(pageGutter())
-                .padding(top = Dimens.tiny, bottom = Dimens.large),
-        verticalArrangement = Arrangement.spacedBy(Dimens.medium),
-    ) {
-        PlaceholderChips(
-            labels =
-                listOf(
-                    stringResource(Res.string.discover_filter_platform),
-                    stringResource(Res.string.discover_filter_genre),
-                    stringResource(Res.string.discover_filter_release_date),
-                ),
-        )
-        ComingSoonCard(
-            title = stringResource(Res.string.discover_recommendations_title),
-            description = stringResource(Res.string.discover_recommendations_description),
-        )
-        ComingSoonCard(
-            title = stringResource(Res.string.discover_genres_title),
-            description = stringResource(Res.string.discover_genres_description),
-        )
+    // Keep the viewport above the keyboard so the content can scroll clear of it.
+    Box(modifier.keyboardPadding()) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .pageColumn(pageGutter())
+                    .padding(top = Dimens.tiny, bottom = Dimens.large),
+            verticalArrangement = Arrangement.spacedBy(Dimens.medium),
+        ) {
+            PlaceholderChips(
+                labels =
+                    listOf(
+                        stringResource(Res.string.discover_filter_platform),
+                        stringResource(Res.string.discover_filter_genre),
+                        stringResource(Res.string.discover_filter_release_date),
+                    ),
+            )
+            ComingSoonCard(
+                title = stringResource(Res.string.discover_recommendations_title),
+                description = stringResource(Res.string.discover_recommendations_description),
+            )
+            ComingSoonCard(
+                title = stringResource(Res.string.discover_genres_title),
+                description = stringResource(Res.string.discover_genres_description),
+            )
+        }
+        PageScrollbar(scrollState)
     }
 }

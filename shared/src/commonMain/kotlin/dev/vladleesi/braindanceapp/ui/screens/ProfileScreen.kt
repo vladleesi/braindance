@@ -55,6 +55,7 @@ import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.CommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.GAMERPOWER_NAME
 import dev.vladleesi.braindanceapp.ui.components.IGDB_NAME
+import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.SUPPORT_EMAIL
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
@@ -111,11 +112,12 @@ internal fun ProfileContent(
 ) {
     val gutter = pageGutter()
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val scrollState = rememberScrollState()
         Column(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .heightIn(min = maxHeight)
                     .padding(bottom = Dimens.medium),
             verticalArrangement = Arrangement.SpaceBetween,
@@ -152,6 +154,7 @@ internal fun ProfileContent(
                         .padding(top = Dimens.large),
             )
         }
+        PageScrollbar(scrollState)
     }
 }
 

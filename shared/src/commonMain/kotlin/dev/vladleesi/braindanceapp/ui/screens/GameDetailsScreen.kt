@@ -44,6 +44,7 @@ import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.CarouselSection
 import dev.vladleesi.braindanceapp.ui.components.ExpandableText
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
+import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.ShareButton
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TonalButton
@@ -219,6 +220,7 @@ private fun GameDetailsScreen(
             similarGamesItems(recommendations, gutter, onGameClick = openGame)
             item { Spacer(modifier = Modifier.size(Dimens.large)) }
         }
+        PageScrollbar(lazyListState)
         GameDetailsTopBar(
             gameDetails = state.gameDetails,
             topBarColor = topBarColor,

@@ -159,13 +159,13 @@ private fun CardGrid(
 ) {
     val minCardWidth = if (isLargeWindow()) cardWidth.large else cardWidth.compact
     val gutter = pageGutter()
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize().keyboardPadding()) {
         val columns = columnsFor(pageContentWidth(maxWidth, gutter), minCardWidth)
         val sidePadding = pageSidePadding(maxWidth, gutter)
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             state = state,
-            modifier = Modifier.fillMaxSize().keyboardPadding(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding =
                 PaddingValues(start = sidePadding, top = GridTopPadding, end = sidePadding, bottom = GridBottomPadding),
             horizontalArrangement = Arrangement.spacedBy(ColumnGap),
@@ -174,6 +174,7 @@ private fun CardGrid(
         ) {
             content(columns)
         }
+        if (userScrollEnabled) PageScrollbar(state)
     }
 }
 

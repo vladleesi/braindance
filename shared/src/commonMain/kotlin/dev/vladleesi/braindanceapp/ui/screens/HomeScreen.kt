@@ -58,6 +58,7 @@ import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.components.CarouselSection
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
+import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.SearchAction
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
@@ -189,6 +190,7 @@ private fun StandardHomeScreen(
             )
             item { Spacer(Modifier.height(Dimens.large)) }
         }
+        PageScrollbar(listState)
         StatusBarOverlay(backgroundColor = overlayBlackWith80Alpha)
         PullRefreshIndicator(
             refreshing = isRefreshing,

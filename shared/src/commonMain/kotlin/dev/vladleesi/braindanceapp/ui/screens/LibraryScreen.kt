@@ -44,6 +44,7 @@ import dev.vladleesi.braindanceapp.resources.library_statuses_title
 import dev.vladleesi.braindanceapp.resources.navigation_library
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
+import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.SearchAction
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.SurfaceTile
@@ -66,7 +67,8 @@ fun LibraryScreen(modifier: Modifier) {
     // The scaffold's content area ends above the bottom bar and beside the rail, and already respects window insets.
     val gutter = pageGutter()
     Box(modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        val scrollState = rememberScrollState()
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             SpacerStatusBarInsets()
             TopLevelTopAppBar(
                 title = stringResource(Res.string.navigation_library),
@@ -88,6 +90,7 @@ fun LibraryScreen(modifier: Modifier) {
             // Lets the last section scroll clear of the button.
             Spacer(Modifier.height(fabSize + Dimens.large))
         }
+        PageScrollbar(scrollState)
         // At the end of the page column rather than in a far corner of a wide window.
         Box(
             modifier =

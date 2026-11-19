@@ -5,6 +5,7 @@ package dev.vladleesi.braindanceapp.ui.screens
 import ChevronLeft
 import SlidersHorizontal
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,6 +37,7 @@ import dev.vladleesi.braindanceapp.resources.releases_upcoming_description
 import dev.vladleesi.braindanceapp.resources.releases_upcoming_title
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
+import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.PlaceholderChips
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.SurfaceTile
@@ -64,31 +66,35 @@ fun ReleasesScreen(modifier: Modifier) {
                 )
             },
         )
-        Column(
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .pageColumn(pageGutter())
-                    .padding(bottom = Dimens.medium),
-            verticalArrangement = Arrangement.spacedBy(Dimens.medium),
-        ) {
-            // The month's arrows stay beside its name, and the days under it, rather than spread across a wide window.
-            val calendarModifier = Modifier.widthIn(max = Dimens.readableTextWidth)
-            MonthHeader(modifier = calendarModifier)
-            WeekStrip(modifier = calendarModifier)
-            PlaceholderChips(
-                labels =
-                    listOf(
-                        stringResource(Res.string.releases_filter_all),
-                        stringResource(Res.string.releases_filter_wishlist),
-                        stringResource(Res.string.releases_filter_events),
-                    ),
-            )
-            ComingSoonCard(
-                title = stringResource(Res.string.releases_upcoming_title),
-                description = stringResource(Res.string.releases_upcoming_description),
-            )
+        val scrollState = rememberScrollState()
+        Box(Modifier.weight(1f)) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                        .pageColumn(pageGutter())
+                        .padding(bottom = Dimens.medium),
+                verticalArrangement = Arrangement.spacedBy(Dimens.medium),
+            ) {
+                // Keep the month's arrows and days together in wide windows.
+                val calendarModifier = Modifier.widthIn(max = Dimens.readableTextWidth)
+                MonthHeader(modifier = calendarModifier)
+                WeekStrip(modifier = calendarModifier)
+                PlaceholderChips(
+                    labels =
+                        listOf(
+                            stringResource(Res.string.releases_filter_all),
+                            stringResource(Res.string.releases_filter_wishlist),
+                            stringResource(Res.string.releases_filter_events),
+                        ),
+                )
+                ComingSoonCard(
+                    title = stringResource(Res.string.releases_upcoming_title),
+                    description = stringResource(Res.string.releases_upcoming_description),
+                )
+            }
+            PageScrollbar(scrollState)
         }
     }
 }

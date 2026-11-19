@@ -76,6 +76,7 @@ import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.OutlineButton
+import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
 import dev.vladleesi.braindanceapp.ui.components.SearchAction
 import dev.vladleesi.braindanceapp.ui.components.SurfaceCard
@@ -155,7 +156,8 @@ internal fun DesktopHomeScreen(
         val columns = remember(mainWidth) { DesktopGridColumns.forWidth(mainWidth) }
 
         // The scroll container spans the whole width, so the wheel also scrolls from the margins.
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        val scrollState = rememberScrollState()
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             // The same bar as every other tab, so switching tabs keeps the title and actions in place.
             TopLevelTopAppBar(
                 title = stringResource(Res.string.desktop_tagline),
@@ -190,6 +192,7 @@ internal fun DesktopHomeScreen(
                 }
             }
         }
+        PageScrollbar(scrollState)
     }
 }
 

@@ -5,6 +5,12 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.26.1 — 2026-11-19
+
+### Web
+
+- On desktop Web, a draggable scrollbar appears while scrolling and fades out shortly after scrolling stops.
+
 ## 0.26.0 — 2026-11-18
 
 ### Web

@@ -33,6 +33,7 @@ import dev.vladleesi.braindanceapp.resources.giveaway_details_not_found
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_about
 import dev.vladleesi.braindanceapp.resources.giveaway_details_screen_instruction
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
+import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.ShareButton
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
@@ -144,6 +145,7 @@ fun GiveawayDetailsScreen(
                 )
             }
         }
+        PageScrollbar(lazyListState)
         GiveawayDetailsTopBar(
             title = details.title,
             shareTarget = ShareTarget.Giveaway(id = id, name = details.title),
