@@ -21,14 +21,29 @@ fun String.toContentDescription(): String = "Image: $this"
  * The downloaded file is disk-cached under its URL, which already names the image and its size. So every place that
  * shows the same file, such as a card and the details screen it opens, shares one download, while each keeps its own
  * memory key for its own decoded size.
+ *
+ * [placeholderMemoryCacheKey] names another image already in the memory cache, such as a smaller copy of the same
+ * picture, to show while this one loads; nothing is shown when it is not cached. Turn off [crossfade] for an image of
+ * another shape than its placeholder: while fading, Coil sizes both to the larger width and the larger height of the
+ * two, a shape neither has, so the picture would jump when the image arrives and again when the fade ends.
  */
 @Composable
 fun rememberCachedImageRequest(
     data: Any?,
     memoryCacheKey: String?,
+    placeholderMemoryCacheKey: String? = null,
+    crossfade: Boolean = true,
 ): ImageRequest {
     val context = LocalPlatformContext.current
-    return remember(context, data, memoryCacheKey) { cachedImageRequest(context, data, memoryCacheKey) }
+    return remember(context, data, memoryCacheKey, placeholderMemoryCacheKey, crossfade) {
+        cachedImageRequest(
+            context = context,
+            data = data,
+            memoryCacheKey = memoryCacheKey,
+            placeholderMemoryCacheKey = placeholderMemoryCacheKey,
+            crossfade = crossfade,
+        )
+    }
 }
 
 /**
@@ -41,13 +56,16 @@ internal fun cachedImageRequest(
     data: Any?,
     memoryCacheKey: String?,
     keepOriginalSize: Boolean = !scalesDecodedImagesSmoothly,
+    placeholderMemoryCacheKey: String? = null,
+    crossfade: Boolean = true,
 ): ImageRequest {
     val builder =
         ImageRequest
             .Builder(context)
             .data(data)
             .memoryCacheKey(memoryCacheKey)
-            .crossfade(true)
+            .placeholderMemoryCacheKey(placeholderMemoryCacheKey)
+            .crossfade(crossfade)
     if (keepOriginalSize) {
         builder.size(Size.ORIGINAL)
     }

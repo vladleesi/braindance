@@ -12,6 +12,8 @@ import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
+import dev.vladleesi.braindanceapp.ui.components.media.MediaGallery
+import dev.vladleesi.braindanceapp.ui.components.media.mediaGallery
 import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.ParentPlatformType
 import dev.vladleesi.braindanceapp.utils.StoreTypeModel
@@ -124,19 +126,22 @@ class GameDetailsViewModel(
 
 /**
  * The page for this details response. An edition or update with a known canonical game is shown as that release of
- * its game: its own name, cover, release date, platforms, genres, stores, summary, and screenshot, with the game's
- * for anything IGDB lacks for it, and the game's versions and related releases with it selected. The page keeps the
- * game's ID, so relations and similar games follow the game. Without a canonical game, the entry is shown as a game
- * of its own.
+ * its game: its own name, cover, release date, platforms, genres, stores, summary, screenshot, and media, with the
+ * game's for anything IGDB lacks for it, and the game's versions and related releases with it selected. The page
+ * keeps the game's ID, so relations and similar games follow the game. Without a canonical game, the entry is shown
+ * as a game of its own.
  */
 private fun GameItem.toGameDetails(): GameDetails {
     val game = canonical?.takeIf { canonicalId != null && canonicalId != id } ?: this
     val selected = if (game === this) null else toSelectedVariant()
     val shown = if (selected == null) game else withFallbackTo(game)
+    // Like store links, media falls back as a whole: a release without any shows its game's videos and screenshots.
+    val ownMedia = mediaGallery(videos, screenshots)
     return shown.toPageDetails(
         id = game.id.orZero(),
         selectedVariant = selected,
         relations = gameRelations(game, selected),
+        media = if (ownMedia.isEmpty && game !== this) mediaGallery(game.videos, game.screenshots) else ownMedia,
     )
 }
 
@@ -177,6 +182,7 @@ private fun GameItem.toPageDetails(
     id: Int,
     selectedVariant: SelectedVariant?,
     relations: GameRelations,
+    media: MediaGallery,
 ) = GameDetails(
     id = id,
     name = name.orEmpty(),
@@ -203,6 +209,7 @@ private fun GameItem.toPageDetails(
         },
     selectedVariant = selectedVariant,
     relations = relations,
+    media = media,
 )
 
 /**
@@ -280,6 +287,8 @@ data class GameDetails(
     val selectedVariant: SelectedVariant? = null,
     /** The game it belongs to, its versions, and its related releases. */
     val relations: GameRelations = GameRelations(),
+    /** The shown release's videos and screenshots; empty when it has none, which hides the section. */
+    val media: MediaGallery = MediaGallery(),
 ) {
     /** The shown release: the selected edition or update, otherwise the game. A share points to it. */
     val releaseId: Int get() = selectedVariant?.id ?: id

@@ -11,8 +11,10 @@ import dev.vladleesi.braindanceapp.data.models.games.GameKind
 import dev.vladleesi.braindanceapp.data.models.games.Genre
 import dev.vladleesi.braindanceapp.data.models.games.Platform
 import dev.vladleesi.braindanceapp.data.models.games.ReleaseDate
+import dev.vladleesi.braindanceapp.data.models.games.Screenshot
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
+import dev.vladleesi.braindanceapp.data.models.games.Video
 import dev.vladleesi.braindanceapp.data.models.games.WebsiteType
 import dev.vladleesi.braindanceapp.data.models.games.Websites
 import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
@@ -234,6 +236,13 @@ private const val FIRST_RELEASE_SECONDS = 1_773_273_600L // Mar 12, 2026
 private const val RELEASE_STEP_SECONDS = 41L * 24 * 60 * 60
 private const val EXAMPLE_URL = "https://example.com"
 private const val SUMMARY_FILLER = "Its text only fills the summary. "
+private const val MEDIA_PATTERN = 3
+private const val NO_MEDIA_REMAINDER = 2
+private const val LARGE_GALLERY_VIDEOS = 2
+private const val LARGE_GALLERY_SCREENSHOTS = 12
+private const val SMALL_GALLERY_SCREENSHOTS = 3
+private const val MEDIA_ID_STRIDE = 100
+private const val VIDEO_ID_GAME_DIGITS = 6
 
 private val gameNames =
     listOf(
@@ -313,7 +322,7 @@ private fun sampleGame(
         platforms = List(index % platforms.size + 1) { offset -> platforms[(index + offset) % platforms.size] },
         // Some games have no human-readable date, so the app formats first_release_date instead.
         releaseDates = if (index % 3 == 0) null else listOf(ReleaseDate(id = id, human = "Q${index % 4 + 1} 2027")),
-        screenshots = null,
+        screenshots = sampleScreenshots(id, index),
         websites =
             List(index % storeTypes.size + 1) { offset ->
                 val type = storeTypes[(index + offset) % storeTypes.size]
@@ -321,8 +330,54 @@ private fun sampleGame(
             },
         summary = "Sample data for developer builds; this game does not exist. " + SUMMARY_FILLER.repeat(index + 1),
         storyline = if (index % 2 == 0) "A sample storyline that exists only to fill this section." else null,
-        videos = null,
+        videos = sampleVideos(id, index),
     )
+}
+
+/*
+ * Media for the details gallery. Sample Game One has a large gallery, every third game has none, so the section is
+ * hidden, and the rest have a few screenshots, some with a video. Screenshots are the offline sample images, which are
+ * 3:4, so the preview shows them fitted. Video IDs are well-formed but fake: their YouTube thumbnails get 404 from the
+ * fixture engine, which shows the gallery's failed-image state, and play opens YouTube's "video unavailable" page.
+ */
+private fun sampleScreenshots(
+    gameId: Int,
+    index: Int,
+): List<Screenshot>? {
+    val count =
+        when {
+            index == 0 -> LARGE_GALLERY_SCREENSHOTS
+            index % MEDIA_PATTERN == NO_MEDIA_REMAINDER -> return null
+            else -> SMALL_GALLERY_SCREENSHOTS
+        }
+    return List(count) { offset ->
+        val number = gameId * MEDIA_ID_STRIDE + offset
+        Screenshot(
+            animated = false,
+            id = number,
+            url = "//$API_FIXTURES_HOST/igdb/image/upload/t_thumb/screenshot-$number.jpg",
+        )
+    }
+}
+
+private fun sampleVideos(
+    gameId: Int,
+    index: Int,
+): List<Video>? {
+    val count =
+        when {
+            index == 0 -> LARGE_GALLERY_VIDEOS
+            index % MEDIA_PATTERN == 0 -> 1
+            else -> return null
+        }
+    // 11 characters, as YouTube IDs have: "fx", the game ID, "v", and the video's number.
+    val game = gameId.toString().padStart(VIDEO_ID_GAME_DIGITS, '0')
+    return List(count) { offset ->
+        Video(
+            id = gameId * MEDIA_ID_STRIDE + offset,
+            videoId = "fx${game}v${(offset + 1).toString().padStart(2, '0')}",
+        )
+    }
 }
 
 // The API sends protocol-relative IGDB URLs at t_thumb size; the app derives the size it shows.

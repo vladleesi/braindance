@@ -74,6 +74,7 @@ The rules are in the [brand guide](branding/README.md#in-the-product). Build new
 | `SurfaceCard`, `SurfaceTile` | `components/Surfaces.kt` | Containers: cards and panels, and compact tiles |
 | `Tag`, `ComingSoonLabel`, `ComingSoonCard` | `components/Tag.kt`, `ComingSoon.kt` | Status labels and placeholders for planned features |
 | `CardCover`, `CarouselSection` | `components/` | Game covers and horizontal rows of them |
+| `MediaGallery`, `MediaGalleryState` | `components/media/` | A game's videos and screenshots: a preview and selectable thumbnails |
 | `ShareButton` | `components/Share.kt` | Sharing a game, giveaway, or list; see [sharing](#sharing) |
 | `BraindanceWordmark`, `BrandAccentStrip` | `style/icons/`, `components/desktop/` | The logo and the three-color accent |
 
@@ -229,6 +230,12 @@ The Web app draws every screen into one canvas with Compose. `WebAppHost` (`shar
 - **External links:** `WebUriHandler` opens pages in a new tab with `noopener` and `mailto:` addresses from the
   current tab. Give elements that open them `Modifier.externalLink(open)` with the same action as their click, so a
   middle click opens them too.
+- **Videos:** the game gallery (`MediaGallery`) loads YouTube's privacy-enhanced player
+  (`www.youtube-nocookie.com`) only after the user presses play, as an iframe that `WebElementView` lays over the
+  canvas (`InlineVideoPlayer.wasmJs.kt`); Android and iOS open the video in YouTube instead. The browser draws the
+  iframe above the canvas, so the player is clipped below the bar the page scrolls under (`coveredTop`). Keep
+  `frame-src` and `https://i.ytimg.com` (thumbnails) in `index.html`'s content security policy in step with it. While
+  the pointer is over a playing video, the mouse wheel goes to YouTube's frame and does not scroll the page.
 - **Autoscrolling:** on Windows, a middle press that no link takes, over a page that can scroll, starts the
   browser-style autoscroll (`PageAutoscrollHost`). A marker appears at the press point, and the page scrolls faster
   the farther the pointer moves from it. After a click, autoscrolling continues until the next click, Esc, a wheel
@@ -236,6 +243,9 @@ The Web app draws every screen into one canvas with Compose. `WebAppHost` (`shar
   only until it is released. Pages take part through `PageScrollbar(state)`, so a new scrolling screen needs only
   that call. Autoscrolling moves the page's own vertical scroll, not horizontal rows inside it. Only Windows gets it:
   macOS has no such convention, and Linux pastes on a middle click.
+- **List scrollbars:** a list of fixed height inside a page, such as the game gallery's thumbnail rail, takes
+  `ListScrollbar(state)` after it in a row. For mouse users it stays visible while the list can scroll, and it keeps
+  its space when the list fits, so the list never changes width.
 
 Some browser behavior is out of reach while Compose draws into a canvas: a right click shows no browser menu, because
 the browser offers its link menu only over a real link element, and Compose has no link role for elements to place

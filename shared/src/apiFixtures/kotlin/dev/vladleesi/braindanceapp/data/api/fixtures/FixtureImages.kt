@@ -2,11 +2,15 @@
 
 package dev.vladleesi.braindanceapp.data.api.fixtures
 
-/** Solid-color 3x4 PNGs (73 bytes each) that stand in for covers and giveaway images; the UI scales them to fit. */
+/**
+ * Solid-color 3x4 PNGs (73 bytes each) that stand in for covers, screenshots, and giveaway images; the UI scales them
+ * to fit.
+ */
 internal object FixtureImages {
-    // Any IGDB size of a sample cover, as the app derives it from the t_thumb URL, and any sample giveaway image.
+    // Any IGDB size of a sample cover or screenshot, as the app derives it from the t_thumb URL, and any sample
+    // giveaway image.
     private val imagePath =
-        Regex("""^(?:igdb/image/upload/t_[a-z0-9_]+/cover|images/giveaway)-(\d+)\.(?:jpg|png|webp)$""")
+        Regex("""^(?:igdb/image/upload/t_[a-z0-9_]+/(?:cover|screenshot)|images/giveaway)-(\d+)\.(?:jpg|png|webp)$""")
 
     private val pngs: List<ByteArray> by lazy {
         listOf(

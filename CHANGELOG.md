@@ -5,6 +5,32 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.28.0 — 2026-11-19
+
+### Android, iOS, and Web
+
+- Game pages have a Media section under the title with the game's trailers and screenshots, videos first. Pick a
+  thumbnail to show it large; screenshots keep their shape. Swipe the large picture or use the arrow keys to move
+  between them. On a wide screen, the thumbnails sit in a column beside the picture.
+- While pictures load, the gallery shows placeholders. A picture you pick appears at once from its thumbnail and
+  sharpens when the full-size image arrives.
+
+### Android and iOS
+
+- A trailer opens in the YouTube app, or in the browser without it.
+
+### Web
+
+- A trailer plays in the page once you press play. Nothing loads from YouTube's player before that, and it uses
+  YouTube's privacy-enhanced mode, which sets no cookies until you play.
+- Previous and next buttons on the large picture move through the media with a mouse. On a wide screen, a scrollbar
+  beside the thumbnail column shows how far it goes and can be dragged.
+
+### Website and documentation
+
+- braindancegg.com's First Alpha list is shorter and easier to read, now with screenshots and trailers, and its
+  latest updates are refreshed.
+
 ## 0.27.0 — 2026-11-19
 
 ### Android, iOS, and Web

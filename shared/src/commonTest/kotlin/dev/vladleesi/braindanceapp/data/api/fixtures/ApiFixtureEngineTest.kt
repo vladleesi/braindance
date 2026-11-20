@@ -13,6 +13,7 @@ import dev.vladleesi.braindanceapp.data.repository.GameSearchRepo
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import dev.vladleesi.braindanceapp.data.repository.SearchPage
+import dev.vladleesi.braindanceapp.ui.components.media.mediaGallery
 import dev.vladleesi.braindanceapp.utils.CoverSize
 import dev.vladleesi.braindanceapp.utils.imageHttpClient
 import dev.vladleesi.braindanceapp.utils.largeCoverUrlAtOrNull
@@ -212,7 +213,7 @@ class ApiFixtureEngineTest {
     fun everyImageIsServedOffline() =
         runTest(dispatcher) {
             val imageClient = imageHttpClient(engine = createApiFixtureEngine(dispatcher))
-            val imageUrls = (coverUrls() + giveawayImageUrls()).distinct()
+            val imageUrls = (coverUrls() + screenshotUrls() + giveawayImageUrls()).distinct()
             assertTrue(imageUrls.isNotEmpty())
             imageUrls.forEach { url ->
                 assertEquals(API_FIXTURES_HOST, Url(url).host, url)
@@ -221,6 +222,28 @@ class ApiFixtureEngineTest {
                 assertEquals(ContentType.Image.PNG, response.contentType())
                 assertTrue(response.bodyAsBytes().take(PNG_SIGNATURE.size) == PNG_SIGNATURE, url)
             }
+        }
+
+    @Test
+    fun sampleGamesCoverEveryGalleryState() =
+        runTest(dispatcher) {
+            val games = homeRepo.mostAnticipated(pageSize = ALL).successValue().mapNotNull { it.id }
+            val galleries =
+                (games + FIRST_GAME_ID).distinct().associateWith { id ->
+                    val details = detailsRepo.gameDetails(id).successValue()
+                    val gallery = mediaGallery(details.videos, details.screenshots)
+                    // Every sample item is valid, so the gallery keeps all of them.
+                    assertEquals(details.videos.orEmpty().size, gallery.videos.size, "videos of $id")
+                    assertEquals(details.screenshots.orEmpty().size, gallery.screenshots.size, "screenshots of $id")
+                    gallery
+                }
+
+            val large = checkNotNull(galleries[FIRST_GAME_ID])
+            assertEquals(2, large.videos.size)
+            assertEquals(12, large.screenshots.size)
+            assertTrue(galleries.values.any { it.isEmpty }, "a game without media")
+            assertTrue(galleries.values.any { it.videos.isEmpty() && it.screenshots.isNotEmpty() }, "screenshots only")
+            assertTrue(galleries.values.any { it.videos.size == 1 && it.screenshots.isNotEmpty() }, "one video")
         }
 
     @Test
@@ -264,6 +287,19 @@ class ApiFixtureEngineTest {
                 listOf(CoverSize.COVER_SMALL_2X, CoverSize.COVER_BIG).mapNotNull(cardUrl::largeCoverUrlAtOrNull)
         }
     }
+
+    // Screenshots at every size the details screen requests: the gallery's thumbnail and previews, and the backdrop.
+    private suspend fun screenshotUrls(): List<String> =
+        detailsRepo
+            .gameDetails(FIRST_GAME_ID)
+            .successValue()
+            .screenshots
+            .orEmpty()
+            .mapNotNull { it.url }
+            .flatMap { url ->
+                listOf(CoverSize.SCREENSHOT_MED, CoverSize.SCREENSHOT_BIG, CoverSize.P_720, CoverSize.P_1080)
+                    .map { size -> "https:$url".toCoverUrl(size) }
+            }
 
     private suspend fun giveawayImageUrls(): List<String> =
         giveawaysRepo.giveaways(pageSize = ALL).successValue().flatMap { listOfNotNull(it.image, it.thumbnail) }

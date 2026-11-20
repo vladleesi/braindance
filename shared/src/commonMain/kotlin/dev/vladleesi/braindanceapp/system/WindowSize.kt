@@ -62,6 +62,13 @@ fun desktopLayout(): DesktopLayout? {
     }
 }
 
+/** The app window's height. Like [isLargeWindow], it updates when the window is resized or the device rotates. */
+@Composable
+internal fun windowHeight(): Dp {
+    val heightPx = LocalWindowInfo.current.containerSize.height
+    return with(LocalDensity.current) { heightPx.toDp() }
+}
+
 @Composable
 private fun windowWidth(): Dp {
     val widthPx = LocalWindowInfo.current.containerSize.width

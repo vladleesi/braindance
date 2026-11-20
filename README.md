@@ -77,7 +77,7 @@ configuration, code style, and validation.
 | [Landing site](landing/) | The static page served at [braindancegg.com](https://braindancegg.com/). |
 
 The current frontend source version is
-[0.27.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.27.0).
+[0.28.0](https://github.com/vladleesi/braindance/releases/tag/app-v0.28.0).
 GitHub releases provide source code, not store-ready mobile downloads.
 The Web publication badge shows checks for the revision on `master`.
 

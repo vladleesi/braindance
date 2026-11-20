@@ -30,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
@@ -59,6 +60,9 @@ import dev.vladleesi.braindanceapp.ui.components.details.RelatedHeader
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.media.GameMedia
+import dev.vladleesi.braindanceapp.ui.components.media.MediaGallery
+import dev.vladleesi.braindanceapp.ui.components.media.rememberMediaGalleryState
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.pageWidth
@@ -75,6 +79,7 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedGroup
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.ui.viewmodels.VersionSelector
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
+import dev.vladleesi.braindanceapp.utils.openExternalUrl
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -83,6 +88,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 private const val HERO_KEY = "hero"
 private const val VERSIONS_KEY = "versions"
+private const val MEDIA_KEY = "media"
 private const val RELATED_HEADER_KEY = "related_header"
 private const val RELATED_MORE_KEY = "related_more"
 private const val SIMILAR_GAMES_KEY = "similar_games"
@@ -153,6 +159,7 @@ private fun GameDetailsScreen(
     onBackButtonPressed: (() -> Unit),
 ) {
     val navigator = LocalNavigator.current
+    val uriHandler = LocalUriHandler.current
 
     val lazyListState = rememberLazyListState()
     val (topBarColor, backButtonColor, topBarTitleColor) =
@@ -204,6 +211,14 @@ private fun GameDetailsScreen(
                 gutter = gutter,
                 onSelect = selectVersion,
                 versionRoute = route::withVersion,
+            )
+            // Right under the title and versions, as in app stores: what the game looks like comes before reading
+            // about it, and the media belongs to the version selected above it.
+            mediaItem(
+                details = state.gameDetails,
+                gutter = gutter,
+                placeholder = loadingRelease,
+                onWatchOnYouTube = { video -> uriHandler.openExternalUrl(video.watchUrl) },
             )
             releaseItems(state.gameDetails, gutter, placeholder = loadingRelease)
             relatedItems(
@@ -311,6 +326,30 @@ private fun rememberDelayedLoading(loading: Boolean): Boolean {
         }
     }
     return loading && shown
+}
+
+/** The shown release's videos and screenshots, when it has any. */
+private fun LazyListScope.mediaItem(
+    details: GameDetails,
+    gutter: Dp,
+    placeholder: Boolean,
+    onWatchOnYouTube: (GameMedia.YouTubeVideo) -> Unit,
+) {
+    if (details.media.isEmpty) return
+    item(key = MEDIA_KEY) {
+        MediaGallery(
+            state = rememberMediaGalleryState(details.media),
+            gameName = details.name,
+            onWatchOnYouTube = onWatchOnYouTube,
+            // Spans the page's width so the thumbnail strip scrolls to the screen's edge, as carousels do.
+            modifier = Modifier.pageWidth(gutter),
+            placeholder = placeholder,
+            horizontalPadding = gutter,
+            // The page scrolls under the top bar.
+            coveredTop = Dimens.topBarHeightWithInsets,
+        )
+    }
+    item { Spacer(modifier = Modifier.size(Dimens.large)) }
 }
 
 /** The selector of the game's versions, when it has more than one. */

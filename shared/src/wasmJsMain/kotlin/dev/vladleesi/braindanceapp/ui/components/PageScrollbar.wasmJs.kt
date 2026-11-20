@@ -76,7 +76,8 @@ private val PageScrollbarThumbShape =
             }
     }
 
-private val PageScrollbarStyle =
+// The look of every scrollbar in the app: the page's and those of lists inside it.
+internal val PageScrollbarStyle =
     defaultScrollbarStyle().copy(
         minimalHeight = Dimens.large,
         thickness = Dimens.small + Dimens.micro,
@@ -95,7 +96,7 @@ internal actual fun BoxScope.PageScrollbar(state: ScrollableState) {
         derivedStateOf(structuralEqualityPolicy()) { state.canScrollForward || state.canScrollBackward }
     }
     // Touch-only windows can reach the desktop breakpoint when rotated or on a tablet.
-    if (!canScroll || !rememberMediaQueryMatches("(any-pointer: fine)")) return
+    if (!canScroll || !rememberMediaQueryMatches(FINE_POINTER_QUERY)) return
 
     key(state) {
         AnimatedPageScrollbar(state, scrolling = state.isScrollInProgress)
@@ -146,9 +147,16 @@ private fun BoxScope.AnimatedPageScrollbar(
     }
 }
 
+/** Whether the browser has a mouse or another precise pointer, for controls that only a pointer uses. */
+internal const val FINE_POINTER_QUERY = "(any-pointer: fine)"
+
+/**
+ * Whether the browser matches the CSS media [query], updated when that changes. It starts from the current answer, so
+ * the first frame already has the right layout.
+ */
 @Composable
-private fun rememberMediaQueryMatches(query: String): Boolean =
-    produceState(initialValue = false, key1 = query) {
+internal fun rememberMediaQueryMatches(query: String): Boolean =
+    produceState(initialValue = remember(query) { window.matchMedia(query).matches }, key1 = query) {
         val media = window.matchMedia(query)
         val listener: (Event) -> Unit = { value = media.matches }
         media.addEventListener("change", listener)

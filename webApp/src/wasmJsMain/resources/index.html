@@ -8,9 +8,10 @@
     <!-- The policy is set here so the development server enforces it too; _headers adds frame-ancestors, which a meta
          tag cannot set. The backend origin is filled in at build time.
          Compose starts a worker from a blob: URL and downloads fallback fonts from fonts.gstatic.com for glyphs that
-         the bundled fonts lack; IGDB serves game covers. -->
+         the bundled fonts lack; IGDB serves game covers and screenshots, and YouTube video thumbnails. The game
+         gallery frames YouTube's privacy-enhanced player only after the user presses play. -->
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ${backendOrigin} https://images.igdb.com https://fonts.gstatic.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+          content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ${backendOrigin} https://images.igdb.com https://i.ytimg.com https://fonts.gstatic.com; frame-src https://www.youtube-nocookie.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
     <!-- What search engines and link previews read. The production build writes this block for every fixed page, and
          the edge worker for game and giveaway pages; keep both markers. -->
     <!-- page-meta:start -->

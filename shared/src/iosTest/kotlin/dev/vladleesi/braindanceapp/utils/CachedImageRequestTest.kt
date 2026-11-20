@@ -6,9 +6,11 @@ import coil3.PlatformContext
 import coil3.asImage
 import coil3.decode.DataSource
 import coil3.intercept.Interceptor
+import coil3.memory.MemoryCache
 import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
+import coil3.request.crossfadeMillis
 import coil3.size.Dimension
 import coil3.size.Scale
 import coil3.size.Size
@@ -19,6 +21,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 // Runs on iOS because Android host tests have no Coil PlatformContext without Robolectric.
 class CachedImageRequestTest {
@@ -45,6 +48,25 @@ class CachedImageRequestTest {
         assertEquals(CACHE_KEY, request.memoryCacheKey)
         // Without a disk key, Coil's network fetcher stores the download under its URL.
         assertNull(request.diskCacheKey)
+    }
+
+    @Test
+    fun aPlaceholderComesFromTheMemoryCacheAndCrossfadeCanBeTurnedOff() {
+        val plain = cachedImageRequest(PlatformContext.INSTANCE, IMAGE_URL, CACHE_KEY)
+        val preview =
+            cachedImageRequest(
+                PlatformContext.INSTANCE,
+                IMAGE_URL,
+                CACHE_KEY,
+                placeholderMemoryCacheKey = "gmt-1",
+                crossfade = false,
+            )
+
+        assertNull(plain.placeholderMemoryCacheKey)
+        assertTrue(plain.crossfadeMillis > 0)
+        // The same key the thumbnail is cached under, without extras, as Coil stores an explicit key.
+        assertEquals(MemoryCache.Key("gmt-1"), preview.placeholderMemoryCacheKey)
+        assertEquals(0, preview.crossfadeMillis)
     }
 
     @Test
