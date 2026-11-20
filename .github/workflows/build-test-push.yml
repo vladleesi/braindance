@@ -308,6 +308,8 @@ jobs:
     uses: ./.github/workflows/release-frontend.yml
     with:
       source_sha: ${{ github.sha }}
+    secrets:
+      DISCORD_RELEASE_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
 
   publish-master-frontend-release:
     name: Publish Validated Master Frontend Release
@@ -325,6 +327,8 @@ jobs:
     uses: ./.github/workflows/release-frontend.yml
     with:
       source_sha: ${{ github.sha }}
+    secrets:
+      DISCORD_RELEASE_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
 
   distribute-promoted-tester-build:
     name: Send Promoted Release to Testers

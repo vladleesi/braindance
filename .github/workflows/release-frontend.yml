@@ -12,6 +12,10 @@ on:
       created:
         description: Whether this run created the frontend release, so testers get each release once
         value: ${{ jobs.publish-frontend-release.outputs.created }}
+    # A reusable workflow reads only declared secrets. Without it, releases are still published and just not announced.
+    secrets:
+      DISCORD_RELEASE_WEBHOOK_URL:
+        required: false
 
 permissions: {}
 
@@ -28,6 +32,7 @@ jobs:
       contents: write
     outputs:
       created: ${{ steps.publish.outputs.created }}
+      tag: ${{ steps.version.outputs.tag }}
 
     steps:
       # This trusted release job fetches Git refs and runs no project build code.
@@ -141,3 +146,77 @@ jobs:
             --title "Braindance App $FRONTEND_VERSION" \
             --notes-file "$notes_file"
           echo "created=true" >> "$GITHUB_OUTPUT"
+
+  announce-release:
+    name: Announce Release in Discord
+    needs: publish-frontend-release
+    if: needs.publish-frontend-release.outputs.created == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # The release already exists, and this workflow's result gates tester builds, so a failed post must not fail it.
+    continue-on-error: true
+    # This job holds the webhook and a read-only token; the job that writes releases never sees the webhook. The
+    # environment is limited to the master and develop branches and stores DISCORD_RELEASE_WEBHOOK_URL.
+    environment: discord-release
+    permissions:
+      contents: read
+
+    steps:
+      - name: Post Release Notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DISCORD_RELEASE_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
+          FRONTEND_TAG: ${{ needs.publish-frontend-release.outputs.tag }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -z "$DISCORD_RELEASE_WEBHOOK_URL" ]; then
+            echo "::notice::Skipping Discord announcement: DISCORD_RELEASE_WEBHOOK_URL is not set."
+            exit 0
+          fi
+          if [[ ! "$DISCORD_RELEASE_WEBHOOK_URL" =~ ^https://(discord|discordapp)\.com/api/webhooks/[0-9]+/[A-Za-z0-9_-]+$ ]]; then
+            echo "DISCORD_RELEASE_WEBHOOK_URL is not a Discord webhook URL." >&2
+            exit 1
+          fi
+          if [[ ! "$FRONTEND_TAG" =~ ^app-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Unexpected release tag: $FRONTEND_TAG" >&2
+            exit 1
+          fi
+
+          # The release body is "Android, iOS, and Web release X. Build number: N." followed by the changelog entry.
+          # Drop that first line, turn headings into bold, and trim leading blank lines. The changelog wraps at 120
+          # characters and Discord keeps every line break, so indented continuation lines join their bullet.
+          text="$(gh release view "$FRONTEND_TAG" --repo "$REPOSITORY" --json body --jq .body | tr -d '\r' \
+            | awk 'NR == 1 && /^Android, iOS, and Web release / { next } { print }' \
+            | sed -E 's/^### (.+)$/**\1**/' | awk 'NF { started = 1 } started' \
+            | awk '/^ +[^ ]/ && open { sub(/^ +/, ""); line = line " " $0; next }
+                   { if (open) print line; line = $0; open = 1 }
+                   END { if (open) print line }')"
+          if [ -z "$text" ]; then
+            echo "Release $FRONTEND_TAG has no notes to announce." >&2
+            exit 1
+          fi
+
+          # Discord embeds hold 4096 characters. Cut at a line boundary well below that and link the full notes.
+          release_url="https://github.com/$REPOSITORY/releases/tag/$FRONTEND_TAG"
+          payload="$RUNNER_TEMP/discord-release.json"
+          jq -n \
+            --arg title "Braindance App ${FRONTEND_TAG#app-v}" \
+            --arg url "$release_url" \
+            --arg text "$text" '
+              reduce ($text | split("\n"))[] as $line ({out: [], size: 0, cut: false};
+                if .cut then .
+                elif .size + ($line | length) + 1 > 3800 then .cut = true
+                else .out += [$line] | .size += ($line | length) + 1
+                end)
+              | ((.out | join("\n")) + (if .cut then "\n…" else "" end)) as $body
+              | {
+                  allowed_mentions: {parse: []},
+                  embeds: [{
+                    title: $title,
+                    url: $url,
+                    description: ($body + "\n\n[Full release notes](" + $url + ")"),
+                    footer: {text: "Source release. Mobile store downloads may not be available yet."}
+                  }]
+                }' > "$payload"
+          curl --fail-with-body --silent --show-error --max-time 30 \
+            --header 'Content-Type: application/json' --data @"$payload" "$DISCORD_RELEASE_WEBHOOK_URL"

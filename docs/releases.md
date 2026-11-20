@@ -27,6 +27,12 @@
   [release workflow](../.github/workflows/release-frontend.yml) uses its matching changelog entry. Preserve existing
   releases. Pull requests and manual validation publish nothing; source releases are separate from mobile store
   downloads.
+- **Discord announcement:** when a run creates a source release, a separate read-only job posts that version's
+  release notes to a Discord channel through a webhook, once per release. Store the webhook URL as the secret
+  `DISCORD_RELEASE_WEBHOOK_URL` in a `discord-release` environment limited to the `master` and `develop` branches;
+  without it the job skips posting. Long entries are cut at a line boundary with a link to the full notes, and a
+  failed post never fails the release. Disable any GitHub repository webhook that also posts releases to the same
+  channel, or each release appears twice.
 - **Tester builds:** each new frontend release also sends the Android staging build to Firebase App Distribution
   tester groups, after the release is created. iOS test builds are sent manually. See [Firebase](firebase.md).
 - **API:** the Braindance API is released and deployed from its own repository; changes here never deploy it.
