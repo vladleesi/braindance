@@ -238,6 +238,10 @@ The Web app draws every screen into one canvas with Compose. `WebAppHost` (`shar
   so the browser chooses the tab or window as for a real link. Elsewhere it does nothing. For a link inside a text,
   such as a `LinkAnnotation` span, apply `Modifier.routeTextLink(route) { position -> ... }` to the text, with a
   check of whether the position is over the link (`TextLayoutResult.hits` in `GameRelations.kt`).
+- **Software keyboard:** Safari on iPhone and iPad opens the keyboard only for focus given during a tap, not for
+  focus a screen gives its field after it opens. A tap that leads to a text field, such as `Navigator.openSearch`,
+  calls `prepareSoftwareKeyboard()` first: on touch devices it focuses an invisible input at once, and the keyboard
+  stays open when the field takes focus.
 - **External links:** `WebUriHandler` opens pages in a new tab with `noopener` and `mailto:` addresses from the
   current tab. Give elements that open them `Modifier.externalLink(open)` with the same action as their click, so a
   middle click opens them too.

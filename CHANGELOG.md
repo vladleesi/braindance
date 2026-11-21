@@ -37,6 +37,8 @@ The Braindance API is versioned and released separately.
 - A trailer starts on the first click: clicking again while it loads no longer stops it.
 - On wide screens, the gallery is narrower, with its thumbnails under the large picture and "Where to buy" beside it.
 - Profile no longer offers to share the app on desktop, where the address bar already has the link.
+- On iPhone and iPad, the keyboard opens when a search button or a second tap on Discover starts a search, not only
+  when you tap the search field.
 
 ### Website and documentation
 

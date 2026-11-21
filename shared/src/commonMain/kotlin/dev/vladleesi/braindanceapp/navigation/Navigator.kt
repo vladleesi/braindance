@@ -8,6 +8,7 @@ import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.Route
 import dev.vladleesi.braindanceapp.navigation.routes.SingleInstanceRoute
+import dev.vladleesi.braindanceapp.system.prepareSoftwareKeyboard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -122,6 +123,8 @@ class Navigator(
      * single screen, so repeating the action only focuses the field again.
      */
     fun openSearch() {
+        // Still inside the tap, so iOS Safari opens the keyboard for the field that takes focus once Discover shows.
+        prepareSoftwareKeyboard()
         val discover = BottomBarRoute.DiscoverRoute
         state.backStacks[discover]?.let { stack ->
             if (stack.singleOrNull() != discover) {
