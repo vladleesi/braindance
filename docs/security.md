@@ -8,7 +8,11 @@ To report a vulnerability, see the [security policy](../SECURITY.md).
 
 - **CodeQL:** blocks high and critical findings in Android code, including shared Kotlin. Swift, iOS-specific
   Kotlin, and Wasm coverage is incomplete. The backup-query exception is in
-  [the config](../.github/codeql-config.yml).
+  [the config](../.github/codeql-config.yml). The gate
+  ([`check-codeql-results.py`](../.github/scripts/check-codeql-results.py)) accepts one reviewed finding: JavaScript
+  in the WebView of the in-app YouTube player (`YouTubePlayer.android.kt`), which YouTube's player needs. It applies
+  only to that file, and only while the WebView keeps file and content access off, opens no new windows, and has no
+  JavaScript interface; the same rule anywhere else still fails. Review a new WebView on its own before extending it.
 - **Dependency Review:** blocks new high and critical vulnerabilities on pushes and pull requests; incomplete
   snapshots fail.
   - Both revisions resolve with read-only permissions; the privileged snapshot submission never runs pull request
