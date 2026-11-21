@@ -420,6 +420,10 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   `python3 .github/scripts/check-licenses.py`, fix any findings, and review formatter changes before recommending
   a commit message.
 - Review changed files for accidental edits and stale references.
+- Before calling a change done, review its edge cases and fix or report each one: repeated and rapid actions, state
+  that is already set (focus, selection, playback, an open screen), slow, failed, or interrupted loads, empty or
+  missing data, rotation and resizing, every platform and input (touch, mouse, keyboard, screen reader), and cleanup
+  on cancellation or leaving the screen. Name the cases you could not verify and why.
 - When the ignored `.local-docs/reviews/README.md` exists, follow it for review findings and remediation work: pass
   its change gate before every code commit, so updates add no findings, and remove fixed findings and finished plan
   steps from the register.
