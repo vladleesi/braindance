@@ -104,6 +104,48 @@ class HistoryMirrorTest {
     }
 
     @Test
+    fun theBrowsersBackClosesAnOverlayAndKeepsItsScreen() {
+        val browser = FakeBrowser()
+        val mirror = HistoryMirror(browser)
+        mirror.start("home", "/")
+        mirror.onNavigated("home>game", "/games/1")
+        var closed = 0
+        mirror.openOverlay("home>game", "/games/1") { closed += 1 }
+        assertEquals(listOf("/", "/games/1", "/games/1"), browser.entries.map { it.path })
+
+        val restored = browser.pressBack(mirror, appSnapshot = "home>game")
+
+        assertEquals(1, closed)
+        assertNull(restored, "the screen under the overlay stays as it is")
+        mirror.onOverlayClosed()
+        assertEquals(0, browser.backCalls, "the browser already left the overlay's entry")
+        assertEquals(3, browser.entries.size, "Back never adds history entries")
+
+        val next = browser.pressBack(mirror, appSnapshot = "home>game")
+        assertEquals("home", next, "the next Back leaves the screen")
+        assertEquals(1, closed)
+    }
+
+    @Test
+    fun anOverlayClosedInTheAppRemovesItsEntry() {
+        val browser = FakeBrowser()
+        val mirror = HistoryMirror(browser)
+        mirror.start("home", "/")
+        mirror.onNavigated("home>game", "/games/1")
+        var closed = 0
+        mirror.openOverlay("home>game", "/games/1") { closed += 1 }
+
+        mirror.onOverlayClosed()
+
+        assertEquals(1, browser.backCalls)
+        assertEquals(1, browser.position)
+        assertEquals(0, closed, "closing in the app does not call back into it")
+        assertNull(mirror.onBrowserMoved(1, "home>game", currentSnapshotJson = "home>game"))
+        val next = browser.pressBack(mirror, appSnapshot = "home>game")
+        assertEquals("home", next)
+    }
+
+    @Test
     fun aNewNavigationAfterGoingBackDropsTheForwardEntries() {
         val browser = FakeBrowser()
         val mirror = HistoryMirror(browser)

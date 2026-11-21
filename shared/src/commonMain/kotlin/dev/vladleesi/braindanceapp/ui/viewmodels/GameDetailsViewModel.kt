@@ -7,7 +7,6 @@ import dev.vladleesi.braindanceapp.data.DataError
 import dev.vladleesi.braindanceapp.data.Outcome
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
 import dev.vladleesi.braindanceapp.data.models.games.GameKind
-import dev.vladleesi.braindanceapp.data.models.games.Screenshot
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
@@ -159,7 +158,6 @@ private fun GameItem.withFallbackTo(game: GameItem): GameItem {
         genres = genres?.takeIf { it.isNotEmpty() } ?: game.genres,
         platforms = platforms?.takeIf { it.isNotEmpty() } ?: game.platforms,
         websites = websites?.takeIf { it.toStoreTypes().isNotEmpty() } ?: game.websites,
-        screenshots = screenshots?.takeIf { it.toBackdropImage() != null } ?: game.screenshots,
         summary = summary?.takeIf(String::isNotBlank) ?: game.summary,
         storyline = storyline?.takeIf(String::isNotBlank) ?: game.storyline,
     )
@@ -196,7 +194,7 @@ private fun GameItem.toPageDetails(
             ?.url
             ?.toCoverUrl(CoverSize.P_720)
             .orEmpty(),
-    backdrop = screenshots.orEmpty().toBackdropImage(),
+    backdrop = backdrop?.url?.takeIf(String::isNotBlank)?.toBackdropImage(),
     releaseDate = releaseDates?.firstOrNull()?.human ?: firstReleaseDate?.formatDate(),
     platforms = platforms.orEmpty().parentPlatformTypes(),
     stores = websites.orEmpty().toStoreTypes(),
@@ -213,18 +211,14 @@ private fun GameItem.toPageDetails(
 )
 
 /**
- * The first still screenshot at the two sizes the hero draws it. It sits dimmed behind the hero, where IGDB's small
- * sizes are enough: a larger file would only add bytes and decoding the scrim hides.
+ * The API's backdrop at the two sizes the hero draws it. It sits dimmed behind the hero, where IGDB's small sizes are
+ * enough: a larger file would only add bytes and decoding the scrim hides.
  */
-private fun List<Screenshot>.toBackdropImage(): BackdropImage? {
-    val url = firstOrNull { screenshot -> screenshot.animated != true && !screenshot.url.isNullOrBlank() }?.url
-    return url?.let {
-        BackdropImage(
-            compactUrl = it.toCoverUrl(CoverSize.SCREENSHOT_MED),
-            wideUrl = it.toCoverUrl(CoverSize.SCREENSHOT_BIG),
-        )
-    }
-}
+private fun String.toBackdropImage() =
+    BackdropImage(
+        compactUrl = toCoverUrl(CoverSize.SCREENSHOT_MED),
+        wideUrl = toCoverUrl(CoverSize.SCREENSHOT_BIG),
+    )
 
 // Cards without an ID cannot be opened, and lazy lists need unique keys.
 private fun List<SimilarGame>.toCards() =
@@ -294,7 +288,7 @@ data class GameDetails(
     val releaseId: Int get() = selectedVariant?.id ?: id
 }
 
-/** One screenshot at a smaller size for compact layouts and a larger one for wide layouts. */
+/** The backdrop at a smaller size for compact layouts and a larger one for wide layouts. */
 data class BackdropImage(
     val compactUrl: String,
     val wideUrl: String,

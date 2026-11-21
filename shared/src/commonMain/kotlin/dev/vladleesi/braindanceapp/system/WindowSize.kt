@@ -4,9 +4,8 @@ package dev.vladleesi.braindanceapp.system
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 
 /** Medium width in the Material window size classes: tablets, landscape phones, and wide browser windows. */
@@ -64,13 +63,14 @@ fun desktopLayout(): DesktopLayout? {
 
 /** The app window's height. Like [isLargeWindow], it updates when the window is resized or the device rotates. */
 @Composable
-internal fun windowHeight(): Dp {
-    val heightPx = LocalWindowInfo.current.containerSize.height
-    return with(LocalDensity.current) { heightPx.toDp() }
-}
+internal fun windowHeight(): Dp = windowSize().height
 
 @Composable
-private fun windowWidth(): Dp {
-    val widthPx = LocalWindowInfo.current.containerSize.width
-    return with(LocalDensity.current) { widthPx.toDp() }
-}
+private fun windowWidth(): Dp = windowSize().width
+
+/**
+ * The app window's current size, read during composition, so everything that uses it follows a resize or a rotation
+ * in the same frame.
+ */
+@Composable
+internal expect fun windowSize(): DpSize

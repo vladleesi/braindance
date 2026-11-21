@@ -55,6 +55,9 @@ import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.CommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.GAMERPOWER_NAME
 import dev.vladleesi.braindanceapp.ui.components.IGDB_NAME
+import dev.vladleesi.braindanceapp.ui.components.LinkDivider
+import dev.vladleesi.braindanceapp.ui.components.LinkRow
+import dev.vladleesi.braindanceapp.ui.components.LinkRowTextInset
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.SUPPORT_EMAIL
@@ -62,13 +65,11 @@ import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
-import dev.vladleesi.braindanceapp.ui.components.profile.ProfileDivider
-import dev.vladleesi.braindanceapp.ui.components.profile.ProfileLinkRow
-import dev.vladleesi.braindanceapp.ui.components.profile.ProfileRowTextInset
 import dev.vladleesi.braindanceapp.ui.components.profile.ProfileSection
 import dev.vladleesi.braindanceapp.ui.components.profile.ProfileVersionStatus
 import dev.vladleesi.braindanceapp.ui.components.rememberCommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.rememberProjectLinks
+import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.icons.BlueskyLogo
@@ -163,18 +164,21 @@ internal fun ProfileContent(
 private fun AccountSection() {
     ProfileSection(title = stringResource(Res.string.profile_section_account)) {
         ComingSoonRow(stringResource(Res.string.profile_sign_in))
-        ProfileDivider()
+        LinkDivider()
         ComingSoonRow(stringResource(Res.string.profile_statistics))
-        ProfileDivider()
+        LinkDivider()
         ComingSoonRow(stringResource(Res.string.profile_activity))
-        ProfileDivider()
+        LinkDivider()
         ComingSoonRow(stringResource(Res.string.profile_reviews))
-        ProfileDivider()
+        LinkDivider()
         ComingSoonRow(stringResource(Res.string.profile_settings))
     }
 }
 
-/** Ways to support and follow the project; every row but sharing opens a page outside the app. */
+/**
+ * Ways to support and follow the project; every row but sharing opens a page outside the app. Sharing is left out of
+ * the Web desktop layout.
+ */
 @Composable
 private fun CommunitySection(
     links: ProjectLinks,
@@ -182,54 +186,57 @@ private fun CommunitySection(
 ) {
     val handle = stringResource(Res.string.profile_social_handle)
     ProfileSection(title = stringResource(Res.string.profile_section_community)) {
-        ProfileLinkRow(
+        LinkRow(
             title = stringResource(Res.string.profile_link_discord),
             supportingText = stringResource(Res.string.profile_link_discord_description),
             imageVector = DiscordLogo,
             onClick = community.openDiscord,
         )
-        ProfileDivider(inset = ProfileRowTextInset)
-        ProfileLinkRow(
+        LinkDivider(inset = LinkRowTextInset)
+        LinkRow(
             title = stringResource(Res.string.profile_link_reddit),
             supportingText = stringResource(Res.string.profile_reddit_handle),
             imageVector = RedditLogo,
             onClick = community.openReddit,
         )
-        ProfileDivider(inset = ProfileRowTextInset)
-        ProfileLinkRow(
+        LinkDivider(inset = LinkRowTextInset)
+        LinkRow(
             title = stringResource(Res.string.profile_link_x),
             supportingText = handle,
             imageVector = XLogo,
             onClick = community.openX,
         )
-        ProfileDivider(inset = ProfileRowTextInset)
-        ProfileLinkRow(
+        LinkDivider(inset = LinkRowTextInset)
+        LinkRow(
             title = stringResource(Res.string.profile_link_bluesky),
             supportingText = stringResource(Res.string.profile_bluesky_handle),
             imageVector = BlueskyLogo,
             onClick = community.openBluesky,
         )
-        ProfileDivider(inset = ProfileRowTextInset)
-        ProfileLinkRow(
+        LinkDivider(inset = LinkRowTextInset)
+        LinkRow(
             title = stringResource(Res.string.profile_link_threads),
             supportingText = handle,
             imageVector = ThreadsLogo,
             onClick = community.openThreads,
         )
-        ProfileDivider(inset = ProfileRowTextInset)
-        ProfileLinkRow(
+        LinkDivider(inset = LinkRowTextInset)
+        LinkRow(
             title = stringResource(Res.string.profile_link_github),
             supportingText = stringResource(Res.string.profile_link_github_description),
             imageVector = Github,
             onClick = links.openRepository,
         )
-        ProfileDivider(inset = ProfileRowTextInset)
-        ProfileLinkRow(
-            title = stringResource(links.shareLabel),
-            imageVector = Share,
-            onClick = links.share,
-            opensExternally = false,
-        )
+        // Like content's share buttons, sharing the app is left out of the Web desktop layout (see showsShareActions).
+        if (showsShareActions()) {
+            LinkDivider(inset = LinkRowTextInset)
+            LinkRow(
+                title = stringResource(links.shareLabel),
+                imageVector = Share,
+                onClick = links.share,
+                opensExternally = false,
+            )
+        }
     }
 }
 
@@ -243,26 +250,26 @@ private fun AboutSection(
 ) {
     ProfileSection(title = stringResource(Res.string.profile_section_about)) {
         // The address is shown too, for people who write from a mail account other than the system's mail app.
-        ProfileLinkRow(
+        LinkRow(
             title = stringResource(Res.string.profile_contact_support),
             supportingText = SUPPORT_EMAIL,
             imageVector = Mail,
             onClick = links.emailSupport,
         )
-        ProfileDivider(inset = ProfileRowTextInset)
-        ProfileLinkRow(
+        LinkDivider(inset = LinkRowTextInset)
+        LinkRow(
             title = stringResource(Res.string.profile_release_notes),
             imageVector = FileText,
             onClick = community.openReleases,
         )
-        ProfileDivider(inset = ProfileRowTextInset)
-        ProfileLinkRow(
+        LinkDivider(inset = LinkRowTextInset)
+        LinkRow(
             title = stringResource(Res.string.data_attribution_igdb, IGDB_NAME),
             imageVector = Database,
             onClick = links.openIgdb,
         )
-        ProfileDivider(inset = ProfileRowTextInset)
-        ProfileLinkRow(
+        LinkDivider(inset = LinkRowTextInset)
+        LinkRow(
             title = stringResource(Res.string.data_attribution_gamerpower, GAMERPOWER_NAME),
             imageVector = Gift,
             onClick = links.openGamerPower,

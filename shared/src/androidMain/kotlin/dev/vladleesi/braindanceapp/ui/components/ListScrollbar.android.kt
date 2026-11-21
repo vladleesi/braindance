@@ -2,6 +2,7 @@
 
 package dev.vladleesi.braindanceapp.ui.components
 
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -11,4 +12,5 @@ import androidx.compose.ui.Modifier
 internal actual fun ListScrollbar(
     state: LazyListState,
     modifier: Modifier,
+    orientation: Orientation,
 ) = Unit

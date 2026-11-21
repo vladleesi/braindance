@@ -83,9 +83,14 @@ internal object ApiFixtureData {
                 member == null -> null
                 member.kind == GameKind.EDITION || member.kind == GameKind.UPDATE -> {
                     val base = asCanonical(checkNotNull(gamesById[FIRST_GAME_ID]))
-                    member.copy(canonicalId = FIRST_GAME_ID, canonical = base.copy(family = null), family = base.family)
+                    member.copy(
+                        canonicalId = FIRST_GAME_ID,
+                        canonical = base.copy(family = null, backdrop = null),
+                        family = base.family,
+                        backdrop = member.sampleBackdrop() ?: base.backdrop,
+                    )
                 }
-                else -> member.copy(canonicalId = id, family = memberFamily(member))
+                else -> member.copy(canonicalId = id, family = memberFamily(member), backdrop = member.sampleBackdrop())
             }
         return backendJson.encodeToString(listOfNotNull(details))
     }
@@ -117,6 +122,7 @@ internal object ApiFixtureData {
         return game.copy(
             kind = GameKind.GAME,
             canonicalId = id,
+            backdrop = game.sampleBackdrop(),
             family =
                 GameFamily(
                     variants = ofKind(GameKind.EDITION, GameKind.UPDATE),
@@ -306,6 +312,12 @@ private val giveawayTitles =
         "Sample Giveaway: Console Add-on",
         "Sample Giveaway With a Long Title to Check Wrapping",
     )
+
+/** Like the API for a game without key art: its first still screenshot, only in game details. */
+private fun GameItem.sampleBackdrop(): Cover? =
+    screenshots
+        ?.firstOrNull { it.animated != true && !it.url.isNullOrBlank() }
+        ?.let { Cover(id = it.id, url = it.url) }
 
 private fun sampleGame(
     index: Int,

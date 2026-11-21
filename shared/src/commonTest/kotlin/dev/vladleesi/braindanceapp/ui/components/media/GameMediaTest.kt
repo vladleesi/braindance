@@ -91,10 +91,6 @@ class GameMediaTest {
         assertEquals("https://i.ytimg.com/vi/yowv6_rspoM/hqdefault.jpg", video.posterUrl(widthPx = 480))
         assertEquals("https://i.ytimg.com/vi/yowv6_rspoM/maxresdefault.jpg", video.posterUrl(widthPx = 481))
         assertEquals("https://i.ytimg.com/vi/yowv6_rspoM/hqdefault.jpg", video.fallbackPosterUrl)
-        assertEquals(
-            "https://www.youtube-nocookie.com/embed/yowv6_rspoM?autoplay=1&rel=0&playsinline=1",
-            video.embedUrl,
-        )
         assertEquals("https://www.youtube.com/watch?v=yowv6_rspoM", video.watchUrl)
         assertEquals("yowv6_rspoM", " yowv6_rspoM ".toYouTubeIdOrNull())
         assertNull("yowv6 rspoM".toYouTubeIdOrNull())

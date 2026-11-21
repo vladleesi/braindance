@@ -28,6 +28,13 @@ API_FIXTURES=true
   platform, with no API or network. Builds without the flag contain no fixture code.
 - Release builds set `BACKEND_BASE_URL` in CI instead; setting both fails the build. The API is maintained privately
   and is not part of this repository; [openapi.yaml](openapi.yaml) describes what the clients use.
+- **A locally run API**, for maintainers with access to it, takes `BACKEND_BASE_URL=http://localhost:8081` (any
+  port). Plain HTTP is accepted only for `localhost` and `127.0.0.1` in development builds; release, benchmark, and
+  Baseline Profile builds, iOS release frameworks, and the Web production bundle fail with it. To try the Web app
+  against it, start the API on port 8081 with `CORS_ALLOWED_ORIGINS=http://localhost:8080`, then run
+  `./gradlew -PAPI_FIXTURES=false -PBACKEND_BASE_URL=http://localhost:8081 :webApp:wasmJsBrowserDevelopmentRun` and
+  open `http://localhost:8080/`. The development server opens game addresses only from the start page; restart it
+  after a code change.
 
 Android Studio adds `sdk.dir` to this file itself; command-line builds without it need `ANDROID_HOME` or `sdk.dir`.
 Gradle properties (`-PAPI_FIXTURES=true`, or `ORG_GRADLE_PROJECT_*` variables) override `local.properties`.
@@ -72,9 +79,10 @@ The rules are in the [brand guide](branding/README.md#in-the-product). Build new
 | `pageColumn`, `pageWidth`, `pageGutter` | `components/PageColumn.kt` | Page layout; see [page layout](#page-layout) |
 | `PrimaryButton`, `TonalButton`, `OutlineButton` | `components/Buttons.kt` | The main action, secondary actions, and links inside cards |
 | `SurfaceCard`, `SurfaceTile` | `components/Surfaces.kt` | Containers: cards and panels, and compact tiles |
+| `LinkRow`, `LinkDivider` | `components/LinkRow.kt` | Rows of links on a card, such as Profile's links and a game's stores |
 | `Tag`, `ComingSoonLabel`, `ComingSoonCard` | `components/Tag.kt`, `ComingSoon.kt` | Status labels and placeholders for planned features |
 | `CardCover`, `CarouselSection` | `components/` | Game covers and horizontal rows of them |
-| `MediaGallery`, `MediaGalleryState` | `components/media/` | A game's videos and screenshots: a preview and selectable thumbnails |
+| `MediaGallery`, `MediaViewer`, `MediaGalleryState` | `components/media/` | A game's videos and screenshots: a preview, thumbnails, and the full-screen viewer |
 | `ShareButton` | `components/Share.kt` | Sharing a game, giveaway, or list; see [sharing](#sharing) |
 | `BraindanceWordmark`, `BrandAccentStrip` | `style/icons/`, `components/desktop/` | The logo and the three-color accent |
 
@@ -92,7 +100,8 @@ the desktop layout of wide Web windows. Pick the column's width by what the page
 - The top bar takes the page's width as `maxContentWidth`, so its back button, title, and actions line up with the
   content. Backgrounds and full-bleed artwork, such as the game details hero, still span the whole width.
 - Inside the wide column, running text, the search field, and placeholder cards keep their readable widths, aligned
-  to its start.
+  to its start. In the desktop layout, game details keep the media gallery at that width, with "Where to buy" beside
+  it, or under it when both do not fit (`MediaWithStores`).
 - Scrolling containers span the whole width so the wheel also works over the margins: apply `pageColumn` after
   `verticalScroll`, inset lazy grids and lists with `pageSidePadding`, and let carousels take `pageWidth` and inset
   their cards by the gutter.
@@ -169,7 +178,9 @@ Android's chooser, iOS's activity sheet, or the Web Share API, which needs HTTPS
 or it cannot open, the button copies the message and shows a check mark for two seconds; cancelling the sheet is not
 an error. `showsShareActions()` shows share buttons on every touch-screen device, including Web tablets and
 foldables in the desktop layout, and in the standard layout of narrow windows. It hides them only in the Web desktop
-layout on devices without a touch screen, whose address bar already holds the link. UI tests provide their own `ShareSheet` through `LocalShareSheet`, because the real sheet needs a running app.
+layout on devices without a touch screen, whose address bar already holds the link; Profile's share row follows the
+same rule. UI tests provide their own `ShareSheet` through `LocalShareSheet`, because the real sheet needs a running
+app.
 
 ### Search and link previews
 
@@ -230,12 +241,26 @@ The Web app draws every screen into one canvas with Compose. `WebAppHost` (`shar
 - **External links:** `WebUriHandler` opens pages in a new tab with `noopener` and `mailto:` addresses from the
   current tab. Give elements that open them `Modifier.externalLink(open)` with the same action as their click, so a
   middle click opens them too.
-- **Videos:** the game gallery (`MediaGallery`) loads YouTube's privacy-enhanced player
-  (`www.youtube-nocookie.com`) only after the user presses play, as an iframe that `WebElementView` lays over the
-  canvas (`InlineVideoPlayer.wasmJs.kt`); Android and iOS open the video in YouTube instead. The browser draws the
-  iframe above the canvas, so the player is clipped below the bar the page scrolls under (`coveredTop`). Keep
-  `frame-src` and `https://i.ytimg.com` (thumbnails) in `index.html`'s content security policy in step with it. While
-  the pointer is over a playing video, the mouse wheel goes to YouTube's frame and does not scroll the page.
+- **Videos and the media viewer:** videos play only in the game gallery's preview (`MediaGallery`); the full-screen
+  viewer (`MediaViewer`) shows screenshots only and shares its `MediaGalleryState`. It is drawn above the app through
+  `FullWindowOverlay`, not as a route: the browser's Back closes it through its own history entry
+  (`BrowserBackEntry`), and it handles Android's Back key itself, because Compose would spend the key on clearing focus.
+  - YouTube's privacy-enhanced player loads only after the user presses play: an iframe over the canvas on the Web, and
+    the player page from `YouTubeEmbed.kt` in a WebView or WKWebView on Android and iOS (`YouTubePlayer.*.kt`). The
+    page reports a failure by navigating to `PLAYER_ERROR_URL`, which the web view intercepts.
+  - On Android and iOS, the preview keeps one web view from the first play until it leaves: another video loads into
+    it, and stopping unloads, hides, and shrinks it. Never remove a platform view on its own while its parent layout
+    stays; Compose on Android can then crash with "LayoutNode should be attached to an owner". A WebView in Compose
+    needs `MATCH_PARENT` layout parameters and is destroyed only after Compose has detached it.
+  - `MainActivity` handles rotation and resizing itself (`configChanges`), so a playing video survives them. Read the
+    window size through `windowSize()` (`system/WindowSize.kt`): on Android, `LocalWindowInfo.containerSize` trails
+    one rotation behind.
+  - On the Web, the iframe is clipped below the bar the page scrolls under (`coveredTop`). It keeps the mouse wheel to
+    itself, so a transparent shield covers the picture, but not YouTube's controls, while the video loads and plays:
+    it passes the wheel to the canvas, ignores clicks while the video starts, and pauses it on a click. The player's
+    state comes from YouTube's message channel (`enablejsapi`, `EmbedEvent`), accepted only from the frame and
+    YouTube's origin; without an answer, the shield steps aside after ten seconds. Keep `frame-src` and
+    `https://i.ytimg.com` in `index.html`'s content security policy in step with it.
 - **Autoscrolling:** on Windows, a middle press that no link takes, over a page that can scroll, starts the
   browser-style autoscroll (`PageAutoscrollHost`). A marker appears at the press point, and the page scrolls faster
   the farther the pointer moves from it. After a click, autoscrolling continues until the next click, Esc, a wheel
@@ -243,9 +268,10 @@ The Web app draws every screen into one canvas with Compose. `WebAppHost` (`shar
   only until it is released. Pages take part through `PageScrollbar(state)`, so a new scrolling screen needs only
   that call. Autoscrolling moves the page's own vertical scroll, not horizontal rows inside it. Only Windows gets it:
   macOS has no such convention, and Linux pastes on a middle click.
-- **List scrollbars:** a list of fixed height inside a page, such as the game gallery's thumbnail rail, takes
-  `ListScrollbar(state)` after it in a row. For mouse users it stays visible while the list can scroll, and it keeps
-  its space when the list fits, so the list never changes width.
+- **List scrollbars:** a list of fixed size inside a page, such as the game gallery's thumbnails, takes
+  `ListScrollbar(state)` after it in a row, or `ListScrollbar(state, orientation = Orientation.Horizontal)` under a
+  horizontal one in a column. For mouse users it stays visible while the list can scroll, and it keeps its space when
+  the list fits, so the list never changes size.
 
 Some browser behavior is out of reach while Compose draws into a canvas: a right click shows no browser menu, because
 the browser offers its link menu only over a real link element, and Compose has no link role for elements to place

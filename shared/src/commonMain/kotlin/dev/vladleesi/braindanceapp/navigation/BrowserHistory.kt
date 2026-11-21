@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
@@ -142,6 +143,10 @@ internal class HistoryMirror(
     private var index = 0
     private var restoring: String? = null
 
+    // The open overlay's entry and what closes the overlay; see openOverlay.
+    private var overlayIndex = -1
+    private var closeOverlay: (() -> Unit)? = null
+
     fun start(
         snapshotJson: String,
         path: String,
@@ -190,11 +195,50 @@ internal class HistoryMirror(
         snapshotJson: String,
         currentSnapshotJson: String,
     ): String? {
+        if (closeOverlay != null && entryIndex < overlayIndex) {
+            // Back from the overlay's entry: close the overlay; the screen under it stays.
+            val close = closeOverlay
+            closeOverlay = null
+            overlayIndex = -1
+            close?.invoke()
+        }
         index = entryIndex
         store(index, snapshotJson)
         if (snapshotJson == currentSnapshotJson) return null
         restoring = snapshotJson
         return snapshotJson
+    }
+
+    /**
+     * An overlay opened over the current screen, such as the media viewer. It gets an entry of its own with the same
+     * [snapshotJson] and [path], so the browser's Back calls [onBrowserBack] to close it instead of leaving the screen.
+     * Only a user action opens an overlay, so the browser keeps the entry.
+     */
+    fun openOverlay(
+        snapshotJson: String,
+        path: String,
+        onBrowserBack: () -> Unit,
+    ) {
+        index += 1
+        truncateAfter(index - 1)
+        store(index, snapshotJson)
+        location.push(path, index, snapshotJson)
+        overlayIndex = index
+        closeOverlay = onBrowserBack
+    }
+
+    /**
+     * The overlay closed in the app, such as with its close button. Its entry goes, as Back would remove it, so the
+     * next Back leaves the screen. After the browser's Back closed it, there is nothing left to do.
+     */
+    fun onOverlayClosed() {
+        if (closeOverlay == null) return
+        closeOverlay = null
+        if (index == overlayIndex) {
+            index -= 1
+            location.back()
+        }
+        overlayIndex = -1
     }
 
     /** Takes over a new entry the browser created itself, such as an edited address, for the app's current state. */
@@ -221,17 +265,27 @@ internal class HistoryMirror(
     }
 }
 
-/** Keeps the browser address and history in step with navigation, where a browser exists; see [HistoryMirror]. */
+/**
+ * Keeps the browser address and history in step with navigation, where a browser exists; see [HistoryMirror]. Returns
+ * the history overlays use for their own entries, or null without a browser.
+ */
 @Composable
 internal fun BrowserHistorySync(
     state: NavigationState,
     navigator: Navigator,
-) {
-    val location = browserLocation ?: return
+): OverlayHistory? {
+    val location = browserLocation ?: return null
     val currentNavigator = rememberUpdatedState(navigator)
     val mirror = remember(location) { HistoryMirror(location) }
     val snapshot = { encodeNavigationSnapshot(state.topLevelRoute, state.backStacks.keys, state.backStacks) }
     val path = { (state.backStacks[state.topLevelRoute]?.lastOrNull() ?: state.startRoute).toWebPath() }
+    val overlayHistory =
+        remember(mirror, state) {
+            OverlayHistory(
+                open = { onBrowserBack -> mirror.openOverlay(snapshot(), path(), onBrowserBack) },
+                close = mirror::onOverlayClosed,
+            )
+        }
     DisposableEffect(state, location) {
         mirror.start(snapshot(), path())
         val dispose =
@@ -257,6 +311,31 @@ internal fun BrowserHistorySync(
             mirror.onNavigated(snapshotJson, routePath, replaced = isReplacement(shown, current))
             shown = current
         }
+    }
+    return overlayHistory
+}
+
+/** Browser history entries for overlays over the current screen; see [HistoryMirror.openOverlay]. */
+internal class OverlayHistory(
+    val open: (onBrowserBack: () -> Unit) -> Unit,
+    val close: () -> Unit,
+)
+
+/** The browser history for overlays, or null where there is no browser. */
+internal val LocalOverlayHistory = staticCompositionLocalOf<OverlayHistory?> { null }
+
+/**
+ * While this is in the composition, the overlay calling it has its own browser history entry: the browser's Back
+ * calls [onBack], which should close the overlay, and leaving the composition removes the entry. It does nothing
+ * where there is no browser, where the platform's Back reaches the overlay's own back handler.
+ */
+@Composable
+internal fun BrowserBackEntry(onBack: () -> Unit) {
+    val history = LocalOverlayHistory.current ?: return
+    val currentOnBack = rememberUpdatedState(onBack)
+    DisposableEffect(history) {
+        history.open { currentOnBack.value() }
+        onDispose { history.close() }
     }
 }
 

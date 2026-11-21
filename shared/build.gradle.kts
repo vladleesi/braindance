@@ -61,6 +61,28 @@ require(!apiFixtures || configuredBackendUrl.isEmpty()) {
     "Set either $apiFixturesProperty=true or $backendBaseUrlProperty, not both."
 }
 
+// An API run on this computer, over plain HTTP, is for development only. Every build that makes something to ship (an
+// Android release, benchmark, or Baseline Profile build, an iOS release framework, or the Web production bundle)
+// refuses it, so a shipped app can only ever talk to an HTTPS API.
+val localBackend = Regex("""^http://(localhost|127\.0\.0\.1)(:\d{1,5})?(/.*)?$""").matches(configuredBackendUrl)
+if (localBackend) {
+    val xcodeConfiguration = providers.environmentVariable("CONFIGURATION").orNull.orEmpty()
+    gradle.taskGraph.whenReady {
+        val shipping =
+            allTasks.firstOrNull { task ->
+                val name = task.name
+                "Release" in name ||
+                    "Production" in name ||
+                    "Distribution" in name ||
+                    (name == "embedAndSignAppleFrameworkForXcode" && "Release" in xcodeConfiguration)
+            }
+        check(shipping == null) {
+            "$backendBaseUrlProperty points at an API on this computer, which only development builds may use, " +
+                "but ${shipping?.path} builds something to ship. Use the HTTPS API for it."
+        }
+    }
+}
+
 kotlin {
     android {
         namespace = "$appNamespace.shared"

@@ -2,6 +2,7 @@
 
 package dev.vladleesi.braindanceapp.data.api
 
+import dev.vladleesi.braindanceapp.data.api.clients.isAllowedBackendUrl
 import dev.vladleesi.braindanceapp.testing.mockBackendClient
 import dev.vladleesi.braindanceapp.testing.respondJson
 import io.ktor.client.plugins.ClientRequestException
@@ -21,7 +22,9 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class BackendClientTest {
     private val dispatcher = StandardTestDispatcher()
@@ -111,4 +114,15 @@ class BackendClientTest {
 
             assertEquals(1, calls)
         }
+
+    @Test
+    fun theBackendIsHttpsOrAnApiOnThisComputer() {
+        assertTrue(isAllowedBackendUrl("https://api.example.com"))
+        assertTrue(isAllowedBackendUrl("http://localhost:8081"))
+        assertTrue(isAllowedBackendUrl("http://127.0.0.1:8081/"))
+        assertFalse(isAllowedBackendUrl("http://api.example.com"))
+        assertFalse(isAllowedBackendUrl("http://localhost.example.com"))
+        assertFalse(isAllowedBackendUrl("http://localhost@api.example.com"))
+        assertFalse(isAllowedBackendUrl("http://192.168.1.10:8081"))
+    }
 }

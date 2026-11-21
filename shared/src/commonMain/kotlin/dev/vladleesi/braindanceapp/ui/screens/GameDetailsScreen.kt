@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,8 +31,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
@@ -42,9 +47,11 @@ import dev.vladleesi.braindanceapp.resources.game_details_not_found
 import dev.vladleesi.braindanceapp.resources.game_details_screen_similar_games
 import dev.vladleesi.braindanceapp.resources.game_details_show_all
 import dev.vladleesi.braindanceapp.resources.game_details_show_fewer
+import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.CarouselSection
 import dev.vladleesi.braindanceapp.ui.components.ExpandableText
+import dev.vladleesi.braindanceapp.ui.components.FullWindowOverlay
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.ShareButton
@@ -57,19 +64,25 @@ import dev.vladleesi.braindanceapp.ui.components.details.LibraryActionsState
 import dev.vladleesi.braindanceapp.ui.components.details.OriginLine
 import dev.vladleesi.braindanceapp.ui.components.details.RelatedGameRow
 import dev.vladleesi.braindanceapp.ui.components.details.RelatedHeader
+import dev.vladleesi.braindanceapp.ui.components.details.StoresBlock
 import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.media.GameMedia
 import dev.vladleesi.braindanceapp.ui.components.media.MediaGallery
+import dev.vladleesi.braindanceapp.ui.components.media.MediaGalleryState
+import dev.vladleesi.braindanceapp.ui.components.media.MediaViewer
 import dev.vladleesi.braindanceapp.ui.components.media.rememberMediaGalleryState
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.pageWidth
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
+import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
@@ -78,6 +91,7 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedCategory
 import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedGroup
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.ui.viewmodels.VersionSelector
+import dev.vladleesi.braindanceapp.utils.StoreTypeModel
 import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
 import dev.vladleesi.braindanceapp.utils.openExternalUrl
 import kotlinx.coroutines.delay
@@ -165,6 +179,7 @@ private fun GameDetailsScreen(
     val (topBarColor, backButtonColor, topBarTitleColor) =
         lazyListState.calculateScrollTopBarColors()
     val isLargeWindow = isLargeWindow()
+    val desktop = desktopLayout() != null
     val gutter = pageGutter()
     // Another game opens on top; returning to the game under this one goes back to it rather than stacking a copy.
     val openGame: (Int) -> Unit = { id -> navigator.open(GameDetailsRoute(id)) }
@@ -177,6 +192,12 @@ private fun GameDetailsScreen(
     // The chosen tab and whether it shows every release, kept per page across recreation.
     var relatedCategory by rememberSaveable(state.gameDetails.id) { mutableStateOf<String?>(null) }
     var relatedExpanded by rememberSaveable(state.gameDetails.id) { mutableStateOf(false) }
+    // Shared by the gallery and its full-screen viewer, and kept at the screen so the viewer stays open however far
+    // the list scrolls and across recreation.
+    val media = rememberMediaGalleryState(state.gameDetails.media)
+    val watchOnYouTube: (GameMedia.YouTubeVideo) -> Unit = { video -> uriHandler.openExternalUrl(video.watchUrl) }
+    // The desktop layout shows where to buy the game beside its media, both at a glance before the description.
+    val storesBesideMedia = desktop && !media.gallery.isEmpty && state.gameDetails.stores.isNotEmpty()
 
     Box(
         modifier =
@@ -215,12 +236,15 @@ private fun GameDetailsScreen(
             // Right under the title and versions, as in app stores: what the game looks like comes before reading
             // about it, and the media belongs to the version selected above it.
             mediaItem(
-                details = state.gameDetails,
+                media = media,
+                gameName = state.gameDetails.name,
                 gutter = gutter,
+                desktop = desktop,
+                stores = if (storesBesideMedia) state.gameDetails.stores else emptyList(),
                 placeholder = loadingRelease,
-                onWatchOnYouTube = { video -> uriHandler.openExternalUrl(video.watchUrl) },
+                onWatchOnYouTube = watchOnYouTube,
             )
-            releaseItems(state.gameDetails, gutter, placeholder = loadingRelease)
+            releaseItems(state.gameDetails, gutter, placeholder = loadingRelease, showStores = !storesBesideMedia)
             relatedItems(
                 groups = state.gameDetails.relations.related,
                 category = relatedCategory,
@@ -245,6 +269,11 @@ private fun GameDetailsScreen(
             titleColor = topBarTitleColor,
             onBackButtonPressed = onBackButtonPressed,
         )
+    }
+    if (media.isViewerOpen) {
+        FullWindowOverlay {
+            MediaViewer(state = media, gameName = state.gameDetails.name)
+        }
     }
 }
 
@@ -282,13 +311,14 @@ private fun GameDetailsTopBar(
 }
 
 /**
- * The shown release's summary and stores. While [placeholder], another version's are loading and these keep their
- * place as shimmering placeholders of their exact size.
+ * The shown release's summary and, unless they are beside the media, its stores. While [placeholder], another
+ * version's are loading and these keep their place as shimmering placeholders of their exact size.
  */
 private fun LazyListScope.releaseItems(
     details: GameDetails,
     gutter: Dp,
     placeholder: Boolean,
+    showStores: Boolean,
 ) {
     if (details.summary.isNotEmpty()) {
         item {
@@ -304,7 +334,7 @@ private fun LazyListScope.releaseItems(
         }
         item { Spacer(modifier = Modifier.size(Dimens.large)) }
     }
-    if (details.stores.isNotEmpty()) {
+    if (showStores && details.stores.isNotEmpty()) {
         storesBlockItem(details.stores, placeholder)
     }
 }
@@ -328,26 +358,46 @@ private fun rememberDelayedLoading(loading: Boolean): Boolean {
     return loading && shown
 }
 
-/** The shown release's videos and screenshots, when it has any. */
+/**
+ * The shown release's videos and screenshots, when it has any. On phones and tablets the gallery spans the page, so
+ * its thumbnail strip scrolls to the screen's edge, as carousels do. The [desktop] layout keeps it to a reading
+ * column's width, thumbnails under the preview, with [stores] beside it.
+ */
+@Suppress("LongParameterList")
 private fun LazyListScope.mediaItem(
-    details: GameDetails,
+    media: MediaGalleryState,
+    gameName: String,
     gutter: Dp,
+    desktop: Boolean,
+    stores: List<StoreTypeModel>,
     placeholder: Boolean,
     onWatchOnYouTube: (GameMedia.YouTubeVideo) -> Unit,
 ) {
-    if (details.media.isEmpty) return
+    if (media.gallery.isEmpty) return
     item(key = MEDIA_KEY) {
-        MediaGallery(
-            state = rememberMediaGalleryState(details.media),
-            gameName = details.name,
-            onWatchOnYouTube = onWatchOnYouTube,
-            // Spans the page's width so the thumbnail strip scrolls to the screen's edge, as carousels do.
-            modifier = Modifier.pageWidth(gutter),
-            placeholder = placeholder,
-            horizontalPadding = gutter,
-            // The page scrolls under the top bar.
-            coveredTop = Dimens.topBarHeightWithInsets,
-        )
+        val gallery: @Composable (Modifier, Dp) -> Unit = { modifier, horizontalPadding ->
+            MediaGallery(
+                state = media,
+                gameName = gameName,
+                onWatchOnYouTube = onWatchOnYouTube,
+                modifier = modifier,
+                placeholder = placeholder,
+                horizontalPadding = horizontalPadding,
+                // The page scrolls under the top bar.
+                coveredTop = Dimens.topBarHeightWithInsets,
+            )
+        }
+        if (desktop) {
+            MediaWithStores(
+                media = { gallery(Modifier, 0.dp) },
+                stores = {
+                    if (stores.isNotEmpty()) StoresBlock(stores = stores, placeholder = placeholder)
+                },
+                modifier = Modifier.pageColumn(gutter).fillMaxWidth(),
+            )
+        } else {
+            gallery(Modifier.pageWidth(gutter), gutter)
+        }
     }
     item { Spacer(modifier = Modifier.size(Dimens.large)) }
 }
@@ -476,5 +526,66 @@ private fun LazyListScope.similarGamesItems(
                 )
             }
         }
+    }
+}
+
+// The media keeps at least this width beside the stores; a narrower page column puts the stores under it.
+private val MinMediaBesideStores = 480.dp
+private val StoresColumnWidth = 320.dp
+
+/**
+ * The [media] at most a reading column wide and the [stores] beside it, or under it when the column cannot fit both
+ * with the media at [MinMediaBesideStores]. Both start at the top; a single layout pass, with no subcomposition.
+ */
+@Composable
+private fun MediaWithStores(
+    media: @Composable () -> Unit,
+    stores: @Composable () -> Unit,
+    modifier: Modifier,
+) {
+    Layout(
+        contents = listOf(media, stores),
+        modifier = modifier,
+    ) { (mediaMeasurables, storesMeasurables), constraints ->
+        val width = constraints.maxWidth
+        val gap = Dimens.large.roundToPx()
+        val readable = Dimens.readableTextWidth.roundToPx()
+        val storesWidth = StoresColumnWidth.roundToPx()
+        val hasStores = storesMeasurables.isNotEmpty()
+        val beside = hasStores && width >= MinMediaBesideStores.roundToPx() + gap + storesWidth
+        val mediaWidth = minOf(readable, if (beside) width - gap - storesWidth else width)
+        val mediaPlaceable = mediaMeasurables.firstOrNull()?.measure(Constraints(maxWidth = mediaWidth))
+        val storesPlaceable =
+            storesMeasurables.firstOrNull()?.measure(Constraints(maxWidth = if (beside) storesWidth else mediaWidth))
+        val mediaHeight = mediaPlaceable?.height ?: 0
+        val storesHeight = storesPlaceable?.height ?: 0
+        val height =
+            when {
+                storesPlaceable == null -> mediaHeight
+                beside -> maxOf(mediaHeight, storesHeight)
+                else -> mediaHeight + gap + storesHeight
+            }
+        layout(width, height) {
+            mediaPlaceable?.placeRelative(0, 0)
+            if (beside) {
+                storesPlaceable?.placeRelative((mediaPlaceable?.width ?: 0) + gap, 0)
+            } else {
+                storesPlaceable?.placeRelative(0, mediaHeight + gap)
+            }
+        }
+    }
+}
+
+private val PreviewBlockHeight = 180.dp
+
+@Preview(widthDp = 1100)
+@Composable
+internal fun MediaWithStoresPreview() {
+    BraindanceTheme {
+        MediaWithStores(
+            media = { Box(modifier = Modifier.fillMaxWidth().height(PreviewBlockHeight).background(white)) },
+            stores = { Box(modifier = Modifier.fillMaxWidth().height(PreviewBlockHeight / 2).background(accent)) },
+            modifier = Modifier.background(background).fillMaxWidth(),
+        )
     }
 }

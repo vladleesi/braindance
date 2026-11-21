@@ -65,11 +65,15 @@ val webPublicOrigin: String =
         }
 val webSiteUrl: String = webPublicOrigin + webBasePath.removeSuffix("/")
 
+// HTTPS, or plain HTTP to this computer for an API run locally, as BackendClient accepts: such traffic never leaves it.
 val backendOrigin: String =
     backendBaseUrl.takeIf(String::isNotBlank)?.let { url ->
         val uri = URI(url.trim())
-        require(uri.scheme == "https" && !uri.host.isNullOrEmpty()) { "BACKEND_BASE_URL must be an HTTPS URL" }
-        "https://${uri.host}${if (uri.port == -1) "" else ":${uri.port}"}"
+        val localHttp = uri.scheme == "http" && uri.host in setOf("localhost", "127.0.0.1")
+        require((uri.scheme == "https" || localHttp) && !uri.host.isNullOrEmpty()) {
+            "BACKEND_BASE_URL must be an HTTPS URL, or HTTP on localhost for an API run locally"
+        }
+        "${uri.scheme}://${uri.host}${if (uri.port == -1) "" else ":${uri.port}"}"
     } ?: ""
 
 // Startup-critical Compose resources that the page preloads: the app's fonts and its strings. Each key is the served

@@ -25,7 +25,8 @@ fun String.toContentDescription(): String = "Image: $this"
  * [placeholderMemoryCacheKey] names another image already in the memory cache, such as a smaller copy of the same
  * picture, to show while this one loads; nothing is shown when it is not cached. Turn off [crossfade] for an image of
  * another shape than its placeholder: while fading, Coil sizes both to the larger width and the larger height of the
- * two, a shape neither has, so the picture would jump when the image arrives and again when the fade ends.
+ * two, a shape neither has, so the picture would jump when the image arrives and again when the fade ends. Set
+ * [keepOriginalSize] for an image that is zoomed in, which needs the file's every pixel.
  */
 @Composable
 fun rememberCachedImageRequest(
@@ -33,13 +34,15 @@ fun rememberCachedImageRequest(
     memoryCacheKey: String?,
     placeholderMemoryCacheKey: String? = null,
     crossfade: Boolean = true,
+    keepOriginalSize: Boolean = !scalesDecodedImagesSmoothly,
 ): ImageRequest {
     val context = LocalPlatformContext.current
-    return remember(context, data, memoryCacheKey, placeholderMemoryCacheKey, crossfade) {
+    return remember(context, data, memoryCacheKey, placeholderMemoryCacheKey, crossfade, keepOriginalSize) {
         cachedImageRequest(
             context = context,
             data = data,
             memoryCacheKey = memoryCacheKey,
+            keepOriginalSize = keepOriginalSize,
             placeholderMemoryCacheKey = placeholderMemoryCacheKey,
             crossfade = crossfade,
         )

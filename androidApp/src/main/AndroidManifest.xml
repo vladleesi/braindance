@@ -17,9 +17,12 @@
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"
             android:value="${crashlyticsCollectionEnabled}" />
-        <!-- singleTop: a link opened while the app is in front reaches the running screen through onNewIntent. -->
+        <!-- singleTop: a link opened while the app is in front reaches the running screen through onNewIntent.
+             configChanges: Compose lays out again by itself, so rotating or resizing keeps the activity and a playing
+             trailer. Read the window size through windowSize() in shared WindowSize.kt. -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:exported="true"
             android:launchMode="singleTop">
             <intent-filter>

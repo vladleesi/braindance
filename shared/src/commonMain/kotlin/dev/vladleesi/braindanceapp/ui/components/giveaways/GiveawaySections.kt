@@ -37,9 +37,9 @@ import dev.vladleesi.braindanceapp.resources.giveaway_details_ends_tomorrow
 import dev.vladleesi.braindanceapp.resources.giveaway_details_no_end_date
 import dev.vladleesi.braindanceapp.resources.giveaway_details_platforms
 import dev.vladleesi.braindanceapp.resources.giveaway_details_view_on_gamerpower
+import dev.vladleesi.braindanceapp.ui.components.LinkDivider
 import dev.vladleesi.braindanceapp.ui.components.SurfaceCard
 import dev.vladleesi.braindanceapp.ui.components.TonalButton
-import dev.vladleesi.braindanceapp.ui.components.profile.ProfileDivider
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -86,7 +86,7 @@ fun GiveawayFactsCard(
         Column {
             EndingRow(ending = ending)
             if (claimedCount > 0) {
-                ProfileDivider()
+                LinkDivider()
                 FactRow(
                     label = stringResource(Res.string.giveaway_details_claimed_by),
                     value =
@@ -97,11 +97,11 @@ fun GiveawayFactsCard(
                 )
             }
             addedOn?.let { date ->
-                ProfileDivider()
+                LinkDivider()
                 FactRow(label = stringResource(Res.string.giveaway_details_added), value = date.formatShortDate())
             }
             if (platformNames.isNotEmpty()) {
-                ProfileDivider()
+                LinkDivider()
                 FactRow(
                     label = stringResource(Res.string.giveaway_details_platforms),
                     value = platformNames.joinToString(", "),

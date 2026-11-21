@@ -201,6 +201,8 @@ class GameFamilyDetailsTest : ViewModelTest() {
                             """"platforms":[{"id":49,"name":"Xbox One"},{"id":9,"name":"PlayStation 3"}],""" +
                             """"genres":[{"id":5,"name":"Shooter"}],""" +
                             """"websites":[{"id":2,"url":"https://masseffect.fandom.com/wiki/N7","type":2}],""" +
+                            // The API sends the game's backdrop for an edition without one of its own.
+                            """"backdrop":{"url":"//images.igdb.com/igdb/image/upload/t_thumb/game.jpg"},""" +
                             """"canonical_id":75,"canonical":$game,$family}]""",
                 )
 

@@ -162,9 +162,10 @@ internal fun TextLayoutResult.hits(
 
 /**
  * The game's versions as one row of chips: the base game and its editions and updates. The selected chip is the
- * version the page shows, marked by a check, an accent outline, and the selected state for screen readers; the line
- * under the chips says what kind of version it is. Every other chip opens its version, which has its own address:
- * [versionRoute] of the version's ID. On the Web, a middle click or Ctrl-click opens that address in a new tab.
+ * version the page shows, marked by a check, an accent outline, and the selected state for screen readers. The chips'
+ * names say enough, so no line names the selected version's kind. Every other chip opens its version, which has its
+ * own address: [versionRoute] of the version's ID. On the Web, a middle click or Ctrl-click opens that address in a
+ * new tab.
  *
  * In a [compact] layout, more than two versions collapse to the selected one and a chip that shows the rest, so the
  * row stays one line on a phone; wide layouts show up to [WIDE_SHOWN_CHOICES] before collapsing.
@@ -196,10 +197,6 @@ fun GameVersionSelector(
                 onClick = { if (!selected) onSelect(option.id) },
                 modifier = Modifier.routeLink(versionRoute(option.id)),
             )
-        }
-        // What the selected version is; its release date is the page's, shown under the title.
-        selector.selected?.takeIf { it.kind != GameKind.GAME }?.let { selected ->
-            Text(text = selected.kind.text(), style = MaterialTheme.typography.subtitle2, color = white)
         }
     }
 }

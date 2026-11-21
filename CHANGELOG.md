@@ -5,6 +5,43 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.29.0 — 2026-11-20
+
+### Android, iOS, and Web
+
+- Screenshots open full screen with the button in the corner of the large picture. Swipe or use the arrow keys to
+  move through them; pinch, double-tap, or Ctrl-scroll to zoom in, drag to look around, and switch between the whole
+  image and one that fills the screen. Closing returns to the screenshot you viewed last. Trailers stay in the large
+  picture on the game page.
+- If a trailer can't be played in the app, a link opens it on YouTube instead.
+- The editions and updates row no longer repeats the selected version's kind under the chips.
+- The top of a game page shows the game's key art when it has some, instead of always its first screenshot, and keeps
+  faces in view on wide screens.
+- "Where to buy" lists the stores as rows with their logos, which are easier to tap and show that they open outside
+  the app.
+
+### Android and iOS
+
+- Trailers play right on the game page instead of opening YouTube. YouTube's own button in the player still opens
+  the YouTube app.
+- Full screen works in portrait and landscape.
+
+### Android
+
+- A playing trailer keeps playing when you turn the phone.
+
+### Web
+
+- The browser's Back button and Esc close full screen. A button there also switches the browser itself to full screen.
+- The page scrolls with the mouse wheel over a playing trailer, and a click on the trailer pauses it.
+- A trailer starts on the first click: clicking again while it loads no longer stops it.
+- On wide screens, the gallery is narrower, with its thumbnails under the large picture and "Where to buy" beside it.
+- Profile no longer offers to share the app on desktop, where the address bar already has the link.
+
+### Website and documentation
+
+- braindancegg.com's latest updates are refreshed.
+
 ## 0.28.0 — 2026-11-19
 
 ### Android, iOS, and Web

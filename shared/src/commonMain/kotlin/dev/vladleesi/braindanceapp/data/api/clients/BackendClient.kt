@@ -27,9 +27,20 @@ object BackendClient {
     }
 }
 
+/**
+ * Whether [baseUrl] may be the backend's: HTTPS, or plain HTTP to this computer for an API run locally, since such
+ * traffic never leaves it. Any other HTTP address is refused.
+ */
+internal fun isAllowedBackendUrl(baseUrl: String): Boolean =
+    baseUrl.startsWith("https://") || LocalHttpUrl.matches(baseUrl)
+
+private val LocalHttpUrl = Regex("""^http://(localhost|127\.0\.0\.1)(:\d{1,5})?(/.*)?$""")
+
 private fun HttpClientConfig<*>.defaultRequestConfig(baseUrl: String) {
     val normalizedBaseUrl = baseUrl.trimEnd('/')
-    require(normalizedBaseUrl.startsWith("https://")) { "Set BACKEND_BASE_URL to the HTTPS backend URL." }
+    require(isAllowedBackendUrl(normalizedBaseUrl)) {
+        "Set BACKEND_BASE_URL to the HTTPS backend URL, or to an HTTP localhost URL for an API run locally."
+    }
     defaultRequest {
         url("$normalizedBaseUrl/")
     }

@@ -30,4 +30,6 @@ data class GameItem(
     val canonical: GameItem? = null,
     /** The [canonicalId] game's related entries; absent when the API could not load them. */
     val family: GameFamily? = null,
+    /** The image the API chose for the top of the page, already falling back to the canonical game's; often absent. */
+    val backdrop: Cover? = null,
 )

@@ -2,12 +2,14 @@
 
 package dev.vladleesi.braindanceapp.ui.components
 
+import androidx.compose.foundation.HorizontalScrollbar
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -32,27 +34,47 @@ private const val PREVIEW_ROWS = 20
 internal actual fun ListScrollbar(
     state: LazyListState,
     modifier: Modifier,
+    orientation: Orientation,
 ) {
     // A window used only by touch keeps the space for the list.
     if (!rememberMediaQueryMatches(FINE_POINTER_QUERY)) return
     val canScroll by remember(state) {
         derivedStateOf(structuralEqualityPolicy()) { state.canScrollForward || state.canScrollBackward }
     }
-    // The gutter is always there, so the list keeps its width whether or not it overflows.
-    Box(
-        modifier =
-            modifier
-                .fillMaxHeight()
-                .padding(start = Dimens.tiny)
-                .width(PageScrollbarStyle.thickness),
-    ) {
-        if (canScroll) {
-            VerticalScrollbar(
-                adapter = rememberScrollbarAdapter(state),
-                // The wheel over the scrollbar scrolls the list, as over the list itself.
-                modifier = Modifier.fillMaxHeight().scrollable(state, Orientation.Vertical, reverseDirection = true),
-                style = PageScrollbarStyle,
-            )
+    val adapter = rememberScrollbarAdapter(state)
+    // The gutter is always there, so the list keeps its size whether or not it overflows. The wheel over the
+    // scrollbar scrolls the list, as over the list itself.
+    if (orientation == Orientation.Vertical) {
+        Box(
+            modifier =
+                modifier
+                    .fillMaxHeight()
+                    .padding(start = Dimens.tiny)
+                    .width(PageScrollbarStyle.thickness),
+        ) {
+            if (canScroll) {
+                VerticalScrollbar(
+                    adapter = adapter,
+                    modifier = Modifier.fillMaxHeight().scrollable(state, orientation, reverseDirection = true),
+                    style = PageScrollbarStyle,
+                )
+            }
+        }
+    } else {
+        Box(
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .padding(top = Dimens.tiny)
+                    .height(PageScrollbarStyle.thickness),
+        ) {
+            if (canScroll) {
+                HorizontalScrollbar(
+                    adapter = adapter,
+                    modifier = Modifier.fillMaxWidth().scrollable(state, orientation, reverseDirection = true),
+                    style = PageScrollbarStyle,
+                )
+            }
         }
     }
 }

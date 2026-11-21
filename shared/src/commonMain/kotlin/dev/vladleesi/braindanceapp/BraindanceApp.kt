@@ -10,13 +10,17 @@ import dev.vladleesi.braindanceapp.navigation.AppLinkHandler
 import dev.vladleesi.braindanceapp.navigation.AppLinkInbox
 import dev.vladleesi.braindanceapp.navigation.BrowserHistorySync
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.LocalOverlayHistory
 import dev.vladleesi.braindanceapp.navigation.Navigator
 import dev.vladleesi.braindanceapp.navigation.appLinkRoute
 import dev.vladleesi.braindanceapp.navigation.rememberNavigationState
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.system.LocalDesktopLayoutEnabled
+import dev.vladleesi.braindanceapp.ui.components.LocalOverlayHost
 import dev.vladleesi.braindanceapp.ui.components.NavigationGraph
 import dev.vladleesi.braindanceapp.ui.components.NavigationScaffold
+import dev.vladleesi.braindanceapp.ui.components.OverlayHost
+import dev.vladleesi.braindanceapp.ui.components.OverlayHostLayout
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.utils.ImageLoaderInitializer
 
@@ -42,16 +46,21 @@ fun BraindanceApp(
         )
 
     val navigator = remember { Navigator(navigationState) }
-    BrowserHistorySync(navigationState, navigator)
+    val overlayHistory = BrowserHistorySync(navigationState, navigator)
     AppLinkHandler(appLinks, navigator)
+    val overlayHost = remember { OverlayHost() }
 
     CompositionLocalProvider(
         LocalNavigator provides navigator,
         LocalDesktopLayoutEnabled provides desktopLayoutEnabled,
+        LocalOverlayHost provides overlayHost,
+        LocalOverlayHistory provides overlayHistory,
     ) {
         BraindanceTheme {
-            NavigationScaffold(modifier = modifier) { contentModifier ->
-                NavigationGraph(modifier = contentModifier)
+            OverlayHostLayout(overlayHost) {
+                NavigationScaffold(modifier = modifier) { contentModifier ->
+                    NavigationGraph(modifier = contentModifier)
+                }
             }
         }
     }

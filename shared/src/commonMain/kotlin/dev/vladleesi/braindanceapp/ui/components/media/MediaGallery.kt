@@ -7,12 +7,14 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,6 +42,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -52,7 +55,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -62,8 +69,10 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -78,6 +87,7 @@ import coil3.compose.AsyncImage
 import dev.vladleesi.braindanceapp.navigation.externalLink
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.game_media_next
+import dev.vladleesi.braindanceapp.resources.game_media_open_viewer
 import dev.vladleesi.braindanceapp.resources.game_media_play
 import dev.vladleesi.braindanceapp.resources.game_media_position
 import dev.vladleesi.braindanceapp.resources.game_media_previous
@@ -87,12 +97,13 @@ import dev.vladleesi.braindanceapp.resources.game_media_title
 import dev.vladleesi.braindanceapp.resources.game_media_unavailable
 import dev.vladleesi.braindanceapp.resources.game_media_video
 import dev.vladleesi.braindanceapp.resources.game_media_video_of_game
-import dev.vladleesi.braindanceapp.resources.game_media_watch
+import dev.vladleesi.braindanceapp.resources.game_media_video_unavailable
 import dev.vladleesi.braindanceapp.resources.game_media_watch_on_youtube
 import dev.vladleesi.braindanceapp.resources.game_media_youtube
 import dev.vladleesi.braindanceapp.system.hasTouchScreen
 import dev.vladleesi.braindanceapp.system.windowHeight
 import dev.vladleesi.braindanceapp.ui.components.ListScrollbar
+import dev.vladleesi.braindanceapp.ui.components.TonalButton
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -100,6 +111,7 @@ import dev.vladleesi.braindanceapp.ui.style.FocusVisibleIndication
 import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.black
+import dev.vladleesi.braindanceapp.ui.style.icons.Expand
 import dev.vladleesi.braindanceapp.ui.style.icons.OpenInNew
 import dev.vladleesi.braindanceapp.ui.style.icons.Play
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith70Alpha
@@ -112,6 +124,9 @@ import dev.vladleesi.braindanceapp.utils.placeholder
 import dev.vladleesi.braindanceapp.utils.rememberCachedImageRequest
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
 import dev.vladleesi.braindanceapp.utils.toContentDescription
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import org.jetbrains.compose.resources.stringResource
 
 // The preview's frame. Screenshots of another shape are fitted into it, so selecting one never moves the layout.
@@ -144,18 +159,21 @@ private val SwipeThreshold = 48.dp
 /**
  * The game's videos and screenshots: a large preview of the selected item over a strip of thumbnails, or, from
  * [SideRailMinWidth], beside a rail of them. Selecting a thumbnail changes only the preview. Screenshots show at once,
- * fitted into the 16:9 frame; a video shows YouTube's poster and loads nothing else until the user presses play. Then
- * it plays in place where [playsInline] (see [playsVideosInline]), and otherwise [onWatchOnYouTube] opens it.
+ * fitted into the 16:9 frame; a video shows YouTube's poster and loads nothing else until the user presses play,
+ * then plays in the preview with YouTube's controls; videos play only there. A screenshot's full-screen button opens
+ * [state]'s viewer, which shows the screenshots. If a video cannot play, [onWatchOnYouTube] offers it on YouTube
+ * instead.
  *
  * Only the selected item's full-size image loads; thumbnails load as they scroll into view, at a small size. Pointer
  * devices also get previous and next buttons on the preview, touch screens swipe it, and arrow keys move through the
  * thumbnails. The gallery hides itself when it is empty. Each image shows a shimmering skeleton until it arrives, and
- * while [placeholder], another version's media is loading and the preview and thumbnails are skeletons.
+ * while [placeholder], another version's media is loading and the preview and thumbnails are skeletons. When the
+ * viewer closes, keyboard focus returns to the full-screen button.
  *
  * Like a carousel, the gallery spans the page's width and insets its content by [horizontalPadding], usually the page
  * gutter: the heading and preview line up with the page column, and the thumbnail strip scrolls through the padding,
  * so thumbnails slide out at the screen's edge. [coveredTop] is the height of a bar at the window's top that the page
- * scrolls under; a playing video is cut off below it (see [InlineVideoPlayer]).
+ * scrolls under; a playing video is cut off below it (see [YouTubePlayer]).
  */
 @Composable
 fun MediaGallery(
@@ -166,9 +184,10 @@ fun MediaGallery(
     placeholder: Boolean = false,
     horizontalPadding: Dp = 0.dp,
     coveredTop: Dp = 0.dp,
-    playsInline: Boolean = playsVideosInline,
 ) {
     if (state.gallery.isEmpty) return
+    val viewerButtonFocus = remember { FocusRequester() }
+    ReturnFocusAfterViewer(state, viewerButtonFocus)
     // A window of unknown height, as in an IDE preview, does not limit the preview.
     val windowHeight = windowHeight()
     val maxPreviewWidth =
@@ -199,44 +218,98 @@ fun MediaGallery(
                 .width(if (sideRail) previewWidth + Dimens.small + RailWidth else previewWidth)
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.small)) {
             MediaHeader(state = state, modifier = inset)
-            if (sideRail) {
-                Row(modifier = inset, horizontalArrangement = Arrangement.spacedBy(Dimens.small)) {
+            // One layout for both arrangements, so the preview, and a video playing in it, stay in place when the
+            // thumbnails move between the rail and the strip, as when a phone turns.
+            MediaBody(
+                sideRail = sideRail,
+                horizontalPadding = horizontalPadding,
+                preview = {
                     MediaPreview(
                         state = state,
                         gameName = gameName,
                         width = previewWidth,
-                        playsInline = playsInline,
                         coveredTop = coveredTop,
+                        viewerButtonFocus = viewerButtonFocus,
                         onWatchOnYouTube = onWatchOnYouTube,
                         modifier = previewModifier,
                     )
-                    MediaThumbnails(
-                        state = state,
-                        vertical = true,
-                        placeholder = placeholder,
-                        modifier = Modifier.size(width = RailWidth, height = previewHeight),
-                    )
-                }
-            } else {
-                MediaPreview(
-                    state = state,
-                    gameName = gameName,
-                    width = previewWidth,
-                    playsInline = playsInline,
-                    coveredTop = coveredTop,
-                    onWatchOnYouTube = onWatchOnYouTube,
-                    modifier = Modifier.padding(start = horizontalPadding).then(previewModifier),
-                )
-                if (hasThumbnails) {
-                    MediaThumbnails(
-                        state = state,
-                        vertical = false,
-                        placeholder = placeholder,
-                        modifier = Modifier.fillMaxWidth(),
-                        contentPadding = PaddingValues(horizontal = horizontalPadding),
-                    )
-                }
+                },
+                thumbnails = {
+                    if (hasThumbnails) {
+                        MediaThumbnails(
+                            state = state,
+                            vertical = sideRail,
+                            placeholder = placeholder,
+                            modifier =
+                                if (sideRail) {
+                                    Modifier.size(width = RailWidth, height = previewHeight)
+                                } else {
+                                    Modifier.fillMaxWidth()
+                                },
+                            contentPadding =
+                                if (sideRail) PaddingValues() else PaddingValues(horizontal = horizontalPadding),
+                        )
+                    }
+                },
+            )
+        }
+    }
+}
+
+/**
+ * Places the [preview] at the page column's start, inset by [horizontalPadding], and the [thumbnails] beside it in a
+ * [sideRail] or under it across the whole width. Each keeps its own size.
+ */
+@Composable
+private fun MediaBody(
+    sideRail: Boolean,
+    horizontalPadding: Dp,
+    preview: @Composable () -> Unit,
+    thumbnails: @Composable () -> Unit,
+) {
+    Layout(contents = listOf(preview, thumbnails), modifier = Modifier.fillMaxWidth()) { measurables, constraints ->
+        val padding = horizontalPadding.roundToPx()
+        val gap = Dimens.small.roundToPx()
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val previewPlaceable = measurables[0].firstOrNull()?.measure(loose)
+        val thumbnailsPlaceable = measurables[1].firstOrNull()?.measure(loose)
+        val previewWidth = previewPlaceable?.width ?: 0
+        val previewHeight = previewPlaceable?.height ?: 0
+        val thumbnailsHeight = thumbnailsPlaceable?.height ?: 0
+        val height =
+            when {
+                thumbnailsPlaceable == null -> previewHeight
+                sideRail -> maxOf(previewHeight, thumbnailsHeight)
+                else -> previewHeight + gap + thumbnailsHeight
             }
+        layout(constraints.maxWidth, height) {
+            previewPlaceable?.placeRelative(padding, 0)
+            if (sideRail) {
+                thumbnailsPlaceable?.placeRelative(padding + previewWidth + gap, 0)
+            } else {
+                thumbnailsPlaceable?.placeRelative(0, previewHeight + gap)
+            }
+        }
+    }
+}
+
+/**
+ * Moves keyboard focus back to the full-screen button, through [viewerButtonFocus], when [state]'s viewer closes after
+ * keyboard use. After touch, focus stays cleared: on Android, Back would otherwise first clear it and seem to do
+ * nothing.
+ */
+@Composable
+private fun ReturnFocusAfterViewer(
+    state: MediaGalleryState,
+    viewerButtonFocus: FocusRequester,
+) {
+    val inputModeManager = LocalInputModeManager.current
+    LaunchedEffect(state, viewerButtonFocus, inputModeManager) {
+        var wasOpen = state.isViewerOpen
+        snapshotFlow { state.isViewerOpen }.collect { open ->
+            val keyboard = inputModeManager.inputMode == InputMode.Keyboard
+            if (wasOpen && !open && keyboard) viewerButtonFocus.requestFocusSafely()
+            wasOpen = open
         }
     }
 }
@@ -272,8 +345,8 @@ private fun MediaPreview(
     state: MediaGalleryState,
     gameName: String,
     width: Dp,
-    playsInline: Boolean,
     coveredTop: Dp,
+    viewerButtonFocus: FocusRequester,
     onWatchOnYouTube: (GameMedia.YouTubeVideo) -> Unit,
     modifier: Modifier,
 ) {
@@ -282,6 +355,12 @@ private fun MediaPreview(
     val widthPx = with(LocalDensity.current) { width.roundToPx() }
     val swipeThresholdPx = with(LocalDensity.current) { SwipeThreshold.toPx() }
     val hasArrows = remember { !hasTouchScreen() } && state.gallery.items.size > 1
+    val playing = state.isPlaying
+    val playingVideo = (item as? GameMedia.YouTubeVideo)?.takeIf { playing && !state.playbackFailed }
+    // The player is created on the first play and then stays for as long as the preview does, stopped or playing
+    // another video: a platform view removed on its own, while this box stays, can crash Compose on Android.
+    var playerCreated by remember { mutableStateOf(false) }
+    if (playingVideo != null && !playerCreated) SideEffect { playerCreated = true }
     Box(
         modifier =
             modifier
@@ -306,52 +385,87 @@ private fun MediaPreview(
                     )
 
                 is GameMedia.YouTubeVideo ->
-                    if (playsInline && state.isPlaying) {
-                        InlineVideoPlayer(
-                            video = item,
-                            title =
-                                stringResource(
-                                    Res.string.game_media_video_of_game,
-                                    gameName,
-                                    position.number,
-                                    position.count,
-                                ),
-                            coveredTop = coveredTop,
-                            modifier = Modifier.fillMaxSize(),
-                        )
+                    if (playing && state.playbackFailed) {
+                        VideoUnavailable(onWatchOnYouTube = { onWatchOnYouTube(item) })
                     } else {
+                        // Stays under a playing video, so the frame is never empty while the player loads.
                         VideoPoster(
                             video = item,
                             widthPx = widthPx,
-                            playsInline = playsInline,
+                            // YouTube's standard poster letterboxes the 16:9 frame; cropping removes the bars.
+                            contentScale = ContentScale.Crop,
                             playDescription =
-                                stringResource(
-                                    if (playsInline) Res.string.game_media_play else Res.string.game_media_watch,
-                                    position.number,
-                                    position.count,
-                                ),
-                            onPlay = { if (playsInline) state.play() else onWatchOnYouTube(item) },
+                                stringResource(Res.string.game_media_play, position.number, position.count),
+                            onPlay = state::play,
                         )
                     }
             }
         }
-        // A playing video takes the whole frame: the player has its own controls, and the page's would sit under it.
-        if (hasArrows && !state.isPlaying) {
-            PreviewArrow(
-                description = stringResource(Res.string.game_media_previous),
-                enabled = state.canSelectPrevious,
-                next = false,
-                onClick = state::selectPrevious,
-                modifier = Modifier.align(Alignment.CenterStart).padding(Dimens.small),
-            )
-            PreviewArrow(
-                description = stringResource(Res.string.game_media_next),
-                enabled = state.canSelectNext,
-                next = true,
-                onClick = state::selectNext,
-                modifier = Modifier.align(Alignment.CenterEnd).padding(Dimens.small),
+        if (playerCreated || playingVideo != null) {
+            YouTubePlayer(
+                video = playingVideo,
+                title =
+                    stringResource(
+                        Res.string.game_media_video_of_game,
+                        gameName,
+                        position.number,
+                        position.count,
+                    ),
+                coveredTop = coveredTop,
+                onFailed = state::onPlaybackFailed,
+                modifier = Modifier.fillMaxSize(),
             )
         }
+        PreviewControls(
+            state = state,
+            item = item,
+            arrows = hasArrows && !playing,
+            viewerButtonFocus = viewerButtonFocus,
+        )
+    }
+}
+
+/**
+ * The preview's own controls: previous and next for pointer devices when [arrows], hidden while a video plays because
+ * the player has its own controls and these would sit under it, and a screenshot's full-screen button.
+ */
+@Composable
+private fun BoxScope.PreviewControls(
+    state: MediaGalleryState,
+    item: GameMedia,
+    arrows: Boolean,
+    viewerButtonFocus: FocusRequester,
+) {
+    if (arrows) {
+        MediaIconButton(
+            icon = ChevronLeft,
+            description = stringResource(Res.string.game_media_previous),
+            enabled = state.canSelectPrevious,
+            onClick = state::selectPrevious,
+            modifier = Modifier.align(Alignment.CenterStart).padding(Dimens.small),
+        )
+        MediaIconButton(
+            icon = ChevronLeft,
+            description = stringResource(Res.string.game_media_next),
+            enabled = state.canSelectNext,
+            onClick = state::selectNext,
+            mirrored = true,
+            modifier = Modifier.align(Alignment.CenterEnd).padding(Dimens.small),
+        )
+    }
+    // A screenshot opens full screen with a button of its own, in the corner photo viewers use, so a tap or a
+    // swipe on the image never opens it by accident. Videos play only here, so they have none.
+    if (item is GameMedia.Screenshot) {
+        MediaIconButton(
+            icon = Expand,
+            description = stringResource(Res.string.game_media_open_viewer),
+            onClick = state::openViewer,
+            modifier =
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(Dimens.small)
+                    .focusRequester(viewerButtonFocus),
+        )
     }
 }
 
@@ -367,28 +481,29 @@ private fun ScreenshotPreview(
 ) {
     var loaded by remember(url) { mutableStateOf(false) }
     var failed by remember(url) { mutableStateOf(false) }
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .semantics { contentDescription = description.toContentDescription() },
+        contentAlignment = Alignment.Center,
+    ) {
         if (!loaded && !failed) Box(modifier = Modifier.fillMaxSize().shimmerEffect())
         if (failed) {
-            Text(
-                text = stringResource(Res.string.game_media_unavailable),
-                style = MaterialTheme.typography.body2,
-                color = secondaryText,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(Dimens.medium),
-            )
+            MediaMessage(text = stringResource(Res.string.game_media_unavailable))
         } else {
             AsyncImage(
                 // Its own memory key: the preview decodes at another size than any thumbnail or backdrop.
                 model =
                     rememberCachedImageRequest(
                         data = url,
-                        memoryCacheKey = "gmp-$url",
+                        memoryCacheKey = previewMemoryCacheKey(url),
                         placeholderMemoryCacheKey = thumbnailKey,
                         // The 16:9 thumbnail and a screenshot of another shape cannot crossfade without a jump.
                         crossfade = false,
                     ),
-                contentDescription = description.toContentDescription(),
+                // The box's description names the screenshot.
+                contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
                 onSuccess = { loaded = true },
@@ -399,27 +514,26 @@ private fun ScreenshotPreview(
 }
 
 /**
- * YouTube's poster for [video] with a play button, as one control. A missing HD poster falls back to the standard
- * one; if neither loads, the play button still works.
+ * YouTube's poster for [video] with a play button, as one control, drawn with [contentScale]. A missing HD poster
+ * falls back to the standard one; if neither loads, the play button still works.
  */
 @Composable
-private fun VideoPoster(
+internal fun VideoPoster(
     video: GameMedia.YouTubeVideo,
     widthPx: Int,
-    playsInline: Boolean,
+    contentScale: ContentScale,
     playDescription: String,
     onPlay: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var posterUrl by remember(video, widthPx) { mutableStateOf(video.posterUrl(widthPx)) }
     var loaded by remember(posterUrl) { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier =
-            Modifier
+            modifier
                 .fillMaxSize()
                 .focusRing(interactionSource.isFocusVisible(), CornerShapes.small, Dimens.micro)
-                // Outside the app, a middle click opens the video in a new tab like any other external link.
-                .then(if (playsInline) Modifier else Modifier.externalLink(onPlay))
                 .pointerHoverIcon(PointerIcon.Hand)
                 .clickable(
                     interactionSource = interactionSource,
@@ -441,8 +555,7 @@ private fun VideoPoster(
                 ),
             // The control's description names the video; the poster adds nothing to it.
             contentDescription = null,
-            // YouTube's standard poster letterboxes the 16:9 frame; cropping removes the bars.
-            contentScale = ContentScale.Crop,
+            contentScale = contentScale,
             modifier = Modifier.fillMaxSize(),
             onSuccess = { loaded = true },
             onError = {
@@ -451,18 +564,48 @@ private fun VideoPoster(
         )
         PlayCircle(size = PlayButtonSize, iconSize = PlayIconSize)
         SourceLabel(
-            text =
-                stringResource(
-                    if (playsInline) Res.string.game_media_youtube else Res.string.game_media_watch_on_youtube,
-                ),
-            opensExternally = !playsInline,
+            text = stringResource(Res.string.game_media_youtube),
             modifier = Modifier.align(Alignment.BottomStart).padding(Dimens.compact),
         )
     }
 }
 
+/** In place of a video that cannot play here, such as one whose owner does not allow embedding: a link to YouTube. */
 @Composable
-private fun PlayCircle(
+internal fun VideoUnavailable(
+    onWatchOnYouTube: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxSize().padding(Dimens.medium),
+        verticalArrangement = Arrangement.spacedBy(Dimens.compact, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        MediaMessage(text = stringResource(Res.string.game_media_video_unavailable))
+        TonalButton(onClick = onWatchOnYouTube, modifier = Modifier.externalLink(onWatchOnYouTube)) {
+            Text(text = stringResource(Res.string.game_media_watch_on_youtube))
+            Icon(
+                imageVector = OpenInNew,
+                contentDescription = null,
+                modifier = Modifier.padding(start = Dimens.tiny).size(SourceIconSize),
+            )
+        }
+    }
+}
+
+@Composable
+internal fun MediaMessage(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.body2,
+        color = secondaryText,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.padding(Dimens.medium),
+    )
+}
+
+@Composable
+internal fun PlayCircle(
     size: Dp,
     iconSize: Dp,
     modifier: Modifier = Modifier,
@@ -475,41 +618,36 @@ private fun PlayCircle(
     }
 }
 
-/** Where the video comes from, and on Android and iOS that play leaves the app for it. */
+/** Where the video comes from. */
 @Composable
 private fun SourceLabel(
     text: String,
-    opensExternally: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    Text(
+        text = text,
+        style = MaterialTheme.typography.caption,
+        color = white,
         modifier =
             modifier
                 .background(overlayBlackWith70Alpha, CornerShapes.pill)
                 .padding(horizontal = Dimens.compact, vertical = Dimens.tiny),
-        horizontalArrangement = Arrangement.spacedBy(Dimens.tiny),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(text = text, style = MaterialTheme.typography.caption, color = white)
-        if (opensExternally) {
-            Icon(
-                imageVector = OpenInNew,
-                contentDescription = null,
-                tint = white,
-                modifier = Modifier.size(SourceIconSize),
-            )
-        }
-    }
+    )
 }
 
-/** Previous or next over the preview, for pointer devices. It stays in place, disabled, at either end. */
+/**
+ * A round icon button over media: previous and next, close, and full screen, with a 40 dp target. Disabled, it stays
+ * in place, dimmed, so the controls around it never move; [mirrored] turns a left-pointing icon right.
+ */
+@Suppress("LongParameterList")
 @Composable
-private fun PreviewArrow(
+internal fun MediaIconButton(
+    icon: ImageVector,
     description: String,
-    enabled: Boolean,
-    next: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    mirrored: Boolean = false,
 ) {
     Box(
         modifier =
@@ -529,13 +667,13 @@ private fun PreviewArrow(
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            imageVector = ChevronLeft,
+            imageVector = icon,
             contentDescription = null,
             tint = white.copy(alpha = if (enabled) 1f else ContentAlpha.disabled),
             modifier =
                 Modifier
                     .size(ArrowIconSize)
-                    .then(if (next) Modifier.rotate(NEXT_ICON_ROTATION_DEGREES) else Modifier),
+                    .then(if (mirrored) Modifier.rotate(NEXT_ICON_ROTATION_DEGREES) else Modifier),
         )
     }
 }
@@ -556,7 +694,7 @@ private fun MediaThumbnails(
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = state.selectedIndex)
     val focusManager = LocalFocusManager.current
     LaunchedEffect(state, listState) {
-        snapshotFlow { state.selectedIndex }.collect { index -> listState.reveal(index) }
+        snapshotFlow { state.selectedIndex }.collect { index -> scrollUnlessInterrupted { listState.reveal(index) } }
     }
     val content: LazyListScope.() -> Unit = {
         itemsIndexed(
@@ -605,13 +743,21 @@ private fun MediaThumbnails(
             ListScrollbar(state = listState)
         }
     } else {
-        LazyRow(
-            state = listState,
-            modifier = modifier.selectableGroup(),
-            contentPadding = contentPadding,
-            horizontalArrangement = Arrangement.spacedBy(Dimens.small),
-            content = content,
-        )
+        Column(modifier = modifier) {
+            LazyRow(
+                state = listState,
+                modifier = Modifier.fillMaxWidth().selectableGroup(),
+                contentPadding = contentPadding,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.small),
+                content = content,
+            )
+            // Mouse users see how far the strip goes and can drag through it; it lines up with the thumbnails.
+            ListScrollbar(
+                state = listState,
+                orientation = Orientation.Horizontal,
+                modifier = Modifier.padding(contentPadding),
+            )
+        }
     }
 }
 
@@ -685,11 +831,36 @@ private fun MediaThumbnail(
  * The memory cache key of [item]'s thumbnail. The preview shows that decoded thumbnail, which the strip has usually
  * loaded already, while its own larger image loads, so a selection shows a picture at once and sharpens when ready.
  */
-private fun thumbnailMemoryCacheKey(item: GameMedia): String =
+internal fun thumbnailMemoryCacheKey(item: GameMedia): String =
     when (item) {
         is GameMedia.YouTubeVideo -> "gmt-${item.thumbnailUrl}"
         is GameMedia.Screenshot -> "gmt-${item.thumbnailUrl}"
     }
+
+/**
+ * Runs [scroll], which another scroll, such as a gesture or keyboard focus bringing an item into view, may interrupt.
+ * Compose interrupts a scroll by cancelling it; an interrupted scroll is simply over, so a caller that follows the
+ * selection keeps following it. Only cancellation of the caller itself ends the caller.
+ */
+internal suspend fun scrollUnlessInterrupted(scroll: suspend () -> Unit) {
+    try {
+        scroll()
+    } catch (interrupted: CancellationException) {
+        currentCoroutineContext().ensureActive()
+    }
+}
+
+/** The memory cache key of the preview's decoded image at [url]; the viewer shows it while its own image loads. */
+internal fun previewMemoryCacheKey(url: String): String = "gmp-$url"
+
+/** Requests focus, unless the target is not laid out yet; then focus stays where it is. */
+internal fun FocusRequester.requestFocusSafely() {
+    try {
+        requestFocus()
+    } catch (_: IllegalStateException) {
+        // Not attached: nothing to focus.
+    }
+}
 
 private fun focusDirection(
     vertical: Boolean,
@@ -768,15 +939,16 @@ internal fun MediaGalleryPreview() {
                 gameName = "Sample game",
                 onWatchOnYouTube = {},
                 horizontalPadding = Dimens.medium,
-                playsInline = false,
             )
         }
     }
 }
 
+// A tablet in landscape, where the thumbnails move into a rail beside the preview. The Web desktop layout keeps the
+// gallery to a reading column's width, so it shows the strip of the narrow preview instead.
 @Preview(widthDp = 1200)
 @Composable
-internal fun MediaGalleryWidePreview() {
+internal fun MediaGalleryTabletPreview() {
     BraindanceTheme {
         Box(modifier = Modifier.background(background).padding(vertical = Dimens.large)) {
             MediaGallery(
@@ -784,7 +956,6 @@ internal fun MediaGalleryWidePreview() {
                 gameName = "Sample game",
                 onWatchOnYouTube = {},
                 horizontalPadding = Dimens.large,
-                playsInline = true,
             )
         }
     }

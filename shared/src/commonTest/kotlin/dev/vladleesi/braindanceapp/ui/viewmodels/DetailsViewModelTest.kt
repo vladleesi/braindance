@@ -65,7 +65,7 @@ class DetailsViewModelTest : ViewModelTest() {
         }
 
     @Test
-    fun theBackdropIsTheFirstStillScreenshotAtBothSizes() =
+    fun theBackdropIsTheImageTheApiChoseAtBothSizes() =
         runTest(dispatcher) {
             val thumbs = "//images.igdb.com/igdb/image/upload/t_thumb"
             val client =
@@ -73,11 +73,8 @@ class DetailsViewModelTest : ViewModelTest() {
                     when (request.url.encodedPath) {
                         "/v1/games/details" ->
                             respondJson(
-                                """[{"id":42,"name":"Game","screenshots":[""" +
-                                    """{"id":1,"animated":true,"url":"$thumbs/gif.jpg"},""" +
-                                    """{"id":2,"url":null},""" +
-                                    """{"id":3,"url":"$thumbs/sc1.jpg"},""" +
-                                    """{"id":4,"url":"$thumbs/sc2.jpg"}]}]""",
+                                """[{"id":42,"name":"Game","backdrop":{"url":"$thumbs/ar1.jpg"},""" +
+                                    """"screenshots":[{"id":3,"url":"$thumbs/sc1.jpg"}]}]""",
                             )
                         else -> respondJson("{}", HttpStatusCode.InternalServerError)
                     }
@@ -90,20 +87,24 @@ class DetailsViewModelTest : ViewModelTest() {
             val details = assertIs<GameDetailsState.Success>(viewModel.gameDetailsState.value).gameDetails
             assertEquals(
                 BackdropImage(
-                    compactUrl = "https://images.igdb.com/igdb/image/upload/t_screenshot_med/sc1.webp",
-                    wideUrl = "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc1.webp",
+                    compactUrl = "https://images.igdb.com/igdb/image/upload/t_screenshot_med/ar1.webp",
+                    wideUrl = "https://images.igdb.com/igdb/image/upload/t_screenshot_big/ar1.webp",
                 ),
                 details.backdrop,
             )
         }
 
     @Test
-    fun aGameWithoutScreenshotsHasNoBackdrop() =
+    fun withoutTheApisBackdropTheClientPicksNone() =
         runTest(dispatcher) {
             val client =
                 mockBackendClient(dispatcher) { request ->
                     when (request.url.encodedPath) {
-                        "/v1/games/details" -> respondJson("""[{"id":42,"name":"Game","screenshots":[]}]""")
+                        "/v1/games/details" ->
+                            respondJson(
+                                """[{"id":42,"name":"Game","screenshots":[""" +
+                                    """{"id":3,"url":"//images.igdb.com/igdb/image/upload/t_thumb/sc1.jpg"}]}]""",
+                            )
                         else -> respondJson("{}", HttpStatusCode.InternalServerError)
                     }
                 }

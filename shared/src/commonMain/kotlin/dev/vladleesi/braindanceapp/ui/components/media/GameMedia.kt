@@ -37,12 +37,6 @@ sealed interface GameMedia {
         /** 480x360 with the 16:9 frame letterboxed: every video has it; the preview crops the bars. */
         val fallbackPosterUrl: String get() = "$YOUTUBE_IMAGE_BASE/$youTubeId/hqdefault.jpg"
 
-        /**
-         * The privacy-enhanced embed: YouTube sets no cookies before playback. It starts playing when loaded, which
-         * happens only after the user presses play, and suggests only videos from the same channel at the end.
-         */
-        val embedUrl: String get() = "https://www.youtube-nocookie.com/embed/$youTubeId?autoplay=1&rel=0&playsinline=1"
-
         /** The video's page, which the YouTube app opens where it is installed. */
         val watchUrl: String get() = "https://www.youtube.com/watch?v=$youTubeId"
     }
@@ -62,6 +56,9 @@ sealed interface GameMedia {
          */
         fun previewUrl(widthPx: Int): String =
             thumbUrl.toCoverUrl(if (widthPx > P_720_WIDTH_PX) CoverSize.P_1080 else CoverSize.P_720)
+
+        /** IGDB's original file, for detail when the viewer zooms in. It can be several times the size of 1080p. */
+        val originalUrl: String get() = thumbUrl.toCoverUrl(CoverSize.ORIGINAL)
     }
 }
 

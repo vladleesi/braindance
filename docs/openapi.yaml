@@ -265,6 +265,12 @@ components:
           description: Game details only. The canonical game's details, sent only when it is not this entry.
         family:
           $ref: '#/components/schemas/GameFamily'
+        backdrop:
+          $ref: '#/components/schemas/Cover'
+          description: >-
+            Game details only. The image for the top of the game's page: its key art when one fits a wide header,
+            otherwise its first still screenshot, or the canonical game's when it has neither. Absent when there is
+            none.
     GameFamily:
       type: object
       description: Game details only. The canonical game's related entries, at most 50 per list, oldest first.
