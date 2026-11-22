@@ -145,6 +145,13 @@ val webPages =
             indexed = true,
         ),
         WebPage(
+            path = "/events",
+            file = "events.html",
+            title = "Gaming events | Braindance",
+            description = "Browse gaming showcases, find their streams, and explore the games they featured.",
+            indexed = true,
+        ),
+        WebPage(
             path = "/giveaways",
             file = "giveaways.html",
             title = "Free game giveaways | Braindance",

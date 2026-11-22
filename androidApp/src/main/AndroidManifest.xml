@@ -42,6 +42,8 @@
                 <data android:pathPrefix="/games/" />
                 <data android:pathPrefix="/game/" />
                 <data android:pathPrefix="/giveaway/" />
+                <data android:path="/events" />
+                <data android:pathPrefix="/events/" />
                 <data android:path="/popular" />
                 <data android:path="/anticipated" />
                 <data android:path="/giveaways" />

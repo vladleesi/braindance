@@ -18,6 +18,7 @@ import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
@@ -45,6 +46,7 @@ class HomeViewModelTest : ViewModelTest() {
             val viewModel =
                 viewModel { request ->
                     when (request.url.encodedPath) {
+                        "/v1/events" -> respondJson("""[{"id":7,"name":"Show","start_time":42}]""")
                         "/v1/giveaways" -> respondJson("""[{"id":9,"title":"Free"}]""")
                         else -> respondJson("""[{"id":1,"name":"A"}]""")
                     }
@@ -53,6 +55,14 @@ class HomeViewModelTest : ViewModelTest() {
             viewModel.load()
             advanceUntilIdle()
 
+            assertEquals(
+                "Show",
+                (
+                    viewModel.events.first {
+                        it is SectionState.Success
+                    } as SectionState.Success
+                ).items.single().name,
+            )
             assertEquals(listOf("A"), viewModel.trendingNow.value.cardTitles())
             assertEquals(listOf("A"), viewModel.mostAnticipated.value.cardTitles())
             assertIs<SectionState.Success<*>>(viewModel.giveaways.value)
@@ -126,7 +136,7 @@ class HomeViewModelTest : ViewModelTest() {
         runTest(dispatcher) {
             val viewModel =
                 viewModel { request ->
-                    if (request.url.encodedPath == "/v1/giveaways") delay(2_000)
+                    if (request.url.encodedPath == "/v1/events") delay(2_000)
                     respondJson("[]")
                 }
 
@@ -135,7 +145,7 @@ class HomeViewModelTest : ViewModelTest() {
             assertTrue(viewModel.isRefreshing.value)
 
             advanceTimeBy(1_000)
-            assertTrue(viewModel.isRefreshing.value, "giveaways are still loading")
+            assertTrue(viewModel.isRefreshing.value, "events are still loading")
 
             advanceUntilIdle()
             assertFalse(viewModel.isRefreshing.value)

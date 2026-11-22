@@ -5,6 +5,7 @@ package dev.vladleesi.braindanceapp.navigation
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
+import dev.vladleesi.braindanceapp.navigation.routes.EventsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -41,6 +42,7 @@ internal val navSerializersModule =
             subclass(ProfileRoute::class)
             subclass(GameDetailsRoute::class)
             subclass(GiveawayDetailsRoute::class)
+            subclass(EventsRoute::class)
             subclass(CompilationRoute::class)
         }
     }

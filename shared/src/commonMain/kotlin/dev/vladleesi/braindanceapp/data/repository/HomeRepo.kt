@@ -6,6 +6,7 @@ import dev.vladleesi.braindanceapp.data.Outcome
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
 import dev.vladleesi.braindanceapp.data.map
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.GamingEvent
 import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import dev.vladleesi.braindanceapp.data.safeCall
 
@@ -19,6 +20,10 @@ data class FeedPage<T>(
 class HomeRepo(
     private val gamesRemote: GamesRemote,
 ) {
+    suspend fun events(): Outcome<List<GamingEvent>> = safeCall { gamesRemote.events() }
+
+    suspend fun eventGames(id: Int): Outcome<List<GameItem>> = safeCall { gamesRemote.eventGames(id) }
+
     suspend fun mostAnticipated(pageSize: Int): Outcome<List<GameItem>> =
         safeCall { gamesRemote.mostAnticipated(pageSize = pageSize) }
 

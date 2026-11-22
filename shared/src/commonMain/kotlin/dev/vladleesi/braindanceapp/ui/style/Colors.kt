@@ -38,8 +38,7 @@ val shimmer = Color(0xFF2C3342)
 val secondaryText = Color(0xFFA9B1C2)
 val error = Color(0xFFEA5A4A)
 
-// The one functional accent: selection, focus, and links. Magenta and yellow join it only in the Echo trail, and
-// magenta alone marks the development status.
+// The one functional accent for selection, focus, and links. Score rings and game status tags use the brand palette.
 val accent = neonCyan
 
 val DarkColors =

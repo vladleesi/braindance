@@ -10,6 +10,8 @@ object ApiConfig {
         const val MOST_ANTICIPATED = "v1/games/anticipated"
         const val TRENDING = "v1/games/trending"
         const val GAME_SEARCH = "v1/games/search"
+        const val EVENTS = "v1/events"
+        const val EVENT_GAMES = "v1/events/games"
         const val GIVEAWAYS = "v1/giveaways"
     }
 }

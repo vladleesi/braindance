@@ -62,6 +62,12 @@ private fun MockRequestHandleScope.respondApi(
         when {
             path == ApiConfig.Endpoints.HEALTH -> return respond("", HttpStatusCode.OK)
             path == ApiConfig.Endpoints.TRENDING -> trendingJsonOrNull(parameters)
+            path == ApiConfig.Endpoints.EVENTS -> ApiFixtureData.eventsJson.takeIf { parameters.names().isEmpty() }
+            path == ApiConfig.Endpoints.EVENT_GAMES ->
+                parameters
+                    .takeIf { it.names() == setOf("id") && it.getAll("id")?.size == 1 }
+                    ?.positiveIntOrNull("id")
+                    ?.let(ApiFixtureData::eventGamesJson)
             path == ApiConfig.Endpoints.GIVEAWAYS -> ApiFixtureData.giveawaysJson
             path == ApiConfig.Endpoints.MOST_ANTICIPATED -> anticipatedJsonOrNull(parameters)
             path == ApiConfig.Endpoints.GAME_DETAILS ->

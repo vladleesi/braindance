@@ -2,6 +2,8 @@
 
 package dev.vladleesi.braindanceapp.ui.components.media
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -36,7 +38,7 @@ private const val BLANK_PAGE = "about:blank"
  * The player page (see [playerPageHtml]) in one WKWebView that the player keeps for its whole life, loading each video
  * into it and unloading it when stopped. It plays inline and keeps no website data after it is released. Only the
  * app's own page loads and YouTube's player frame load in it; a link that would leave it, such as YouTube's logo,
- * opens in the YouTube app or the browser, and the page's failure address calls [onFailed]. The page has no message
+ * opens in the YouTube app or the browser, and the page's failure address notifies [state]. The page has no message
  * handler to call.
  */
 @OptIn(ExperimentalForeignApi::class)
@@ -45,10 +47,10 @@ internal actual fun YouTubePlayer(
     video: GameMedia.YouTubeVideo?,
     title: String,
     coveredTop: Dp,
-    onFailed: (GameMedia.YouTubeVideo) -> Unit,
-    modifier: Modifier,
+    state: MediaGalleryState,
+    scrollState: ScrollState?,
 ) {
-    val currentOnFailed by rememberUpdatedState(onFailed)
+    val currentState by rememberUpdatedState(state)
     val uriHandler = LocalUriHandler.current
     val openLink by rememberUpdatedState<(String) -> Unit>({ url ->
         url.toSafeExternalUrl()?.let(uriHandler::openExternalUrl)
@@ -56,7 +58,10 @@ internal actual fun YouTubePlayer(
     // WKWebView holds its delegates weakly; the composition keeps this one for the view's lifetime.
     val player =
         remember {
-            PlayerController(onOpenLink = { url -> openLink(url) }, onFailed = { failed -> currentOnFailed(failed) })
+            PlayerController(
+                onOpenLink = { url -> openLink(url) },
+                onFailed = { failed -> currentState.onPlaybackFailed(failed) },
+            )
         }
     UIKitView(
         factory = {
@@ -74,7 +79,7 @@ internal actual fun YouTubePlayer(
                 scrollView.scrollEnabled = false
             }
         },
-        modifier = Modifier.collapsedWhenStopped(video).then(modifier),
+        modifier = Modifier.collapsedWhenStopped(video).fillMaxSize(),
         update = { view ->
             view.setAccessibilityLabel(title)
             player.show(view, video)

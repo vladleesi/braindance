@@ -61,6 +61,8 @@ import dev.vladleesi.braindanceapp.resources.game_relation_of
 import dev.vladleesi.braindanceapp.resources.game_relation_part_of
 import dev.vladleesi.braindanceapp.ui.components.CardCover
 import dev.vladleesi.braindanceapp.ui.components.Chip
+import dev.vladleesi.braindanceapp.ui.components.DisclosureButton
+import dev.vladleesi.braindanceapp.ui.components.DisclosureLayout
 import dev.vladleesi.braindanceapp.ui.components.cardClickable
 import dev.vladleesi.braindanceapp.ui.components.text
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
@@ -167,7 +169,7 @@ internal fun TextLayoutResult.hits(
  * own address: [versionRoute] of the version's ID. On the Web, a middle click or Ctrl-click opens that address in a
  * new tab.
  *
- * In a [compact] layout, more than two versions collapse to the selected one and a chip that shows the rest, so the
+ * In a [compact] layout, more than two versions collapse to the selected one and a button that shows the rest, so the
  * row stays one line on a phone; wide layouts show up to [WIDE_SHOWN_CHOICES] before collapsing.
  */
 @OptIn(ExperimentalLayoutApi::class)
@@ -203,9 +205,8 @@ fun GameVersionSelector(
 
 /**
  * [choices] as a wrapping row of chips drawn by [chip], with the selected one always shown. More than one choice
- * beyond [maxShown] collapses the rest behind a "+N more" chip, which shows them all, and "Show fewer" collapses them
- * again; hiding a single choice would save nothing. Only the shown chips are composed. Whether the row is expanded
- * survives configuration changes and the selection changing.
+ * beyond [maxShown] collapses the rest behind "Show N more". Only visible choices are composed, and the expanded
+ * state survives configuration and selection changes.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -229,14 +230,17 @@ private fun <T> CollapsibleChoices(
             key(key(choice)) { chip(choice, isSelected(choice)) }
         }
         if (collapsed.size < choices.size) {
-            Chip(
-                text =
+            DisclosureButton(
+                label =
                     if (expanded) {
                         stringResource(Res.string.game_details_show_fewer)
                     } else {
                         stringResource(Res.string.game_details_show_more_choices, choices.size - collapsed.size)
                     },
+                expanded = expanded,
                 onClick = { expanded = !expanded },
+                layout = DisclosureLayout.Inline,
+                modifier = Modifier.align(Alignment.CenterVertically),
             )
         }
     }
@@ -263,7 +267,7 @@ private fun VersionOption.text(): String = label ?: stringResource(Res.string.ga
 /**
  * The heading of a game's related releases and, when there are several kinds, tabs that switch between them. Each tab
  * names its kind and how many there are, so the whole section reads at a glance without opening every tab. In a
- * [compact] layout, more than two tabs collapse to the selected one and a chip that shows the rest.
+ * [compact] layout, more than two tabs collapse to the selected one and a button that shows the rest.
  */
 @Composable
 fun RelatedHeader(

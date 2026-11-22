@@ -7,9 +7,31 @@ import dev.vladleesi.braindanceapp.data.DataError
 import dev.vladleesi.braindanceapp.data.Outcome
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
 import dev.vladleesi.braindanceapp.data.models.games.GameKind
+import dev.vladleesi.braindanceapp.data.models.games.GameRating
+import dev.vladleesi.braindanceapp.data.models.games.NamedItem
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
+import dev.vladleesi.braindanceapp.domain.games.OverviewHighlight
+import dev.vladleesi.braindanceapp.domain.games.overviewHighlights
+import dev.vladleesi.braindanceapp.domain.games.roundedPlayHours
 import dev.vladleesi.braindanceapp.logger.BLogger
+import dev.vladleesi.braindanceapp.resources.Res
+import dev.vladleesi.braindanceapp.resources.about_complete
+import dev.vladleesi.braindanceapp.resources.about_critic
+import dev.vladleesi.braindanceapp.resources.about_developer
+import dev.vladleesi.braindanceapp.resources.about_extra
+import dev.vladleesi.braindanceapp.resources.about_main
+import dev.vladleesi.braindanceapp.resources.about_publisher
+import dev.vladleesi.braindanceapp.resources.about_series
+import dev.vladleesi.braindanceapp.resources.about_tags
+import dev.vladleesi.braindanceapp.resources.about_user
+import dev.vladleesi.braindanceapp.resources.status_alpha
+import dev.vladleesi.braindanceapp.resources.status_beta
+import dev.vladleesi.braindanceapp.resources.status_cancelled
+import dev.vladleesi.braindanceapp.resources.status_delisted
+import dev.vladleesi.braindanceapp.resources.status_early_access
+import dev.vladleesi.braindanceapp.resources.status_offline
+import dev.vladleesi.braindanceapp.resources.status_rumored
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.media.MediaGallery
 import dev.vladleesi.braindanceapp.ui.components.media.mediaGallery
@@ -26,13 +48,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 
 class GameDetailsViewModel(
     private val gameId: Int,
     private val gameDetailsRepo: GameDetailsRepo,
 ) : ScreenViewModel() {
-    private val _gameDetailsState = MutableStateFlow<GameDetailsState>(GameDetailsState.Loading)
-    val gameDetailsState: StateFlow<GameDetailsState> = _gameDetailsState.asStateFlow()
+    private val detailsState = MutableStateFlow<GameDetailsState>(GameDetailsState.Loading)
+    internal val gameDetailsState: StateFlow<GameDetailsState> = detailsState.asStateFlow()
 
     private val _recommendations = MutableStateFlow<RecommendationsState>(RecommendationsState.Loading)
 
@@ -65,12 +88,12 @@ class GameDetailsViewModel(
     fun showVersion(id: Int) {
         if (id == shownId) return
         shownId = id
-        val shown = (_gameDetailsState.value as? GameDetailsState.Success)?.gameDetails
+        val shown = (detailsState.value as? GameDetailsState.Success)?.gameDetails
         if (shown == null) {
             loadDetails(id, inPlace = false)
             return
         }
-        _gameDetailsState.value = GameDetailsState.Success(shown.selecting(id), isSwitchingVersion = true)
+        detailsState.value = GameDetailsState.Success(shown.selecting(id), isSwitchingVersion = true)
         loadDetails(id, inPlace = true)
     }
 
@@ -82,10 +105,10 @@ class GameDetailsViewModel(
         detailsJob =
             viewModelScope.launch {
                 if (!inPlace) {
-                    _gameDetailsState.value = GameDetailsState.Loading
+                    detailsState.value = GameDetailsState.Loading
                     loadRecommendations(id)
                 }
-                _gameDetailsState.value =
+                detailsState.value =
                     when (val outcome = gameDetailsRepo.gameDetails(id)) {
                         is Outcome.Success -> {
                             val details = outcome.value.toGameDetails()
@@ -159,6 +182,16 @@ private fun GameItem.withFallbackTo(game: GameItem): GameItem {
         platforms = platforms?.takeIf { it.isNotEmpty() } ?: game.platforms,
         websites = websites?.takeIf { it.toStoreTypes().isNotEmpty() } ?: game.websites,
         summary = summary?.takeIf(String::isNotBlank) ?: game.summary,
+        developers = developers?.takeIf { it.isNotEmpty() } ?: game.developers,
+        publishers = publishers?.takeIf { it.isNotEmpty() } ?: game.publishers,
+        gameModes = gameModes?.takeIf { it.isNotEmpty() } ?: game.gameModes,
+        playerPerspectives = playerPerspectives?.takeIf { it.isNotEmpty() } ?: game.playerPerspectives,
+        themes = themes?.takeIf { it.isNotEmpty() } ?: game.themes,
+        series = series?.takeIf { it.isNotEmpty() } ?: game.series,
+        criticRating = criticRating ?: game.criticRating,
+        userRating = userRating ?: game.userRating,
+        timeToBeat = timeToBeat ?: game.timeToBeat,
+        status = status ?: game.status,
         storyline = storyline?.takeIf(String::isNotBlank) ?: game.storyline,
     )
 }
@@ -185,7 +218,22 @@ private fun GameItem.toPageDetails(
     id = id,
     name = name.orEmpty(),
     summary = summary.orEmpty(),
-    storyline = storyline.orEmpty(),
+    storyline =
+        storyline
+            .orEmpty()
+            .trim()
+            .takeUnless { it == summary.orEmpty().trim() }
+            .orEmpty(),
+    facts = toFacts(),
+    badges = toBadges(),
+    overview =
+        overviewHighlights(
+            modes = gameModes.names(),
+            themes = themes.names(),
+            perspectives = playerPerspectives.names(),
+            genres = genres.orEmpty().mapNotNull { it.name },
+            mainStorySeconds = timeToBeat?.hastily,
+        ),
     // The same size and URL the cards request: the file is usually already in the disk cache (the browser's HTTP
     // cache on Web) from the card that opened the screen, and the original (about 9x the bytes) is never
     // downloaded or decoded.
@@ -209,6 +257,93 @@ private fun GameItem.toPageDetails(
     relations = relations,
     media = media,
 )
+
+private fun GameItem.toFacts(): GameFactsModel {
+    val playtime = timeToBeat
+    val tags = (gameModes.orEmpty() + playerPerspectives.orEmpty() + themes.orEmpty()).names()
+    return GameFactsModel(
+        rows =
+            listOfNotNull(
+                developers.fact(Res.string.about_developer),
+                publishers.fact(Res.string.about_publisher),
+                series.fact(Res.string.about_series),
+                tags.takeIf { it.isNotEmpty() }?.let { GameFact.Tags(Res.string.about_tags, it) },
+            ),
+        playTimes =
+            listOfNotNull(
+                playtime?.hastily.playTime(Res.string.about_main),
+                playtime?.normally.playTime(Res.string.about_extra),
+                playtime?.completely.playTime(Res.string.about_complete),
+            ),
+        sampleCount = playtime?.count?.takeIf { it > 0 },
+    )
+}
+
+private fun List<NamedItem>?.names() = orEmpty().map { it.name.trim() }.filter(String::isNotEmpty).distinct()
+
+private fun List<NamedItem>?.fact(label: StringResource) =
+    names().takeIf { it.isNotEmpty() }?.let { GameFact.Text(label, it.joinToString(", ")) }
+
+private fun Long?.playTime(label: StringResource) = roundedPlayHours(this)?.let { PlayTime(label, it) }
+
+private fun GameItem.toBadges() =
+    listOfNotNull(
+        criticRating.badge(Res.string.about_critic),
+        userRating.badge(Res.string.about_user),
+        GameBadge.Status.entries.firstOrNull { it.apiName == status },
+    )
+
+private fun GameRating?.badge(label: StringResource): GameBadge? =
+    this?.takeIf { it.score in 0..MAX_RATING }?.let { GameBadge.Score(label, it.score) }
+
+private const val MAX_RATING = 100
+
+data class GameFactsModel(
+    val rows: List<GameFact> = emptyList(),
+    val playTimes: List<PlayTime> = emptyList(),
+    val sampleCount: Int? = null,
+) {
+    val isEmpty: Boolean get() = rows.isEmpty() && playTimes.isEmpty()
+}
+
+sealed interface GameFact {
+    val label: StringResource
+
+    data class Text(
+        override val label: StringResource,
+        val value: String,
+    ) : GameFact
+
+    data class Tags(
+        override val label: StringResource,
+        val values: List<String>,
+    ) : GameFact
+}
+
+data class PlayTime(
+    val label: StringResource,
+    val hours: Long,
+)
+
+internal sealed interface GameBadge {
+    data class Score(
+        val label: StringResource,
+        val score: Int,
+    ) : GameBadge
+
+    enum class Status(
+        val apiName: String,
+        val label: StringResource,
+    ) : GameBadge {
+        Alpha("alpha", Res.string.status_alpha),
+        Beta("beta", Res.string.status_beta),
+        EarlyAccess("early_access", Res.string.status_early_access),
+        Offline("offline", Res.string.status_offline),
+        Cancelled("cancelled", Res.string.status_cancelled),
+        Rumored("rumored", Res.string.status_rumored),
+        Delisted("delisted", Res.string.status_delisted),
+    }
+}
 
 /**
  * The API's backdrop at the two sizes the hero draws it. It sits dimmed behind the hero, where IGDB's small sizes are
@@ -246,7 +381,7 @@ sealed interface RecommendationsState {
     data object Unavailable : RecommendationsState
 }
 
-sealed class GameDetailsState {
+internal sealed class GameDetailsState {
     data object Loading : GameDetailsState()
 
     /** The backend has no game with this ID. */
@@ -263,7 +398,7 @@ sealed class GameDetailsState {
     ) : GameDetailsState()
 }
 
-data class GameDetails(
+internal data class GameDetails(
     /** The game's ID; on an edition's or update's page, the ID of its game, whose relations the page shows. */
     val id: Int,
     /** The shown release's name: the selected edition's or update's on its page. */
@@ -283,6 +418,9 @@ data class GameDetails(
     val relations: GameRelations = GameRelations(),
     /** The shown release's videos and screenshots; empty when it has none, which hides the section. */
     val media: MediaGallery = MediaGallery(),
+    val facts: GameFactsModel = GameFactsModel(),
+    val badges: List<GameBadge> = emptyList(),
+    val overview: List<OverviewHighlight> = emptyList(),
 ) {
     /** The shown release: the selected edition or update, otherwise the game. A share points to it. */
     val releaseId: Int get() = selectedVariant?.id ?: id

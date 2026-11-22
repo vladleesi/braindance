@@ -63,7 +63,6 @@
     <string name="home_latest_news_description">Top stories from your news feed will appear here.</string>
     <string name="home_open_news">Open News</string>
     <string name="home_events_title">Gaming events</string>
-    <string name="home_events_description">Showcases, festivals, and live events in one place.</string>
     <string name="home_section_empty">Nothing to show here right now.</string>
     <string name="home_see_all">See all</string>
     <!-- Read by screen readers instead of "See all", naming the section: "See all Popular Right Now" -->
@@ -159,7 +158,7 @@
     <string name="game_details_related_tab">%1$s, %2$d</string>
     <string name="game_details_show_all">Show all %1$d</string>
     <string name="game_details_show_fewer">Show fewer</string>
-    <string name="game_details_show_more_choices">+%1$d more</string>
+    <string name="game_details_show_more_choices">Show %1$d more</string>
     <string name="game_media_title">Media</string>
     <string name="game_media_position">%1$d / %2$d</string>
     <string name="game_media_video">Video %1$d of %2$d</string>
@@ -173,6 +172,7 @@
     <string name="game_media_next">Next media</string>
     <string name="game_media_unavailable">This image could not be loaded.</string>
     <string name="game_media_video_unavailable">This video can't be played here.</string>
+    <string name="game_media_video_loading">Loading video…</string>
     <string name="game_media_open_viewer">Open full screen</string>
     <string name="game_media_viewer">%1$s screenshots</string>
     <string name="game_media_close">Close</string>
@@ -228,4 +228,55 @@
     <string name="giveaway_details_claimed_count">%1$s+ players</string>
     <string name="giveaway_details_added">Added</string>
     <string name="giveaway_details_platforms">Platforms</string>
+    <string name="game_facts_title">About</string>
+    <string name="about_hours">~%1$d h</string>
+    <plurals name="about_players">
+        <item quantity="one">Based on %1$d player</item>
+        <item quantity="other">Based on %1$d players</item>
+    </plurals>
+    <string name="overview_title">Overview</string>
+    <string name="overview_solo">Single-player</string>
+    <string name="overview_multiplayer">Multiplayer</string>
+    <string name="overview_solo_multiplayer">Solo &amp; multiplayer</string>
+    <string name="overview_mmo">MMO</string>
+    <string name="overview_co_op">Co-op</string>
+    <string name="overview_split_screen">Split-screen</string>
+    <string name="overview_co_op_split_screen">Co-op · Split-screen</string>
+    <string name="overview_main_story">Main story ~%1$d h</string>
+    <string name="expandable_text_read_more">Read more</string>
+    <string name="expandable_text_show_less">Show less</string>
+    <string name="game_score_accessibility">%1$s, %2$d out of 100</string>
+    <string name="game_score_percent">%1$d%</string>
+    <string name="about_developer">Developer</string>
+    <string name="about_publisher">Publisher</string>
+    <string name="about_tags">Tags</string>
+    <string name="about_series">Series</string>
+    <string name="about_duration">Time to beat</string>
+    <string name="about_main">Main story</string>
+    <string name="about_extra">Main + extras</string>
+    <string name="about_complete">Completionist</string>
+    <string name="about_storyline">Storyline</string>
+    <string name="about_critic">Critics</string>
+    <string name="about_user">Players</string>
+    <string name="event_today">Today %1$s</string>
+    <plurals name="event_in_days">
+        <item quantity="one">In %1$d day</item>
+        <item quantity="other">In %1$d days</item>
+    </plurals>
+    <string name="event_unavailable">This event is unavailable</string>
+    <string name="event_games_title">Featured games</string>
+    <string name="event_logo_missing">No event logo</string>
+    <string name="event_dates_range">%1$s – %2$s</string>
+    <string name="event_live">Live</string>
+    <string name="event_future">Upcoming</string>
+    <string name="event_ended">Ended</string>
+    <string name="event_watch">Watch</string>
+    <string name="event_empty">Games appear after the show</string>
+    <string name="status_alpha">Alpha</string>
+    <string name="status_beta">Beta</string>
+    <string name="status_early_access">Early access</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_rumored">Rumored</string>
+    <string name="status_delisted">Delisted</string>
 </resources>

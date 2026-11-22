@@ -42,6 +42,10 @@ class MediaGalleryState(
     var isPlaying by mutableStateOf(false)
         private set
 
+    /** Whether the embedded player is starting the selected video. */
+    internal var playbackStarting by mutableStateOf(false)
+        private set
+
     /** Whether the selected video failed to play, so the player gives way to a link to YouTube. */
     var playbackFailed by mutableStateOf(false)
         private set
@@ -81,12 +85,23 @@ class MediaGalleryState(
 
     fun stop() {
         isPlaying = false
+        playbackStarting = false
         playbackFailed = false
+    }
+
+    internal fun onPlaybackStartingChanged(
+        video: GameMedia.YouTubeVideo,
+        starting: Boolean,
+    ) {
+        if (isPlaying && selected == video && !playbackFailed) playbackStarting = starting
     }
 
     /** The player of [video] could not play it. Reports from a video no longer playing are ignored. */
     fun onPlaybackFailed(video: GameMedia.YouTubeVideo) {
-        if (isPlaying && selected == video) playbackFailed = true
+        if (isPlaying && selected == video) {
+            playbackStarting = false
+            playbackFailed = true
+        }
     }
 
     /** Opens the full-screen viewer on the selected screenshot. It does nothing while a video is selected. */

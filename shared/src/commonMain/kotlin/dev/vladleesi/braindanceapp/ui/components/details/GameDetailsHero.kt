@@ -106,7 +106,7 @@ private val ExpandedMetrics
  * placeholders of their exact size, so nothing moves until the new ones arrive.
  */
 @Composable
-fun GameDetailsHero(
+internal fun GameDetailsHero(
     details: GameDetails,
     expanded: Boolean,
     libraryActions: LibraryActionsState,
@@ -142,6 +142,7 @@ fun GameDetailsHero(
                     verticalArrangement = Arrangement.spacedBy(Dimens.small),
                 ) {
                     HeroTitle(name = details.name, metrics = metrics, placeholder = loadingRelease)
+                    if (details.badges.isNotEmpty()) GameRatings(details.badges, loadingRelease)
                     relation?.invoke()
                     HeroFacts(
                         releaseDate = details.releaseDate,

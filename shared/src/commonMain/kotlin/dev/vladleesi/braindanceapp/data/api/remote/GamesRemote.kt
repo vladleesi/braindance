@@ -4,6 +4,7 @@ package dev.vladleesi.braindanceapp.data.api.remote
 
 import dev.vladleesi.braindanceapp.data.config.ApiConfig
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.GamingEvent
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
 import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import io.ktor.client.HttpClient
@@ -14,6 +15,11 @@ import io.ktor.client.request.parameter
 class GamesRemote(
     private val backendHttpClient: HttpClient,
 ) {
+    suspend fun events(): List<GamingEvent> = backendHttpClient.get(ApiConfig.Endpoints.EVENTS).body()
+
+    suspend fun eventGames(id: Int): List<GameItem> =
+        backendHttpClient.get(ApiConfig.Endpoints.EVENT_GAMES) { parameter("id", id) }.body()
+
     suspend fun gameDetails(id: Int): List<GameItem> =
         backendHttpClient
             .get(ApiConfig.Endpoints.GAME_DETAILS) {

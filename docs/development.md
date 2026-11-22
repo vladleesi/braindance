@@ -100,8 +100,8 @@ the desktop layout of wide Web windows. Pick the column's width by what the page
 - The top bar takes the page's width as `maxContentWidth`, so its back button, title, and actions line up with the
   content. Backgrounds and full-bleed artwork, such as the game details hero, still span the whole width.
 - Inside the wide column, running text, the search field, and placeholder cards keep their readable widths, aligned
-  to its start. In the desktop layout, game details keep the media gallery at that width, with "Where to buy" beside
-  it, or under it when both do not fit (`MediaWithStores`).
+  to its start. In the desktop layout, game details keep Overview, media, and storyline at that width, with About
+  and store links in a sidebar when both columns fit.
 - Scrolling containers span the whole width so the wheel also works over the margins: apply `pageColumn` after
   `verticalScroll`, inset lazy grids and lists with `pageSidePadding`, and let carousels take `pageWidth` and inset
   their cards by the gutter.
@@ -142,8 +142,8 @@ for the same link:
 | Path | Screen |
 | --- | --- |
 | `/`, `/discover`, `/releases`, `/news`, `/library` | A tab, at its root |
-| `/games/{id}` (also the earlier `/game/{id}`), `/giveaway/{id}` | Game or giveaway details |
-| `/popular`, `/anticipated`, `/giveaways` | The full list behind a Home section's See all |
+| `/games/{id}` (also the earlier `/game/{id}`), `/giveaway/{id}`, `/events/{id}` | Game, giveaway, or event details |
+| `/popular`, `/anticipated`, `/giveaways`, `/events` | The full list behind a Home section's See all |
 | `/profile` | Profile |
 
 A link opens its screen on top of the current tab, and a tab's link switches to that tab, so Back returns to where
@@ -189,24 +189,24 @@ therefore gets its own title, description, canonical link, and preview image:
 
 | Pages | Served by | Indexed |
 | --- | --- | --- |
-| `/`, `/popular`, `/anticipated`, `/giveaways` | Files written by the build (`popular.html` is served at `/popular`) | Yes, and listed in `sitemap.xml` |
+| `/`, `/popular`, `/anticipated`, `/giveaways`, `/events` | Files written by the build (`popular.html` is served at `/popular`) | Yes, and listed in `sitemap.xml` |
 | `/discover`, `/releases`, `/news`, `/library`, `/profile` | Files written by the build | No: placeholders or personal pages |
-| `/games/{id}`, `/game/{id}`, `/giveaway/{id}` | `_worker.js`, a Cloudflare Pages Function, from the API | No: previews for shared links |
-| Any other address, or an ID the API does not know | `404.html` or `_worker.js`, with status 404 | No |
+| `/games/{id}`, `/game/{id}`, `/giveaway/{id}`, `/events/{id}` | `_worker.js`, a Cloudflare Pages Function, from the API | No: previews for shared links |
+| Any other address, or an unknown game or giveaway ID | `404.html` or `_worker.js`, with status 404 | No |
 
 - **Fixed pages:** `webPages` in `webApp/build.gradle.kts` holds their titles and descriptions. The build copies the
   final `index.html` for each, replacing the tags between its `page-meta` markers, and writes `sitemap.xml` and
   `404.html`. `WEB_PUBLIC_URL` (default `https://app.braindancegg.com`) sets the canonical and image addresses.
-- **Game and giveaway pages:** `_routes.json` runs `_worker.js` only on their paths; every other request stays a free
-  static file. It serves the same app page with the game's or giveaway's title, description, and image, read from
-  the API through its edge cache and kept per data center for a day (games) or an hour (giveaways and unknown IDs).
+- **Game, giveaway, and event pages:** `_routes.json` runs `_worker.js` only on their paths; every other request stays a free
+  static file. It serves the same app page with the item's title, description, and image, read from
+  the API through its edge cache and kept per data center for a day (games) or an hour (events, giveaways, and unknown IDs).
+  Events outside the current feed keep a generic preview so older links can still open their games.
   An edition's or update's page keeps its own preview but names its game's address as canonical, since the app shows
   it as a version of that game, selected among the game's versions. It never caches the page itself, which names the current deployment's
   bundle. When the API fails, the page keeps a
   generic preview. If the Function does not run, for example after the free daily allowance (100,000 requests) is
   used up, `_redirects` still serves the app on those paths.
-- **Abuse:** the zone's per-IP rate limit covers these paths with the API's per-game routes and search. Each preview
-  costs at most one API request per data center and day, and an unknown ID one per hour.
+- **Abuse:** the zone's per-IP rate limit covers game and giveaway preview paths with the API's per-game routes and search. Event previews use the shared events feed.
 - **Checks:** `node --test webApp/src/edgeTest/*.test.mjs` tests the worker. To try the whole site locally, serve
   the production distribution with `npx wrangler@4.161.0 pages dev <dist>`; the app's own API requests then fail
   CORS, but the HTML, statuses, and previews are the same as on Cloudflare.
@@ -260,10 +260,13 @@ The Web app draws every screen into one canvas with Compose. `WebAppHost` (`shar
     window size through `windowSize()` (`system/WindowSize.kt`): on Android, `LocalWindowInfo.containerSize` trails
     one rotation behind.
   - On the Web, the iframe is clipped below the bar the page scrolls under (`coveredTop`). It keeps the mouse wheel to
-    itself, so a transparent shield covers the picture, but not YouTube's controls, while the video loads and plays:
-    it passes the wheel to the canvas, ignores clicks while the video starts, and pauses it on a click. The player's
-    state comes from YouTube's message channel (`enablejsapi`, `EmbedEvent`), accepted only from the frame and
-    YouTube's origin; without an answer, the shield steps aside after ten seconds. Keep `frame-src` and
+    itself, so a transparent shield sends wheel deltas over the picture to the details page while the video starts,
+    plays, or is paused. Clicks over the picture pause or resume playback. YouTube's controls and paused header stay
+    accessible, and its end screen takes over when playback finishes. Native scroll chaining over those areas
+    moves the details page through the player's scrollable wrapper. The Media heading shows startup progress.
+    The app reads YouTube's message channel (`enablejsapi`, `EmbedEvent`) only from the frame and YouTube's origin.
+    It retries once with sound muted if playback is blocked or stalls before buffering. Without a response, the
+    shield steps aside after ten seconds. Keep `frame-src` and
     `https://i.ytimg.com` in `index.html`'s content security policy in step with it.
 - **Autoscrolling:** on Windows, a middle press that no link takes, over a page that can scroll, starts the
   browser-style autoscroll (`PageAutoscrollHost`). A marker appears at the press point, and the page scrolls faster
@@ -292,7 +295,7 @@ serve `webApp/build/dist/wasmJs/productionExecutable` over HTTPS with compressio
 type. The API's CORS allowlist must include the site's exact origin.
 
 Serve the fixed pages' files at their paths without the extension (`popular.html` at `/popular`), `index.html` for
-`/games/*`, `/game/*`, and `/giveaway/*`, and `404.html` with status 404 for anything else; `_worker.js`,
+`/games/*`, `/game/*`, `/events/*`, and `/giveaway/*`, and `404.html` with status 404 for anything else; `_worker.js`,
 `_routes.json`, and `_redirects` do this on Cloudflare Pages only. Set `WEB_PUBLIC_URL` to the site's own origin, so
 canonical links and the sitemap do not point to the Braindance Web app. Cache
 fingerprinted assets (`*.wasm`, `webApp.*`, and `composeResources/`, whose URLs carry a content fingerprint in the

@@ -14,16 +14,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.ui.components.Chip
+import dev.vladleesi.braindanceapp.ui.components.Tag
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
+import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.viewmodels.GenreTag
+import dev.vladleesi.braindanceapp.utils.placeholder
 
-/**
- * A game's genres as [Chip]s, wrapping onto further rows. With [onGenreClick] each opens its genre; without one, for
- * example while there is nothing to browse by genre, they are information and nothing looks pressable that does
- * nothing. While [placeholder], each chip is a shimmer of its own size.
- */
+/** Genres wrap as informational tags or as chips that open a genre when [onGenreClick] is supplied. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GenreTags(
@@ -40,11 +39,14 @@ fun GenreTags(
     ) {
         genres.forEach { genre ->
             key(genre.id) {
-                Chip(
-                    text = genre.name,
-                    onClick = onGenreClick?.let { open -> { open(genre) } },
-                    placeholder = placeholder,
-                )
+                if (onGenreClick == null) {
+                    Tag(
+                        text = genre.name,
+                        modifier = Modifier.placeholder(visible = placeholder, shape = CornerShapes.pill),
+                    )
+                } else {
+                    Chip(text = genre.name, onClick = { onGenreClick(genre) }, placeholder = placeholder)
+                }
             }
         }
     }

@@ -271,6 +271,16 @@ describe("unavailable data", () => {
     });
 });
 
+describe("event pages", () => {
+    it("shows the event name and a canonical URL", async () => {
+        apiResponses.set(`${API}/v1/events`, json([{ id: 4, name: "Sample Showcase" }]));
+        const { response, html } = await open("/events/4");
+        assert.equal(response.status, 200);
+        assert.equal(meta(html, "og:title"), "Sample Showcase");
+        assert.equal(canonical(html), `${PUBLIC_ORIGIN}/events/4`);
+    });
+});
+
 describe("giveaway pages", () => {
     const giveaway = {
         id: 3850,

@@ -113,6 +113,35 @@ paths:
                   $ref: '#/components/schemas/GameItem'
         '400':
           description: The query is missing or invalid, or the page is out of range.
+  /v1/events:
+    get:
+      summary: Live events, then upcoming events in the next 60 days and events ended in the last 30 days.
+      description: For feed ordering, an event with no end time is live for three hours after its start.
+      responses:
+        '200':
+          description: Live events, then upcoming events in the next 60 days and events ended in the last 30 days.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GamingEvent'
+  /v1/events/games:
+    get:
+      summary: Listable game cards for the event. An unknown event returns an empty list.
+      parameters:
+        - $ref: '#/components/parameters/GameId'
+      responses:
+        '200':
+          description: Listable game cards for the event. An unknown event returns an empty list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
   /v1/giveaways:
     get:
       summary: All current giveaways.
@@ -271,6 +300,95 @@ components:
             Game details only. The image for the top of the game's page: its key art when one fits a wide header,
             otherwise its first still screenshot, or the canonical game's when it has neither. Absent when there is
             none.
+        developers:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedItem'
+        publishers:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedItem'
+        game_modes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedItem'
+        player_perspectives:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedItem'
+        themes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedItem'
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedItem'
+        critic_rating:
+          description: Game details only. Normalized critic score. Availability and source are decided by the API.
+          $ref: '#/components/schemas/GameRating'
+        user_rating:
+          description: Game details only. Normalized player score. Availability and source are decided by the API.
+          $ref: '#/components/schemas/GameRating'
+        status:
+          description: Game details only. Unreleased or inactive status. Ignore unknown values.
+          type: string
+        time_to_beat:
+          description: Game details only. Estimated seconds for the canonical game, with the number of responses.
+          $ref: '#/components/schemas/TimeToBeat'
+    NamedItem:
+      required: [id, name]
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    GameRating:
+      required: [score]
+      type: object
+      properties:
+        score:
+          minimum: 0
+          maximum: 100
+          type: integer
+        count:
+          type: integer
+    TimeToBeat:
+      required: [count]
+      type: object
+      properties:
+        hastily:
+          type: integer
+          format: int64
+        normally:
+          type: integer
+          format: int64
+        completely:
+          type: integer
+          format: int64
+        count:
+          type: integer
+    GamingEvent:
+      required: [id, name, start_time]
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        start_time:
+          type: integer
+          format: int64
+        end_time:
+          type: integer
+          format: int64
+        logo:
+          $ref: '#/components/schemas/Cover'
+        live_stream_url:
+          type: string
+        game_count:
+          type: integer
     GameFamily:
       type: object
       description: Game details only. The canonical game's related entries, at most 50 per list, oldest first.

@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -31,7 +33,7 @@ import dev.vladleesi.braindanceapp.utils.toSafeExternalUrl
  * The player page (see [playerPageHtml]) in one WebView that the player keeps for its whole life, loading each video
  * into it and unloading it when stopped. It runs only the page's script and YouTube's: no JavaScript interface is
  * added, and the page cannot navigate itself away. A link that would leave it, such as YouTube's logo, opens in the
- * YouTube app or the browser; the page's failure address calls [onFailed]. The WebView pauses with the screen, as a
+ * YouTube app or the browser; the page's failure address notifies [state]. The WebView pauses with the screen, as a
  * browser does for a background tab, and is destroyed once it has left the composition.
  */
 @Composable
@@ -39,11 +41,11 @@ internal actual fun YouTubePlayer(
     video: GameMedia.YouTubeVideo?,
     title: String,
     coveredTop: Dp,
-    onFailed: (GameMedia.YouTubeVideo) -> Unit,
-    modifier: Modifier,
+    state: MediaGalleryState,
+    scrollState: ScrollState?,
 ) {
     val uriHandler = LocalUriHandler.current
-    val currentOnFailed by rememberUpdatedState(onFailed)
+    val currentState by rememberUpdatedState(state)
     val openLink by rememberUpdatedState<(String) -> Unit>({ url ->
         url.toSafeExternalUrl()?.let(uriHandler::openExternalUrl)
     })
@@ -54,11 +56,11 @@ internal actual fun YouTubePlayer(
                 context = context,
                 lifecycle = lifecycle,
                 onOpenLink = { url -> openLink(url) },
-                onFailed = { failed -> currentOnFailed(failed) },
+                onFailed = { failed -> currentState.onPlaybackFailed(failed) },
             )
         },
         modifier =
-            Modifier.collapsedWhenStopped(video).then(modifier).then(
+            Modifier.collapsedWhenStopped(video).fillMaxSize().then(
                 if (video !=
                     null
                 ) {

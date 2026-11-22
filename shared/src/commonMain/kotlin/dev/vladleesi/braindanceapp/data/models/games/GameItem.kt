@@ -32,4 +32,19 @@ data class GameItem(
     val family: GameFamily? = null,
     /** The image the API chose for the top of the page, already falling back to the canonical game's; often absent. */
     val backdrop: Cover? = null,
+    val developers: List<NamedItem>? = null,
+    val publishers: List<NamedItem>? = null,
+    @SerialName("game_modes")
+    val gameModes: List<NamedItem>? = null,
+    @SerialName("player_perspectives")
+    val playerPerspectives: List<NamedItem>? = null,
+    val themes: List<NamedItem>? = null,
+    val series: List<NamedItem>? = null,
+    @SerialName("critic_rating")
+    val criticRating: GameRating? = null,
+    @SerialName("user_rating")
+    val userRating: GameRating? = null,
+    val status: String? = null,
+    @SerialName("time_to_beat")
+    val timeToBeat: TimeToBeat? = null,
 )

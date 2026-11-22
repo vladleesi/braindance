@@ -5,6 +5,24 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.30.0 — 2026-11-21
+
+### Android, iOS, and Web
+
+- Browse live, upcoming, and recent gaming events on Home. See when shows start in your time zone, then open a show
+  to watch its stream or explore its featured games. Desktop shows one row, with See all for the full list.
+- Game pages open with an Overview for the selected edition and up to three highlights. A compact About panel shows
+  credits, play styles, themes, series, and estimated play times. Critic and player scores appear in separate
+  progress rings beside the color-coded release status when available.
+- Game pages scroll with a steady scrollbar. When switching editions, the page keeps its place while the new details
+  load and eases into layout changes. On desktop, About sits beside the overview and media, and collapsing expanded
+  text keeps the reading position steady.
+
+### Web
+
+- Trailers match the media preview's rounded corners, show when they are loading, and allow page scrolling over
+  the picture and player controls. On desktop Home, the News preview spans the main column.
+
 ## 0.29.0 — 2026-11-20
 
 ### Android, iOS, and Web

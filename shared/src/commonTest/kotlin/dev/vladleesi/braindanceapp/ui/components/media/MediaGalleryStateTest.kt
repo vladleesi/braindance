@@ -94,6 +94,31 @@ class MediaGalleryStateTest {
     }
 
     @Test
+    fun onlyTheSelectedPlayingVideoCanReportThatItIsStarting() {
+        val state = MediaGalleryState(gallery)
+        state.onPlaybackStartingChanged(video, starting = true)
+        assertFalse(state.playbackStarting)
+
+        state.play()
+        state.onPlaybackStartingChanged(video, starting = true)
+        assertTrue(state.playbackStarting)
+        state.onPlaybackStartingChanged(secondVideo, starting = false)
+        assertTrue(state.playbackStarting)
+
+        state.onPlaybackStartingChanged(video, starting = false)
+        assertFalse(state.playbackStarting)
+        state.onPlaybackStartingChanged(video, starting = true)
+        state.selectNext()
+        assertFalse(state.playbackStarting)
+
+        state.play()
+        state.onPlaybackStartingChanged(secondVideo, starting = true)
+        state.onPlaybackFailed(secondVideo)
+        state.onPlaybackStartingChanged(secondVideo, starting = true)
+        assertFalse(state.playbackStarting)
+    }
+
+    @Test
     fun theViewerOpensOnlyOnAScreenshotAndMovesThroughScreenshotsOnly() {
         val state = MediaGalleryState(gallery)
 

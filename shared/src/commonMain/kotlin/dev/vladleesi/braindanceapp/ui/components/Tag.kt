@@ -10,6 +10,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
@@ -26,6 +27,7 @@ import dev.vladleesi.braindanceapp.ui.style.white
 fun Tag(
     text: String,
     modifier: Modifier = Modifier,
+    color: Color = white,
 ) {
     Text(
         text = text,
@@ -34,7 +36,7 @@ fun Tag(
                 .border(HairlineBorder, CornerShapes.pill)
                 .padding(horizontal = Dimens.small, vertical = Dimens.micro),
         style = MaterialTheme.typography.caption,
-        color = white,
+        color = color,
     )
 }
 

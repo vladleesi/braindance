@@ -64,8 +64,9 @@ marketing page and can be loud. The app is used every day and stays calm.
 | Accent | Cyan `#22E4FF` | Selection, focus, links: the one functional color |
 
 The surface steps are low-chroma neutrals built from Ink. Navy stays a brand color for background symbols; as a
-surface tint it gave the interface a blue cast that competed with cover art. Magenta and yellow are not interface
-colors: they appear with cyan as the trail, and magenta alone marks the development status.
+surface tint it gave the interface a blue cast that competed with cover art. Score rings use a flat
+magenta-to-yellow-to-cyan gradient. Game status tags use magenta for development, yellow for unavailable games, and
+cyan for rumors. The app's development status uses magenta.
 
 ### Shape
 

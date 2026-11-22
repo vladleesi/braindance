@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -40,8 +41,6 @@ import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.resources.Res
-import dev.vladleesi.braindanceapp.resources.home_events_description
-import dev.vladleesi.braindanceapp.resources.home_events_title
 import dev.vladleesi.braindanceapp.resources.home_latest_news_description
 import dev.vladleesi.braindanceapp.resources.home_latest_news_title
 import dev.vladleesi.braindanceapp.resources.home_notifications_coming_soon
@@ -67,6 +66,7 @@ import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCard
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayItemModel
+import dev.vladleesi.braindanceapp.ui.components.home.EventsCarousel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
@@ -109,6 +109,7 @@ private fun StandardHomeScreen(
 
     val trendingNow by viewModel.trendingNow.collectAsStateWithLifecycle()
     val mostAnticipated by viewModel.mostAnticipated.collectAsStateWithLifecycle()
+    val events by viewModel.events.collectAsStateWithLifecycle()
     val giveaways by viewModel.giveaways.collectAsStateWithLifecycle()
 
     // Load the screen only on first navigation
@@ -184,6 +185,7 @@ private fun StandardHomeScreen(
                     modifier = carouselModifier,
                 )
             }
+            item { EventsCarousel(events, viewModel::loadEvents, navigator::navigate, Modifier.fillMaxWidth()) }
             homePreviewCards(
                 onOpenReleases = { navigator.navigate(BottomBarRoute.ReleasesRoute) },
                 onOpenNews = { navigator.navigate(BottomBarRoute.NewsRoute) },
@@ -351,13 +353,6 @@ private fun LazyListScope.homePreviewCards(
             link = Res.string.home_open_news,
             onLinkClick = onOpenNews,
             linkRoute = BottomBarRoute.NewsRoute,
-        )
-    }
-    item {
-        HomePreviewCard(
-            title = Res.string.home_events_title,
-            description = Res.string.home_events_description,
-            modifier = cardModifier,
         )
     }
 }

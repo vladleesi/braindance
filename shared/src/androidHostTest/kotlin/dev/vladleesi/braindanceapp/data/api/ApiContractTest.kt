@@ -7,11 +7,15 @@ import dev.vladleesi.braindanceapp.data.models.games.Cover
 import dev.vladleesi.braindanceapp.data.models.games.FamilyGame
 import dev.vladleesi.braindanceapp.data.models.games.GameFamily
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.GameRating
+import dev.vladleesi.braindanceapp.data.models.games.GamingEvent
 import dev.vladleesi.braindanceapp.data.models.games.Genre
+import dev.vladleesi.braindanceapp.data.models.games.NamedItem
 import dev.vladleesi.braindanceapp.data.models.games.Platform
 import dev.vladleesi.braindanceapp.data.models.games.ReleaseDate
 import dev.vladleesi.braindanceapp.data.models.games.Screenshot
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
+import dev.vladleesi.braindanceapp.data.models.games.TimeToBeat
 import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import dev.vladleesi.braindanceapp.data.models.games.Video
 import dev.vladleesi.braindanceapp.data.models.games.Websites
@@ -48,6 +52,10 @@ class ApiContractTest {
                 "SimilarGame" to SimilarGame.serializer().descriptor,
                 "Cover" to Cover.serializer().descriptor,
                 "ReleaseDate" to ReleaseDate.serializer().descriptor,
+                "NamedItem" to NamedItem.serializer().descriptor,
+                "GameRating" to GameRating.serializer().descriptor,
+                "TimeToBeat" to TimeToBeat.serializer().descriptor,
+                "GamingEvent" to GamingEvent.serializer().descriptor,
                 "Genre" to Genre.serializer().descriptor,
                 "Platform" to Platform.serializer().descriptor,
                 "Websites" to Websites.serializer().descriptor,

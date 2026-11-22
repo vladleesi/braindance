@@ -55,6 +55,22 @@ class BaselineProfileGenerator {
         }
 
     @Test
+    fun browseGamingEvents() =
+        rule.collect(packageName = PACKAGE_NAME) {
+            pressHome()
+            startActivityAndWait()
+            val link = By.desc(SEE_ALL_PREFIX + "Gaming events")
+            device.wait(Until.hasObject(By.scrollable(true)), CONTENT_TIMEOUT_MILLIS)
+            repeat(MAX_HOME_SCROLLS) {
+                if (!device.hasObject(link)) {
+                    device.findObject(By.scrollable(true))?.scroll(Direction.DOWN, VIEWPORT_FRACTION)
+                }
+            }
+            device.findObject(link)?.click() ?: return@collect
+            device.wait(Until.findObject(By.desc("Button: Back")), CONTENT_TIMEOUT_MILLIS)
+        }
+
+    @Test
     fun searchGames() =
         rule.collect(packageName = PACKAGE_NAME) {
             pressHome()
@@ -75,6 +91,8 @@ class BaselineProfileGenerator {
         }
 
     private companion object {
+        const val MAX_HOME_SCROLLS = 4
+        const val VIEWPORT_FRACTION = 0.8f
         const val PACKAGE_NAME = "dev.vladleesi.braindanceapp"
         const val CONTENT_TIMEOUT_MILLIS = 15_000L
         const val DISCOVER_LABEL = "Discover"

@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
@@ -87,7 +88,10 @@ internal val PageScrollbarStyle =
     )
 
 @Composable
-internal actual fun BoxScope.PageScrollbar(state: ScrollableState) {
+internal actual fun BoxScope.PageScrollbar(
+    state: ScrollableState,
+    topInset: Dp,
+) {
     // Middle-click autoscrolling works in every layout, wherever a mouse is used.
     PageAutoscrollTarget(state)
     if (desktopLayout() == null) return
@@ -99,13 +103,14 @@ internal actual fun BoxScope.PageScrollbar(state: ScrollableState) {
     if (!canScroll || !rememberMediaQueryMatches(FINE_POINTER_QUERY)) return
 
     key(state) {
-        AnimatedPageScrollbar(state, scrolling = state.isScrollInProgress)
+        AnimatedPageScrollbar(state, topInset, scrolling = state.isScrollInProgress)
     }
 }
 
 @Composable
 private fun BoxScope.AnimatedPageScrollbar(
     state: ScrollableState,
+    topInset: Dp,
     scrolling: Boolean,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -139,7 +144,7 @@ private fun BoxScope.AnimatedPageScrollbar(
             modifier =
                 Modifier
                     .fillMaxHeight()
-                    .padding(top = Dimens.tiny, bottom = Dimens.tiny, end = Dimens.tiny)
+                    .padding(top = topInset + Dimens.tiny, bottom = Dimens.tiny, end = Dimens.tiny)
                     .scrollable(state, Orientation.Vertical, reverseDirection = true),
             style = PageScrollbarStyle,
             interactionSource = interactionSource,
@@ -174,7 +179,7 @@ internal fun PageScrollbarPreview() {
                 Text("First row", modifier = Modifier.padding(Dimens.medium))
                 Text("Second row", modifier = Modifier.padding(Dimens.medium))
             }
-            AnimatedPageScrollbar(state, scrolling = true)
+            AnimatedPageScrollbar(state, topInset = Dimens.medium, scrolling = true)
         }
     }
 }

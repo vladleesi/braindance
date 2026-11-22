@@ -41,6 +41,7 @@ import dev.vladleesi.braindanceapp.navigation.Navigator
 import dev.vladleesi.braindanceapp.navigation.routeLink
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
+import dev.vladleesi.braindanceapp.navigation.routes.EventsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -220,6 +221,7 @@ fun NavigationGraph(modifier: Modifier) {
                         registerNestedRoute<ProfileRoute>()
                         registerNestedRoute<GameDetailsRoute>()
                         registerNestedRoute<GiveawayDetailsRoute>()
+                        registerNestedRoute<EventsRoute>()
                         registerNestedRoute<CompilationRoute>()
                     },
             ),

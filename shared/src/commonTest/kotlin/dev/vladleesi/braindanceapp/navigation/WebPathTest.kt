@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
+import dev.vladleesi.braindanceapp.navigation.routes.EventsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -30,6 +31,8 @@ class WebPathTest {
             listOf("/", "/discover", "/releases", "/news", "/library", "/profile"),
             (BottomBarRoute.routes + ProfileRoute).map { it.toWebPath() },
         )
+        assertEquals(EventsRoute(), webPathToRoute("/events"))
+        assertEquals(EventsRoute(17), webPathToRoute(EventsRoute(17).toWebPath()))
         assertEquals("/games/42", GameDetailsRoute(42).toWebPath())
         assertEquals("/giveaway/7", GiveawayDetailsRoute(7).toWebPath())
     }

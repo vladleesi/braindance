@@ -75,6 +75,7 @@ fun CardCover(
     aspectRatio: Float,
     interactionSource: MutableInteractionSource,
     modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop,
     overlay: @Composable BoxScope.() -> Unit = {},
 ) {
     val hovered by interactionSource.collectIsHoveredAsState()
@@ -100,7 +101,7 @@ fun CardCover(
             AsyncImage(
                 model = rememberCachedImageRequest(data = imageUrl, memoryCacheKey = memoryCacheKey),
                 contentDescription = contentDescription.toContentDescription(),
-                contentScale = ContentScale.Crop,
+                contentScale = contentScale,
                 modifier =
                     Modifier
                         .fillMaxSize()

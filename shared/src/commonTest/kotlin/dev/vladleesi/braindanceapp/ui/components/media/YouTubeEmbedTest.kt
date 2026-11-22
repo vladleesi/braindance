@@ -20,11 +20,15 @@ class YouTubeEmbedTest {
     }
 
     @Test
-    fun embedMessagesReportReadinessAndWhetherTheVideoPlaysOrLoads() {
+    fun embedMessagesDistinguishPausedVideosFromUnstartedOrEndedVideos() {
         assertEquals(EmbedEvent.READY, embedEventOf("""{"event":"onReady","id":1}"""))
+        assertEquals(EmbedEvent.AUTOPLAY_BLOCKED, embedEventOf("""{"event":"onAutoplayBlocked","id":1}"""))
+        assertEquals(EmbedEvent.FAILED, embedEventOf("""{"event":"onError","info":101}"""))
         assertEquals(EmbedEvent.PLAYING, embedEventOf("""{"event":"onStateChange","info":1}"""))
         assertEquals(EmbedEvent.BUFFERING, embedEventOf("""{"event":"infoDelivery","info":{"playerState":3}}"""))
-        assertEquals(EmbedEvent.STOPPED, embedEventOf("""{"event":"onStateChange","info":2}"""))
+        assertEquals(EmbedEvent.PAUSED, embedEventOf("""{"event":"onStateChange","info":2}"""))
+        assertEquals(EmbedEvent.PAUSED, embedEventOf("""{"event":"infoDelivery","info":{"playerState":2}}"""))
+        assertEquals(EmbedEvent.STOPPED, embedEventOf("""{"event":"onStateChange","info":0}"""))
         assertEquals(EmbedEvent.STOPPED, embedEventOf("""{"event":"initialDelivery","info":{"playerState":-1}}"""))
     }
 

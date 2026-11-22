@@ -47,18 +47,27 @@ internal enum class EmbedEvent {
     /** The player can take commands. */
     READY,
 
+    /** The browser declined scripted playback. */
+    AUTOPLAY_BLOCKED,
+
+    /** YouTube reported a playback error. */
+    FAILED,
+
     /** The video plays. */
     PLAYING,
+
+    /** The video is paused and can resume from the same position. */
+    PAUSED,
 
     /** The video loads to play, before it starts or when playback waits for data. */
     BUFFERING,
 
-    /** The video is paused, ended, or not started. */
+    /** The video ended or has not started. */
     STOPPED,
 }
 
-// The player's states in its message channel: playing and buffering.
 private const val STATE_PLAYING = 1
+private const val STATE_PAUSED = 2
 private const val STATE_BUFFERING = 3
 
 /**
@@ -76,6 +85,8 @@ internal fun embedEventOf(message: String): EmbedEvent? {
     val state =
         when ((json["event"] as? JsonPrimitive)?.contentOrNull) {
             "onReady" -> return EmbedEvent.READY
+            "onAutoplayBlocked" -> return EmbedEvent.AUTOPLAY_BLOCKED
+            "onError" -> return EmbedEvent.FAILED
             "onStateChange" -> (info as? JsonPrimitive)?.intOrNull
             "initialDelivery", "infoDelivery" ->
                 (
@@ -87,6 +98,7 @@ internal fun embedEventOf(message: String): EmbedEvent? {
         } ?: return null
     return when (state) {
         STATE_PLAYING -> EmbedEvent.PLAYING
+        STATE_PAUSED -> EmbedEvent.PAUSED
         STATE_BUFFERING -> EmbedEvent.BUFFERING
         else -> EmbedEvent.STOPPED
     }

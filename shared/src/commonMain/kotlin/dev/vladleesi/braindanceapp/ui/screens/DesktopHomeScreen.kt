@@ -50,6 +50,7 @@ import dev.vladleesi.braindanceapp.navigation.routeLink
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
+import dev.vladleesi.braindanceapp.navigation.routes.EventsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -59,7 +60,6 @@ import dev.vladleesi.braindanceapp.resources.desktop_hero_description
 import dev.vladleesi.braindanceapp.resources.desktop_hero_title
 import dev.vladleesi.braindanceapp.resources.desktop_recommended_title
 import dev.vladleesi.braindanceapp.resources.desktop_tagline
-import dev.vladleesi.braindanceapp.resources.home_events_description
 import dev.vladleesi.braindanceapp.resources.home_events_title
 import dev.vladleesi.braindanceapp.resources.home_latest_news_description
 import dev.vladleesi.braindanceapp.resources.home_latest_news_title
@@ -89,6 +89,8 @@ import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopGridColumns
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopSection
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCard
 import dev.vladleesi.braindanceapp.ui.components.giveaways.GiveawayCardSkeleton
+import dev.vladleesi.braindanceapp.ui.components.home.EventCard
+import dev.vladleesi.braindanceapp.ui.components.home.EventCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
@@ -181,9 +183,9 @@ internal fun DesktopHomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(Dimens.large),
             ) {
                 DesktopHomeMainColumn(
-                    layout = layout,
                     viewModel = viewModel,
                     columns = columns,
+                    includeContextModules = !layout.hasContextColumn,
                     modifier = Modifier.width(mainWidth),
                 )
                 if (layout.hasContextColumn) {
@@ -198,18 +200,19 @@ internal fun DesktopHomeScreen(
     }
 }
 
-/** The real content: the hero, the three card sections, and previews of planned features. */
+/** The discovery hero, content sections, and previews of planned features. */
 @Composable
 private fun DesktopHomeMainColumn(
-    layout: DesktopLayout,
     viewModel: HomeViewModel,
     columns: DesktopGridColumns,
+    includeContextModules: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val navigator = LocalNavigator.current
     val trendingNow by viewModel.trendingNow.collectAsStateWithLifecycle()
     val mostAnticipated by viewModel.mostAnticipated.collectAsStateWithLifecycle()
     val giveaways by viewModel.giveaways.collectAsStateWithLifecycle()
+    val events by viewModel.events.collectAsStateWithLifecycle()
     val onGameClick = { id: Int -> navigator.navigate(GameDetailsRoute(id)) }
     Column(
         modifier = modifier,
@@ -267,9 +270,22 @@ private fun DesktopHomeMainColumn(
                 )
             }
         }
-        // Without the context column, its modules join the other planned features here.
+        DesktopSection(
+            title = stringResource(Res.string.home_events_title),
+            onSeeAll = { navigator.navigate(EventsRoute()) },
+            seeAllRoute = EventsRoute(),
+        ) {
+            DesktopCardRow(
+                state = events,
+                columns = columns.giveaways,
+                onRetry = viewModel::loadEvents,
+                skeleton = { EventCardSkeleton(it) },
+            ) { event, itemModifier ->
+                EventCard(event, { navigator.navigate(EventsRoute(event.id)) }, itemModifier)
+            }
+        }
         DesktopPreviewGrid(
-            includeContextModules = !layout.hasContextColumn,
+            includeContextModules = includeContextModules,
             onOpenReleases = { navigator.navigate(BottomBarRoute.ReleasesRoute) },
             onOpenNews = { navigator.navigate(BottomBarRoute.NewsRoute) },
         )
@@ -424,7 +440,7 @@ private fun ContextCard(
     }
 }
 
-/** Planned Home sections as compact previews, two per row, below the real content. */
+/** Planned Home sections below the main content. */
 @Composable
 private fun DesktopPreviewGrid(
     includeContextModules: Boolean,
@@ -449,21 +465,14 @@ private fun DesktopPreviewGrid(
                 )
             }
         }
-        PreviewRow {
-            PreviewCard(
-                title = stringResource(Res.string.home_latest_news_title),
-                description = Res.string.home_latest_news_description,
-                link = Res.string.home_open_news,
-                onLinkClick = onOpenNews,
-                linkRoute = BottomBarRoute.NewsRoute,
-                modifier = previewCell(),
-            )
-            PreviewCard(
-                title = stringResource(Res.string.home_events_title),
-                description = Res.string.home_events_description,
-                modifier = previewCell(),
-            )
-        }
+        PreviewCard(
+            title = stringResource(Res.string.home_latest_news_title),
+            description = Res.string.home_latest_news_description,
+            link = Res.string.home_open_news,
+            onLinkClick = onOpenNews,
+            linkRoute = BottomBarRoute.NewsRoute,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 

@@ -4,6 +4,7 @@ package dev.vladleesi.braindanceapp.ui.components.media
 
 import ChevronLeft
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -73,10 +74,12 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -96,6 +99,7 @@ import dev.vladleesi.braindanceapp.resources.game_media_screenshot_of_game
 import dev.vladleesi.braindanceapp.resources.game_media_title
 import dev.vladleesi.braindanceapp.resources.game_media_unavailable
 import dev.vladleesi.braindanceapp.resources.game_media_video
+import dev.vladleesi.braindanceapp.resources.game_media_video_loading
 import dev.vladleesi.braindanceapp.resources.game_media_video_of_game
 import dev.vladleesi.braindanceapp.resources.game_media_video_unavailable
 import dev.vladleesi.braindanceapp.resources.game_media_watch_on_youtube
@@ -184,6 +188,7 @@ fun MediaGallery(
     placeholder: Boolean = false,
     horizontalPadding: Dp = 0.dp,
     coveredTop: Dp = 0.dp,
+    scrollState: ScrollState? = null,
 ) {
     if (state.gallery.isEmpty) return
     val viewerButtonFocus = remember { FocusRequester() }
@@ -217,7 +222,7 @@ fun MediaGallery(
                 .padding(horizontal = horizontalPadding)
                 .width(if (sideRail) previewWidth + Dimens.small + RailWidth else previewWidth)
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.small)) {
-            MediaHeader(state = state, modifier = inset)
+            MediaHeader(state = state, modifier = inset, placeholder = placeholder)
             // One layout for both arrangements, so the preview, and a video playing in it, stay in place when the
             // thumbnails move between the rail and the strip, as when a phone turns.
             MediaBody(
@@ -232,6 +237,8 @@ fun MediaGallery(
                         viewerButtonFocus = viewerButtonFocus,
                         onWatchOnYouTube = onWatchOnYouTube,
                         modifier = previewModifier,
+                        placeholder = placeholder,
+                        scrollState = scrollState,
                     )
                 },
                 thumbnails = {
@@ -319,6 +326,7 @@ private fun ReturnFocusAfterViewer(
 private fun MediaHeader(
     state: MediaGalleryState,
     modifier: Modifier,
+    placeholder: Boolean,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(
@@ -327,13 +335,24 @@ private fun MediaHeader(
             modifier = Modifier.weight(1f).semantics { heading() },
         )
         val count = state.gallery.items.size
-        if (count > 1) {
+        if (state.playbackStarting && !placeholder) {
+            Text(
+                text = stringResource(Res.string.game_media_video_loading),
+                style = MaterialTheme.typography.caption,
+                color = secondaryText,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+        } else if (count > 1) {
             Text(
                 text = stringResource(Res.string.game_media_position, state.selectedIndex + 1, count),
                 style = MaterialTheme.typography.caption,
                 color = secondaryText,
                 // The thumbnails already announce their position; this repeats it for sighted users only.
-                modifier = Modifier.clearAndSetSemantics {},
+                modifier =
+                    Modifier.clearAndSetSemantics {}.placeholder(
+                        visible = placeholder,
+                        shape = CornerShapes.small,
+                    ),
             )
         }
     }
@@ -349,6 +368,8 @@ private fun MediaPreview(
     viewerButtonFocus: FocusRequester,
     onWatchOnYouTube: (GameMedia.YouTubeVideo) -> Unit,
     modifier: Modifier,
+    placeholder: Boolean,
+    scrollState: ScrollState?,
 ) {
     val item = state.selected ?: return
     val position = state.gallery.positionInKind(state.selectedIndex)
@@ -356,7 +377,7 @@ private fun MediaPreview(
     val swipeThresholdPx = with(LocalDensity.current) { SwipeThreshold.toPx() }
     val hasArrows = remember { !hasTouchScreen() } && state.gallery.items.size > 1
     val playing = state.isPlaying
-    val playingVideo = (item as? GameMedia.YouTubeVideo)?.takeIf { playing && !state.playbackFailed }
+    val playingVideo = (item as? GameMedia.YouTubeVideo)?.takeIf { playing && !state.playbackFailed && !placeholder }
     // The player is created on the first play and then stays for as long as the preview does, stopped or playing
     // another video: a platform view removed on its own, while this box stays, can crash Compose on Android.
     var playerCreated by remember { mutableStateOf(false) }
@@ -366,39 +387,41 @@ private fun MediaPreview(
             modifier
                 .clip(CornerShapes.small)
                 .background(black)
-                .swipeToSelect(state, swipeThresholdPx),
+                .then(if (placeholder) Modifier else Modifier.swipeToSelect(state, swipeThresholdPx)),
     ) {
-        // Each item gets its own image state, so a slow image never shows under the next selection.
-        key(item.key) {
-            when (item) {
-                is GameMedia.Screenshot ->
-                    ScreenshotPreview(
-                        url = item.previewUrl(widthPx),
-                        thumbnailKey = thumbnailMemoryCacheKey(item),
-                        description =
-                            stringResource(
-                                Res.string.game_media_screenshot_of_game,
-                                gameName,
-                                position.number,
-                                position.count,
-                            ),
-                    )
-
-                is GameMedia.YouTubeVideo ->
-                    if (playing && state.playbackFailed) {
-                        VideoUnavailable(onWatchOnYouTube = { onWatchOnYouTube(item) })
-                    } else {
-                        // Stays under a playing video, so the frame is never empty while the player loads.
-                        VideoPoster(
-                            video = item,
-                            widthPx = widthPx,
-                            // YouTube's standard poster letterboxes the 16:9 frame; cropping removes the bars.
-                            contentScale = ContentScale.Crop,
-                            playDescription =
-                                stringResource(Res.string.game_media_play, position.number, position.count),
-                            onPlay = state::play,
+        if (!placeholder) {
+            // Each item gets its own image state, so a slow image never shows under the next selection.
+            key(item.key) {
+                when (item) {
+                    is GameMedia.Screenshot ->
+                        ScreenshotPreview(
+                            url = item.previewUrl(widthPx),
+                            thumbnailKey = thumbnailMemoryCacheKey(item),
+                            description =
+                                stringResource(
+                                    Res.string.game_media_screenshot_of_game,
+                                    gameName,
+                                    position.number,
+                                    position.count,
+                                ),
                         )
-                    }
+
+                    is GameMedia.YouTubeVideo ->
+                        if (playing && state.playbackFailed) {
+                            VideoUnavailable(onWatchOnYouTube = { onWatchOnYouTube(item) })
+                        } else {
+                            // Stays under a playing video, so the frame is never empty while the player loads.
+                            VideoPoster(
+                                video = item,
+                                widthPx = widthPx,
+                                // YouTube's standard poster letterboxes the 16:9 frame; cropping removes the bars.
+                                contentScale = ContentScale.Crop,
+                                playDescription =
+                                    stringResource(Res.string.game_media_play, position.number, position.count),
+                                onPlay = state::play,
+                            )
+                        }
+                }
             }
         }
         if (playerCreated || playingVideo != null) {
@@ -412,16 +435,18 @@ private fun MediaPreview(
                         position.count,
                     ),
                 coveredTop = coveredTop,
-                onFailed = state::onPlaybackFailed,
-                modifier = Modifier.fillMaxSize(),
+                state = state,
+                scrollState = scrollState,
             )
         }
-        PreviewControls(
-            state = state,
-            item = item,
-            arrows = hasArrows && !playing,
-            viewerButtonFocus = viewerButtonFocus,
-        )
+        if (!placeholder) {
+            PreviewControls(
+                state = state,
+                item = item,
+                arrows = hasArrows && !playing,
+                viewerButtonFocus = viewerButtonFocus,
+            )
+        }
     }
 }
 
@@ -793,6 +818,7 @@ private fun MediaThumbnail(
                 .then(if (selected) Modifier.border(Dimens.micro, accent, CornerShapes.small) else Modifier)
                 .focusRing(interactionSource.isFocusVisible(), CornerShapes.small, Dimens.micro)
                 .onPreviewKeyEvent { event ->
+                    if (placeholder) return@onPreviewKeyEvent false
                     val step =
                         when {
                             event.type != KeyEventType.KeyDown -> 0
@@ -802,9 +828,10 @@ private fun MediaThumbnail(
                         }
                     if (step != 0) onStep(step)
                     step != 0
-                }.pointerHoverIcon(PointerIcon.Hand)
+                }.pointerHoverIcon(if (placeholder) PointerIcon.Default else PointerIcon.Hand)
                 .selectable(
                     selected = selected,
+                    enabled = !placeholder,
                     interactionSource = interactionSource,
                     indication = LocalIndication.current,
                     role = Role.Tab,

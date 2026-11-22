@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 
 /*
- * Link previews for game and giveaway pages, as a Cloudflare Pages Function in advanced mode.
+ * Link previews for game, event, and giveaway pages, as a Cloudflare Pages Function in advanced mode.
  *
- * _routes.json sends only /games/*, /game/*, and /giveaway/* here; every other address is a static file and never
+ * _routes.json sends only /games/*, /game/*, /events/*, and /giveaway/* here; every other address is a static file and never
  * runs this code. For those pages it serves the app's usual page with the game's or giveaway's own title,
  * description, and image in its head, so chat apps, social networks, and search engines show what a shared link is
  * about. The app itself loads from the same page as before.
@@ -32,10 +32,11 @@ const DEFAULT_IMAGE_PATH = "/og-image.png";
 // The app opens only positive 32-bit IDs, without a trailing slash; see webPathToRoute in BrowserHistory.kt.
 const MAX_ID = 2147483647;
 const ROUTES = [
-    { pattern: /^\/games\/([1-9][0-9]{0,9})$/, kind: "game" },
+    { pattern: /^\/games\/([1-9][0-9]{0,9})$/, kind: "game", prefix: "games" },
+    { pattern: /^\/events\/([1-9][0-9]{0,9})$/, kind: "event", prefix: "events" },
     // Game links published before the /games/ address; their canonical address is the current one.
-    { pattern: /^\/game\/([1-9][0-9]{0,9})$/, kind: "game" },
-    { pattern: /^\/giveaway\/([1-9][0-9]{0,9})$/, kind: "giveaway" },
+    { pattern: /^\/game\/([1-9][0-9]{0,9})$/, kind: "game", prefix: "games" },
+    { pattern: /^\/giveaway\/([1-9][0-9]{0,9})$/, kind: "giveaway", prefix: "giveaway" },
 ];
 
 const API_TIMEOUT_MS = 3000;
@@ -85,7 +86,7 @@ async function previewPage(request, url, env, context) {
             meta = preview.status === "found" ? preview.meta : genericMeta();
             // An edition's or update's page shows its game, so search engines index the game's address instead.
             const canonicalId = target.kind === "game" ? (meta.canonicalId ?? target.id) : target.id;
-            meta.canonical = `${PUBLIC_ORIGIN}/${target.kind === "game" ? "games" : "giveaway"}/${canonicalId}`;
+            meta.canonical = `${PUBLIC_ORIGIN}/${target.prefix}/${canonicalId}`;
         }
     }
 
@@ -108,7 +109,7 @@ function matchRoute(path) {
         const match = route.pattern.exec(path);
         if (match) {
             const id = Number(match[1]);
-            return id <= MAX_ID ? { kind: route.kind, id } : null;
+            return id <= MAX_ID ? { kind: route.kind, prefix: route.prefix, id } : null;
         }
     }
     return null;
@@ -148,7 +149,9 @@ async function fetchPreview(target) {
     const apiUrl =
         target.kind === "game"
             ? `${BACKEND_BASE_URL}/v1/games/details?id=${target.id}`
-            : `${BACKEND_BASE_URL}/v1/giveaways/${target.id}`;
+            : target.kind === "event"
+              ? `${BACKEND_BASE_URL}/v1/events`
+              : `${BACKEND_BASE_URL}/v1/giveaways/${target.id}`;
     let response;
     try {
         response = await fetch(apiUrl, {
@@ -173,6 +176,23 @@ async function fetchPreview(target) {
         if (data.length === 0) return { status: "missing" };
         const meta = gameMeta(data[0]);
         return meta ? { status: "found", meta } : { status: "unavailable" };
+    }
+    if (target.kind === "event") {
+        if (!Array.isArray(data)) return { status: "unavailable" };
+        const event = data.find(item => item?.id === Number(target.id));
+        const name = text(event?.name, TITLE_MAX_LENGTH);
+        // An event outside the current feed may still have a games list.
+        if (!name) return { status: "found", meta: genericMeta() };
+        return {
+            status: "found",
+            meta: {
+                ...genericMeta(),
+                title: `${name} | ${SITE_NAME}`,
+                socialTitle: name,
+                description: `Games featured at ${name}.`,
+                image: igdbImage(event.logo?.url, "t_screenshot_big"),
+            },
+        };
     }
     const meta = giveawayMeta(data);
     return meta ? { status: "found", meta } : { status: "unavailable" };

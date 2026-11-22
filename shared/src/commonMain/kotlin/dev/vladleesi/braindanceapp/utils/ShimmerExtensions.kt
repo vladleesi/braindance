@@ -19,6 +19,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.shimmer
@@ -59,6 +63,14 @@ fun Modifier.shimmerEffect(): Modifier =
         drawBehind { drawRect(brush = shimmerBrush(progress.value, size)) }
     }
 
+internal fun Modifier.placeholderSemantics(): Modifier =
+    clearAndSetSemantics {
+        hideFromAccessibility()
+        // Compose Web updates these DOM attributes only when the properties are present.
+        text = AnnotatedString("")
+        contentDescription = ""
+    }
+
 /**
  * While [visible], draws a shimmer in [shape] in place of this element, which keeps its size: a placeholder made from
  * the real component lines up with it exactly, so nothing moves when the content arrives. The content is neither drawn
@@ -69,7 +81,7 @@ fun Modifier.placeholder(
     shape: Shape,
 ): Modifier =
     if (visible) {
-        clearAndSetSemantics {}.clip(shape).shimmerEffect().drawWithContent {}
+        placeholderSemantics().clip(shape).shimmerEffect().drawWithContent {}
     } else {
         this
     }
@@ -85,7 +97,7 @@ fun Modifier.textPlaceholder(
     if (visible) {
         composed {
             val progress = rememberShimmerProgress()
-            clearAndSetSemantics {}.drawWithContent {
+            placeholderSemantics().drawWithContent {
                 val text = layout() ?: return@drawWithContent
                 val brush = shimmerBrush(progress.value, size)
                 for (line in 0 until text.lineCount) {

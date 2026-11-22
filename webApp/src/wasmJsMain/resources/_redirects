@@ -1,6 +1,7 @@
 # Cloudflare Pages reads this file at deploy time and does not serve it.
-# Game and giveaway pages are served by _worker.js (see _routes.json). These rules apply only when it does not run,
+# Game, event, and giveaway pages are served by _worker.js (see _routes.json). These rules apply only when it does not run,
 # for example after the free daily Functions allowance runs out: the app's page still opens such links, as before.
+/events/* / 200
 /games/* / 200
 /game/* / 200
 /giveaway/* / 200

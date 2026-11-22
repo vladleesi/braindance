@@ -13,6 +13,7 @@ import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
+import dev.vladleesi.braindanceapp.navigation.routes.EventsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
@@ -61,11 +62,14 @@ private const val GAME_PREFIX = "/games/"
 // Game links published before the `/games/` address; still opened, then rewritten to the current address.
 private const val LEGACY_GAME_PREFIX = "/game/"
 private const val GIVEAWAY_PREFIX = "/giveaway/"
+private const val EVENTS_PATH = "/events"
+private const val EVENTS_PREFIX = "$EVENTS_PATH/"
 
 // Each fixed path also needs a page in webPages (webApp/build.gradle.kts), and the ID paths a route in the Web app's
 // _routes.json and _worker.js, so Cloudflare Pages answers them with the app instead of a 404.
 private val fixedPaths =
     mapOf<NavKey, String>(
+        EventsRoute() to EVENTS_PATH,
         BottomBarRoute.HomeRoute to "/",
         BottomBarRoute.DiscoverRoute to "/discover",
         BottomBarRoute.ReleasesRoute to "/releases",
@@ -80,6 +84,7 @@ private val fixedPaths =
 /** The address of [this] route; equal routes always produce the same path. Unknown routes map to Home. */
 internal fun NavKey.toWebPath(): String =
     when (this) {
+        is EventsRoute -> id?.let { "$EVENTS_PREFIX$it" } ?: EVENTS_PATH
         is GameDetailsRoute -> "$GAME_PREFIX$id"
         is GiveawayDetailsRoute -> "$GIVEAWAY_PREFIX$id"
         else -> fixedPaths[this] ?: "/"
@@ -97,6 +102,7 @@ internal fun webPathToRoute(path: String?): NavKey? {
             ?.toIntOrNull()
             ?.takeIf { it > 0 }
     (id(GAME_PREFIX) ?: id(LEGACY_GAME_PREFIX))?.let { return GameDetailsRoute(it) }
+    id(EVENTS_PREFIX)?.let { return EventsRoute(it) }
     id(GIVEAWAY_PREFIX)?.let { return GiveawayDetailsRoute(it) }
     return null
 }

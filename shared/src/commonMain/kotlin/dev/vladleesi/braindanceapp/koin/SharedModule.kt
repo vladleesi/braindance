@@ -12,7 +12,9 @@ import dev.vladleesi.braindanceapp.data.repository.GameSearchRepo
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import dev.vladleesi.braindanceapp.logger.BLogger
+import dev.vladleesi.braindanceapp.navigation.routes.EventsRoute
 import dev.vladleesi.braindanceapp.ui.viewmodels.AnticipatedGamesViewModel
+import dev.vladleesi.braindanceapp.ui.viewmodels.EventsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameSearchViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsViewModel
@@ -70,7 +72,8 @@ private val repositoryModule =
 
 private val viewModelModule =
     module {
-        viewModelOf(::HomeViewModel)
+        viewModel { HomeViewModel(homeRepo = get(), gamerPowerRepo = get()) }
+        viewModel { (route: EventsRoute) -> EventsViewModel(id = route.id, homeRepo = get()) }
         viewModelOf(::PopularGamesViewModel)
         viewModelOf(::AnticipatedGamesViewModel)
         viewModelOf(::GiveawaysListViewModel)

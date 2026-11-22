@@ -5,6 +5,7 @@ package dev.vladleesi.braindanceapp.ui.viewmodels
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
 import dev.vladleesi.braindanceapp.data.models.games.GameKind
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
+import dev.vladleesi.braindanceapp.domain.games.OverviewHighlight
 import dev.vladleesi.braindanceapp.testing.ViewModelTest
 import dev.vladleesi.braindanceapp.testing.mockBackendClient
 import dev.vladleesi.braindanceapp.testing.respondJson
@@ -185,6 +186,8 @@ class GameFamilyDetailsTest : ViewModelTest() {
                 """{"id":75,"name":"Mass Effect 3","kind":"game","summary":"The game.","storyline":"The story.",""" +
                     """"cover":{"id":1,"url":"//images.igdb.com/igdb/image/upload/t_thumb/co1x7q.jpg"},""" +
                     """"first_release_date":1330992000,"platforms":[{"id":6,"name":"PC (Microsoft Windows)"}],""" +
+                    """"developers":[{"id":18,"name":"BioWare"}],"status":"early_access",""" +
+                    """"critic_rating":{"score":90},"time_to_beat":{"hastily":133200,"count":42},""" +
                     """"genres":[{"id":12,"name":"Role-playing (RPG)"}],""" +
                     """"screenshots":[{"id":1,"url":"//images.igdb.com/igdb/image/upload/t_thumb/game.jpg"}],""" +
                     """"websites":[{"id":1,"url":"https://store.steampowered.com/app/1238020","type":13}]}"""
@@ -196,6 +199,7 @@ class GameFamilyDetailsTest : ViewModelTest() {
                     gameId = 45180,
                     detailsJson =
                         """[{"id":45180,"name":"Mass Effect 3: N7 Collector's Edition","kind":"edition",""" +
+                            """"user_rating":{"score":0},""" +
                             """"cover":{"id":2,"url":"//images.igdb.com/igdb/image/upload/t_thumb/co6bxq.jpg"},""" +
                             """"first_release_date":1330992000,""" +
                             """"platforms":[{"id":49,"name":"Xbox One"},{"id":9,"name":"PlayStation 3"}],""" +
@@ -207,6 +211,16 @@ class GameFamilyDetailsTest : ViewModelTest() {
                 )
 
             assertEquals(75, edition.id, "relations and similar games follow the game")
+            assertEquals("BioWare", (edition.facts.rows.single() as GameFact.Text).value)
+            assertEquals(
+                37L,
+                edition.facts.playTimes
+                    .single()
+                    .hours,
+            )
+            assertEquals(42, edition.facts.sampleCount)
+            assertEquals(listOf(90, 0), edition.badges.filterIsInstance<GameBadge.Score>().map { it.score })
+            assertEquals(GameBadge.Status.EarlyAccess, edition.badges.last())
             assertEquals("Mass Effect 3: N7 Collector's Edition", edition.name)
             assertTrue("co6bxq" in edition.coverImageUrl, edition.coverImageUrl)
             assertEquals(listOf(ParentPlatformType.Xbox, ParentPlatformType.PlayStation), edition.platforms)
@@ -228,10 +242,12 @@ class GameFamilyDetailsTest : ViewModelTest() {
     fun switchingVersionsUpdatesThePageInPlace() =
         runTest(dispatcher) {
             val requested = mutableListOf<String>()
+            val canonical = """${witcher.dropLast(1)},"game_modes":[{"id":1,"name":"Single player"}]}"""
             val update =
                 """[{"id":230102,"name":"The Witcher 3: Wild Hunt - Free Next-Gen Update","kind":"update",""" +
-                    """"canonical_id":1942,"canonical":$witcher,$witcherFamily}]"""
-            val game = """[${witcher.dropLast(1)},"canonical_id":1942,$witcherFamily}]"""
+                    """"canonical_id":1942,"summary":"The updated edition.","canonical":$canonical,""" +
+                    """"game_modes":[{"id":3,"name":"Co-operative"}],$witcherFamily}]"""
+            val game = """[${canonical.dropLast(1)},"canonical_id":1942,$witcherFamily}]"""
             val viewModel = viewModel(1942, { id -> if (id == "230102") update else game }, requested)
             viewModel.load()
             advanceUntilIdle()
@@ -242,6 +258,7 @@ class GameFamilyDetailsTest : ViewModelTest() {
             assertTrue(switchingState.isSwitchingVersion)
             val switching = switchingState.gameDetails
             assertEquals("The Witcher 3: Wild Hunt", switching.name)
+            assertEquals(listOf(OverviewHighlight.PlayStyle.SOLO), switching.overview)
             assertEquals(230102, switching.relations.versions?.selectedId)
 
             advanceUntilIdle()
@@ -249,6 +266,8 @@ class GameFamilyDetailsTest : ViewModelTest() {
             assertFalse(shownState.isSwitchingVersion)
             val shown = shownState.gameDetails
             assertEquals("The Witcher 3: Wild Hunt - Free Next-Gen Update", shown.name)
+            assertEquals("The updated edition.", shown.summary)
+            assertEquals(listOf(OverviewHighlight.PlayStyle.CO_OP), shown.overview)
             assertEquals(230102, shown.relations.versions?.selectedId)
 
             viewModel.showVersion(1942)

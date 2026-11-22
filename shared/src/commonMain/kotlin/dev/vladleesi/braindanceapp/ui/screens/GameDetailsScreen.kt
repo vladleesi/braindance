@@ -2,6 +2,10 @@
 
 package dev.vladleesi.braindanceapp.ui.screens
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,14 +19,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -31,8 +34,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -50,22 +56,23 @@ import dev.vladleesi.braindanceapp.resources.game_details_show_fewer
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.CarouselSection
-import dev.vladleesi.braindanceapp.ui.components.ExpandableText
+import dev.vladleesi.braindanceapp.ui.components.DisclosureButton
 import dev.vladleesi.braindanceapp.ui.components.FullWindowOverlay
 import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.ShareButton
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
-import dev.vladleesi.braindanceapp.ui.components.TonalButton
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.details.GameDetailsHero
+import dev.vladleesi.braindanceapp.ui.components.details.GameFacts
+import dev.vladleesi.braindanceapp.ui.components.details.GameOverview
+import dev.vladleesi.braindanceapp.ui.components.details.GameStoryline
 import dev.vladleesi.braindanceapp.ui.components.details.GameVersionSelector
 import dev.vladleesi.braindanceapp.ui.components.details.LibraryActionsState
 import dev.vladleesi.braindanceapp.ui.components.details.OriginLine
 import dev.vladleesi.braindanceapp.ui.components.details.RelatedGameRow
 import dev.vladleesi.braindanceapp.ui.components.details.RelatedHeader
 import dev.vladleesi.braindanceapp.ui.components.details.StoresBlock
-import dev.vladleesi.braindanceapp.ui.components.details.storesBlockItem
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.media.GameMedia
@@ -82,6 +89,7 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.navBar
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsState
@@ -91,8 +99,6 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedCategory
 import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedGroup
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.ui.viewmodels.VersionSelector
-import dev.vladleesi.braindanceapp.utils.StoreTypeModel
-import dev.vladleesi.braindanceapp.utils.calculateScrollTopBarColors
 import dev.vladleesi.braindanceapp.utils.openExternalUrl
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -100,14 +106,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.time.Duration.Companion.milliseconds
 
-private const val HERO_KEY = "hero"
-private const val VERSIONS_KEY = "versions"
-private const val MEDIA_KEY = "media"
-private const val RELATED_HEADER_KEY = "related_header"
-private const val RELATED_MORE_KEY = "related_more"
-private const val SIMILAR_GAMES_KEY = "similar_games"
 private const val SIMILAR_GAME_CONTENT_TYPE = "similar_game"
-private const val RELATED_ROW_CONTENT_TYPE = "related_row"
+private const val RELEASE_HEADER_RESIZE_MILLIS = 180
 
 /** Related releases shown before "Show all". */
 private const val RELATED_COLLAPSED = 3
@@ -175,9 +175,7 @@ private fun GameDetailsScreen(
     val navigator = LocalNavigator.current
     val uriHandler = LocalUriHandler.current
 
-    val lazyListState = rememberLazyListState()
-    val (topBarColor, backButtonColor, topBarTitleColor) =
-        lazyListState.calculateScrollTopBarColors()
+    val scrollState = rememberScrollState()
     val isLargeWindow = isLargeWindow()
     val desktop = desktopLayout() != null
     val gutter = pageGutter()
@@ -196,8 +194,6 @@ private fun GameDetailsScreen(
     // the list scrolls and across recreation.
     val media = rememberMediaGalleryState(state.gameDetails.media)
     val watchOnYouTube: (GameMedia.YouTubeVideo) -> Unit = { video -> uriHandler.openExternalUrl(video.watchUrl) }
-    // The desktop layout shows where to buy the game beside its media, both at a glance before the description.
-    val storesBesideMedia = desktop && !media.gallery.isEmpty && state.gameDetails.stores.isNotEmpty()
 
     Box(
         modifier =
@@ -205,11 +201,11 @@ private fun GameDetailsScreen(
                 .fillMaxSize()
                 .background(background),
     ) {
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            item(key = HERO_KEY) {
+        // The page has a bounded body with lazy horizontal galleries. ScrollState uses its measured height,
+        // including expanded text and related rows, for both scrolling and the Web scrollbar.
+        Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
+            // New edition titles and wrapped version chips can change the hero's height.
+            Column(Modifier.animateContentSize(tween(RELEASE_HEADER_RESIZE_MILLIS))) {
                 GameDetailsHero(
                     details = state.gameDetails,
                     expanded = isLargeWindow,
@@ -225,27 +221,26 @@ private fun GameDetailsScreen(
                         },
                     loadingRelease = loadingRelease,
                 )
+                VersionSelectorBlock(
+                    selector = state.gameDetails.relations.versions,
+                    compact = !isLargeWindow,
+                    gutter = gutter,
+                    onSelect = selectVersion,
+                    versionRoute = route::withVersion,
+                )
             }
-            versionSelectorItem(
-                selector = state.gameDetails.relations.versions,
-                compact = !isLargeWindow,
-                gutter = gutter,
-                onSelect = selectVersion,
-                versionRoute = route::withVersion,
-            )
-            // Right under the title and versions, as in app stores: what the game looks like comes before reading
-            // about it, and the media belongs to the version selected above it.
-            mediaItem(
-                media = media,
-                gameName = state.gameDetails.name,
-                gutter = gutter,
-                desktop = desktop,
-                stores = if (storesBesideMedia) state.gameDetails.stores else emptyList(),
-                placeholder = loadingRelease,
-                onWatchOnYouTube = watchOnYouTube,
-            )
-            releaseItems(state.gameDetails, gutter, placeholder = loadingRelease, showStores = !storesBesideMedia)
-            relatedItems(
+            key(state.gameDetails.releaseId) {
+                DetailsBody(
+                    state.gameDetails,
+                    media,
+                    gutter,
+                    desktop,
+                    loadingRelease,
+                    watchOnYouTube,
+                    scrollState = scrollState,
+                )
+            }
+            RelatedReleases(
                 groups = state.gameDetails.relations.related,
                 category = relatedCategory,
                 expanded = relatedExpanded,
@@ -258,15 +253,13 @@ private fun GameDetailsScreen(
                 onToggleExpanded = { relatedExpanded = !relatedExpanded },
                 onGameClick = openGame,
             )
-            similarGamesItems(recommendations, gutter, onGameClick = openGame)
-            item { Spacer(modifier = Modifier.size(Dimens.large)) }
+            SimilarGames(recommendations, gutter, onGameClick = openGame)
+            Spacer(modifier = Modifier.size(Dimens.large))
         }
-        PageScrollbar(lazyListState)
+        PageScrollbar(scrollState, topInset = Dimens.topBarHeightWithInsets)
         GameDetailsTopBar(
             gameDetails = state.gameDetails,
-            topBarColor = topBarColor,
-            backButtonColor = backButtonColor,
-            titleColor = topBarTitleColor,
+            scrollState = scrollState,
             onBackButtonPressed = onBackButtonPressed,
         )
     }
@@ -285,11 +278,16 @@ private fun GameDetailsScreen(
 @Composable
 private fun GameDetailsTopBar(
     gameDetails: GameDetails,
-    topBarColor: Color,
-    backButtonColor: Color,
-    titleColor: Color,
+    scrollState: ScrollState,
     onBackButtonPressed: () -> Unit,
 ) {
+    val fadeDistance = with(LocalDensity.current) { Dimens.topBarHeightWithInsets.toPx() }
+    val fraction by remember(scrollState, fadeDistance) {
+        derivedStateOf { (scrollState.value / fadeDistance).coerceIn(0f, 1f) }
+    }
+    val topBarColor = lerp(Color.Transparent, navBar, fraction)
+    val backButtonColor = lerp(navBar, Color.Transparent, fraction)
+    val titleColor = lerp(Color.Transparent, white, fraction)
     val shareTarget = ShareTarget.Game(id = gameDetails.releaseId, name = gameDetails.name)
     Column {
         StatusBarOverlay(backgroundColor = topBarColor)
@@ -300,6 +298,8 @@ private fun GameDetailsTopBar(
             backButtonBackgroundColor = backButtonColor,
             onBackButtonPressed = onBackButtonPressed,
             title = gameDetails.name,
+            titleStyle = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.SemiBold),
+            subtitle = gameDetails.releaseDate.orEmpty(),
             actions =
                 if (showsShareActions()) {
                     { ShareButton(target = shareTarget, backgroundColor = backButtonColor, visible = true) }
@@ -310,33 +310,117 @@ private fun GameDetailsTopBar(
     }
 }
 
-/**
- * The shown release's summary and, unless they are beside the media, its stores. While [placeholder], another
- * version's are loading and these keep their place as shimmering placeholders of their exact size.
- */
-private fun LazyListScope.releaseItems(
+@Composable
+private fun DetailsBody(
     details: GameDetails,
+    media: MediaGalleryState,
+    gutter: Dp,
+    desktop: Boolean,
+    placeholder: Boolean,
+    onWatchOnYouTube: (GameMedia.YouTubeVideo) -> Unit = {},
+    scrollState: ScrollState? = null,
+) {
+    val onCollapse: (suspend (Int) -> Boolean)? =
+        if (desktop && scrollState != null) {
+            { height ->
+                // The disclosure moves up by the removed height. Move the viewport by the same amount.
+                var anchored = false
+                scrollState.scroll(MutatePriority.UserInput) {
+                    if (scrollState.value >= height) {
+                        scrollBy(-height.toFloat())
+                        anchored = true
+                    }
+                }
+                anchored
+            }
+        } else {
+            null
+        }
+    val overview = @Composable {
+        GameOverview(details.summary, details.overview, placeholder = placeholder, onCollapse = onCollapse)
+    }
+    val storyline = @Composable {
+        GameStoryline(details.storyline, placeholder = placeholder, onCollapse = onCollapse)
+    }
+    val about = @Composable { GameFacts(details.facts, placeholder = placeholder) }
+    val stores = @Composable { StoresBlock(stores = details.stores, placeholder = placeholder) }
+    if (desktop) {
+        DetailsColumns(
+            primary = {
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.large)) {
+                    if (details.summary.isNotBlank() || details.overview.isNotEmpty()) overview()
+                    if (!media.gallery.isEmpty) {
+                        DetailsMedia(
+                            details.name,
+                            media,
+                            0.dp,
+                            placeholder,
+                            onWatchOnYouTube,
+                            scrollState = scrollState,
+                        )
+                    }
+                    if (details.storyline.isNotEmpty()) storyline()
+                }
+            },
+            sidebar = {
+                if (!details.facts.isEmpty || details.stores.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.medium)) {
+                        if (!details.facts.isEmpty) about()
+                        if (details.stores.isNotEmpty()) stores()
+                    }
+                }
+            },
+            modifier = Modifier.pageColumn(gutter).fillMaxWidth(),
+        )
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.large)) {
+            if (details.summary.isNotBlank() || details.overview.isNotEmpty()) {
+                Column(Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)) { overview() }
+            }
+            if (!media.gallery.isEmpty) {
+                DetailsMedia(
+                    details.name,
+                    media,
+                    gutter,
+                    placeholder,
+                    onWatchOnYouTube,
+                    modifier = Modifier.pageWidth(gutter),
+                    scrollState = scrollState,
+                )
+            }
+            if (!details.facts.isEmpty) {
+                Column(Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)) { about() }
+            }
+            if (details.storyline.isNotEmpty()) {
+                Column(Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)) { storyline() }
+            }
+            if (details.stores.isNotEmpty()) {
+                Column(Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)) { stores() }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DetailsMedia(
+    gameName: String,
+    media: MediaGalleryState,
     gutter: Dp,
     placeholder: Boolean,
-    showStores: Boolean,
+    onWatchOnYouTube: (GameMedia.YouTubeVideo) -> Unit,
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState? = null,
 ) {
-    if (details.summary.isNotEmpty()) {
-        item {
-            ExpandableText(
-                text = details.summary,
-                modifier =
-                    Modifier
-                        .pageColumn(gutter)
-                        .widthIn(max = Dimens.readableTextWidth)
-                        .fillMaxWidth(),
-                placeholder = placeholder,
-            )
-        }
-        item { Spacer(modifier = Modifier.size(Dimens.large)) }
-    }
-    if (showStores && details.stores.isNotEmpty()) {
-        storesBlockItem(details.stores, placeholder)
-    }
+    MediaGallery(
+        state = media,
+        gameName = gameName,
+        onWatchOnYouTube = onWatchOnYouTube,
+        modifier = modifier,
+        placeholder = placeholder,
+        horizontalPadding = gutter,
+        coveredTop = Dimens.topBarHeightWithInsets,
+        scrollState = scrollState,
+    )
 }
 
 // How long a version switch may take before placeholders replace the shown release: below it, the new details
@@ -358,52 +442,9 @@ private fun rememberDelayedLoading(loading: Boolean): Boolean {
     return loading && shown
 }
 
-/**
- * The shown release's videos and screenshots, when it has any. On phones and tablets the gallery spans the page, so
- * its thumbnail strip scrolls to the screen's edge, as carousels do. The [desktop] layout keeps it to a reading
- * column's width, thumbnails under the preview, with [stores] beside it.
- */
-@Suppress("LongParameterList")
-private fun LazyListScope.mediaItem(
-    media: MediaGalleryState,
-    gameName: String,
-    gutter: Dp,
-    desktop: Boolean,
-    stores: List<StoreTypeModel>,
-    placeholder: Boolean,
-    onWatchOnYouTube: (GameMedia.YouTubeVideo) -> Unit,
-) {
-    if (media.gallery.isEmpty) return
-    item(key = MEDIA_KEY) {
-        val gallery: @Composable (Modifier, Dp) -> Unit = { modifier, horizontalPadding ->
-            MediaGallery(
-                state = media,
-                gameName = gameName,
-                onWatchOnYouTube = onWatchOnYouTube,
-                modifier = modifier,
-                placeholder = placeholder,
-                horizontalPadding = horizontalPadding,
-                // The page scrolls under the top bar.
-                coveredTop = Dimens.topBarHeightWithInsets,
-            )
-        }
-        if (desktop) {
-            MediaWithStores(
-                media = { gallery(Modifier, 0.dp) },
-                stores = {
-                    if (stores.isNotEmpty()) StoresBlock(stores = stores, placeholder = placeholder)
-                },
-                modifier = Modifier.pageColumn(gutter).fillMaxWidth(),
-            )
-        } else {
-            gallery(Modifier.pageWidth(gutter), gutter)
-        }
-    }
-    item { Spacer(modifier = Modifier.size(Dimens.large)) }
-}
-
 /** The selector of the game's versions, when it has more than one. */
-private fun LazyListScope.versionSelectorItem(
+@Composable
+private fun VersionSelectorBlock(
     selector: VersionSelector?,
     compact: Boolean,
     gutter: Dp,
@@ -411,26 +452,24 @@ private fun LazyListScope.versionSelectorItem(
     versionRoute: (Int) -> NavKey,
 ) {
     selector ?: return
-    item(key = VERSIONS_KEY) {
-        GameVersionSelector(
-            selector = selector,
-            compact = compact,
-            onSelect = onSelect,
-            versionRoute = versionRoute,
-            modifier = Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth),
-        )
-    }
-    item { Spacer(modifier = Modifier.size(Dimens.large)) }
+    GameVersionSelector(
+        selector = selector,
+        compact = compact,
+        onSelect = onSelect,
+        versionRoute = versionRoute,
+        modifier = Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth),
+    )
+    Spacer(modifier = Modifier.size(Dimens.large))
 }
 
 /**
  * One section for every related release: the heading or tabs, then the selected kind as compact rows, one to a line
- * in a [compact] layout and [WIDE_RELATED_COLUMNS] otherwise, and "Show all" past [RELATED_COLLAPSED]. Each row is
- * its own lazy item, so a long list composes only what is on screen. [category] is the saved tab's name; an unknown or
- * missing one shows the first kind.
+ * in a [compact] layout and [WIDE_RELATED_COLUMNS] otherwise, and "Show all" past [RELATED_COLLAPSED].
+ * The API caps each group. A missing [category] opens the first kind.
  */
 @Suppress("LongParameterList")
-private fun LazyListScope.relatedItems(
+@Composable
+private fun RelatedReleases(
     groups: List<RelatedGroup>,
     category: String?,
     expanded: Boolean,
@@ -441,53 +480,45 @@ private fun LazyListScope.relatedItems(
     onGameClick: (Int) -> Unit,
 ) {
     val group = groups.firstOrNull { it.category.name == category } ?: groups.firstOrNull() ?: return
-    item { Spacer(modifier = Modifier.size(Dimens.large)) }
-    item(key = RELATED_HEADER_KEY) {
-        RelatedHeader(
-            groups = groups,
-            selected = group.category,
-            compact = compact,
-            onSelect = onCategoryChange,
-            modifier = Modifier.pageColumn(gutter).padding(bottom = Dimens.small),
-        )
-    }
+    Spacer(modifier = Modifier.size(Dimens.large))
+    RelatedHeader(
+        groups = groups,
+        selected = group.category,
+        compact = compact,
+        onSelect = onCategoryChange,
+        modifier = Modifier.pageColumn(gutter).padding(bottom = Dimens.small),
+    )
     val columns = if (compact) 1 else WIDE_RELATED_COLUMNS
     val shown = if (expanded) group.games else group.games.take(RELATED_COLLAPSED)
     for (line in shown.chunked(columns)) {
-        item(key = "related:${group.category}:${line.first().id}", contentType = RELATED_ROW_CONTENT_TYPE) {
-            Row(
-                modifier = Modifier.pageColumn(gutter),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.large),
-            ) {
-                line.forEach { game ->
-                    RelatedGameRow(game = game, onClick = onGameClick, modifier = Modifier.weight(1f))
-                }
-                // A last line with fewer rows keeps the column width of the lines above.
-                repeat(columns - line.size) { Spacer(modifier = Modifier.weight(1f)) }
+        Row(
+            modifier = Modifier.pageColumn(gutter),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.large),
+        ) {
+            line.forEach { game ->
+                key(game.id) { RelatedGameRow(game = game, onClick = onGameClick, modifier = Modifier.weight(1f)) }
             }
+            repeat(columns - line.size) { Spacer(modifier = Modifier.weight(1f)) }
         }
     }
     if (group.games.size > RELATED_COLLAPSED) {
-        item(key = RELATED_MORE_KEY) {
-            TonalButton(
-                onClick = onToggleExpanded,
-                modifier = Modifier.pageColumn(gutter).padding(top = Dimens.small),
-            ) {
-                Text(
-                    text =
-                        if (expanded) {
-                            stringResource(Res.string.game_details_show_fewer)
-                        } else {
-                            stringResource(Res.string.game_details_show_all, group.games.size)
-                        },
-                )
-            }
-        }
+        DisclosureButton(
+            label =
+                if (expanded) {
+                    stringResource(Res.string.game_details_show_fewer)
+                } else {
+                    stringResource(Res.string.game_details_show_all, group.games.size)
+                },
+            expanded = expanded,
+            onClick = onToggleExpanded,
+            modifier = Modifier.pageColumn(gutter).padding(top = Dimens.small),
+        )
     }
 }
 
 /** Similar games while they load and once there are any; a failure hides the section instead. */
-private fun LazyListScope.similarGamesItems(
+@Composable
+private fun SimilarGames(
     recommendations: RecommendationsState,
     gutter: Dp,
     onGameClick: (Int) -> Unit,
@@ -496,81 +527,78 @@ private fun LazyListScope.similarGamesItems(
         recommendations is RecommendationsState.Loading ||
             (recommendations is RecommendationsState.Success && recommendations.games.isNotEmpty())
     if (!showRecommendations) return
-    item { Spacer(modifier = Modifier.size(Dimens.large)) }
-    item(key = SIMILAR_GAMES_KEY) {
-        val title = stringResource(Res.string.game_details_screen_similar_games)
-        val sectionState =
-            remember(recommendations) {
-                when (recommendations) {
-                    is RecommendationsState.Success -> SectionState.Success(recommendations.games)
-                    else -> SectionState.Loading
-                }
+    Spacer(modifier = Modifier.size(Dimens.large))
+    val title = stringResource(Res.string.game_details_screen_similar_games)
+    val sectionState =
+        remember(recommendations) {
+            when (recommendations) {
+                is RecommendationsState.Success -> SectionState.Success(recommendations.games)
+                else -> SectionState.Loading
             }
-        val cardModifier = Modifier.width(Dimens.gameCardWidth)
-        CarouselSection(
-            title = title,
-            state = sectionState,
-            // Never shown: the section has no error state.
-            onRetry = {},
-            skeleton = { GameCardSkeleton(showTitle = true, modifier = cardModifier) },
-            modifier = Modifier.pageWidth(gutter),
-            titleStyle = MaterialTheme.typography.h3,
-            horizontalPadding = gutter,
-        ) { games ->
-            items(games, key = { game -> game.id }, contentType = { SIMILAR_GAME_CONTENT_TYPE }) { game ->
-                GameCard(
-                    card = game,
-                    onClick = onGameClick,
-                    showTitle = true,
-                    modifier = cardModifier,
-                )
-            }
+        }
+    val cardModifier = Modifier.width(Dimens.gameCardWidth)
+    CarouselSection(
+        title = title,
+        state = sectionState,
+        // Never shown: the section has no error state.
+        onRetry = {},
+        skeleton = { GameCardSkeleton(showTitle = true, modifier = cardModifier) },
+        modifier = Modifier.pageWidth(gutter),
+        titleStyle = MaterialTheme.typography.h3,
+        horizontalPadding = gutter,
+    ) { games ->
+        items(games, key = { game -> game.id }, contentType = { SIMILAR_GAME_CONTENT_TYPE }) { game ->
+            GameCard(
+                card = game,
+                onClick = onGameClick,
+                showTitle = true,
+                modifier = cardModifier,
+            )
         }
     }
 }
 
-// The media keeps at least this width beside the stores; a narrower page column puts the stores under it.
-private val MinMediaBesideStores = 480.dp
-private val StoresColumnWidth = 320.dp
+// Keep the main content readable when the sidebar fits beside it.
+private val MinDetailsColumnWidth = 360.dp
+private val DetailsSidebarWidth = 300.dp
 
 /**
- * The [media] at most a reading column wide and the [stores] beside it, or under it when the column cannot fit both
- * with the media at [MinMediaBesideStores]. Both start at the top; a single layout pass, with no subcomposition.
+ * The main content uses a reading column. About and stores share a sidebar when both columns fit.
  */
 @Composable
-private fun MediaWithStores(
-    media: @Composable () -> Unit,
-    stores: @Composable () -> Unit,
+private fun DetailsColumns(
+    primary: @Composable () -> Unit,
+    sidebar: @Composable () -> Unit,
     modifier: Modifier,
 ) {
     Layout(
-        contents = listOf(media, stores),
+        contents = listOf(primary, sidebar),
         modifier = modifier,
-    ) { (mediaMeasurables, storesMeasurables), constraints ->
+    ) { (primaryMeasurables, sidebarMeasurables), constraints ->
         val width = constraints.maxWidth
         val gap = Dimens.large.roundToPx()
         val readable = Dimens.readableTextWidth.roundToPx()
-        val storesWidth = StoresColumnWidth.roundToPx()
-        val hasStores = storesMeasurables.isNotEmpty()
-        val beside = hasStores && width >= MinMediaBesideStores.roundToPx() + gap + storesWidth
-        val mediaWidth = minOf(readable, if (beside) width - gap - storesWidth else width)
-        val mediaPlaceable = mediaMeasurables.firstOrNull()?.measure(Constraints(maxWidth = mediaWidth))
-        val storesPlaceable =
-            storesMeasurables.firstOrNull()?.measure(Constraints(maxWidth = if (beside) storesWidth else mediaWidth))
-        val mediaHeight = mediaPlaceable?.height ?: 0
-        val storesHeight = storesPlaceable?.height ?: 0
+        val sidebarWidth = DetailsSidebarWidth.roundToPx()
+        val hasSidebar = sidebarMeasurables.isNotEmpty()
+        val beside = hasSidebar && width >= MinDetailsColumnWidth.roundToPx() + gap + sidebarWidth
+        val primaryWidth = minOf(readable, if (beside) width - gap - sidebarWidth else width)
+        val primaryPlaceable = primaryMeasurables.firstOrNull()?.measure(Constraints(maxWidth = primaryWidth))
+        val sidebarMax = if (beside) sidebarWidth else primaryWidth
+        val sidebarPlaceable = sidebarMeasurables.firstOrNull()?.measure(Constraints(maxWidth = sidebarMax))
+        val primaryHeight = primaryPlaceable?.height ?: 0
+        val sidebarHeight = sidebarPlaceable?.height ?: 0
         val height =
             when {
-                storesPlaceable == null -> mediaHeight
-                beside -> maxOf(mediaHeight, storesHeight)
-                else -> mediaHeight + gap + storesHeight
+                sidebarPlaceable == null -> primaryHeight
+                beside -> maxOf(primaryHeight, sidebarHeight)
+                else -> primaryHeight + gap + sidebarHeight
             }
         layout(width, height) {
-            mediaPlaceable?.placeRelative(0, 0)
+            primaryPlaceable?.placeRelative(0, 0)
             if (beside) {
-                storesPlaceable?.placeRelative((mediaPlaceable?.width ?: 0) + gap, 0)
+                sidebarPlaceable?.placeRelative((primaryPlaceable?.width ?: 0) + gap, 0)
             } else {
-                storesPlaceable?.placeRelative(0, mediaHeight + gap)
+                sidebarPlaceable?.placeRelative(0, primaryHeight + gap)
             }
         }
     }
@@ -580,12 +608,39 @@ private val PreviewBlockHeight = 180.dp
 
 @Preview(widthDp = 1100)
 @Composable
-internal fun MediaWithStoresPreview() {
+internal fun DetailsColumnsPreview() {
     BraindanceTheme {
-        MediaWithStores(
-            media = { Box(modifier = Modifier.fillMaxWidth().height(PreviewBlockHeight).background(white)) },
-            stores = { Box(modifier = Modifier.fillMaxWidth().height(PreviewBlockHeight / 2).background(accent)) },
+        DetailsColumns(
+            primary = { Box(modifier = Modifier.fillMaxWidth().height(PreviewBlockHeight).background(white)) },
+            sidebar = { Box(modifier = Modifier.fillMaxWidth().height(PreviewBlockHeight / 2).background(accent)) },
             modifier = Modifier.background(background).fillMaxWidth(),
+        )
+    }
+}
+
+@Preview(widthDp = 1000)
+@Composable
+internal fun DetailsBodyPreview() {
+    BraindanceTheme {
+        val details =
+            GameDetails(
+                id = 1,
+                name = "Sample edition",
+                summary = "Explore a remote valley where ruins hold clues to the people who lived there.",
+                storyline = "",
+                coverImageUrl = "",
+                backdrop = null,
+                releaseDate = null,
+                platforms = emptyList(),
+                stores = emptyList(),
+                genres = emptyList(),
+            )
+        DetailsBody(
+            details,
+            rememberMediaGalleryState(details.media),
+            Dimens.medium,
+            desktop = true,
+            placeholder = false,
         )
     }
 }

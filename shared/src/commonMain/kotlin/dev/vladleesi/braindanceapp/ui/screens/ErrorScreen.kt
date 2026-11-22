@@ -28,10 +28,10 @@ private const val MAX_ERROR_MESSAGE_LINES = 10
 
 @Composable
 fun ErrorScreen(
+    modifier: Modifier = Modifier,
     title: String = stringResource(Res.string.error_screen_title),
     errorMessage: String = stringResource(Res.string.error_screen_error_message),
     retryButtonText: String = stringResource(Res.string.error_screen_retry_button_text),
-    modifier: Modifier = Modifier,
     onRetry: () -> Unit,
 ) {
     // TODO: Add back button

@@ -8,11 +8,15 @@ import dev.vladleesi.braindanceapp.data.models.games.FamilyGame
 import dev.vladleesi.braindanceapp.data.models.games.GameFamily
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
 import dev.vladleesi.braindanceapp.data.models.games.GameKind
+import dev.vladleesi.braindanceapp.data.models.games.GameRating
+import dev.vladleesi.braindanceapp.data.models.games.GamingEvent
 import dev.vladleesi.braindanceapp.data.models.games.Genre
+import dev.vladleesi.braindanceapp.data.models.games.NamedItem
 import dev.vladleesi.braindanceapp.data.models.games.Platform
 import dev.vladleesi.braindanceapp.data.models.games.ReleaseDate
 import dev.vladleesi.braindanceapp.data.models.games.Screenshot
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
+import dev.vladleesi.braindanceapp.data.models.games.TimeToBeat
 import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import dev.vladleesi.braindanceapp.data.models.games.Video
 import dev.vladleesi.braindanceapp.data.models.games.WebsiteType
@@ -20,6 +24,9 @@ import dev.vladleesi.braindanceapp.data.models.games.Websites
 import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
 import dev.vladleesi.braindanceapp.data.repository.HomeRepo
 import kotlin.random.Random
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 /**
  * Synthetic sample responses, encoded once. Every name and text is invented, images come from [FixtureImages], and
@@ -62,6 +69,40 @@ internal object ApiFixtureData {
     private val anticipated: List<GameItem> by lazy {
         games.drop(ANTICIPATED_OFFSET).map { game -> compactGame(game.id, game.name, game.cover) }
     }
+
+    private val hour = 1.hours.inWholeSeconds
+    private val day = 1.days.inWholeSeconds
+    private const val LIVE_EVENT_ID = 1
+    private const val PAST_EVENT_ID = 3
+
+    val eventsJson: String get() {
+        val now = Clock.System.now().epochSeconds
+        return backendJson.encodeToString(
+            listOf(
+                GamingEvent(
+                    LIVE_EVENT_ID,
+                    "Sample Live Showcase",
+                    now - hour,
+                    now + hour,
+                    games.first().cover,
+                    "https://example.com/show",
+                    2,
+                ),
+                GamingEvent(2, "Sample Upcoming Show", now + day, gameCount = 0),
+                GamingEvent(
+                    PAST_EVENT_ID,
+                    "Sample Past Showcase",
+                    now - day,
+                    now - 2 * hour,
+                    games.last().cover,
+                    gameCount = 2,
+                ),
+            ),
+        )
+    }
+
+    fun eventGamesJson(id: Int): String =
+        backendJson.encodeToString(if (id == LIVE_EVENT_ID || id == PAST_EVENT_ID) anticipated.take(2) else emptyList())
 
     val giveawaysJson: String by lazy { backendJson.encodeToString(giveaways) }
 
@@ -119,7 +160,8 @@ internal object ApiFixtureData {
             } else {
                 emptyList()
             }
-        return game.copy(
+        val details = if (id == FIRST_GAME_ID) game.withSampleMetadata() else game
+        return details.copy(
             kind = GameKind.GAME,
             canonicalId = id,
             backdrop = game.sampleBackdrop(),
@@ -456,3 +498,19 @@ private fun familyMember(
     summary = "Sample data for developer builds; this ${kind.apiName.replace('_', ' ')} does not exist.",
     kind = kind,
 )
+
+// Synthetic API examples with representative IDs, scores, vote counts, and play times.
+@Suppress("MagicNumber")
+private fun GameItem.withSampleMetadata() =
+    copy(
+        developers = listOf(NamedItem(1, "Sample Studio")),
+        publishers = listOf(NamedItem(2, "Sample Publisher")),
+        themes = listOf(NamedItem(3, "Fantasy")),
+        gameModes = listOf(NamedItem(4, "Single player")),
+        playerPerspectives = listOf(NamedItem(5, "Third person")),
+        series = listOf(NamedItem(6, "Sample Series")),
+        criticRating = GameRating(83, 8),
+        userRating = GameRating(90, 15),
+        timeToBeat = TimeToBeat(7200, null, 14400, 4),
+        status = "early_access",
+    )

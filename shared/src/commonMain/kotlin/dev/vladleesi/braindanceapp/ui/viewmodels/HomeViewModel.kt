@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dev.vladleesi.braindanceapp.data.Outcome
 import dev.vladleesi.braindanceapp.data.map
 import dev.vladleesi.braindanceapp.data.models.games.GameItem
+import dev.vladleesi.braindanceapp.data.models.games.GamingEvent
 import dev.vladleesi.braindanceapp.data.models.games.TrendingGameItem
 import dev.vladleesi.braindanceapp.data.models.giveaways.GiveawayResponse
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
@@ -19,14 +20,18 @@ import dev.vladleesi.braindanceapp.utils.giveawayPlatforms
 import dev.vladleesi.braindanceapp.utils.toCoverUrl
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
 
 class HomeViewModel(
     private val homeRepo: HomeRepo,
     private val gamerPowerRepo: GamerPowerRepo,
+    clock: Clock = Clock.System,
 ) : ScreenViewModel() {
     private val _mostAnticipated = MutableStateFlow<SectionState<GameCardModel>>(SectionState.Loading)
     val mostAnticipated: StateFlow<SectionState<GameCardModel>> = _mostAnticipated.asStateFlow()
@@ -37,9 +42,14 @@ class HomeViewModel(
     private val _trendingNow = MutableStateFlow<SectionState<GameCardModel>>(SectionState.Loading)
     val trendingNow: StateFlow<SectionState<GameCardModel>> = _trendingNow.asStateFlow()
 
+    private val eventFeed = MutableStateFlow<SectionState<GamingEvent>>(SectionState.Loading)
+    internal val events =
+        eventCards(eventFeed, clock)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SectionState.Loading)
+
     private val _isRefreshing = MutableStateFlow(false)
 
-    /** True from a pull-to-refresh until all three sections have finished reloading. */
+    /** True from a pull-to-refresh until all sections have finished reloading. */
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     // One running load per section: starting a section again cancels its previous load, so an older response can never
@@ -47,19 +57,21 @@ class HomeViewModel(
     private var trendingJob: Job? = null
     private var mostAnticipatedJob: Job? = null
     private var giveawaysJob: Job? = null
+    private var eventsJob: Job? = null
     private var refreshJob: Job? = null
 
     override fun onLoad() {
         loadTrendingNow()
         loadMostAnticipated()
         loadGiveaways()
+        loadEvents()
     }
 
     override fun onRefresh() {
         refreshJob?.cancel()
         _isRefreshing.value = true
         onLoad()
-        val sections = listOfNotNull(trendingJob, mostAnticipatedJob, giveawaysJob)
+        val sections = listOfNotNull(trendingJob, mostAnticipatedJob, giveawaysJob, eventsJob)
         refreshJob =
             viewModelScope.launch {
                 sections.joinAll()
@@ -86,6 +98,11 @@ class HomeViewModel(
             loadSection(trendingJob, _trendingNow) {
                 homeRepo.trendingNow().map { items -> items.map { it.toGameCardModel() }.distinctBy { it.id } }
             }
+    }
+
+    fun loadEvents() {
+        eventsJob =
+            loadSection(eventsJob, eventFeed) { homeRepo.events().map { events -> events.distinctBy { it.id } } }
     }
 
     private fun <T> loadSection(
