@@ -55,7 +55,6 @@ import dev.vladleesi.braindanceapp.resources.event_watch
 import dev.vladleesi.braindanceapp.resources.home_events_title
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.components.ButtonMinHeight
-import dev.vladleesi.braindanceapp.ui.components.CardCoverSkeleton
 import dev.vladleesi.braindanceapp.ui.components.CardGrid
 import dev.vladleesi.braindanceapp.ui.components.LOADING_ROWS
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
@@ -68,9 +67,9 @@ import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
 import dev.vladleesi.braindanceapp.ui.components.TextLineSkeleton
 import dev.vladleesi.braindanceapp.ui.components.TonalButton
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
-import dev.vladleesi.braindanceapp.ui.components.home.EVENT_LOGO_RATIO
 import dev.vladleesi.braindanceapp.ui.components.home.EventCard
 import dev.vladleesi.braindanceapp.ui.components.home.EventLogo
+import dev.vladleesi.braindanceapp.ui.components.home.EventLogoSkeleton
 import dev.vladleesi.braindanceapp.ui.components.home.EventStatusTag
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
@@ -337,10 +336,7 @@ private fun EventHeader(
 
 @Composable
 private fun EventHeaderSkeleton() {
-    EventHeaderLayout(logo = { CardCoverSkeleton(aspectRatio = EVENT_LOGO_RATIO, modifier = it) }) {
-        modifier,
-        fullWidthWatch,
-        ->
+    EventHeaderLayout(logo = { EventLogoSkeleton(it) }) { modifier, fullWidthWatch ->
         EventHeaderTextSkeleton(modifier, fullWidthWatch)
     }
 }

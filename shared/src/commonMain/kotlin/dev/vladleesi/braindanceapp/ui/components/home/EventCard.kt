@@ -53,7 +53,7 @@ import org.jetbrains.compose.resources.stringResource
 private const val NAME_SKELETON_FRACTION = 0.75f
 private const val STATUS_SKELETON_FRACTION = 0.5f
 private const val LIVE_TAG_FILL_ALPHA = 0.12f
-internal const val EVENT_LOGO_RATIO = 16f / 9f
+private const val EVENT_LOGO_RATIO = 16f / 9f
 
 @Composable
 internal fun EventsCarousel(
@@ -148,6 +148,11 @@ internal fun EventLogo(
 }
 
 @Composable
+internal fun EventLogoSkeleton(modifier: Modifier = Modifier) {
+    CardCoverSkeleton(aspectRatio = EVENT_LOGO_RATIO, modifier = modifier)
+}
+
+@Composable
 internal fun EventStatusTag(status: EventStatus) {
     val live = status == EventStatus.LIVE
     Tag(
@@ -167,7 +172,7 @@ internal fun EventCardSkeleton(modifier: Modifier = Modifier) {
         modifier.background(surface, CornerShapes.large).padding(Dimens.compact),
         verticalArrangement = Arrangement.spacedBy(Dimens.small),
     ) {
-        CardCoverSkeleton(aspectRatio = EVENT_LOGO_RATIO)
+        EventLogoSkeleton()
         TextLineSkeleton(MaterialTheme.typography.body2, widthFraction = NAME_SKELETON_FRACTION)
         TextLineSkeleton(MaterialTheme.typography.body2, widthFraction = NAME_SKELETON_FRACTION)
         TextLineSkeleton(MaterialTheme.typography.caption, widthFraction = NAME_SKELETON_FRACTION)
@@ -203,6 +208,12 @@ internal fun EventCardPreview() {
 @Composable
 internal fun EventLogoPreview() {
     BraindanceTheme { EventLogo("", Modifier.width(Dimens.giveAwayCardWidth)) }
+}
+
+@Preview
+@Composable
+internal fun EventLogoSkeletonPreview() {
+    BraindanceTheme { EventLogoSkeleton(Modifier.width(Dimens.giveAwayCardWidth)) }
 }
 
 @Preview

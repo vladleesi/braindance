@@ -5,6 +5,16 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.30.2 — 2026-11-24
+
+### Android, iOS, and Web
+
+- Internal maintenance for event logo loading placeholders.
+
+### Web
+
+- The event page scrollbar stays within its track when you scroll to the last row of games.
+
 ## 0.30.1 — 2026-11-24
 
 ### Android, iOS, and Web

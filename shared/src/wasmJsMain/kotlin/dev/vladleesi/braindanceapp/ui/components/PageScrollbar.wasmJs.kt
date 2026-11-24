@@ -24,9 +24,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.v2.ScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -136,7 +138,10 @@ private fun BoxScope.AnimatedPageScrollbar(
             when (state) {
                 is ScrollState -> rememberScrollbarAdapter(state)
                 is LazyListState -> rememberScrollbarAdapter(state)
-                is LazyGridState -> rememberScrollbarAdapter(state)
+                is LazyGridState -> {
+                    val gridAdapter = rememberScrollbarAdapter(state)
+                    remember(state, gridAdapter) { PageGridScrollbarAdapter(state, gridAdapter) }
+                }
                 else -> return@AnimatedVisibility
             }
         VerticalScrollbar(
@@ -151,6 +156,62 @@ private fun BoxScope.AnimatedPageScrollbar(
         )
     }
 }
+
+private class PageGridScrollbarAdapter(
+    private val state: LazyGridState,
+    private val adapter: ScrollbarAdapter,
+) : ScrollbarAdapter by adapter {
+    override val contentSize: Double
+        get() {
+            val layout = state.layoutInfo
+            val estimatedSize = adapter.contentSize
+            val last =
+                layout.visibleItemsInfo.lastOrNull { it.row != LazyGridItemInfo.UnknownRow }
+                    ?: return estimatedSize
+            val columns = layout.maxSpan
+            val estimatedRows = (layout.totalItemsCount + columns - 1) / columns
+            // Compose's estimate counts every item as one cell. Use the measured row to account for spans.
+            val measuredRows =
+                estimatedGridRows(
+                    columns = columns,
+                    lastVisibleRow = last.row,
+                    firstFreeColumn = last.column + last.span,
+                    remainingItems = layout.totalItemsCount - last.index - 1,
+                )
+            val extraRows = (measuredRows - estimatedRows).coerceAtLeast(0)
+            val padding = layout.beforeContentPadding + layout.afterContentPadding
+            val averageRowWithSpacing = (estimatedSize - padding + layout.mainAxisItemSpacing) / estimatedRows
+            return estimatedSize + extraRows * averageRowWithSpacing
+        }
+
+    private val maxOffset: Double
+        get() = (contentSize - viewportSize).coerceAtLeast(0.0)
+
+    override val scrollOffset: Double
+        get() =
+            when {
+                !state.canScrollBackward -> 0.0
+                !state.canScrollForward -> maxOffset
+                else -> adapter.scrollOffset.coerceIn(0.0, maxOffset)
+            }
+
+    override suspend fun scrollTo(scrollOffset: Double) {
+        val itemCount = state.layoutInfo.totalItemsCount
+        if (itemCount == 0) return
+        when {
+            scrollOffset <= 0.0 -> state.scrollToItem(0)
+            scrollOffset >= maxOffset -> state.scrollToItem(itemCount - 1)
+            else -> adapter.scrollTo(adapter.scrollOffset + scrollOffset - this.scrollOffset)
+        }
+    }
+}
+
+internal fun estimatedGridRows(
+    columns: Int,
+    lastVisibleRow: Int,
+    firstFreeColumn: Int,
+    remainingItems: Int,
+): Int = lastVisibleRow + (firstFreeColumn + remainingItems + columns - 1) / columns
 
 /** Whether the browser has a mouse or another precise pointer, for controls that only a pointer uses. */
 internal const val FINE_POINTER_QUERY = "(any-pointer: fine)"

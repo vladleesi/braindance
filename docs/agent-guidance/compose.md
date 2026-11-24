@@ -11,6 +11,10 @@
 - Reuse theme tokens (including spacing/shapes), resources, and components. Lay
   out by available constraints; account for text scaling, localization, input
   methods, and window insets rather than device labels/assumed sizes.
+- Keep reusable loading placeholders in the same file as the components they
+  represent. Share the placeholder composable across callers so component-specific
+  sizes and aspect ratios can stay private. Keep screen-specific loading layouts
+  with their screens.
 - Provide accessible semantics, actions, focus, and adequate interaction targets.
   Verify keyboard, pointer, and touch on relevant platforms; accessibility varies.
 - Give the app background one owner, normally the root scaffold; add opaque screen
