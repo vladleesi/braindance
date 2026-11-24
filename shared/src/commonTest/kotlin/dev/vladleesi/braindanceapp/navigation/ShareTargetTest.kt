@@ -4,6 +4,7 @@ package dev.vladleesi.braindanceapp.navigation
 
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
+import dev.vladleesi.braindanceapp.navigation.routes.EventsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import kotlin.test.Test
@@ -15,6 +16,7 @@ class ShareTargetTest {
     fun sharedContentLinksToItsCanonicalWebAppAddress() {
         assertEquals("https://app.braindancegg.com/games/42", ShareTarget.Game(42, "Game").shareUrl())
         assertEquals("https://app.braindancegg.com/giveaway/7", ShareTarget.Giveaway(7, "Giveaway").shareUrl())
+        assertEquals("https://app.braindancegg.com/events/19", ShareTarget.Event(19, "Showcase").shareUrl())
         assertEquals(
             listOf(
                 "https://app.braindancegg.com/popular",
@@ -28,10 +30,15 @@ class ShareTargetTest {
     @Test
     fun everySharedLinkOpensTheSharedScreenInTheApps() {
         val targets =
-            listOf(ShareTarget.Game(42, "Game"), ShareTarget.Giveaway(7, "Giveaway")) +
+            listOf(
+                ShareTarget.Game(42, "Game"),
+                ShareTarget.Giveaway(7, "Giveaway"),
+                ShareTarget.Event(19, "Showcase"),
+            ) +
                 Compilation.entries.map { ShareTarget.CompilationList(it, "List") }
         val expected =
-            listOf(GameDetailsRoute(42), GiveawayDetailsRoute(7)) + Compilation.entries.map(::CompilationRoute)
+            listOf(GameDetailsRoute(42), GiveawayDetailsRoute(7), EventsRoute(19)) +
+                Compilation.entries.map(::CompilationRoute)
         assertEquals(expected, targets.map { appLinkRoute(it.shareUrl()) })
     }
 
@@ -41,6 +48,7 @@ class ShareTargetTest {
         assertNull(ShareTarget.Game(0, "Game").shareUrl())
         assertNull(ShareTarget.Game(-1, "Game").shareUrl())
         assertNull(ShareTarget.Giveaway(0, "Giveaway").shareUrl())
+        assertNull(ShareTarget.Event(-1, "Showcase").shareUrl())
     }
 
     @Test

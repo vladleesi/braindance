@@ -39,6 +39,7 @@
     <string name="profile_support_copy">Copy invite</string>
     <string name="share_app_message">I'm checking out Braindance — a new place to discover trending games, upcoming releases, and free game giveaways. Check it out: %1$s</string>
     <string name="share_game_message">Check out %1$s on Braindance: %2$s</string>
+    <string name="share_event_message">Check out %1$s on Braindance: %2$s</string>
     <string name="share_giveaway_message">Free to claim: %1$s. Details on Braindance: %2$s</string>
     <string name="share_compilation_message">%1$s on Braindance: %2$s</string>
     <string name="share_content_description">Share %1$s</string>
@@ -264,6 +265,7 @@
         <item quantity="other">In %1$d days</item>
     </plurals>
     <string name="event_unavailable">This event is unavailable</string>
+    <string name="event_loading">Loading event details</string>
     <string name="event_games_title">Featured games</string>
     <string name="event_logo_missing">No event logo</string>
     <string name="event_dates_range">%1$s – %2$s</string>

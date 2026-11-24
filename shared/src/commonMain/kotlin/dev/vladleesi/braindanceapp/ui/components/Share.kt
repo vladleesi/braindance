@@ -36,6 +36,7 @@ import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.share_compilation_message
 import dev.vladleesi.braindanceapp.resources.share_content_description
 import dev.vladleesi.braindanceapp.resources.share_copy_link_description
+import dev.vladleesi.braindanceapp.resources.share_event_message
 import dev.vladleesi.braindanceapp.resources.share_game_message
 import dev.vladleesi.braindanceapp.resources.share_giveaway_message
 import dev.vladleesi.braindanceapp.resources.share_link_copied
@@ -202,6 +203,7 @@ private val ShareTarget.shareMessageResource: StringResource
     get() =
         when (this) {
             is ShareTarget.Game -> Res.string.share_game_message
+            is ShareTarget.Event -> Res.string.share_event_message
             is ShareTarget.Giveaway -> Res.string.share_giveaway_message
             is ShareTarget.CompilationList -> Res.string.share_compilation_message
         }

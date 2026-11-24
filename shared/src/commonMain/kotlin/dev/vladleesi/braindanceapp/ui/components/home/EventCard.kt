@@ -53,7 +53,7 @@ import org.jetbrains.compose.resources.stringResource
 private const val NAME_SKELETON_FRACTION = 0.75f
 private const val STATUS_SKELETON_FRACTION = 0.5f
 private const val LIVE_TAG_FILL_ALPHA = 0.12f
-private const val EVENT_LOGO_RATIO = 16f / 9f
+internal const val EVENT_LOGO_RATIO = 16f / 9f
 
 @Composable
 internal fun EventsCarousel(

@@ -43,7 +43,7 @@ private val ColumnGap = Dimens.compact
 private val RowGap = Dimens.medium
 
 /** Placeholder rows while the first page loads; the grid shows only those that fit. */
-private const val LOADING_ROWS = 6
+internal const val LOADING_ROWS = 6
 
 /** The next page starts loading this many cards before the end, about two rows, so scrolling rarely reaches it. */
 private const val PREFETCH_DISTANCE = 10
@@ -150,11 +150,14 @@ fun PagedGridSkeleton(
  * and insets its cards to the page column. While the keyboard is open, the last rows can still scroll clear of it.
  */
 @Composable
-private fun CardGrid(
+@Suppress("LongParameterList")
+internal fun CardGrid(
     modifier: Modifier,
     cardWidth: PagedGridCardWidth,
     state: LazyGridState = rememberLazyGridState(),
     userScrollEnabled: Boolean = true,
+    topPadding: Dp = GridTopPadding,
+    scrollbarTopInset: Dp = 0.dp,
     content: LazyGridScope.(columns: Int) -> Unit,
 ) {
     val minCardWidth = if (isLargeWindow()) cardWidth.large else cardWidth.compact
@@ -167,14 +170,14 @@ private fun CardGrid(
             state = state,
             modifier = Modifier.fillMaxSize(),
             contentPadding =
-                PaddingValues(start = sidePadding, top = GridTopPadding, end = sidePadding, bottom = GridBottomPadding),
+                PaddingValues(start = sidePadding, top = topPadding, end = sidePadding, bottom = GridBottomPadding),
             horizontalArrangement = Arrangement.spacedBy(ColumnGap),
             verticalArrangement = Arrangement.spacedBy(RowGap),
             userScrollEnabled = userScrollEnabled,
         ) {
             content(columns)
         }
-        if (userScrollEnabled) PageScrollbar(state)
+        if (userScrollEnabled) PageScrollbar(state, topInset = scrollbarTopInset)
     }
 }
 

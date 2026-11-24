@@ -5,6 +5,7 @@ package dev.vladleesi.braindanceapp.navigation
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
 import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
+import dev.vladleesi.braindanceapp.navigation.routes.EventsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 
@@ -35,6 +36,13 @@ sealed interface ShareTarget {
         override val name: String,
     ) : ShareTarget {
         override val route: NavKey get() = GiveawayDetailsRoute(id)
+    }
+
+    data class Event(
+        val id: Int,
+        override val name: String,
+    ) : ShareTarget {
+        override val route: NavKey get() = EventsRoute(id)
     }
 
     /** A Home section's full list, such as Popular Right Now. */

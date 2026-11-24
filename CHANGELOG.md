@@ -5,6 +5,13 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.30.1 — 2026-11-24
+
+### Android, iOS, and Web
+
+- Event pages show placeholders while loading, keep the show name and schedule in view as you scroll, and let
+  you share a link to the event. The featured games grid keeps your place when you return from a game.
+
 ## 0.30.0 — 2026-11-21
 
 ### Android, iOS, and Web

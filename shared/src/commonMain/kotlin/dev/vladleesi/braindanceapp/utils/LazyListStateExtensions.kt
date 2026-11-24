@@ -68,7 +68,6 @@ fun rememberCachedLazyGridState(
 
 @Composable
 fun LazyListState.calculateScrollTopBarColors(): Triple<Color, Color, Color> {
-    val targetColor = navBar
     val maxScrollOffsetPx = with(LocalDensity.current) { Dimens.topBarHeightWithInsets.toPx() }
 
     // Derived so callers recompose only while the fraction changes, not on every scroll frame.
@@ -86,6 +85,26 @@ fun LazyListState.calculateScrollTopBarColors(): Triple<Color, Color, Color> {
         }
     }
 
+    return scrollTopBarColors(fraction)
+}
+
+@Composable
+internal fun LazyGridState.calculateScrollTopBarColors(): Triple<Color, Color, Color> {
+    val maxScrollOffsetPx = with(LocalDensity.current) { Dimens.topBarHeightWithInsets.toPx() }
+    val fraction by remember(this, maxScrollOffsetPx) {
+        derivedStateOf {
+            if (firstVisibleItemIndex == 0) {
+                (firstVisibleItemScrollOffset / maxScrollOffsetPx).coerceIn(0f, 1f)
+            } else {
+                1f
+            }
+        }
+    }
+    return scrollTopBarColors(fraction)
+}
+
+private fun scrollTopBarColors(fraction: Float): Triple<Color, Color, Color> {
+    val targetColor = navBar
     return Triple(
         lerp(Color.Transparent, targetColor, fraction),
         lerp(targetColor, Color.Transparent, fraction),

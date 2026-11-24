@@ -83,7 +83,7 @@ The rules are in the [brand guide](branding/README.md#in-the-product). Build new
 | `Tag`, `ComingSoonLabel`, `ComingSoonCard` | `components/Tag.kt`, `ComingSoon.kt` | Status labels and placeholders for planned features |
 | `CardCover`, `CarouselSection` | `components/` | Game covers and horizontal rows of them |
 | `MediaGallery`, `MediaViewer`, `MediaGalleryState` | `components/media/` | A game's videos and screenshots: a preview, thumbnails, and the full-screen viewer |
-| `ShareButton` | `components/Share.kt` | Sharing a game, giveaway, or list; see [sharing](#sharing) |
+| `ShareButton` | `components/Share.kt` | Sharing a game, giveaway, event, or list; see [sharing](#sharing) |
 | `BraindanceWordmark`, `BrandAccentStrip` | `style/icons/`, `components/desktop/` | The logo and the three-color accent |
 
 ### Page layout
@@ -167,13 +167,13 @@ Without the app, or before the platform has verified the domain, links open in t
 ### Sharing
 
 Content is shared as a short message with its link on the Web app. `ShareTarget` in
-`shared/.../navigation/ShareTarget.kt` names what can be shared (a game, a giveaway, or a Home section's full list)
-and builds each link from the paths above. It shares only a link that opens the same screen again, so an ID no
+`shared/.../navigation/ShareTarget.kt` names what can be shared (a game, a giveaway, an event, or a Home section's
+full list) and builds each link from the paths above. It shares only a link that opens the same screen again, so an ID no
 screen accepts gets no share button. A giveaway links to its Braindance page, which shows its details and the claim
 link, not to GamerPower or the store.
 
-Share content with `ShareButton` (`ui/components/Share.kt`) in a screen's top bar: each full list, giveaway, and game
-has one, while Home's carousels and the cards stay without it. It opens the system share sheet through ShareKit:
+Use `ShareButton` (`ui/components/Share.kt`) in the top bar of a full list, giveaway, event, or game. It opens the
+system share sheet through ShareKit:
 Android's chooser, iOS's activity sheet, or the Web Share API, which needs HTTPS and a click. Where there is no sheet,
 or it cannot open, the button copies the message and shows a check mark for two seconds; cancelling the sheet is not
 an error. `showsShareActions()` shows share buttons on every touch-screen device, including Web tablets and

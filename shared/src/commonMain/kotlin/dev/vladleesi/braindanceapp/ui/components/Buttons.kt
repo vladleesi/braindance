@@ -51,7 +51,7 @@ import dev.vladleesi.braindanceapp.ui.style.void
 import dev.vladleesi.braindanceapp.ui.style.white
 
 // Comfortable for touch, and the same height for every text button so rows of them align.
-private val ButtonMinHeight = 48.dp
+internal val ButtonMinHeight = 48.dp
 private val ButtonContentPadding = PaddingValues(horizontal = 24.dp, vertical = Dimens.compact)
 private val TrailingIconSize = 18.dp
 private val ProgressStrokeWidth = 2.dp

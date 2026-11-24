@@ -31,6 +31,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +46,7 @@ import dev.vladleesi.braindanceapp.utils.focusRing
 import dev.vladleesi.braindanceapp.utils.isFocusVisible
 import dev.vladleesi.braindanceapp.utils.rememberCachedImageRequest
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
+import dev.vladleesi.braindanceapp.utils.textPlaceholder
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 
 /*
@@ -160,13 +162,24 @@ fun CardCoverSkeleton(
     )
 }
 
-/** A loading placeholder for one line of [style] text, [widthFraction] of the card wide. */
+/** A loading placeholder for [style] text. [sampleText] lets it wrap like the expected content. */
 @Composable
 fun TextLineSkeleton(
     style: TextStyle,
-    widthFraction: Float,
     modifier: Modifier = Modifier,
+    widthFraction: Float = 1f,
+    sampleText: String? = null,
 ) {
+    if (sampleText != null) {
+        var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+        Text(
+            text = sampleText,
+            style = style,
+            modifier = modifier.fillMaxWidth(widthFraction).textPlaceholder(visible = true) { layout },
+            onTextLayout = { layout = it },
+        )
+        return
+    }
     Text(
         text = "",
         style = style,
