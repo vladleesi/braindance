@@ -44,6 +44,8 @@ jobs:
         with:
           path: landing
           name: github-pages-${{ github.run_attempt }}
+          # Publishes .well-known/assetlinks.json, which passkeys on Android need.
+          include-hidden-files: true
 
       - name: Deploy to GitHub Pages
         id: deploy

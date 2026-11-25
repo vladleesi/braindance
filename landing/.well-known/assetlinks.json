@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.get_login_creds"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "dev.vladleesi.braindanceapp.staging",
+      "sha256_cert_fingerprints": [
+        "F7:D8:99:24:9F:39:E9:BC:D2:FF:BD:5B:80:4B:D7:BB:60:DA:A1:C7:B0:FC:48:A6:87:D8:41:87:3A:4F:73:A6"
+      ]
+    }
+  }
+]

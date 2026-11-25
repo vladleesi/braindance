@@ -63,20 +63,22 @@
     <h1>Privacy Policy</h1>
     <p class="updated">Last updated: November 25, 2026</p>
 
-    <p class="lead">Braindance is an open-source app for finding games to play, for Android, iOS and the web. This page
-      explains what information Braindance handles, why, where it goes, and how long it is kept. If you have a question,
-      email <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>.</p>
+    <p class="lead">Braindance is an open-source app for finding games to play, on Android, iOS and the web. This page
+      explains what information it handles, why, where that information goes, and how long it stays. If anything is
+      unclear, email me at <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>.</p>
 
-    <h2>Who runs Braindance</h2>
-    <p>Braindance is developed and run by Vladislav Kochetov, who is responsible for the information described on this
-      page. You can reach him at <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>.</p>
+    <h2>Who I am</h2>
+    <p>I'm Vladislav Kochetov, and I build and run Braindance on my own. There's no company or team behind it, so
+      wherever this page says "I", that's me. I'm the person responsible for your information (the "data controller",
+      in legal terms), and every email to <a href="mailto:support@braindancegg.com">support@braindancegg.com</a> comes
+      to me.</p>
 
     <h2>The short version</h2>
     <ul>
       <li>You can browse games without an account.</li>
-      <li>Braindance shows no ads, does not sell or share your information for advertising, and does not track you
+      <li>Braindance has no ads. I don't sell your information or share it for advertising, and I don't track you
         across other apps or websites.</li>
-      <li>If you sign in, Braindance keeps your name, profile picture, email address and the devices you are signed in
+      <li>If you sign in, Braindance keeps your name, profile picture, email address and the devices you're signed in
         on, so it can sign you in and show your account. You can delete your account at any time.</li>
     </ul>
 
@@ -84,20 +86,21 @@
     <p>To show games, the apps ask the Braindance server for them. Like any website, the server sees your IP address
       and the request, such as which game you opened.</p>
     <ul>
-      <li>Your IP address is used to deliver the response and to limit how fast one device can send requests, which
-        protects the service from abuse. Braindance does not store it with your requests.</li>
-      <li>Our hosting provider keeps technical request logs, such as the time, address requested and browser or app
-        version, for up to 30 days to run and troubleshoot the service. These logs do not contain your IP address.</li>
+      <li>Your IP address is used to send the response and to limit how fast one device can send requests, which
+        protects the service from abuse. It isn't stored with your requests.</li>
+      <li>My hosting provider keeps technical request logs, such as the time, the address requested and the browser or
+        app version, for up to 30 days, so I can run the service and fix problems. These logs don't contain your IP
+        address.</li>
       <li>Game information comes from <a href="https://www.igdb.com/" rel="noopener">IGDB</a> and giveaways from
         <a href="https://www.gamerpower.com/" rel="noopener">GamerPower</a>. The Braindance server asks them for that
-        data itself, so they do not receive your information from Braindance.</li>
+        data itself, so they don't receive your information from Braindance.</li>
     </ul>
 
     <h2>Signing in</h2>
-    <p>Sign-in is being added to the apps. You will sign in with Google or Apple; Braindance never sees your password.
-      When you sign in, Braindance receives and stores:</p>
+    <p>Sign-in is being added to the apps. You'll sign in with Google or Apple, so Braindance never sees your
+      password. When you sign in, Braindance receives and stores:</p>
     <ul>
-      <li><strong>Your account ID at Google or Apple</strong>, which tells Braindance it is you next time.</li>
+      <li><strong>Your account ID at Google or Apple</strong>, which tells Braindance it's you next time.</li>
       <li><strong>Your email address</strong> and whether the provider has verified it. If you use Apple's
         <em>Hide My Email</em>, Braindance gets a private relay address instead of your own.</li>
       <li><strong>Your name and profile picture</strong>, if the provider shares them. Apple shares your name only the
@@ -105,34 +108,49 @@
     </ul>
     <p>For each device or browser you sign in on, Braindance keeps a sign-in session: the device name your app reports
       or your browser's name and version, an approximate network location (only the first part of your IP address,
-      which identifies a network rather than a device), and when it was created and last used. You can see and end
-      these sessions from your account. Braindance also keeps a short security log of sign-ins, sign-outs and account
-      changes, with the same approximate network and device details, to protect your account.</p>
-    <p>Braindance uses this information only to sign you in, show your account, and keep it secure. It never links two
-      sign-in accounts because they share an email address; you can link them yourself while signed in.</p>
+      which identifies a network rather than a device), and when the session was created and last used. You can see and
+      end these sessions from your account. Braindance also keeps a short security log of sign-ins, sign-outs and
+      account changes, with the same approximate network and device details, to protect your account.</p>
+    <p>I use this information only to sign you in, show your account and keep it secure. Braindance never links two
+      sign-in accounts just because they share an email address; you can link them yourself while signed in.</p>
     <p>On the web, Braindance keeps you signed in with a secure cookie that only the Braindance server can read. The web
       app also remembers which screen you were on in your browser's storage, which never leaves your device.</p>
 
+    <h2>Two-step verification and passkeys</h2>
+    <p>You can protect your account with a second step when you sign in:</p>
+    <ul>
+      <li><strong>An authenticator app.</strong> Braindance stores the app's secret key, encrypted, and the time of the
+        last code you used, so a code can't be used twice. It also stores your one-time recovery codes, but only in a
+        scrambled form that can't be turned back into the codes.</li>
+      <li><strong>Passkeys.</strong> Your fingerprint, face or device PIN never leaves your device. Braindance stores
+        only the passkey's public key and ID, the name you give it, the kind of connection it uses, whether it's backed
+        up to your password manager, and when it was added and last used.</li>
+    </ul>
+    <p>If someone enters a wrong code 10 times, Braindance pauses the code step for 15 minutes and sends a security
+      email to the verified addresses on your account. <strong>Resend</strong> delivers that email from
+      security@notify.braindancegg.com, and it never contains codes or links. Wrong codes are counted for up to 15
+      minutes, and the count isn't stored with your account ID in readable form.</p>
+
     <h2>Crash reports</h2>
-    <p>If the Android or iOS app crashes, it sends a crash report to Firebase Crashlytics, a Google service, so the
-      problem can be found and fixed. A report includes what went wrong in the app's code, your device model, operating
-      system version, the app version, and a random identifier for the app installation. It does not include your
-      account or what you were browsing. Crash reports are kept for the limited time Firebase sets for them.</p>
+    <p>If the Android or iOS app crashes, it sends a crash report to Firebase Crashlytics, a Google service, so I can
+      find and fix the problem. A report includes what went wrong in the app's code, your device model, operating system
+      version, the app version, and a random identifier for the app installation. It doesn't include your account or
+      what you were browsing. Crash reports are kept for the limited time Firebase sets for them.</p>
 
     <h2>Trailers</h2>
     <p>Game trailers play in YouTube's embedded player. When you play one, YouTube, a Google service, receives
       information about your device and network under
       <a href="https://policies.google.com/privacy" rel="noopener">Google's Privacy Policy</a>. Braindance uses
-      YouTube's privacy-enhanced mode, so YouTube does not store cookies before you play a trailer.</p>
+      YouTube's privacy-enhanced mode, so YouTube doesn't store cookies before you play a trailer.</p>
 
     <h2>This website</h2>
     <p>braindancegg.com is hosted on GitHub Pages and loads its fonts from Google Fonts, so GitHub and Google receive
       your IP address when you visit. The web app at app.braindancegg.com and the Braindance server are delivered
-      through Cloudflare, which protects them from attacks and also processes your IP address. Braindance does not
-      use analytics or advertising cookies on these sites.</p>
+      through Cloudflare, which protects them from attacks and also processes your IP address. There are no analytics
+      or advertising cookies on these sites.</p>
 
-    <h2>Who handles your information</h2>
-    <p>Braindance uses these services to run. They process information only to provide their service:</p>
+    <h2>Services I use</h2>
+    <p>Braindance runs on these services. They process your information only to provide their service to me:</p>
     <ul>
       <li><strong>Google Cloud</strong> runs the Braindance server, in the United States.</li>
       <li><strong>Neon</strong> stores account and session data in a database hosted by Amazon Web Services in the
@@ -140,44 +158,50 @@
       <li><strong>Upstash</strong> holds short-lived sign-in checks and rate limits, with IP addresses stored only in
         scrambled (hashed) form, for minutes, on Amazon Web Services in the United States.</li>
       <li><strong>Cloudflare</strong> delivers and protects the web app and the server.</li>
+      <li><strong>Resend</strong> sends security emails, such as the notice after repeated wrong codes.</li>
       <li><strong>Google</strong> and <strong>Apple</strong> handle signing in, and
         <strong>Firebase Crashlytics</strong> handles crash reports.</li>
     </ul>
-    <p>Braindance does not sell your information or share it with anyone else, unless the law requires it.</p>
+    <p>I don't sell your information or share it with anyone else, unless the law requires it.</p>
 
     <h2>How long information is kept</h2>
     <ul>
       <li>Your account, sign-in accounts, sessions and security log are kept until you delete your account. A session
-        stops working after 30 days without use and at most 60 days after you sign in.</li>
+        stops working after 30 days without use, and at most 60 days after you sign in.</li>
       <li>Request logs are kept for up to 30 days.</li>
-      <li>Sign-in checks and rate limits expire within minutes.</li>
+      <li>Sign-in checks and rate limits expire within minutes, and counts of wrong codes within 15 minutes.</li>
+      <li>Your authenticator app's key, recovery codes and passkeys are kept until you remove them or delete your
+        account.</li>
     </ul>
 
     <h2>Deleting your account</h2>
-    <p>You can delete your account in the app once sign-in is available there, or at any time by emailing
+    <p>You can delete your account in the app once sign-in is available there, or at any time by emailing me at
       <a href="mailto:support@braindancegg.com">support@braindancegg.com</a> from the address on your account. Deleting
-      it immediately removes your name, profile picture, email addresses, linked sign-in accounts and sessions, and
-      signs you out everywhere. Braindance keeps only an anonymous record that an account existed and when security
-      events happened, without any network or device details. If you sign in again later, you start a new account.</p>
+      it immediately removes your name, profile picture, email addresses, linked sign-in accounts, sessions,
+      authenticator app key, recovery codes and passkeys, and signs you out everywhere. All that's left is an anonymous
+      record that an account existed and when security events happened, without any network or device details. If you
+      sign in again later, you start a new account.</p>
 
     <h2>Your choices and rights</h2>
-    <p>You can ask to see, correct, export or delete the information Braindance has about you by emailing
+    <p>You can ask me to show, correct, export or delete the information Braindance has about you by emailing
       <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>. Depending on where you live, you may have
-      further rights under laws such as the GDPR or the CCPA, including the right to complain to your data protection
-      authority. Braindance will answer within 30 days.</p>
-    <p>Braindance keeps information secure with encrypted connections, stores sign-in tokens only in a form that cannot
-      be turned back into the token, and limits who can access its systems.</p>
+      more rights under laws such as the GDPR or the CCPA, including the right to complain to your data protection
+      authority. I'll reply within 30 days.</p>
+    <p>To keep your information safe, Braindance uses encrypted connections and stores sign-in tokens only in a form
+      that can't be turned back into the token. I'm the only person with access to the accounts that run
+      Braindance.</p>
 
     <h2>Children</h2>
-    <p>Braindance is not meant for children under 13 and does not knowingly collect information from them. If you
-      believe a child has created an account, email us and it will be deleted.</p>
+    <p>Braindance isn't meant for children under 13, and I don't knowingly collect information from them. If you think
+      a child has created an account, email me at <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>
+      and I'll delete it.</p>
 
-    <h2>Changes to this policy</h2>
-    <p>When this policy changes, the date at the top changes too. Changes that affect how your information is used
-      are announced on this page before they take effect.</p>
+    <h2>Changes to this page</h2>
+    <p>When this page changes, the date at the top changes too. If a change affects how your information is used, I'll
+      announce it here before it takes effect.</p>
 
     <footer>
-      <p>Questions? Email <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>.
+      <p>Questions? Email me at <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>.
         <a href="/">Back to Braindance</a></p>
     </footer>
   </main>
