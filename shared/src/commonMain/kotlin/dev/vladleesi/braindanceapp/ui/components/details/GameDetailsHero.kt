@@ -54,6 +54,7 @@ import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import dev.vladleesi.braindanceapp.ui.viewmodels.BackdropImage
+import dev.vladleesi.braindanceapp.ui.viewmodels.GameBadge
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GenreTag
 import dev.vladleesi.braindanceapp.utils.ParentPlatformType
@@ -342,6 +343,26 @@ internal fun GameDetailsHeroExpandedPreview() {
             libraryActions = LibraryActionsState.Ready(LibraryStatus.Wishlist),
             onLibraryStatusChange = {},
             onGenreClick = {},
+            modifier = Modifier.background(background),
+        )
+    }
+}
+
+@Preview
+@Composable
+internal fun GameDetailsHeroAdultPreview() {
+    BraindanceTheme {
+        GameDetailsHero(
+            details =
+                PreviewDetails.copy(
+                    name = "Sample Adult Game",
+                    isAdult = true,
+                    badges = listOf(GameBadge.Adult),
+                ),
+            expanded = false,
+            libraryActions = LibraryActionsState.Unavailable,
+            onLibraryStatusChange = {},
+            onGenreClick = null,
             modifier = Modifier.background(background),
         )
     }

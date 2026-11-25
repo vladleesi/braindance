@@ -120,6 +120,7 @@ internal object ApiFixtureData {
         val member = familyMembers[id]
         val details =
             when {
+                id == ADULT_GAME_ID -> adultGame()
                 gamesById[id] != null -> asCanonical(checkNotNull(gamesById[id]))
                 member == null -> null
                 member.kind == GameKind.EDITION || member.kind == GameKind.UPDATE -> {
@@ -135,6 +136,34 @@ internal object ApiFixtureData {
             }
         return backendJson.encodeToString(listOfNotNull(details))
     }
+
+    /** An adult game as the API sends one opened by ID: facts only, no images or text, and nothing related. */
+    private fun adultGame() =
+        GameItem(
+            cover = null,
+            firstReleaseDate = SAMPLE_RELEASE_DATE,
+            genres = listOf(Genre(id = 13, name = "Simulator")),
+            id = ADULT_GAME_ID,
+            name = "Sample Adult Game",
+            platforms = listOf(Platform(id = 6, name = "PC (Microsoft Windows)")),
+            releaseDates = null,
+            screenshots = null,
+            websites = null,
+            summary = null,
+            storyline = null,
+            videos = null,
+            kind = GameKind.GAME,
+            canonicalId = ADULT_GAME_ID,
+            family =
+                GameFamily(
+                    variants = emptyList(),
+                    extras = emptyList(),
+                    otherVersions = emptyList(),
+                    includedIn = emptyList(),
+                    contents = emptyList(),
+                ),
+            adult = true,
+        )
 
     private val familyMembers: Map<Int, GameItem> by lazy {
         val base = gameNames.first()
@@ -274,6 +303,10 @@ private const val UPDATE_ID = FAMILY_FIRST_ID + 1
 private const val EXPANSION_ID = FAMILY_FIRST_ID + 2
 private const val REMASTER_ID = FAMILY_FIRST_ID + 3
 private const val BUNDLE_ID = FAMILY_FIRST_ID + 4
+
+// Opened only by ID, as an adult game is reachable only through a link.
+private const val ADULT_GAME_ID = 901
+private const val SAMPLE_RELEASE_DATE = 1_698_451_200L
 private const val FIRST_GIVEAWAY_ID = 501
 private const val TRENDING_COUNT = 8
 private const val ANTICIPATED_OFFSET = 4

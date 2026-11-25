@@ -289,6 +289,13 @@ components:
           description: >-
             Game details only. The game whose page shows this entry: an edition's or update's game, otherwise the
             entry itself.
+        adult:
+          type: boolean
+          description: >-
+            Game details only, present and true for an adult game: one with IGDB's Erotic theme, the eroge or digb
+            keyword, or an ESRB Adults Only rating, or a DLC, update, or edition of one. Such details keep only facts
+            that identify the game (no cover, screenshots, videos, backdrop, summary, storyline, or websites) and
+            empty family lists. Adult games never appear in lists, search, or recommendations.
         canonical:
           $ref: '#/components/schemas/GameItem'
           description: Game details only. The canonical game's details, sent only when it is not this entry.

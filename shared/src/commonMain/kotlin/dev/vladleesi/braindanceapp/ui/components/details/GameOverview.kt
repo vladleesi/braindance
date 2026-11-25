@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.domain.games.OverviewHighlight
 import dev.vladleesi.braindanceapp.domain.games.OverviewHighlight.PlayStyle
 import dev.vladleesi.braindanceapp.resources.Res
+import dev.vladleesi.braindanceapp.resources.adult_details_hidden
 import dev.vladleesi.braindanceapp.resources.overview_co_op
 import dev.vladleesi.braindanceapp.resources.overview_co_op_split_screen
 import dev.vladleesi.braindanceapp.resources.overview_main_story
@@ -29,6 +30,7 @@ import dev.vladleesi.braindanceapp.ui.components.Tag
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.utils.placeholder
 import org.jetbrains.compose.resources.stringResource
 
@@ -41,15 +43,22 @@ internal fun GameOverview(
     modifier: Modifier = Modifier,
     placeholder: Boolean = false,
     onCollapse: (suspend (Int) -> Boolean)? = null,
+    adult: Boolean = false,
 ) {
-    if (summary.isBlank() && highlights.isEmpty()) return
+    if (summary.isBlank() && highlights.isEmpty() && !adult) return
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Dimens.compact)) {
         Text(
             stringResource(Res.string.overview_title),
             style = MaterialTheme.typography.h3,
             modifier = Modifier.semantics { heading() },
         )
-        if (summary.isNotBlank()) {
+        if (adult) {
+            Text(
+                stringResource(Res.string.adult_details_hidden),
+                style = MaterialTheme.typography.body1,
+                color = secondaryText,
+            )
+        } else if (summary.isNotBlank()) {
             ExpandableText(
                 text = summary,
                 collapsedMaxLines = OVERVIEW_LINES,
@@ -87,6 +96,14 @@ private fun OverviewHighlight.label(): String =
         PlayStyle.SPLIT_SCREEN -> stringResource(Res.string.overview_split_screen)
         PlayStyle.CO_OP_AND_SPLIT_SCREEN -> stringResource(Res.string.overview_co_op_split_screen)
     }
+
+@Preview
+@Composable
+internal fun GameOverviewAdultPreview() {
+    BraindanceTheme {
+        GameOverview(summary = "", highlights = listOf(OverviewHighlight.Theme("Erotic")), adult = true)
+    }
+}
 
 @Preview
 @Composable

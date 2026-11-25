@@ -23,6 +23,8 @@
       --muted: #a9b1c2;
       --soft: #cdd3df;
       --cyan: #22e4ff;
+      --magenta: #ff2e88;
+      --yellow: #ffee0a;
     }
     * { box-sizing: border-box; }
     body {
@@ -51,7 +53,30 @@
     a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
     .updated { color: var(--muted); margin: 0 0 24px; }
     .lead { font-size: 1.1rem; }
-    footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); }
+    footer {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px 32px;
+      margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--line);
+    }
+    .contact { margin: 0; color: var(--muted); }
+    .contact span {
+      display: block; margin-bottom: 4px; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .contact a { color: var(--ink); font-size: 1.1rem; font-weight: 600; text-decoration: none; }
+    .contact a:hover { text-decoration: underline var(--cyan); text-underline-offset: 4px; }
+    /* The landing page's primary button: on hover it lifts onto the brand's three colors. */
+    .home {
+      display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 22px; border-radius: 999px;
+      background: var(--ink); color: var(--bg); font-weight: 600; font-size: .95rem; text-decoration: none;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .home svg { width: 18px; height: 18px; flex: none; }
+    .home:hover, .home:focus-visible {
+      transform: translate(-3px, -3px);
+      box-shadow: 3px 3px 0 var(--cyan), 6px 6px 0 var(--magenta), 9px 9px 0 var(--yellow);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .home { transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -112,12 +137,12 @@
       end these sessions from your account. Braindance also keeps a short security log of sign-ins, sign-outs and
       account changes, with the same approximate network and device details, to protect your account.</p>
     <p>I use this information only to sign you in, show your account and keep it secure. Braindance never links two
-      sign-in accounts just because they share an email address; you can link them yourself while signed in.</p>
+      sign-in accounts just because they share an email address. You can link them yourself while signed in.</p>
     <p>On the web, Braindance keeps you signed in with a secure cookie that only the Braindance server can read. The web
       app also remembers which screen you were on in your browser's storage, which never leaves your device.</p>
 
     <h2>Two-step verification and passkeys</h2>
-    <p>You can protect your account with a second step when you sign in:</p>
+    <p>Once sign-in is available, you'll be able to protect your account with a second step when you sign in:</p>
     <ul>
       <li><strong>An authenticator app.</strong> Braindance stores the app's secret key, encrypted, and the time of the
         last code you used, so a code can't be used twice. It also stores your one-time recovery codes, but only in a
@@ -191,18 +216,28 @@
       that can't be turned back into the token. I'm the only person with access to the accounts that run
       Braindance.</p>
 
-    <h2>Children</h2>
-    <p>Braindance isn't meant for children under 13, and I don't knowingly collect information from them. If you think
-      a child has created an account, email me at <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>
-      and I'll delete it.</p>
+    <h2>Children and mature games</h2>
+    <p>Braindance follows the same age rule as Twitch, which runs IGDB, where its game information comes from: if
+      you're under 13, please don't use Braindance or create an account. I don't knowingly collect information from
+      children under 13. If you think a child has created an account, email me at
+      <a href="mailto:support@braindancegg.com">support@braindancegg.com</a> and I'll delete it.</p>
+    <p>Like IGDB, Braindance shows games of every age rating, including mature games with violence, gore or some
+      nudity. Games made for adults (games made around sexual content, and games rated Adults Only) are hidden from
+      search, lists and similar games. If you open one from a link, its page shows an Adult tag and hides its images
+      and description.</p>
 
     <h2>Changes to this page</h2>
     <p>When this page changes, the date at the top changes too. If a change affects how your information is used, I'll
       announce it here before it takes effect.</p>
 
     <footer>
-      <p>Questions? Email me at <a href="mailto:support@braindancegg.com">support@braindancegg.com</a>.
-        <a href="/">Back to Braindance</a></p>
+      <p class="contact"><span>Questions? Email me</span>
+        <a href="mailto:support@braindancegg.com">support@braindancegg.com</a></p>
+      <a class="home" href="/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to Braindance
+      </a>
     </footer>
   </main>
 </body>

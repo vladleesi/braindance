@@ -205,16 +205,20 @@ async function fetchPreview(target) {
 function gameMeta(game) {
     const name = text(game?.name, TITLE_MAX_LENGTH);
     if (!name) return null;
+    // The API sends no images or text for an adult game, and a preview never shows them even if some arrive.
+    const adult = game.adult === true;
     // The cover is the game's own key art; a game without one gets Braindance's share image.
-    const cover = igdbImage(game.cover?.url, "t_cover_big_2x");
+    const cover = adult ? null : igdbImage(game.cover?.url, "t_cover_big_2x");
     const year = releaseYear(game.first_release_date);
-    const summary = text(game.summary, Infinity);
+    const summary = adult ? null : text(game.summary, Infinity);
     return {
         title: `${name} | ${SITE_NAME}`,
         socialTitle: name,
         description: summary
             ? truncate(summary, DESCRIPTION_MAX_LENGTH)
-            : `${name}${year ? ` (${year})` : ""}: platforms, genres, where to buy, and similar games on ${SITE_NAME}.`,
+            : adult
+              ? `${name}${year ? ` (${year})` : ""}: an adult game on ${SITE_NAME}.`
+              : `${name}${year ? ` (${year})` : ""}: platforms, genres, where to buy, and similar games on ${SITE_NAME}.`,
         image: cover,
         imageAlt: cover ? `The cover of ${name}` : null,
         // Covers are portrait, which wide link cards would crop, so they get the compact card.

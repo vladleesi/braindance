@@ -93,6 +93,47 @@ class GameFamilyDetailsTest : ViewModelTest() {
     }
 
     @Test
+    fun anAdultGameIsTaggedAndShowsNoImagesOrText() =
+        runTest(dispatcher) {
+            val emptyFamily =
+                """"family":{"variants":[],"extras":[],"other_versions":[],"included_in":[],"contents":[]}"""
+            val (_, details) =
+                load(
+                    901,
+                    """[{"id":901,"name":"Sample Adult Game","kind":"game","canonical_id":901,"adult":true,""" +
+                        """"themes":[{"id":42,"name":"Erotic"}],$emptyFamily}]""",
+                )
+            assertTrue(details.isAdult)
+            assertEquals(GameBadge.Adult, details.badges.first(), "the tag comes before ratings and status")
+            assertTrue(details.coverImageUrl.isBlank())
+            assertNull(details.backdrop)
+            assertTrue(details.summary.isBlank() && details.storyline.isBlank())
+            assertTrue(details.media.isEmpty)
+            assertTrue(details.relations.related.isEmpty())
+        }
+
+    @Test
+    fun anEditionOfAnAdultGameIsAdultToo() =
+        runTest(dispatcher) {
+            val (_, details) =
+                load(
+                    902,
+                    """[{"id":902,"name":"Sample Adult Game: Deluxe Edition","kind":"edition","canonical_id":901,""" +
+                        """"canonical":{"id":901,"name":"Sample Adult Game","kind":"game","adult":true}}]""",
+                )
+            assertTrue(details.isAdult, "the canonical game's mark is enough")
+            assertEquals(GameBadge.Adult, details.badges.first())
+        }
+
+    @Test
+    fun aGameWithoutTheMarkIsNotAdult() =
+        runTest(dispatcher) {
+            val (_, details) = load(1942, """[${witcher.dropLast(1)},"canonical_id":1942,$witcherFamily}]""")
+            assertFalse(details.isAdult)
+            assertTrue(GameBadge.Adult !in details.badges)
+        }
+
+    @Test
     fun bothWitcherExpansionsLinkTheirBaseGame() =
         runTest(dispatcher) {
             for ((id, name) in listOf(12503 to "Hearts of Stone", 13166 to "Blood and Wine")) {

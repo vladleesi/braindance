@@ -5,6 +5,20 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.31.0 — 2026-11-25
+
+### Android, iOS, and Web
+
+- Adult games are marked: opened from a link, a game made for adults shows an Adult tag, and its images and
+  description stay hidden. Such games no longer appear in search, lists, or similar games.
+- Status tags have new colors: Alpha, Beta, and Early access are yellow, and Offline, Cancelled, and Delisted are blue.
+
+### Website and documentation
+
+- The privacy policy is rewritten in plain first person. It states the 13+ age rule and how mature and adult games are
+  handled, and covers two-step verification, passkeys, and security emails.
+- braindancegg.com publishes the file Android needs to use passkeys with Braindance.
+
 ## 0.30.2 — 2026-11-24
 
 ### Android, iOS, and Web

@@ -164,6 +164,8 @@ private fun GameItem.toGameDetails(): GameDetails {
         selectedVariant = selected,
         relations = gameRelations(game, selected),
         media = if (ownMedia.isEmpty && game !== this) mediaGallery(game.videos, game.screenshots) else ownMedia,
+        // The API sends no images or text for an adult game, so the page only tags it and explains why.
+        adult = adult || game.adult,
     )
 }
 
@@ -214,8 +216,10 @@ private fun GameItem.toPageDetails(
     selectedVariant: SelectedVariant?,
     relations: GameRelations,
     media: MediaGallery,
+    adult: Boolean,
 ) = GameDetails(
     id = id,
+    isAdult = adult,
     name = name.orEmpty(),
     summary = summary.orEmpty(),
     storyline =
@@ -225,7 +229,7 @@ private fun GameItem.toPageDetails(
             .takeUnless { it == summary.orEmpty().trim() }
             .orEmpty(),
     facts = toFacts(),
-    badges = toBadges(),
+    badges = listOfNotNull(GameBadge.Adult.takeIf { adult }) + toBadges(),
     overview =
         overviewHighlights(
             modes = gameModes.names(),
@@ -326,6 +330,9 @@ data class PlayTime(
 )
 
 internal sealed interface GameBadge {
+    /** An adult game: the API sends no images or description for it. */
+    data object Adult : GameBadge
+
     data class Score(
         val label: StringResource,
         val score: Int,
@@ -421,6 +428,8 @@ internal data class GameDetails(
     val facts: GameFactsModel = GameFactsModel(),
     val badges: List<GameBadge> = emptyList(),
     val overview: List<OverviewHighlight> = emptyList(),
+    /** An adult game, whose images and description the API withholds. */
+    val isAdult: Boolean = false,
 ) {
     /** The shown release: the selected edition or update, otherwise the game. A share points to it. */
     val releaseId: Int get() = selectedVariant?.id ?: id

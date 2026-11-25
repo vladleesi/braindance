@@ -337,7 +337,13 @@ private fun DetailsBody(
             null
         }
     val overview = @Composable {
-        GameOverview(details.summary, details.overview, placeholder = placeholder, onCollapse = onCollapse)
+        GameOverview(
+            details.summary,
+            details.overview,
+            placeholder = placeholder,
+            onCollapse = onCollapse,
+            adult = details.isAdult,
+        )
     }
     val storyline = @Composable {
         GameStoryline(details.storyline, placeholder = placeholder, onCollapse = onCollapse)
@@ -348,7 +354,7 @@ private fun DetailsBody(
         DetailsColumns(
             primary = {
                 Column(verticalArrangement = Arrangement.spacedBy(Dimens.large)) {
-                    if (details.summary.isNotBlank() || details.overview.isNotEmpty()) overview()
+                    if (details.summary.isNotBlank() || details.overview.isNotEmpty() || details.isAdult) overview()
                     if (!media.gallery.isEmpty) {
                         DetailsMedia(
                             details.name,
@@ -374,7 +380,7 @@ private fun DetailsBody(
         )
     } else {
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.large)) {
-            if (details.summary.isNotBlank() || details.overview.isNotEmpty()) {
+            if (details.summary.isNotBlank() || details.overview.isNotEmpty() || details.isAdult) {
                 Column(Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)) { overview() }
             }
             if (!media.gallery.isEmpty) {

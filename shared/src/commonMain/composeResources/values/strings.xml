@@ -279,6 +279,8 @@
     <string name="status_early_access">Early access</string>
     <string name="status_offline">Offline</string>
     <string name="status_cancelled">Cancelled</string>
+    <string name="badge_adult">Adult</string>
+    <string name="adult_details_hidden">This game is marked adult, so its images and description are hidden.</string>
     <string name="status_rumored">Rumored</string>
     <string name="status_delisted">Delisted</string>
 </resources>

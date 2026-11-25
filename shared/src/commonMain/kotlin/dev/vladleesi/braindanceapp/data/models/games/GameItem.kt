@@ -47,4 +47,9 @@ data class GameItem(
     val status: String? = null,
     @SerialName("time_to_beat")
     val timeToBeat: TimeToBeat? = null,
+    /**
+     * Game details only: the API marks adult games and sends only facts that identify them, without images, videos,
+     * descriptions, or links. Absent means not adult.
+     */
+    val adult: Boolean = false,
 )

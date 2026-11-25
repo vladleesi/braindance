@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.about_critic
 import dev.vladleesi.braindanceapp.resources.about_user
+import dev.vladleesi.braindanceapp.resources.badge_adult
 import dev.vladleesi.braindanceapp.resources.game_score_accessibility
 import dev.vladleesi.braindanceapp.resources.game_score_percent
 import dev.vladleesi.braindanceapp.ui.components.Tag
@@ -78,27 +80,48 @@ internal fun GameRatings(
         badges.forEach { badge ->
             when (badge) {
                 is GameBadge.Score -> GameScore(stringResource(badge.label), badge.score, placeholder = placeholder)
-                is GameBadge.Status -> {
-                    val color = badge.tagColor()
-                    Tag(
+                is GameBadge.Status ->
+                    StatusTag(
                         stringResource(badge.label),
-                        modifier =
-                            Modifier
-                                .align(Alignment.CenterVertically)
-                                .placeholder(visible = placeholder, shape = CornerShapes.pill)
-                                .background(lerp(secondary, color, STATUS_TINT_FRACTION), CornerShapes.pill),
-                        color = color,
+                        badge.tagColor(),
+                        placeholder,
+                        Modifier.align(Alignment.CenterVertically),
                     )
-                }
+                GameBadge.Adult ->
+                    StatusTag(
+                        stringResource(Res.string.badge_adult),
+                        hotMagentaLight,
+                        placeholder,
+                        Modifier.align(Alignment.CenterVertically),
+                    )
             }
         }
     }
 }
 
+@Composable
+private fun StatusTag(
+    text: String,
+    color: Color,
+    placeholder: Boolean,
+    modifier: Modifier,
+) {
+    Tag(
+        text,
+        modifier =
+            modifier
+                .placeholder(visible = placeholder, shape = CornerShapes.pill)
+                .background(lerp(secondary, color, STATUS_TINT_FRACTION), CornerShapes.pill),
+        color = color,
+    )
+}
+
 private fun GameBadge.Status.tagColor() =
     when (this) {
-        GameBadge.Status.Alpha, GameBadge.Status.Beta, GameBadge.Status.EarlyAccess -> hotMagentaLight
-        GameBadge.Status.Offline, GameBadge.Status.Cancelled, GameBadge.Status.Delisted -> signalYellow
+        // Still being made: playable, but not finished.
+        GameBadge.Status.Alpha, GameBadge.Status.Beta, GameBadge.Status.EarlyAccess -> signalYellow
+        // No longer, or not yet, something to play or buy.
+        GameBadge.Status.Offline, GameBadge.Status.Cancelled, GameBadge.Status.Delisted -> neonCyan
         GameBadge.Status.Rumored -> neonCyan
     }
 

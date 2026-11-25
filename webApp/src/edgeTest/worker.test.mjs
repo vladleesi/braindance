@@ -185,6 +185,20 @@ describe("game pages", () => {
         );
     });
 
+    it("never show an adult game's cover or summary, even if the API sent them", async () => {
+        apiResponses.set(
+            `${API}/v1/games/details?id=901`,
+            json([{ ...witcher, id: 901, name: "Sample Adult Game", summary: "Explicit text", adult: true }]),
+        );
+        const { html } = await open("/games/901");
+
+        assert.equal(meta(html, "og:image"), `${PUBLIC_ORIGIN}/og-image.png`);
+        assert.equal(meta(html, "description"), "Sample Adult Game (2015): an adult game on Braindance.");
+        assert.ok(!html.includes("Explicit text"));
+        assert.ok(!html.includes("co1wyy"));
+        assert.ok(html.includes('<meta name="robots" content="noindex">'));
+    });
+
     it("escape everything the API sends and ignore images from other hosts", async () => {
         apiResponses.set(
             `${API}/v1/games/details?id=8`,
