@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -48,7 +47,6 @@ import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetailsState
@@ -119,8 +117,7 @@ fun GiveawayDetailsScreen(
     BoxWithConstraints(
         modifier =
             modifier
-                .fillMaxSize()
-                .background(background),
+                .fillMaxSize(),
     ) {
         val lazyListState = rememberLazyListState()
         val (topBarColor, backButtonColor, topBarTitleColor) =

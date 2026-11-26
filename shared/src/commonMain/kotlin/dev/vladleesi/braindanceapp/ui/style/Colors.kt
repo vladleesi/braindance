@@ -46,7 +46,8 @@ val DarkColors =
         primary = background,
         secondary = secondary,
         secondaryVariant = secondaryVariant,
-        background = navBar,
+        // The canvas every screen shows; NavigationScaffold paints it once. The chrome paints navBar itself.
+        background = background,
         surface = surface,
         error = error,
     )

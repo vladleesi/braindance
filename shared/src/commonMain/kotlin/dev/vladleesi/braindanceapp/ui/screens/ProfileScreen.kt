@@ -5,12 +5,11 @@ package dev.vladleesi.braindanceapp.ui.screens
 import Github
 import Share
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,11 +23,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.BuildKonfig
 import dev.vladleesi.braindanceapp.resources.Res
-import dev.vladleesi.braindanceapp.resources.data_attribution_gamerpower
-import dev.vladleesi.braindanceapp.resources.data_attribution_igdb
 import dev.vladleesi.braindanceapp.resources.profile_activity
 import dev.vladleesi.braindanceapp.resources.profile_bluesky_handle
-import dev.vladleesi.braindanceapp.resources.profile_contact_support
 import dev.vladleesi.braindanceapp.resources.profile_development_status
 import dev.vladleesi.braindanceapp.resources.profile_link_bluesky
 import dev.vladleesi.braindanceapp.resources.profile_link_discord
@@ -39,11 +35,9 @@ import dev.vladleesi.braindanceapp.resources.profile_link_reddit
 import dev.vladleesi.braindanceapp.resources.profile_link_threads
 import dev.vladleesi.braindanceapp.resources.profile_link_x
 import dev.vladleesi.braindanceapp.resources.profile_reddit_handle
-import dev.vladleesi.braindanceapp.resources.profile_release_notes
 import dev.vladleesi.braindanceapp.resources.profile_reviews
 import dev.vladleesi.braindanceapp.resources.profile_screen_title
 import dev.vladleesi.braindanceapp.resources.profile_screen_version
-import dev.vladleesi.braindanceapp.resources.profile_section_about
 import dev.vladleesi.braindanceapp.resources.profile_section_account
 import dev.vladleesi.braindanceapp.resources.profile_section_community
 import dev.vladleesi.braindanceapp.resources.profile_settings
@@ -53,31 +47,24 @@ import dev.vladleesi.braindanceapp.resources.profile_statistics
 import dev.vladleesi.braindanceapp.resources.profile_support_share
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.CommunityLinks
-import dev.vladleesi.braindanceapp.ui.components.GAMERPOWER_NAME
-import dev.vladleesi.braindanceapp.ui.components.IGDB_NAME
 import dev.vladleesi.braindanceapp.ui.components.LinkDivider
 import dev.vladleesi.braindanceapp.ui.components.LinkRow
 import dev.vladleesi.braindanceapp.ui.components.LinkRowTextInset
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
-import dev.vladleesi.braindanceapp.ui.components.SUPPORT_EMAIL
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
+import dev.vladleesi.braindanceapp.ui.components.profile.AboutCard
 import dev.vladleesi.braindanceapp.ui.components.profile.ProfileSection
-import dev.vladleesi.braindanceapp.ui.components.profile.ProfileVersionStatus
 import dev.vladleesi.braindanceapp.ui.components.rememberCommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.rememberProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.icons.BlueskyLogo
-import dev.vladleesi.braindanceapp.ui.style.icons.Database
 import dev.vladleesi.braindanceapp.ui.style.icons.DiscordLogo
-import dev.vladleesi.braindanceapp.ui.style.icons.FileText
-import dev.vladleesi.braindanceapp.ui.style.icons.Gift
-import dev.vladleesi.braindanceapp.ui.style.icons.Mail
 import dev.vladleesi.braindanceapp.ui.style.icons.RedditLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.ThreadsLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.XLogo
@@ -99,7 +86,7 @@ fun ProfileScreen(
 
 /**
  * Profile, grouped the way a settings list is: the account features that are coming, then the community links, then
- * what the app is built on, with the app version and its development stage as a quiet footer at the bottom. Rows of
+ * About with the app version, support, the legal pages, and the data credits. Rows of
  * one list read best at a readable width, so the page is a single centered column, its title included, instead of
  * rows stretched across a wide window.
  */
@@ -112,48 +99,39 @@ internal fun ProfileContent(
     modifier: Modifier = Modifier,
 ) {
     val gutter = pageGutter()
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         val scrollState = rememberScrollState()
         Column(
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .verticalScroll(scrollState)
-                    .heightIn(min = maxHeight)
                     .padding(bottom = Dimens.medium),
-            verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column {
-                SpacerStatusBarInsets()
-                TopAppBar(
-                    title = stringResource(Res.string.profile_screen_title),
-                    titleStyle = MaterialTheme.typography.h2,
-                    showBackButton = true,
-                    onBackButtonPressed = onBackButtonPressed,
-                    maxContentWidth = Dimens.readableTextWidth,
-                )
-                Column(
-                    modifier =
-                        Modifier
-                            .pageColumn(gutter, maxContentWidth = Dimens.readableTextWidth)
-                            .padding(top = Dimens.small),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.large),
-                ) {
-                    AccountSection()
-                    CommunitySection(links = links, community = community)
-                    AboutSection(links = links, community = community)
-                }
-            }
-            ProfileVersionStatus(
-                versionLabel = versionLabel,
-                statusLabel = stringResource(Res.string.profile_development_status),
+            SpacerStatusBarInsets()
+            TopAppBar(
+                title = stringResource(Res.string.profile_screen_title),
+                titleStyle = MaterialTheme.typography.h2,
+                showBackButton = true,
+                onBackButtonPressed = onBackButtonPressed,
+                maxContentWidth = Dimens.readableTextWidth,
+            )
+            Column(
                 modifier =
                     Modifier
                         .pageColumn(gutter, maxContentWidth = Dimens.readableTextWidth)
-                        // Lines up with the row content: the page gutter plus the row padding.
-                        .padding(horizontal = Dimens.medium)
-                        .padding(top = Dimens.large),
-            )
+                        .padding(top = Dimens.small),
+                verticalArrangement = Arrangement.spacedBy(Dimens.large),
+            ) {
+                AccountSection()
+                CommunitySection(links = links, community = community)
+                AboutCard(
+                    links = links,
+                    onOpenReleases = community.openReleases,
+                    versionLabel = versionLabel,
+                    statusLabel = stringResource(Res.string.profile_development_status),
+                )
+            }
         }
         PageScrollbar(scrollState)
     }
@@ -240,43 +218,6 @@ private fun CommunitySection(
     }
 }
 
-/**
- * How to reach the team, what changed in the app, and the services its data comes from, credited as their terms ask.
- */
-@Composable
-private fun AboutSection(
-    links: ProjectLinks,
-    community: CommunityLinks,
-) {
-    ProfileSection(title = stringResource(Res.string.profile_section_about)) {
-        // The address is shown too, for people who write from a mail account other than the system's mail app.
-        LinkRow(
-            title = stringResource(Res.string.profile_contact_support),
-            supportingText = SUPPORT_EMAIL,
-            imageVector = Mail,
-            onClick = links.emailSupport,
-        )
-        LinkDivider(inset = LinkRowTextInset)
-        LinkRow(
-            title = stringResource(Res.string.profile_release_notes),
-            imageVector = FileText,
-            onClick = community.openReleases,
-        )
-        LinkDivider(inset = LinkRowTextInset)
-        LinkRow(
-            title = stringResource(Res.string.data_attribution_igdb, IGDB_NAME),
-            imageVector = Database,
-            onClick = links.openIgdb,
-        )
-        LinkDivider(inset = LinkRowTextInset)
-        LinkRow(
-            title = stringResource(Res.string.data_attribution_gamerpower, GAMERPOWER_NAME),
-            imageVector = Gift,
-            onClick = links.openGamerPower,
-        )
-    }
-}
-
 @Composable
 private fun ComingSoonRow(title: String) {
     Row(
@@ -307,6 +248,8 @@ internal fun ProfileScreenPreview() {
                         openIgdb = {},
                         openGamerPower = {},
                         emailSupport = {},
+                        openPrivacyPolicy = {},
+                        openLicenses = {},
                     ),
                 community =
                     CommunityLinks(

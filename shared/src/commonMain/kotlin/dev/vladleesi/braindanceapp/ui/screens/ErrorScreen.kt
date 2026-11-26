@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +20,6 @@ import dev.vladleesi.braindanceapp.resources.error_screen_retry_button_text
 import dev.vladleesi.braindanceapp.resources.error_screen_title
 import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.background
 import org.jetbrains.compose.resources.stringResource
 
 private const val MAX_ERROR_MESSAGE_LINES = 10
@@ -39,7 +37,6 @@ fun ErrorScreen(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(background)
                 .padding(Dimens.medium),
         contentAlignment = Alignment.Center,
     ) {

@@ -65,7 +65,8 @@ fun LinkDivider(inset: Dp = Dimens.medium) {
 /**
  * A row on a card that opens a page or runs an action, the settings-list pattern: a leading icon, the [title],
  * optional [supportingText] under it, and, when [opensExternally], a mark that the page opens outside the app. A row
- * without an icon keeps its place, so the titles of a list line up. The whole row is the touch target, at least 56 dp
+ * without an icon keeps its place, so the titles of a list line up, unless [reserveIconSpace] is false for a list with
+ * no icons at all. The whole row is the touch target, at least 56 dp
  * tall; keyboard focus draws an outline and pointers show a hand cursor. A row that is not [enabled] does nothing.
  */
 @Composable
@@ -77,6 +78,7 @@ fun LinkRow(
     supportingText: String? = null,
     opensExternally: Boolean = true,
     enabled: Boolean = true,
+    reserveIconSpace: Boolean = true,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Row(
@@ -104,7 +106,7 @@ fun LinkRow(
                 tint = secondaryText,
                 modifier = Modifier.size(RowIconSize),
             )
-        } else {
+        } else if (reserveIconSpace) {
             Spacer(modifier = Modifier.size(RowIconSize))
         }
         Column(modifier = Modifier.weight(1f)) {

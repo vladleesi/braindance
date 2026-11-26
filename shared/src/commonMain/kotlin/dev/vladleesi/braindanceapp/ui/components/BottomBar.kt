@@ -53,6 +53,7 @@ import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopSidebar
 import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopSidebarWidth
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.navBar
 import dev.vladleesi.braindanceapp.ui.style.neonCyan
 import dev.vladleesi.braindanceapp.ui.style.secondary
@@ -116,7 +117,7 @@ internal fun NavigationScaffold(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(navBar)
+                .background(background)
                 .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
         navigationSuiteType = navigationSuiteType,
         navigationSuiteColors =
@@ -126,8 +127,9 @@ internal fun NavigationScaffold(
                 wideNavigationRailColors =
                     WideNavigationRailDefaults.colors(containerColor = navBar, contentColor = white),
             ),
-        // The modifier's navBar background already fills this area, including the display-cutout padding. A second
-        // opaque container fill would only repaint every screen pixel once more each frame.
+        // The modifier's canvas background already fills this area, including the display-cutout padding, and is the
+        // one background every screen shows. A second opaque fill, here or in a screen, would only repaint every
+        // screen pixel once more each frame. The bar, rail, and sidebar paint the darker chrome color themselves.
         containerColor = Color.Transparent,
         contentColor = white,
         navigationItems = {

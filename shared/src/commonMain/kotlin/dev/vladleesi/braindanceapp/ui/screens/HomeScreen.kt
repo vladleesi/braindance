@@ -3,7 +3,6 @@
 package dev.vladleesi.braindanceapp.ui.screens
 
 import Bell
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -74,7 +73,6 @@ import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.pageWidth
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith80Alpha
 import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
@@ -136,8 +134,7 @@ private fun StandardHomeScreen(
     Box(
         modifier =
             Modifier
-                .fillMaxSize()
-                .background(background),
+                .fillMaxSize(),
     ) {
         LazyColumn(
             state = listState,

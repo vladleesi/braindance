@@ -198,8 +198,7 @@ private fun GameDetailsScreen(
     Box(
         modifier =
             modifier
-                .fillMaxSize()
-                .background(background),
+                .fillMaxSize(),
     ) {
         // The page has a bounded body with lazy horizontal galleries. ScrollState uses its measured height,
         // including expanded text and related rows, for both scrolling and the Web scrollbar.

@@ -70,7 +70,9 @@ or distribution.
 
 ## Design system
 
-The rules are in the [brand guide](branding/README.md#in-the-product). Build new screens from these shared pieces in
+The rules are in the [brand guide](branding/README.md#in-the-product). Every screen shows the canvas color, which
+`NavigationScaffold` paints once, so screens add no background of their own. The bottom bar, rail, and desktop
+sidebar use the darker chrome color. Build new screens from these shared pieces in
 `shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui` before adding new ones:
 
 | Piece | Where | Use |

@@ -33,8 +33,8 @@ private val StatusDotSize = 6.dp
 private const val BADGE_BACKGROUND_ALPHA = 0.14f
 
 /**
- * The app version with a green dot at the start, and a pink badge for the development stage ([statusLabel]) at the
- * end. The badge wraps to its own line when the text is enlarged or translated at length. The dot is decoration.
+ * The app version with a green dot at the start, and a pink badge for the development stage ([statusLabel]) after
+ * it. The badge wraps to its own line when the text is enlarged or translated at length. The dot is decoration.
  */
 @Composable
 fun ProfileVersionStatus(
@@ -44,7 +44,7 @@ fun ProfileVersionStatus(
 ) {
     FlowRow(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.compact),
         verticalArrangement = Arrangement.spacedBy(Dimens.small),
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
@@ -69,7 +69,8 @@ fun ProfileVersionStatus(
             modifier =
                 Modifier
                     .background(hotMagenta.copy(alpha = BADGE_BACKGROUND_ALPHA), CircleShape)
-                    .padding(horizontal = Dimens.compact, vertical = Dimens.tiny),
+                    // The same size as the app's other tags, such as Coming soon.
+                    .padding(horizontal = Dimens.small, vertical = Dimens.micro),
         )
     }
 }

@@ -5,6 +5,19 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.32.0 — 2026-11-26
+
+### Android, iOS, and Web
+
+- Profile's About section shows the app's version and links to support, the privacy policy, open-source licenses,
+  and release notes, with the data credits underneath.
+- Every screen now has the same background, set apart from the navigation bar and sidebar.
+
+### Website and documentation
+
+- The privacy policy describes the services Braindance uses by category and links to a separate page that names
+  them. The page footer has a clearer contact line and a button back to Braindance.
+
 ## 0.31.0 — 2026-11-25
 
 ### Android, iOS, and Web

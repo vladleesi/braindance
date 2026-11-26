@@ -25,7 +25,7 @@ import dev.vladleesi.braindanceapp.ui.style.secondaryText
 
 /**
  * A titled group of related rows on one rounded surface, the settings-list pattern: a short, specific [title] above
- * the group names what the rows have in common. Its rows are [LinkRow]s, separated by [LinkDivider].
+ * the group names what the rows have in common. Its rows are usually [LinkRow]s, separated by [LinkDivider].
  */
 @Composable
 fun ProfileSection(

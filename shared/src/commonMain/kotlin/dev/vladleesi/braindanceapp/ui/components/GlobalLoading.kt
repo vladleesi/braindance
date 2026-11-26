@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -14,7 +13,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.white
 
 @Composable
@@ -22,8 +20,7 @@ fun GlobalLoading(modifier: Modifier = Modifier) {
     Box(
         modifier =
             modifier
-                .fillMaxSize()
-                .background(background),
+                .fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(

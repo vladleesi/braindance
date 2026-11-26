@@ -33,6 +33,8 @@ class ProfileContentTest {
                                 openIgdb = { opened += "igdb" },
                                 openGamerPower = { opened += "gamerpower" },
                                 emailSupport = { opened += "support" },
+                                openPrivacyPolicy = { opened += "privacy" },
+                                openLicenses = { opened += "licenses" },
                             ),
                         community =
                             CommunityLinks(
@@ -58,6 +60,8 @@ class ProfileContentTest {
                 "Star on GitHub",
                 "Share",
                 "Contact support",
+                "Privacy policy",
+                "Open-source licenses",
                 "Release notes",
                 "Game data by IGDB",
                 "Giveaways by GamerPower",
@@ -73,6 +77,8 @@ class ProfileContentTest {
                     "github",
                     "share",
                     "support",
+                    "privacy",
+                    "licenses",
                     "releases",
                     "igdb",
                     "gamerpower",
@@ -95,6 +101,8 @@ class ProfileContentTest {
                                 openIgdb = {},
                                 openGamerPower = {},
                                 emailSupport = {},
+                                openPrivacyPolicy = {},
+                                openLicenses = {},
                             ),
                         community =
                             CommunityLinks(

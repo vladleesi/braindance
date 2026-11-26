@@ -13,7 +13,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -90,7 +89,6 @@ import dev.vladleesi.braindanceapp.ui.components.search.SearchNoResults
 import dev.vladleesi.braindanceapp.ui.components.search.SearchResultsGrid
 import dev.vladleesi.braindanceapp.ui.components.search.SearchResultsSkeleton
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameSearchViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.SearchState
@@ -159,7 +157,7 @@ fun DiscoverScreen(
         onBackCompleted = leaveSearch,
     )
 
-    Column(modifier = modifier.fillMaxSize().background(background)) {
+    Column(modifier = modifier.fillMaxSize()) {
         SpacerStatusBarInsets()
         DiscoverTitle(
             // The sidebar layout has room to spare, and a hardware keyboard there takes none.

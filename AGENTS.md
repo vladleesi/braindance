@@ -270,6 +270,16 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   - When features change, update the Features titles and lines and the structured data's `featureList`.
   - When work moves to the next roadmap milestone, move `class="now"` and "In progress" to it. Keep milestones
     without completion marks or dates.
+- Keep the privacy policy (`landing/privacy/index.html`) and its services list (`landing/privacy/services/index.html`)
+  current in the same change as the work they describe, in both repositories:
+  - When the apps or the API start or stop collecting, storing, sending, or deleting personal data, or change how
+    long they keep it, update the policy's matching sections.
+  - When a service that handles personal data is added, removed, or replaced, or where it runs changes, update the
+    services list. The policy names such services only by category and links to the list. Services people use
+    directly, such as sign-in providers, YouTube, and crash reports, stay named in the policy.
+  - Set "Last updated" on each changed page to the UTC date of the change, and `lastmod` for the policy in
+    `landing/sitemap.xml`. The services list stays `noindex` and out of the sitemap and `robots.txt`.
+  - Describe only what the code does. A planned feature reads as planned, never as available.
 - Keep the human-readable code style in `docs/development.md#code-style` consistent with these conventions.
 - Follow `.editorconfig` and neighboring code: four-space indentation, 120-character lines, and trailing commas.
 - Use explicit imports and short names in Kotlin code instead of fully qualified references.
@@ -300,6 +310,9 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
 ## Compose rendering
 - `NavigationScaffold` owns the app background, and `MainActivity` removes the redundant Android window background;
   keep both when changing the root composable or the hosts.
+- Every screen shows the canvas color (`background`), which `NavigationScaffold` paints once. The chrome (bottom bar,
+  rail, desktop sidebar, system bars) uses the darker `navBar`. Screens and their loading and error states never
+  paint a background of their own. Previews, which have no scaffold, may.
 - The cache-window helpers are `rememberCachedLazyListState()` and `rememberCachedLazyGridState()` in
   `utils/LazyListStateExtensions.kt`; they work on every target. The image loader is `rememberCachedImagePainter`.
 - Measure Android rendering with the `benchmarkRelease` build or a release build. Baseline Profile coverage lives in

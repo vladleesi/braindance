@@ -151,8 +151,7 @@ internal fun DesktopHomeScreen(
     BoxWithConstraints(
         modifier =
             modifier
-                .fillMaxSize()
-                .background(background),
+                .fillMaxSize(),
     ) {
         val gutter = pageGutter()
         val contextWidth = if (layout.hasContextColumn) ContextColumnWidth + Dimens.large else 0.dp
