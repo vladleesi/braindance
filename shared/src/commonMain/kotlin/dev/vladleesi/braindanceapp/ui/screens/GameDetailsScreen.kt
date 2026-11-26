@@ -73,6 +73,7 @@ import dev.vladleesi.braindanceapp.ui.components.details.OriginLine
 import dev.vladleesi.braindanceapp.ui.components.details.RelatedGameRow
 import dev.vladleesi.braindanceapp.ui.components.details.RelatedHeader
 import dev.vladleesi.braindanceapp.ui.components.details.StoresBlock
+import dev.vladleesi.braindanceapp.ui.components.details.TimeToBeatCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.media.GameMedia
@@ -344,9 +345,7 @@ private fun DetailsBody(
             adult = details.isAdult,
         )
     }
-    val storyline = @Composable {
-        GameStoryline(details.storyline, placeholder = placeholder, onCollapse = onCollapse)
-    }
+    val storyline = @Composable { GameStoryline(details.storyline, placeholder = placeholder, onCollapse = onCollapse) }
     val about = @Composable { GameFacts(details.facts, placeholder = placeholder) }
     val stores = @Composable { StoresBlock(stores = details.stores, placeholder = placeholder) }
     if (desktop) {
@@ -368,9 +367,10 @@ private fun DetailsBody(
                 }
             },
             sidebar = {
-                if (!details.facts.isEmpty || details.stores.isNotEmpty()) {
+                if (!details.facts.isEmpty || details.playTimes != null || details.stores.isNotEmpty()) {
                     Column(verticalArrangement = Arrangement.spacedBy(Dimens.medium)) {
                         if (!details.facts.isEmpty) about()
+                        details.playTimes?.let { TimeToBeatCard(it, placeholder = placeholder) }
                         if (details.stores.isNotEmpty()) stores()
                     }
                 }
@@ -378,9 +378,10 @@ private fun DetailsBody(
             modifier = Modifier.pageColumn(gutter).fillMaxWidth(),
         )
     } else {
+        val readingColumn = Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.large)) {
             if (details.summary.isNotBlank() || details.overview.isNotEmpty() || details.isAdult) {
-                Column(Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)) { overview() }
+                Column(readingColumn) { overview() }
             }
             if (!media.gallery.isEmpty) {
                 DetailsMedia(
@@ -393,14 +394,17 @@ private fun DetailsBody(
                     scrollState = scrollState,
                 )
             }
-            if (!details.facts.isEmpty) {
-                Column(Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)) { about() }
+            if (!details.facts.isEmpty || details.playTimes != null) {
+                Column(readingColumn, verticalArrangement = Arrangement.spacedBy(Dimens.medium)) {
+                    if (!details.facts.isEmpty) about()
+                    details.playTimes?.let { TimeToBeatCard(it, placeholder = placeholder) }
+                }
             }
             if (details.storyline.isNotEmpty()) {
-                Column(Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)) { storyline() }
+                Column(readingColumn) { storyline() }
             }
             if (details.stores.isNotEmpty()) {
-                Column(Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)) { stores() }
+                Column(readingColumn) { stores() }
             }
         }
     }
@@ -568,7 +572,7 @@ private val MinDetailsColumnWidth = 360.dp
 private val DetailsSidebarWidth = 300.dp
 
 /**
- * The main content uses a reading column. About and stores share a sidebar when both columns fit.
+ * The main content uses a reading column. About, Time to beat, and stores share a sidebar when both columns fit.
  */
 @Composable
 private fun DetailsColumns(

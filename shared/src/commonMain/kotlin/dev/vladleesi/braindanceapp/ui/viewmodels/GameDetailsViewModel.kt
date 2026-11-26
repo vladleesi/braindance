@@ -10,6 +10,7 @@ import dev.vladleesi.braindanceapp.data.models.games.GameKind
 import dev.vladleesi.braindanceapp.data.models.games.GameRating
 import dev.vladleesi.braindanceapp.data.models.games.NamedItem
 import dev.vladleesi.braindanceapp.data.models.games.SimilarGame
+import dev.vladleesi.braindanceapp.data.models.games.TimeToBeat
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.domain.games.OverviewHighlight
 import dev.vladleesi.braindanceapp.domain.games.overviewHighlights
@@ -19,11 +20,11 @@ import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.about_complete
 import dev.vladleesi.braindanceapp.resources.about_critic
 import dev.vladleesi.braindanceapp.resources.about_developer
+import dev.vladleesi.braindanceapp.resources.about_developer_publisher
 import dev.vladleesi.braindanceapp.resources.about_extra
 import dev.vladleesi.braindanceapp.resources.about_main
 import dev.vladleesi.braindanceapp.resources.about_publisher
 import dev.vladleesi.braindanceapp.resources.about_series
-import dev.vladleesi.braindanceapp.resources.about_tags
 import dev.vladleesi.braindanceapp.resources.about_user
 import dev.vladleesi.braindanceapp.resources.status_alpha
 import dev.vladleesi.braindanceapp.resources.status_beta
@@ -116,6 +117,7 @@ class GameDetailsViewModel(
                             if (details.id != recommendationsFor) loadRecommendations(details.id)
                             GameDetailsState.Success(details)
                         }
+
                         is Outcome.Failure ->
                             if (outcome.error == DataError.NotFound) {
                                 GameDetailsState.NotFound
@@ -229,6 +231,7 @@ private fun GameItem.toPageDetails(
             .takeUnless { it == summary.orEmpty().trim() }
             .orEmpty(),
     facts = toFacts(),
+    playTimes = timeToBeat?.toPlayTimes(),
     badges = listOfNotNull(GameBadge.Adult.takeIf { adult }) + toBadges(),
     overview =
         overviewHighlights(
@@ -263,32 +266,55 @@ private fun GameItem.toPageDetails(
 )
 
 private fun GameItem.toFacts(): GameFactsModel {
-    val playtime = timeToBeat
-    val tags = (gameModes.orEmpty() + playerPerspectives.orEmpty() + themes.orEmpty()).names()
+    val developer = developers.fact(Res.string.about_developer)
+    val publisher = publishers.fact(Res.string.about_publisher)
+    val credits =
+        if (developer != null && publisher != null && developers.companyIds() == publishers.companyIds()) {
+            listOf(developer.copy(label = Res.string.about_developer_publisher))
+        } else {
+            listOfNotNull(developer, publisher)
+        }
     return GameFactsModel(
-        rows =
-            listOfNotNull(
-                developers.fact(Res.string.about_developer),
-                publishers.fact(Res.string.about_publisher),
-                series.fact(Res.string.about_series),
-                tags.takeIf { it.isNotEmpty() }?.let { GameFact.Tags(Res.string.about_tags, it) },
-            ),
-        playTimes =
-            listOfNotNull(
-                playtime?.hastily.playTime(Res.string.about_main),
-                playtime?.normally.playTime(Res.string.about_extra),
-                playtime?.completely.playTime(Res.string.about_complete),
-            ),
-        sampleCount = playtime?.count?.takeIf { it > 0 },
+        rows = credits + listOfNotNull(series.fact(Res.string.about_series)),
+        tags = (gameModes.orEmpty() + playerPerspectives.orEmpty() + themes.orEmpty()).names(),
     )
 }
+
+private fun List<NamedItem>?.companyIds() =
+    orEmpty()
+        .asSequence()
+        .filter { it.name.isNotBlank() }
+        .map(NamedItem::id)
+        .toSet()
 
 private fun List<NamedItem>?.names() = orEmpty().map { it.name.trim() }.filter(String::isNotEmpty).distinct()
 
 private fun List<NamedItem>?.fact(label: StringResource) =
-    names().takeIf { it.isNotEmpty() }?.let { GameFact.Text(label, it.joinToString(", ")) }
+    names().takeIf { it.isNotEmpty() }?.let { GameFact(label, it.joinToString(", ")) }
 
-private fun Long?.playTime(label: StringResource) = roundedPlayHours(this)?.let { PlayTime(label, it) }
+private fun TimeToBeat.toPlayTimes(): GamePlayTimes? {
+    val longest = maxOf(hastily ?: 0, normally ?: 0, completely ?: 0)
+    if (longest <= 0) return null
+
+    fun estimate(
+        label: StringResource,
+        seconds: Long?,
+    ): PlayTime? {
+        if (seconds == null) return null
+        val hours = roundedPlayHours(seconds) ?: return null
+        return PlayTime(label, hours, (seconds.toDouble() / longest).toFloat())
+    }
+
+    return GamePlayTimes(
+        estimates =
+            listOfNotNull(
+                estimate(Res.string.about_main, hastily),
+                estimate(Res.string.about_extra, normally),
+                estimate(Res.string.about_complete, completely),
+            ),
+        sampleCount = count.takeIf { it > 0 },
+    )
+}
 
 private fun GameItem.toBadges() =
     listOfNotNull(
@@ -302,31 +328,28 @@ private fun GameRating?.badge(label: StringResource): GameBadge? =
 
 private const val MAX_RATING = 100
 
-data class GameFactsModel(
+internal data class GameFactsModel(
     val rows: List<GameFact> = emptyList(),
-    val playTimes: List<PlayTime> = emptyList(),
-    val sampleCount: Int? = null,
+    val tags: List<String> = emptyList(),
 ) {
-    val isEmpty: Boolean get() = rows.isEmpty() && playTimes.isEmpty()
+    val isEmpty: Boolean get() = rows.isEmpty() && tags.isEmpty()
 }
 
-sealed interface GameFact {
-    val label: StringResource
+internal data class GameFact(
+    val label: StringResource,
+    val value: String,
+)
 
-    data class Text(
-        override val label: StringResource,
-        val value: String,
-    ) : GameFact
+internal data class GamePlayTimes(
+    val estimates: List<PlayTime>,
+    val sampleCount: Int? = null,
+)
 
-    data class Tags(
-        override val label: StringResource,
-        val values: List<String>,
-    ) : GameFact
-}
-
-data class PlayTime(
+internal data class PlayTime(
     val label: StringResource,
     val hours: Long,
+    /** The share of the longest available estimate, calculated before rounding the displayed hours. */
+    val relativeLength: Float,
 )
 
 internal sealed interface GameBadge {
@@ -426,6 +449,7 @@ internal data class GameDetails(
     /** The shown release's videos and screenshots; empty when it has none, which hides the section. */
     val media: MediaGallery = MediaGallery(),
     val facts: GameFactsModel = GameFactsModel(),
+    val playTimes: GamePlayTimes? = null,
     val badges: List<GameBadge> = emptyList(),
     val overview: List<OverviewHighlight> = emptyList(),
     /** An adult game, whose images and description the API withholds. */

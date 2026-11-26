@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -252,14 +253,12 @@ class GameFamilyDetailsTest : ViewModelTest() {
                 )
 
             assertEquals(75, edition.id, "relations and similar games follow the game")
-            assertEquals("BioWare", (edition.facts.rows.single() as GameFact.Text).value)
-            assertEquals(
-                37L,
-                edition.facts.playTimes
-                    .single()
-                    .hours,
-            )
-            assertEquals(42, edition.facts.sampleCount)
+            val developer = edition.facts.rows.single()
+            assertEquals("BioWare", developer.value)
+            val playTimes = assertNotNull(edition.playTimes)
+            val mainStory = playTimes.estimates.single()
+            assertEquals(37L, mainStory.hours)
+            assertEquals(42, playTimes.sampleCount)
             assertEquals(listOf(90, 0), edition.badges.filterIsInstance<GameBadge.Score>().map { it.score })
             assertEquals(GameBadge.Status.EarlyAccess, edition.badges.last())
             assertEquals("Mass Effect 3: N7 Collector's Edition", edition.name)

@@ -5,6 +5,16 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.33.0 — 2026-11-26
+
+### Android, iOS, and Web
+
+- Time to beat has its own card, with bars that compare estimated playtimes for the main story, extras, and full
+  completion. The card shows how many players contributed when a count is available.
+- Game tags sit below the credits in About. When the same companies developed and published a game, they share one
+  credit. Overview uses “Co-op / Split-screen” when both are available.
+- The Profile header uses the same background as the rest of the screen.
+
 ## 0.32.0 — 2026-11-26
 
 ### Android, iOS, and Web

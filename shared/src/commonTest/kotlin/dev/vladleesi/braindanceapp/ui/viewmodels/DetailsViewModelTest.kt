@@ -7,12 +7,20 @@ import dev.vladleesi.braindanceapp.data.api.remote.GamerPowerRemote
 import dev.vladleesi.braindanceapp.data.api.remote.GamesRemote
 import dev.vladleesi.braindanceapp.data.repository.GameDetailsRepo
 import dev.vladleesi.braindanceapp.data.repository.GamerPowerRepo
+import dev.vladleesi.braindanceapp.resources.Res
+import dev.vladleesi.braindanceapp.resources.about_complete
+import dev.vladleesi.braindanceapp.resources.about_developer
+import dev.vladleesi.braindanceapp.resources.about_developer_publisher
+import dev.vladleesi.braindanceapp.resources.about_extra
+import dev.vladleesi.braindanceapp.resources.about_main
+import dev.vladleesi.braindanceapp.resources.about_publisher
 import dev.vladleesi.braindanceapp.testing.ViewModelTest
 import dev.vladleesi.braindanceapp.testing.mockBackendClient
 import dev.vladleesi.braindanceapp.testing.respondJson
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -20,6 +28,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class DetailsViewModelTest : ViewModelTest() {
     @Test
@@ -63,6 +72,82 @@ class DetailsViewModelTest : ViewModelTest() {
             val details = assertIs<GameDetailsState.Success>(viewModel.gameDetailsState.value).gameDetails
             assertEquals("https://images.igdb.com/igdb/image/upload/t_720p/co1.webp", details.coverImageUrl)
         }
+
+    @Test
+    fun timeToBeatScalesAgainstTheLongestEstimateBeforeRounding() =
+        runTest(dispatcher) {
+            val details =
+                loadDetails(""""time_to_beat":{"hastily":5400,"normally":10800,"completely":8640,"count":1}""")
+
+            assertEquals(
+                GamePlayTimes(
+                    listOf(
+                        PlayTime(Res.string.about_main, hours = 2, relativeLength = 0.5f),
+                        PlayTime(Res.string.about_extra, hours = 3, relativeLength = 1f),
+                        PlayTime(Res.string.about_complete, hours = 2, relativeLength = 0.8f),
+                    ),
+                    sampleCount = 1,
+                ),
+                details.playTimes,
+            )
+            assertTrue(details.facts.isEmpty)
+        }
+
+    @Test
+    fun timeToBeatOmitsInvalidEstimatesAndRequiresAtLeastOneDuration() =
+        runTest(dispatcher) {
+            val partial = loadDetails(""""time_to_beat":{"hastily":-7200,"normally":0,"completely":3600,"count":0}""")
+            val empty = loadDetails(""""time_to_beat":{"hastily":-1,"normally":0,"completely":null,"count":3}""")
+
+            assertEquals(GamePlayTimes(listOf(PlayTime(Res.string.about_complete, 1, 1f))), partial.playTimes)
+            assertNull(empty.playTimes)
+        }
+
+    @Test
+    fun aboutCombinesIdenticalCompanyCreditsAndKeepsTags() =
+        runTest(dispatcher) {
+            val details =
+                loadDetails(
+                    """
+                    "developers":[{"id":1,"name":"Studio"},{"id":2,"name":"Partner"}],
+                    "publishers":[{"id":2,"name":"Partner"},{"id":1,"name":"Studio"}],
+                    "game_modes":[{"id":3,"name":"Single player"}],
+                    "player_perspectives":[{"id":4,"name":"Third person"}],
+                    "themes":[{"id":5,"name":"Fantasy"}]
+                    """.trimIndent(),
+                )
+
+            assertEquals(listOf(GameFact(Res.string.about_developer_publisher, "Studio, Partner")), details.facts.rows)
+            assertEquals(listOf("Single player", "Third person", "Fantasy"), details.facts.tags)
+        }
+
+    @Test
+    fun aboutKeepsDistinctCompaniesEvenWhenTheirNamesMatch() =
+        runTest(dispatcher) {
+            val details =
+                loadDetails(""""developers":[{"id":1,"name":"Studio"}],"publishers":[{"id":2,"name":"Studio"}]""")
+
+            assertEquals(
+                listOf(GameFact(Res.string.about_developer, "Studio"), GameFact(Res.string.about_publisher, "Studio")),
+                details.facts.rows,
+            )
+            assertNull(details.playTimes)
+        }
+
+    private suspend fun loadDetails(fields: String): GameDetails {
+        val client =
+            mockBackendClient(dispatcher) { request ->
+                when (request.url.encodedPath) {
+                    "/v1/games/details" -> respondJson("""[{"id":42,$fields}]""")
+                    else -> respondJson("[]")
+                }
+            }
+        val viewModel = GameDetailsViewModel(gameId = 42, gameDetailsRepo = GameDetailsRepo(GamesRemote(client)))
+        viewModel.load()
+        return assertIs<GameDetailsState.Success>(
+            viewModel.gameDetailsState.first { it !is GameDetailsState.Loading },
+        ).gameDetails
+    }
 
     @Test
     fun theBackdropIsTheImageTheApiChoseAtBothSizes() =

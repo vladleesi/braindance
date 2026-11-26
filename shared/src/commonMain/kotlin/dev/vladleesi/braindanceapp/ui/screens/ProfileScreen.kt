@@ -63,6 +63,7 @@ import dev.vladleesi.braindanceapp.ui.components.rememberProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.icons.BlueskyLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.DiscordLogo
 import dev.vladleesi.braindanceapp.ui.style.icons.RedditLogo
@@ -112,6 +113,7 @@ internal fun ProfileContent(
             TopAppBar(
                 title = stringResource(Res.string.profile_screen_title),
                 titleStyle = MaterialTheme.typography.h2,
+                tabBarColor = background,
                 showBackButton = true,
                 onBackButtonPressed = onBackButtonPressed,
                 maxContentWidth = Dimens.readableTextWidth,
