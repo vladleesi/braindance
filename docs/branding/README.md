@@ -74,13 +74,13 @@ cyan for rumors. The app's development status uses magenta.
   8 dp; containers (cards, panels, banners) by 16 dp; everything pressable or labelling (buttons, chips, tags, the
   search field) is a pill. Icon buttons and the avatar are circles. Cards are filled with the surface color, not
   outlined.
-- **Landing site:** imagery has square corners: editorial plates and a tight band of whole 3:4 covers, with hairline
-  rules between sections. Buttons and tags are pills, as in the app.
+- **Landing site:** the hero groups square 3:4 covers into strips with 8 px corners. The reel and release target use
+  16 px corners and the app’s neutral surface fill. Hairlines divide sections. Buttons and tags are pills.
 
 ### The trail in the interface
 
 The trail belongs to the logo first. In the interface it marks only the main action: the primary button (white on Ink in
 the dark theme, a pill) lifts and shows the trail under a pointer, on the landing site and in the app alike. The landing
-site also sets it on one word of a headline and behind the hero screenshot. Do not put it on cards, lists, or icons.
+site also uses it on the hero’s final word and the release version numeral. Do not put it on cards, lists, or icons.
 
 Source and permissions are recorded in [artwork and branding notices](../../THIRD_PARTY_NOTICES.md#artwork-and-branding).

@@ -78,6 +78,9 @@
       /* Brand palette (docs/branding/README.md); the app uses the same values in Colors.kt */
       --bg: #0a0d14;        /* Ink */
       --deep: #070a10;
+      --surface: #12161f;
+      --radius-panel: 16px;
+      --radius-tile: 8px;
       --line: #1b202b;      /* hairlines: the app's control neutral */
       --line-2: #313848;    /* stronger rules and outlines */
       --ink: #f4f6fa;       /* White */
@@ -100,14 +103,13 @@
     @font-face { font-family: "Poppins Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Arial"); font-weight: 600 700; size-adjust: 106.8%; ascent-override: 98%; descent-override: 33%; line-gap-override: 9%; }
     *, *::before, *::after { box-sizing: border-box; }
     [hidden] { display: none !important; }
-    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; background: var(--bg); }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; background: var(--deep); }
     html.fonts-loading body { visibility: hidden; }
     html.fonts-unavailable { --page-font: "Poppins Fallback"; }
     body {
       margin: 0; background: var(--bg); color: var(--ink);
       font-family: var(--page-font), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       line-height: 1.6; -webkit-font-smoothing: antialiased;
-      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
     ::selection { background: var(--cyan); color: var(--void); }
     img, svg { max-width: 100%; display: block; }
@@ -164,7 +166,7 @@
       .mobile-menu { display: block; }
     }
 
-    /* Buttons are the round shapes; imagery and surfaces are square. The primary button is the logo in
+    /* The primary button is the logo in
        miniature: white on Ink, and the trail appears when it is hovered or focused. */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 26px; border-radius: 999px; font: inherit; font-weight: 600; font-size: .95rem; text-decoration: none; border: 1px solid transparent; transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
     .btn svg { width: 18px; height: 18px; flex: none; }
@@ -179,25 +181,37 @@
     /* Hero */
     .hero { position: relative; overflow: hidden; isolation: isolate; }
     .hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: radial-gradient(var(--line-2) 1px, transparent 1.5px); background-size: 28px 28px; -webkit-mask-image: linear-gradient(115deg, transparent 38%, #000 100%); mask-image: linear-gradient(115deg, transparent 38%, #000 100%); opacity: .7; }
-    .hero-grid { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 48px; align-items: end; padding: clamp(40px, 4.6vw, 68px) 0 clamp(48px, 5vw, 72px); }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      gap: clamp(32px, 5vw, 72px);
+      align-items: center;
+      padding-block: clamp(40px, 5vw, 72px);
+    }
     .eyebrow { display: flex; align-items: center; gap: 14px; color: var(--muted); margin-bottom: clamp(20px, 2.2vw, 30px); }
     .eyebrow::before { content: ""; width: 40px; height: 1px; background: var(--line-2); }
-    h1 { font-size: clamp(3.25rem, 8.7vw, 8.1rem); line-height: .9; letter-spacing: -.05em; font-weight: 700; margin-bottom: .36em; }
+    h1 { font-size: clamp(3.25rem, 7.4vw, 7rem); line-height: .97; text-wrap: balance; letter-spacing: -.05em; font-weight: 700; margin-bottom: .36em; }
+    .hero .eyebrow { gap: 9px; }
+    .hero .eyebrow::before { width: 20px; height: 3px; border-radius: 999px; background: var(--cyan); }
     h1 .echo { display: inline-block; }
     .lead { font-size: clamp(1.05rem, 1.5vw, 1.25rem); color: var(--soft); max-width: 33em; margin-bottom: 32px; }
     .lead b { color: var(--ink); font-weight: 600; }
-    .fine { margin-top: 20px; font-size: .85rem; color: var(--muted); }
-    /* The hero reel: rows of whole covers at their own 3:4 proportion drifting in alternate directions, in a plate
-       with the trail behind it, like the letters of the logo. Each row is one strip of 16 covers (12 row heights wide)
-       repeated three times, so moving by a third is exactly one strip: a seamless loop. A grid in the plate's color
-       moves with each strip and parts the covers into tiles. Media queries rather than image-set() choose each strip's
-       file (192, 288, or 384 pixels tall), so the preload in the head picks the same file and nothing loads twice:
-       1x below 1.5 device pixels per CSS pixel, and above it 2x for the 168px rows on wide screens or 1.5x for the
-       132-140px rows on narrower ones, about twice their height and half the 2x weight. */
-    .reel { --h: 168px; --seam: 6px; --trail: 10px; justify-self: end; display: grid; gap: var(--seam); width: min(100% - var(--trail) * 3, 440px); margin: 0 calc(var(--trail) * 3) calc(var(--trail) * 3) 0; overflow: hidden; background: var(--deep); outline: 1px solid var(--line-2); box-shadow: var(--trail) var(--trail) 0 var(--cyan), calc(var(--trail) * 2) calc(var(--trail) * 2) 0 var(--magenta), calc(var(--trail) * 3) calc(var(--trail) * 3) 0 var(--yellow); }
-    .reel-row { height: var(--h); overflow: hidden; contain: strict; }
+    .fine { max-width: 56ch; margin-top: 20px; font-size: .85rem; color: var(--muted); }
+    /* Each row repeats a strip of sixteen 3:4 covers. The moving seams divide it into individual tiles. */
+    .reel {
+      --h: 168px;
+      --seam: 6px;
+      display: grid;
+      gap: var(--seam);
+      min-width: 0;
+      padding: 8px;
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .reel-row { height: var(--h); border-radius: var(--radius-tile); overflow: hidden; contain: strict; }
     .reel-track { position: relative; width: calc(var(--h) * 36); height: 100%; background-repeat: repeat-x; background-size: calc(var(--h) * 12) var(--h); will-change: transform; animation: reel-left 110s linear infinite; }
-    .reel-track::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--deep) 0 calc(var(--seam) / 2), transparent 0 calc(var(--h) * .75 - var(--seam) / 2), var(--deep) 0 calc(var(--h) * .75)); }
+    .reel-track::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--surface) 0 calc(var(--seam) / 2), transparent 0 calc(var(--h) * .75 - var(--seam) / 2), var(--surface) 0 calc(var(--h) * .75)); }
     .reel .a { background-image: url(/img/covers-1.webp); }
     .reel .b { background-image: url(/img/covers-2.webp); animation-name: reel-right; animation-duration: 126s; }
     @media (min-resolution: 1.5dppx) and (width > 900px) {
@@ -272,9 +286,10 @@
     .road ul li::before { content: ""; flex: none; width: 5px; height: 5px; margin-top: calc(.8em - 2.5px); border-radius: 50%; background: var(--line-2); }
     .road .now ul li::before { background: var(--muted); }
     .road .note { color: var(--muted); font-size: .85em; }
-    .target { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: clamp(28px, 5vw, 80px); row-gap: 20px; align-items: center; margin-top: clamp(56px, 7vw, 96px); padding: clamp(28px, 4vw, 56px); background: var(--bg); outline: 1px solid var(--line-2); outline-offset: -1px; }
+    .target { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: clamp(28px, 5vw, 80px); row-gap: 20px; align-items: center; margin-top: clamp(56px, 7vw, 96px); padding: clamp(28px, 4vw, 56px); background: var(--surface); border-radius: var(--radius-panel); }
     .target-num { font-size: clamp(5rem, 13vw, 10.5rem); line-height: .85; letter-spacing: -.06em; font-weight: 700; padding-right: .12em; }
-    .target .eyebrow { margin-bottom: 16px; }
+    .target .eyebrow { color: var(--cyan); margin-bottom: 16px; }
+    .target .eyebrow::before { display: none; }
     .target h3 { font-size: clamp(1.6rem, 3vw, 2.5rem); line-height: 1.1; letter-spacing: -.035em; font-weight: 700; text-wrap: balance; }
     .target-note { margin-top: 14px; color: var(--muted); max-width: 36em; }
 
@@ -318,12 +333,12 @@
     /* Marquee: the app's section names, set large and outlined. */
     .marquee { overflow: hidden; border-top: 1px solid var(--line); padding: clamp(20px, 3vw, 36px) 0; }
     .marquee-track { display: flex; width: max-content; will-change: transform; animation: marquee 64s linear infinite; }
-    .marquee span { flex: none; padding-right: .5em; font-size: clamp(3rem, 9vw, 8.25rem); line-height: 1; letter-spacing: -.05em; font-weight: 700; white-space: nowrap; color: transparent; -webkit-text-stroke: 1.5px #4a5263; }
+    .marquee span { flex: none; font-size: clamp(3rem, 9vw, 8.25rem); line-height: 1; letter-spacing: -.05em; font-weight: 700; white-space: nowrap; color: transparent; -webkit-text-stroke: 1.5px #4a5263; }
     .marquee span b { font-weight: 700; color: var(--ink); -webkit-text-stroke: 0; }
     @keyframes marquee { to { transform: translate3d(-50%, 0, 0); } }
 
     /* Footer */
-    footer { background: var(--deep); border-top: 1px solid var(--line-2); color: var(--muted); font-size: .9rem; }
+    footer { padding-bottom: calc(clamp(28px, 4vw, 56px) + env(safe-area-inset-bottom, 0px)); background: var(--deep); border-top: 1px solid var(--line-2); color: var(--muted); font-size: .9rem; }
     .foot { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 40px clamp(32px, 6vw, 104px); padding: clamp(48px, 6vw, 80px) 0 40px; }
     .foot p { max-width: 34em; }
     .foot .about { font-size: 1.05rem; color: var(--soft); }
@@ -343,21 +358,21 @@
     .legal p { margin: 0 0 6px; max-width: 70em; }
     /* The wordmark at the full width of the page. The SVG has clear space around the letters (they occupy
        2116 x 344 of its 2480 x 720 canvas), so the image is enlarged and offset to crop to the letters. */
-    .signature { display: block; position: relative; aspect-ratio: 2116 / 344; overflow: hidden; margin: clamp(24px, 4vw, 56px) 0 clamp(28px, 4vw, 56px); }
+    .signature { display: block; position: relative; aspect-ratio: 2116 / 344; overflow: hidden; margin: clamp(24px, 4vw, 56px) 0 0; }
     .signature img { position: absolute; left: -8.64%; top: -51.79%; width: 117.21%; max-width: none; height: auto; }
 
     @media (max-width: 900px) {
       .split, .sec-head, .foot { grid-template-columns: minmax(0, 1fr); }
       .rail { position: static; }
-      .hero-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 32px; align-items: center; }
+      .hero-grid { gap: 24px; }
       .reel { --h: 140px; }
       .road > li { grid-template-columns: minmax(0, 1fr); }
       .road ul { padding-top: 0; }
     }
     @media (max-width: 720px) {
       :root { --gutter: 20px; }
-      .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 48px; }
-      .reel { --h: 132px; --trail: 6px; justify-self: stretch; width: auto; }
+      .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+      .reel { --h: 132px; }
       .reel-row:nth-child(3) { display: none; }
       .statusbar .platforms { display: none; }
       .road { --rail: 36px; }
@@ -377,6 +392,7 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .dot, .reel-track, .marquee-track, .road > .now::before { animation: none; }
+      .reel-row:nth-child(3) .reel-track { background-position-x: calc(var(--h) * -6); }
       .btn { transition: none; }
       .btn-primary:hover, .btn-primary:focus-visible { transform: none; }
     }
@@ -717,8 +733,8 @@
 
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
-        <span>Popular Right Now <b>+</b> Most Anticipated <b>+</b> Similar games <b>+</b> Giveaways <b>+</b></span>
-        <span>Popular Right Now <b>+</b> Most Anticipated <b>+</b> Similar games <b>+</b> Giveaways <b>+</b></span>
+        <span>Popular Right Now <b>+</b> Most Anticipated <b>+</b> Similar games <b>+</b> Giveaways <b>+</b>&nbsp;</span>
+        <span>Popular Right Now <b>+</b> Most Anticipated <b>+</b> Similar games <b>+</b> Giveaways <b>+</b>&nbsp;</span>
       </div>
     </div>
 
