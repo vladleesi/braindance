@@ -19,6 +19,7 @@ import dev.vladleesi.braindanceapp.resources.profile_licenses
 import dev.vladleesi.braindanceapp.resources.profile_privacy_policy
 import dev.vladleesi.braindanceapp.resources.profile_release_notes
 import dev.vladleesi.braindanceapp.resources.profile_section_about
+import dev.vladleesi.braindanceapp.resources.terms_of_use
 import dev.vladleesi.braindanceapp.ui.components.DataCredits
 import dev.vladleesi.braindanceapp.ui.components.LinkDivider
 import dev.vladleesi.braindanceapp.ui.components.LinkRow
@@ -74,6 +75,13 @@ fun AboutCard(
                 imageVector = null,
                 reserveIconSpace = false,
                 onClick = links.openPrivacyPolicy,
+            )
+            LinkDivider()
+            LinkRow(
+                title = stringResource(Res.string.terms_of_use),
+                imageVector = null,
+                reserveIconSpace = false,
+                onClick = links.openTerms,
             )
             LinkDivider()
             LinkRow(

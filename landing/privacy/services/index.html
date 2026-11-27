@@ -86,25 +86,35 @@
     <h1>Services I use</h1>
     <p class="updated">Last updated: November 27, 2026</p>
 
-    <p class="lead">These are the outside services Braindance runs on. They process your information only to provide
-      their service to me. The <a href="/privacy/">privacy policy</a> explains what information Braindance handles
-      and why.</p>
+    <p class="lead">These services help run Braindance. The <a href="/privacy/">privacy policy</a> explains
+      what information they receive and how to make a privacy request.</p>
 
+    <h2>Hosting and security</h2>
     <ul>
-      <li><strong>Google Cloud</strong> runs the Braindance server, in the United States.</li>
-      <li><strong>Neon</strong> stores account and session data in a database hosted by Amazon Web Services in the
-        United States.</li>
-      <li><strong>Upstash</strong> holds short-lived sign-in checks and rate limits, with IP addresses stored only in
-        scrambled (hashed) form, for minutes, on Amazon Web Services in the United States.</li>
-      <li><strong>Cloudflare</strong> delivers and protects the web app and the server.</li>
-      <li><strong>GitHub Pages</strong> hosts the Braindance landing site, including its fonts.</li>
-      <li><strong>Resend</strong> sends security emails, such as the notice after repeated wrong codes.</li>
-      <li><strong>Google</strong> and <strong>Apple</strong> handle signing in, and
-        <strong>Firebase Crashlytics</strong> handles crash reports.</li>
+      <li><strong>GitHub Pages</strong> hosts this website. <strong>Cloudflare</strong> delivers and protects the
+        web app and its server. Both receive IP addresses when you connect.</li>
+      <li><strong>Google Cloud</strong> hosts the server. <strong>Neon</strong> stores accounts and sessions.
+        <strong>Upstash</strong> briefly stores sign-in checks and the data used to limit requests, including
+        hashed IP addresses.</li>
     </ul>
 
-    <p>I don't sell your information or share it with anyone else, unless the law requires it. If this list changes,
-      the date at the top changes too.</p>
+    <h2>Games and media</h2>
+    <ul>
+      <li><strong>IGDB</strong> supplies game data and may receive search terms. Its image servers receive your IP
+        address when you load game art.</li>
+      <li><strong>GamerPower</strong> supplies giveaway listings and receives your request when you follow its links.</li>
+      <li><strong>YouTube</strong> delivers trailer thumbnails and videos. <strong>Google</strong> may also deliver
+        a missing font in the web app. These requests include your IP address.</li>
+    </ul>
+
+    <h2>Accounts and mobile apps</h2>
+    <ul>
+      <li><strong>Google</strong> and <strong>Apple</strong> handle sign-in. <strong>Resend</strong> delivers
+        account security emails.</li>
+      <li><strong>Firebase Crashlytics</strong> receives mobile crash reports and installation IDs.
+        <strong>Firebase App Distribution</strong> uses tester names, emails and device IDs to deliver test builds and
+        collect feedback. <strong>Apple</strong> handles iOS test device registration.</li>
+    </ul>
 
     <footer>
       <p class="contact"><span>Questions? Email me</span>

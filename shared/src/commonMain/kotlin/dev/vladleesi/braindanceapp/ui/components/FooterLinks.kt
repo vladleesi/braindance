@@ -40,6 +40,7 @@ import dev.vladleesi.braindanceapp.resources.data_attribution_igdb
 import dev.vladleesi.braindanceapp.resources.footer_licenses
 import dev.vladleesi.braindanceapp.resources.footer_privacy
 import dev.vladleesi.braindanceapp.resources.footer_support
+import dev.vladleesi.braindanceapp.resources.terms_of_use
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -145,9 +146,8 @@ fun DataCredits(
 }
 
 /**
- * The links a site's footer would hold, compact for the desktop sidebar: privacy, licenses, and support on one line
- * when it fits, then the data credits. Space alone separates them, so a wrapped line never starts or ends with a
- * separator. Phones, tablets, and narrower windows reach the same pages from Profile.
+ * The desktop sidebar puts legal and support links on one line when they fit, followed by data credits. The links
+ * wrap without separator marks. Phones, tablets, and narrower windows reach the same pages from Profile.
  */
 @Composable
 fun FooterLinks(
@@ -159,6 +159,11 @@ fun FooterLinks(
             FooterLink(
                 text = AnnotatedString(stringResource(Res.string.footer_privacy)),
                 onClick = links.openPrivacyPolicy,
+                compact = true,
+            )
+            FooterLink(
+                text = AnnotatedString(stringResource(Res.string.terms_of_use)),
+                onClick = links.openTerms,
                 compact = true,
             )
             FooterLink(

@@ -5,6 +5,17 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.34.2 — 2026-11-27
+
+### Android, iOS, and Web
+
+- Open the Terms of Use alongside the privacy policy in Profile. On desktop web, both links are also in the sidebar.
+
+### Website and documentation
+
+- Simplify the privacy notice and services list, and add Terms of Use in English and Spanish.
+- Style the landing site's “Back to Braindance” link on the 404 page as a primary button.
+
 ## 0.34.1 — 2026-11-27
 
 ### Android, iOS, and Web

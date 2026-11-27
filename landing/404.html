@@ -1,4 +1,53 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Page not found | Braindance</title><meta name="theme-color" content="#0A0D14"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<style>body{margin:0;min-height:100vh;display:grid;place-content:center;justify-items:center;gap:16px;text-align:center;background:#0a0d14;color:#f4f6fa;font-family:system-ui,sans-serif}img{width:96px;height:96px}a{color:#22e4ff}</style></head>
-<body><img src="/mark.svg" alt="Braindance mark" width="96" height="96"><h1>Page not found</h1><p><a href="/">Back to Braindance</a></p></body></html>
+<style>
+  :root {
+    --void: #0a0d14;
+    --ink: #f4f6fa;
+    --cyan: #22e4ff;
+    --magenta: #ff2e88;
+    --yellow: #ffee0a;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 16px;
+    text-align: center;
+    background: var(--void);
+    color: var(--ink);
+    font-family: system-ui, sans-serif;
+  }
+  img { width: 96px; height: 96px; }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 26px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--void);
+    font-size: .95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .btn-primary:hover, .btn-primary:focus-visible {
+    transform: translate(-3px, -3px);
+    box-shadow: 3px 3px 0 var(--cyan), 6px 6px 0 var(--magenta), 9px 9px 0 var(--yellow);
+  }
+  .btn-primary:active { transform: none; box-shadow: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .btn-primary { transition: none; }
+    .btn-primary:hover, .btn-primary:focus-visible { transform: none; }
+  }
+</style></head>
+<body>
+  <img src="/mark.svg" alt="Braindance mark" width="96" height="96">
+  <h1>Page not found</h1>
+  <p><a class="btn-primary" href="/">Back to Braindance</a></p>
+</body></html>

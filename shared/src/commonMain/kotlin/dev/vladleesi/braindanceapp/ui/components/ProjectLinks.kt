@@ -26,6 +26,7 @@ private const val BLUESKY_URL = "https://bsky.app/profile/braindancegg.com"
 private const val REDDIT_URL = "https://www.reddit.com/r/BraindanceGG/"
 private const val DISCORD_URL = "https://discord.gg/XawnYAVdzj"
 private const val PRIVACY_POLICY_URL = "https://braindancegg.com/privacy/"
+private const val TERMS_URL = "https://braindancegg.com/terms/"
 
 // The README's License section explains the app's license and links the third-party notices, as the site's footer does.
 private const val LICENSES_URL = "$REPOSITORY_URL#-license"
@@ -43,8 +44,8 @@ internal const val GAMERPOWER_NAME = "GamerPower"
  * Web app with a short message and its link, through the system share sheet where the platform supports it, otherwise
  * by copying the same message. [shareLabel] names whichever of the two [share] does. [openIgdb] and [openGamerPower]
  * open the providers of the game data and the giveaways for the data attributions. [emailSupport] starts an email to
- * [SUPPORT_EMAIL] in the system's mail app. [openPrivacyPolicy] and [openLicenses] open the privacy policy and the
- * licenses, which app stores and the open-source license ask to be reachable from inside the app.
+ * [SUPPORT_EMAIL] in the system's mail app. Profile and the sidebar also link to the privacy policy, terms
+ * and licenses.
  */
 @Immutable
 @Suppress("LongParameterList")
@@ -56,6 +57,7 @@ class ProjectLinks(
     val openGamerPower: () -> Unit,
     val emailSupport: () -> Unit,
     val openPrivacyPolicy: () -> Unit,
+    val openTerms: () -> Unit,
     val openLicenses: () -> Unit,
 )
 
@@ -83,6 +85,7 @@ internal val PreviewProjectLinks =
         openGamerPower = {},
         emailSupport = {},
         openPrivacyPolicy = {},
+        openTerms = {},
         openLicenses = {},
     )
 
@@ -104,6 +107,7 @@ fun rememberProjectLinks(): ProjectLinks {
             openGamerPower = { uriHandler.openExternalUrl(GAMERPOWER_URL) },
             emailSupport = { uriHandler.openExternalUrl(SUPPORT_MAIL_URL) },
             openPrivacyPolicy = { uriHandler.openExternalUrl(PRIVACY_POLICY_URL) },
+            openTerms = { uriHandler.openExternalUrl(TERMS_URL) },
             openLicenses = { uriHandler.openExternalUrl(LICENSES_URL) },
         )
     }

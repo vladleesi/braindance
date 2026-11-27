@@ -34,6 +34,7 @@ class ProfileContentTest {
                                 openGamerPower = { opened += "gamerpower" },
                                 emailSupport = { opened += "support" },
                                 openPrivacyPolicy = { opened += "privacy" },
+                                openTerms = { opened += "terms" },
                                 openLicenses = { opened += "licenses" },
                             ),
                         community =
@@ -61,6 +62,7 @@ class ProfileContentTest {
                 "Share",
                 "Contact support",
                 "Privacy policy",
+                "Terms of use",
                 "Open-source licenses",
                 "Release notes",
                 "Game data by IGDB",
@@ -78,6 +80,7 @@ class ProfileContentTest {
                     "share",
                     "support",
                     "privacy",
+                    "terms",
                     "licenses",
                     "releases",
                     "igdb",
@@ -102,6 +105,7 @@ class ProfileContentTest {
                                 openGamerPower = {},
                                 emailSupport = {},
                                 openPrivacyPolicy = {},
+                                openTerms = {},
                                 openLicenses = {},
                             ),
                         community =

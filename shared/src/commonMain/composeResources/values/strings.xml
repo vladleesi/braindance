@@ -34,6 +34,7 @@
     <string name="profile_release_notes">Release notes</string>
     <string name="profile_contact_support">Contact support</string>
     <string name="profile_privacy_policy">Privacy policy</string>
+    <string name="terms_of_use">Terms of use</string>
     <string name="profile_licenses">Open-source licenses</string>
     <string name="footer_privacy">Privacy</string>
     <string name="footer_licenses">Licenses</string>
