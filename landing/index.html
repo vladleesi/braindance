@@ -35,21 +35,46 @@
   <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+  <!-- All four weights are used in the first view. Fetch them alongside the hero covers. -->
+  <link rel="preload" href="/fonts/poppins-v24-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/poppins-v24-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/poppins-v24-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/poppins-v24-700.woff2" as="font" type="font/woff2" crossorigin>
+
   <!-- The first reel strip is the largest paint of the first view. Its CSS background is found only after styles
        apply, so it is requested here at high priority; each media query matches the reel's rules exactly. -->
   <link rel="preload" as="image" href="/img/covers-1.webp" media="not all and (min-resolution: 1.5dppx)" fetchpriority="high">
   <link rel="preload" as="image" href="/img/covers-1@2x.webp" media="(min-resolution: 1.5dppx) and (width > 900px)" fetchpriority="high">
   <link rel="preload" as="image" href="/img/covers-1@1.5x.webp" media="(min-resolution: 1.5dppx) and (width <= 900px)" fetchpriority="high">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"></noscript>
-
   <style>
+    @font-face {
+      font-family: "Poppins";
+      font-weight: 400;
+      font-display: block;
+      src: url(/fonts/poppins-v24-400.woff2) format("woff2");
+    }
+    @font-face {
+      font-family: "Poppins";
+      font-weight: 500;
+      font-display: block;
+      src: url(/fonts/poppins-v24-500.woff2) format("woff2");
+    }
+    @font-face {
+      font-family: "Poppins";
+      font-weight: 600;
+      font-display: block;
+      src: url(/fonts/poppins-v24-600.woff2) format("woff2");
+    }
+    @font-face {
+      font-family: "Poppins";
+      font-weight: 700;
+      font-display: block;
+      src: url(/fonts/poppins-v24-700.woff2) format("woff2");
+    }
     :root {
       color-scheme: dark;
+      --page-font: "Poppins", "Poppins Fallback";
       /* Brand palette (docs/branding/README.md); the app uses the same values in Colors.kt */
       --bg: #0a0d14;        /* Ink */
       --deep: #070a10;
@@ -70,16 +95,17 @@
       --echo: .0417em .0417em 0 var(--cyan), .0834em .0834em 0 var(--magenta), .125em .125em 0 var(--yellow);
       --gutter: 24px;
     }
-    /* Stand-ins for Poppins while it loads: Arial scaled to Poppins' measured width (13% wider at regular weights,
-       7% at bold), so text wraps the same before and after the web font arrives and nothing below it moves. */
+    /* Scale Arial to approximate Poppins' widths if the web fonts are unavailable. */
     @font-face { font-family: "Poppins Fallback"; src: local("Arial"); font-weight: 400 500; size-adjust: 113%; ascent-override: 93%; descent-override: 31%; line-gap-override: 9%; }
     @font-face { font-family: "Poppins Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Arial"); font-weight: 600 700; size-adjust: 106.8%; ascent-override: 98%; descent-override: 33%; line-gap-override: 9%; }
     *, *::before, *::after { box-sizing: border-box; }
     [hidden] { display: none !important; }
     html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; background: var(--bg); }
+    html.fonts-loading body { visibility: hidden; }
+    html.fonts-unavailable { --page-font: "Poppins Fallback"; }
     body {
       margin: 0; background: var(--bg); color: var(--ink);
-      font-family: "Poppins", "Poppins Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--page-font), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       line-height: 1.6; -webkit-font-smoothing: antialiased;
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -355,6 +381,25 @@
       .btn-primary:hover, .btn-primary:focus-visible { transform: none; }
     }
   </style>
+
+  <script>
+    /* Reveal the layout once all four weights are ready. Keep the fallback if loading fails or takes too long. */
+    (function () {
+      if (!document.fonts) return;
+      var root = document.documentElement;
+      root.classList.add("fonts-loading");
+      var fontsReady = Promise.all([400, 500, 600, 700].map(function (weight) {
+        return document.fonts.load(weight + " 1em Poppins");
+      })).then(function () { return true; }, function () { return false; });
+      var timer;
+      var deadline = new Promise(function (resolve) { timer = setTimeout(function () { resolve(false); }, 1000); });
+      Promise.race([fontsReady, deadline]).then(function (ready) {
+        clearTimeout(timer);
+        root.classList.toggle("fonts-unavailable", !ready);
+        root.classList.remove("fonts-loading");
+      });
+    })();
+  </script>
 
   <noscript><style>.menu-btn{display:none!important}.mobile-menu[hidden]{display:block!important;position:static}</style></noscript>
 
