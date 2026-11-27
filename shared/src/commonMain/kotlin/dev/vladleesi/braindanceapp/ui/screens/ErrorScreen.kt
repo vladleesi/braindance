@@ -14,11 +14,13 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.error_screen_error_message
 import dev.vladleesi.braindanceapp.resources.error_screen_retry_button_text
 import dev.vladleesi.braindanceapp.resources.error_screen_title
 import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
+import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import org.jetbrains.compose.resources.stringResource
 
@@ -60,5 +62,13 @@ fun ErrorScreen(
 
             PrimaryButton(text = retryButtonText, onClick = onRetry)
         }
+    }
+}
+
+@Preview
+@Composable
+internal fun ErrorScreenPreview() {
+    BraindanceTheme {
+        ErrorScreen(onRetry = {})
     }
 }

@@ -5,6 +5,12 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.34.3 — 2026-11-27
+
+### Web
+
+- Show a dedicated page for broken links and missing games or giveaways, with shortcuts to Home and game search.
+
 ## 0.34.2 — 2026-11-27
 
 ### Android, iOS, and Web

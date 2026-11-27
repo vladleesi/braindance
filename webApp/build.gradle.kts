@@ -196,16 +196,6 @@ val webPages =
         ),
     )
 
-// The 404 page is the app's own page, so a mistyped address still opens the app, but it is never indexed.
-val notFoundPage =
-    WebPage(
-        path = "",
-        file = "404.html",
-        title = "Page not found | Braindance",
-        description = webPages.first().description,
-        indexed = false,
-    )
-
 fun canonicalUrl(
     page: WebPage,
     siteUrl: String,
@@ -249,8 +239,7 @@ fun escapeHtml(value: String): String =
         .replace("'", "&#39;")
 
 // Rendered while configuring, so the distribution task only splices strings into the page.
-val webPageMetaBlocks: Map<String, String> =
-    (webPages + notFoundPage).associate { page -> page.file to pageMeta(page, webSiteUrl) }
+val webPageMetaBlocks: Map<String, String> = webPages.associate { page -> page.file to pageMeta(page, webSiteUrl) }
 val webSitemap: String =
     webPages
         .filter(WebPage::indexed)
@@ -313,7 +302,7 @@ tasks.named<ProcessResources>("wasmJsProcessResources") {
             "resourcePreloads" to preloads,
             "bootIconDataUri" to bootIcon,
         )
-    filesMatching(webPageFile) {
+    filesMatching(listOf(webPageFile, "404.html")) {
         expand(placeholders)
     }
     filesMatching("robots.txt") {
@@ -350,9 +339,8 @@ tasks.named<Sync>("wasmJsBrowserDistribution") {
         check(html.contains(reference)) { "index.html does not load $bundleName" }
         val shell = html.replace(reference, """src="${bundle.name}"""")
 
-        // A copy of the page for every fixed address and for 404, each with its own head tags between the page-meta
-        // markers. Cloudflare Pages serves `popular.html` at `/popular`; with a top-level 404.html, any address
-        // without a file gets that page with status 404 instead of the app's start page.
+        // A copy of the app shell for every fixed address, each with its own head tags. Cloudflare Pages serves
+        // `popular.html` at `/popular`, and uses the standalone 404.html from resources for unmatched addresses.
         val start = "<!-- page-meta:start -->"
         val end = "<!-- page-meta:end -->"
         val startIndex = shell.indexOf(start)

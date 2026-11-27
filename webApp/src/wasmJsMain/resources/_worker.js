@@ -12,7 +12,7 @@
  *   (games) or an hour (giveaways and unknown IDs), so repeated previews rarely leave the edge.
  * - The page itself is never cached here: it names the current deployment's bundle, which a later deployment replaces.
  * - Any API failure serves the app's page with a generic preview. An address the app cannot open, or an unknown ID,
- *   gets the same page with status 404, so it never counts as a page of its own.
+ *   gets the standalone error page with status 404.
  * - Game and giveaway pages ask not to be indexed: they are for previews, while the fixed pages carry search traffic.
  *
  * The build replaces the two placeholders below. Without a backend URL, as in builds with sample data, every page gets
@@ -67,31 +67,37 @@ export default {
 };
 
 async function previewPage(request, url, env, context) {
-    const shell = await env.ASSETS.fetch(new URL("/", url));
-    if (!shell.ok) return shell;
-    const page = await shell.text();
-
     const target = matchRoute(url.pathname);
-    let status = 200;
-    let meta;
-    if (target === null) {
-        status = 404;
-        meta = notFoundMeta();
-    } else {
-        const preview = await loadPreview(target, url, context);
-        if (preview.status === "missing") {
-            status = 404;
-            meta = notFoundMeta();
-        } else {
-            meta = preview.status === "found" ? preview.meta : genericMeta();
-            // An edition's or update's page shows its game, so search engines index the game's address instead.
-            const canonicalId = target.kind === "game" ? (meta.canonicalId ?? target.id) : target.id;
-            meta.canonical = `${PUBLIC_ORIGIN}/${target.prefix}/${canonicalId}`;
-        }
+    if (target === null) return missingPage(request, url, env, "Page not found");
+
+    const preview = await loadPreview(target, url, context);
+    if (preview.status === "missing") {
+        const heading = target.kind === "game" ? "Game not found" : "Giveaway not found";
+        return missingPage(request, url, env, heading);
     }
 
-    const headers = new Headers(shell.headers);
-    // The body differs from the static page, so its validators and length no longer apply.
+    const meta = preview.status === "found" ? preview.meta : genericMeta();
+    // An edition's or update's page shows its game, so search engines index the game's address instead.
+    const canonicalId = target.kind === "game" ? (meta.canonicalId ?? target.id) : target.id;
+    meta.canonical = `${PUBLIC_ORIGIN}/${target.prefix}/${canonicalId}`;
+
+    const shell = await env.ASSETS.fetch(new URL("/", url));
+    if (!shell.ok) return shell;
+    const body = request.method === "HEAD" ? null : withMeta(await shell.text(), renderMeta(meta));
+    return htmlResponse(body, 200, shell.headers, url);
+}
+
+async function missingPage(request, url, env, heading) {
+    // Pages gives HTML assets extensionless URLs. Fetch the template without redirecting the visitor.
+    const asset = await env.ASSETS.fetch(new URL("/404", url));
+    const template = request.method === "HEAD" ? null : await asset.text();
+    const body = template?.replaceAll("Page not found", heading) ?? null;
+    return htmlResponse(body, 404, asset.headers, url);
+}
+
+function htmlResponse(body, status, assetHeaders, url) {
+    const headers = new Headers(assetHeaders);
+    // Editing the HTML invalidates the original body's validators and length.
     headers.delete("content-length");
     headers.delete("etag");
     headers.delete("last-modified");
@@ -99,7 +105,6 @@ async function previewPage(request, url, env, context) {
     headers.set("cache-control", "public, max-age=0, must-revalidate");
     if (url.hostname.endsWith(".pages.dev")) headers.set("x-robots-tag", "noindex");
 
-    const body = request.method === "HEAD" ? null : withMeta(page, renderMeta(meta));
     return new Response(body, { status, headers });
 }
 
@@ -269,10 +274,6 @@ function genericMeta() {
         largeImage: true,
         index: false,
     };
-}
-
-function notFoundMeta() {
-    return { ...genericMeta(), title: `Page not found | ${SITE_NAME}` };
 }
 
 /** The head tags for [meta]; every value is escaped, since it comes from the API. */

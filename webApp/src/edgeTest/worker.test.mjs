@@ -24,6 +24,8 @@ const SHELL = `<!DOCTYPE html>
 </html>`;
 
 const source = await readFile(new URL("../wasmJsMain/resources/_worker.js", import.meta.url), "utf8");
+const notFound = (await readFile(new URL("../wasmJsMain/resources/404.html", import.meta.url), "utf8"))
+    .replace("${webBasePath}", "/");
 
 async function loadWorker(backend = API) {
     const code = source.replaceAll("__BACKEND_BASE_URL__", backend).replaceAll("__PUBLIC_ORIGIN__", PUBLIC_ORIGIN);
@@ -65,11 +67,12 @@ function env(shell = SHELL) {
             fetch: async (input) => {
                 const url = new URL(input instanceof Request ? input.url : input);
                 if (input instanceof Request && input.method === "POST") return new Response(null, { status: 405 });
-                assert.equal(url.pathname, "/", "the worker serves the app's start page");
-                return new Response(shell, {
+                assert.ok(url.pathname === "/" || url.pathname === "/404", "the worker serves a bundled HTML asset");
+                const html = url.pathname === "/404" ? notFound : shell;
+                return new Response(html, {
                     headers: {
                         "content-type": "text/html; charset=utf-8",
-                        "content-length": String(shell.length),
+                        "content-length": String(html.length),
                         etag: '"static"',
                         "x-frame-options": "DENY",
                     },
@@ -238,7 +241,10 @@ describe("missing and invalid pages", () => {
         const second = await open("/games/5");
 
         assert.equal(first.response.status, 404);
-        assert.equal(title(first.html), "Page not found | Braindance");
+        assert.equal(title(first.html), "Game not found | Braindance");
+        assert.match(first.html, /<h1>Game not found<\/h1>/);
+        assert.match(first.html, /href="discover">Search games/);
+        assert.doesNotMatch(first.html, /<script|<canvas/);
         assert.equal(meta(first.html, "robots"), "noindex");
         assert.equal(canonical(first.html), null);
         assert.equal(second.response.status, 404);
@@ -250,6 +256,7 @@ describe("missing and invalid pages", () => {
             const { response, html } = await open(path);
 
             assert.equal(response.status, 404);
+            assert.match(html, /<h1>Page not found<\/h1>/);
             assert.equal(meta(html, "robots"), "noindex");
             assert.equal(apiRequests.length, 0);
         });
@@ -333,9 +340,10 @@ describe("giveaway pages", () => {
 
     it("answer an unknown giveaway with 404", async () => {
         apiResponses.set(`${API}/v1/giveaways/404`, json({ error: "not found" }, 404));
-        const { response } = await open("/giveaway/404");
+        const { response, html } = await open("/giveaway/404");
 
         assert.equal(response.status, 404);
+        assert.match(html, /<h1>Giveaway not found<\/h1>/);
     });
 });
 
@@ -353,6 +361,14 @@ describe("requests", () => {
 
         assert.equal(response.status, 405);
         assert.equal(apiRequests.length, 0);
+    });
+
+    it("answer HEAD for a missing game with 404 and no body", async () => {
+        apiResponses.set(`${API}/v1/games/details?id=5`, json([]));
+        const { response } = await open("/games/5", { method: "HEAD" });
+
+        assert.equal(response.status, 404);
+        assert.equal(response.body, null);
     });
 
     it("keep the pages.dev address out of search results", async () => {

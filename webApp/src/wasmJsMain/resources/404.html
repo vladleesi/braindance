@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'self'; form-action 'none'">
+    <base href="${webBasePath}">
+    <meta name="robots" content="noindex">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0A0D14">
+    <title>Page not found | Braindance</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <style>
+        :root {
+            color-scheme: dark;
+            --void: #0a0d14;
+            --ink: #f4f6fa;
+            --muted: #a9b1c2;
+            --line-2: #313848;
+            --cyan: #22e4ff;
+            --magenta: #ff2e88;
+            --yellow: #ffee0a;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100svh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: var(--void);
+            color: var(--ink);
+            font: 1rem/1.5 system-ui, sans-serif;
+            text-align: center;
+        }
+        main { max-width: 32rem; }
+        img { display: block; margin: 0 auto 24px; }
+        h1 { margin: 0; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.15; }
+        p { margin: 12px 0 24px; color: var(--muted); }
+        .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+        .actions a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 52px;
+            padding: 0 26px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            font-size: .95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+        }
+        .actions a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+        .actions .primary {
+            background: var(--ink);
+            color: var(--void);
+        }
+        .primary:hover, .primary:focus-visible {
+            transform: translate(-3px, -3px);
+            box-shadow: 3px 3px 0 var(--cyan), 6px 6px 0 var(--magenta), 9px 9px 0 var(--yellow);
+        }
+        .primary:active { transform: none; box-shadow: none; }
+        .actions .secondary {
+            border-color: var(--line-2);
+            color: var(--ink);
+        }
+        .actions .secondary:hover { border-color: var(--ink); }
+        @media (prefers-reduced-motion: reduce) {
+            .actions a { transition: none; }
+            .primary:hover, .primary:focus-visible { transform: none; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <img src="favicon.svg" alt="Braindance" width="72" height="72">
+        <h1>Page not found</h1>
+        <p>The link may be outdated or the address may have changed.</p>
+        <nav class="actions" aria-label="Find a page">
+            <a class="primary" href="./">Go to Home</a>
+            <a class="secondary" href="discover">Search games</a>
+        </nav>
+    </main>
+</body>
+</html>

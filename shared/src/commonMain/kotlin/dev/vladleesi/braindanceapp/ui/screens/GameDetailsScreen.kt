@@ -6,6 +6,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -43,15 +45,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
+import dev.vladleesi.braindanceapp.data.DataError
+import dev.vladleesi.braindanceapp.data.models.games.GameKind
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
 import dev.vladleesi.braindanceapp.navigation.PageTitle
 import dev.vladleesi.braindanceapp.navigation.ShareTarget
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
+import dev.vladleesi.braindanceapp.resources.about_complete
+import dev.vladleesi.braindanceapp.resources.about_critic
+import dev.vladleesi.braindanceapp.resources.about_developer
+import dev.vladleesi.braindanceapp.resources.about_main
 import dev.vladleesi.braindanceapp.resources.game_details_not_found
 import dev.vladleesi.braindanceapp.resources.game_details_screen_similar_games
 import dev.vladleesi.braindanceapp.resources.game_details_show_all
 import dev.vladleesi.braindanceapp.resources.game_details_show_fewer
+import dev.vladleesi.braindanceapp.system.LocalDesktopLayoutEnabled
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.ui.components.BackOnlyFrame
@@ -77,6 +86,7 @@ import dev.vladleesi.braindanceapp.ui.components.details.RelatedHeader
 import dev.vladleesi.braindanceapp.ui.components.details.StoresBlock
 import dev.vladleesi.braindanceapp.ui.components.details.TimeToBeatCard
 import dev.vladleesi.braindanceapp.ui.components.home.GameCard
+import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.media.GameMedia
 import dev.vladleesi.braindanceapp.ui.components.media.MediaGallery
@@ -91,17 +101,27 @@ import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.navBar
+import dev.vladleesi.braindanceapp.ui.viewmodels.GameBadge
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
+import dev.vladleesi.braindanceapp.ui.viewmodels.GameFact
+import dev.vladleesi.braindanceapp.ui.viewmodels.GameFactsModel
+import dev.vladleesi.braindanceapp.ui.viewmodels.GamePlayTimes
+import dev.vladleesi.braindanceapp.ui.viewmodels.GameRelations
+import dev.vladleesi.braindanceapp.ui.viewmodels.GenreTag
+import dev.vladleesi.braindanceapp.ui.viewmodels.PlayTime
 import dev.vladleesi.braindanceapp.ui.viewmodels.RecommendationsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedCategory
 import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedGame
 import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedGroup
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
+import dev.vladleesi.braindanceapp.ui.viewmodels.VersionOption
 import dev.vladleesi.braindanceapp.ui.viewmodels.VersionSelector
+import dev.vladleesi.braindanceapp.utils.ParentPlatformType
 import dev.vladleesi.braindanceapp.utils.openExternalUrl
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -144,61 +164,85 @@ fun GameDetailsScreen(
         viewModel.showVersion(route.id)
     }
 
-    when (val currentState = state) {
+    GameDetailsContent(
+        route = route,
+        state = state,
+        recommendations = recommendations,
+        modifier = modifier,
+        onBack = { navigator.goBack() },
+        onRetry = { viewModel.refresh() },
+        onOpenGame = { id -> navigator.open(GameDetailsRoute(id)) },
+        // Versions share one page and change its address in place without adding a Back step.
+        onSelectVersion = { id -> navigator.replace(route.withVersion(id)) },
+    )
+}
+
+@Suppress("LongParameterList")
+@Composable
+private fun GameDetailsContent(
+    route: GameDetailsRoute,
+    state: GameDetailsState,
+    recommendations: RecommendationsState,
+    modifier: Modifier,
+    onBack: () -> Unit,
+    onRetry: () -> Unit,
+    onOpenGame: (Int) -> Unit,
+    onSelectVersion: (Int) -> Unit,
+) {
+    when (state) {
         is GameDetailsState.Error ->
-            BackOnlyFrame(onBack = { navigator.goBack() }, modifier = modifier) { content ->
-                ErrorScreen(errorMessage = currentState.error.userMessage(), modifier = content) {
-                    viewModel.refresh()
-                }
+            BackOnlyFrame(onBack = onBack, modifier = modifier) { content ->
+                ErrorScreen(errorMessage = state.error.userMessage(), modifier = content, onRetry = onRetry)
             }
 
         GameDetailsState.NotFound ->
-            BackOnlyFrame(onBack = { navigator.goBack() }, modifier = modifier) { content ->
-                ErrorScreen(errorMessage = stringResource(Res.string.game_details_not_found), modifier = content) {
-                    viewModel.refresh()
-                }
+            BackOnlyFrame(onBack = onBack, modifier = modifier) { content ->
+                ErrorScreen(
+                    errorMessage = stringResource(Res.string.game_details_not_found),
+                    modifier = content,
+                    onRetry = onRetry,
+                )
             }
 
         GameDetailsState.Loading ->
-            BackOnlyFrame(onBack = { navigator.goBack() }, modifier = modifier) { content ->
+            BackOnlyFrame(onBack = onBack, modifier = modifier) { content ->
                 GlobalLoading(modifier = content)
             }
 
         is GameDetailsState.Success -> {
-            PageTitle(route, currentState.gameDetails.name)
-            key(currentState.gameDetails.id) {
-                GameDetailsScreen(
+            PageTitle(route, state.gameDetails.name)
+            key(state.gameDetails.id) {
+                GameDetailsPage(
                     route = route,
-                    state = currentState,
+                    state = state,
                     recommendations = recommendations,
                     modifier = modifier,
-                    onBackButtonPressed = { navigator.goBack() },
+                    onBackButtonPressed = onBack,
+                    onOpenGame = onOpenGame,
+                    onSelectVersion = onSelectVersion,
                 )
             }
         }
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
-private fun GameDetailsScreen(
+private fun GameDetailsPage(
     route: GameDetailsRoute,
     state: GameDetailsState.Success,
     recommendations: RecommendationsState,
     modifier: Modifier,
-    onBackButtonPressed: (() -> Unit),
+    onBackButtonPressed: () -> Unit,
+    onOpenGame: (Int) -> Unit,
+    onSelectVersion: (Int) -> Unit,
 ) {
-    val navigator = LocalNavigator.current
     val uriHandler = LocalUriHandler.current
 
     val scrollState = rememberScrollState()
     val isLargeWindow = isLargeWindow()
     val desktop = desktopLayout() != null
     val gutter = pageGutter()
-    // Another game opens on top; returning to the game under this one goes back to it rather than stacking a copy.
-    val openGame: (Int) -> Unit = { id -> navigator.open(GameDetailsRoute(id)) }
-    // Versions of one game are views of one page: switching updates this screen in place, with no transition and no
-    // Back step, while the address follows the version.
-    val selectVersion: (Int) -> Unit = { id -> navigator.replace(route.withVersion(id)) }
     // Placeholders stand in for the release's own details only when a version takes a moment to load, so a fast
     // switch does not flash them; the selected chip already responds at once.
     val loadingRelease = rememberDelayedLoading(state.isSwitchingVersion)
@@ -234,7 +278,7 @@ private fun GameDetailsScreen(
                     onGenreClick = null,
                     relation =
                         state.gameDetails.relations.origin?.let { origin ->
-                            { OriginLine(origin = origin, onOpenGame = openGame) }
+                            { OriginLine(origin = origin, onOpenGame = onOpenGame) }
                         },
                     loadingRelease = loadingRelease,
                 )
@@ -242,7 +286,7 @@ private fun GameDetailsScreen(
                     selector = state.gameDetails.relations.versions,
                     compact = !isLargeWindow,
                     gutter = gutter,
-                    onSelect = selectVersion,
+                    onSelect = onSelectVersion,
                     versionRoute = route::withVersion,
                 )
             }
@@ -268,9 +312,9 @@ private fun GameDetailsScreen(
                     relatedExpanded = false
                 },
                 onToggleExpanded = { relatedExpanded = !relatedExpanded },
-                onGameClick = openGame,
+                onGameClick = onOpenGame,
             )
-            SimilarGames(recommendations, gutter, onGameClick = openGame)
+            SimilarGames(recommendations, gutter, onGameClick = onOpenGame)
             Spacer(modifier = Modifier.size(Dimens.large))
         }
         PageScrollbar(scrollState, topInset = Dimens.heroTopBarHeightWithInsets)
@@ -630,27 +674,149 @@ private fun ReadableWidth(content: @Composable () -> Unit) {
     Column(modifier = Modifier.widthIn(max = Dimens.readableTextWidth)) { content() }
 }
 
-@Preview(widthDp = 1000)
+private const val PREVIEW_CRITIC_SCORE = 86
+private const val PREVIEW_EXPANSION_ID = 3
+private const val PREVIEW_RELEASE_YEAR = 2026
+private const val PREVIEW_NORTHBOUND_ID = 4
+private const val PREVIEW_LAST_BEACON_ID = 5
+
+private val PreviewDetails =
+    GameDetails(
+        id = 1,
+        name = "Signal Valley",
+        summary = "Explore a remote valley where ruins hold clues to the people who lived there.",
+        storyline = "A radio signal leads a surveyor to a mountain town abandoned decades ago.",
+        coverImageUrl = "",
+        backdrop = null,
+        releaseDate = "October 8, 2026",
+        platforms = listOf(ParentPlatformType.PC, ParentPlatformType.PlayStation, ParentPlatformType.Xbox),
+        stores = emptyList(),
+        genres = listOf(GenreTag(1, "Adventure"), GenreTag(2, "Puzzle")),
+        badges = listOf(GameBadge.Score(Res.string.about_critic, PREVIEW_CRITIC_SCORE)),
+        facts = GameFactsModel(rows = listOf(GameFact(Res.string.about_developer, "Sample Studio"))),
+        playTimes =
+            GamePlayTimes(
+                estimates =
+                    listOf(
+                        PlayTime(Res.string.about_main, hours = 12, relativeLength = 0.5f),
+                        PlayTime(Res.string.about_complete, hours = 24, relativeLength = 1f),
+                    ),
+                sampleCount = 42,
+            ),
+        relations =
+            GameRelations(
+                versions =
+                    VersionSelector(
+                        options =
+                            listOf(
+                                VersionOption(id = 1, label = null, kind = GameKind.GAME),
+                                VersionOption(id = 2, label = "Deluxe Edition", kind = GameKind.EDITION),
+                            ),
+                        selectedId = 1,
+                    ),
+                related =
+                    listOf(
+                        RelatedGroup(
+                            category = RelatedCategory.EXTRAS,
+                            games =
+                                listOf(
+                                    RelatedGame(
+                                        id = PREVIEW_EXPANSION_ID,
+                                        title = "Signal Valley: High Pass",
+                                        kind = GameKind.EXPANSION,
+                                        year = PREVIEW_RELEASE_YEAR,
+                                        coverUrl = "",
+                                    ),
+                                ),
+                        ),
+                    ),
+            ),
+    )
+
+private val PreviewRecommendations =
+    RecommendationsState.Success(
+        listOf(
+            GameCardModel(PREVIEW_NORTHBOUND_ID, "Northbound", ""),
+            GameCardModel(PREVIEW_LAST_BEACON_ID, "Last Beacon", ""),
+        ),
+    )
+
+@Preview(name = "Phone", group = "Game details", widthDp = 390, heightDp = 844)
+@Preview(name = "Tablet", group = "Game details", widthDp = 768, heightDp = 1024)
+@Composable
+internal fun GameDetailsScreenPreview() {
+    PreviewGameDetailsContent(GameDetailsState.Success(PreviewDetails), PreviewRecommendations)
+}
+
+@Preview(name = "Desktop", group = "Game details", widthDp = 1280, heightDp = 960)
+@Composable
+internal fun GameDetailsDesktopPreview() {
+    PreviewGameDetailsContent(GameDetailsState.Success(PreviewDetails), PreviewRecommendations, desktop = true)
+}
+
+@Preview(name = "Adult game", group = "Game details", widthDp = 390, heightDp = 844)
+@Composable
+internal fun GameDetailsAdultPreview() {
+    val details =
+        PreviewDetails.copy(
+            name = "Sample adult game",
+            summary = "",
+            storyline = "",
+            badges = listOf(GameBadge.Adult),
+            relations = GameRelations(),
+            isAdult = true,
+        )
+    PreviewGameDetailsContent(GameDetailsState.Success(details))
+}
+
+@Preview(name = "Loading", group = "Game details", widthDp = 390, heightDp = 844)
+@Composable
+internal fun GameDetailsLoadingPreview() {
+    PreviewGameDetailsContent(GameDetailsState.Loading)
+}
+
+@Preview(name = "Not found", group = "Game details", widthDp = 390, heightDp = 844)
+@Composable
+internal fun GameDetailsNotFoundPreview() {
+    PreviewGameDetailsContent(GameDetailsState.NotFound)
+}
+
+@Preview(name = "Network error", group = "Game details", widthDp = 390, heightDp = 844)
+@Composable
+internal fun GameDetailsErrorPreview() {
+    PreviewGameDetailsContent(GameDetailsState.Error(DataError.Network))
+}
+
+@Composable
+private fun PreviewGameDetailsContent(
+    state: GameDetailsState,
+    recommendations: RecommendationsState = RecommendationsState.Unavailable,
+    desktop: Boolean = false,
+) {
+    BraindanceTheme {
+        CompositionLocalProvider(LocalDesktopLayoutEnabled provides desktop) {
+            GameDetailsContent(
+                route = GameDetailsRoute(PreviewDetails.id),
+                state = state,
+                recommendations = recommendations,
+                modifier = Modifier.background(background),
+                onBack = {},
+                onRetry = {},
+                onOpenGame = {},
+                onSelectVersion = {},
+            )
+        }
+    }
+}
+
+@Preview(name = "Details body", group = "Game details", widthDp = 1000)
 @Composable
 internal fun DetailsBodyPreview() {
     BraindanceTheme {
-        val details =
-            GameDetails(
-                id = 1,
-                name = "Sample edition",
-                summary = "Explore a remote valley where ruins hold clues to the people who lived there.",
-                storyline = "",
-                coverImageUrl = "",
-                backdrop = null,
-                releaseDate = null,
-                platforms = emptyList(),
-                stores = emptyList(),
-                genres = emptyList(),
-            )
         DetailsBody(
-            details,
-            rememberMediaGalleryState(details.media),
-            Dimens.medium,
+            details = PreviewDetails,
+            media = rememberMediaGalleryState(PreviewDetails.media),
+            gutter = Dimens.medium,
             desktop = true,
             placeholder = false,
         )

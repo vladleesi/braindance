@@ -33,8 +33,8 @@ API_FIXTURES=true
   Baseline Profile builds, iOS release frameworks, and the Web production bundle fail with it. To try the Web app
   against it, start the API on port 8081 with `CORS_ALLOWED_ORIGINS=http://localhost:8080`, then run
   `./gradlew -PAPI_FIXTURES=false -PBACKEND_BASE_URL=http://localhost:8081 :webApp:wasmJsBrowserDevelopmentRun` and
-  open `http://localhost:8080/`. The development server opens game addresses only from the start page; restart it
-  after a code change.
+  open `http://localhost:8080/`. The development server handles direct app links and serves the static 404 for
+  unmatched browser URLs. Restart it after a code change.
 
 Android Studio adds `sdk.dir` to this file itself; command-line builds without it need `ANDROID_HOME` or `sdk.dir`.
 Gradle properties (`-PAPI_FIXTURES=true`, or `ORG_GRADLE_PROJECT_*` variables) override `local.properties`.
@@ -321,8 +321,10 @@ therefore gets its own title, description, canonical link, and preview image:
 | Any other address, or an unknown game or giveaway ID | `404.html` or `_worker.js`, with status 404 | No |
 
 - **Fixed pages:** `webPages` in `webApp/build.gradle.kts` holds their titles and descriptions. The build copies the
-  final `index.html` for each, replacing the tags between its `page-meta` markers, and writes `sitemap.xml` and
-  `404.html`. `WEB_PUBLIC_URL` (default `https://app.braindancegg.com`) sets the canonical and image addresses.
+  final `index.html` for each, replacing the tags between its `page-meta` markers, and writes `sitemap.xml`.
+  `WEB_PUBLIC_URL` (default `https://app.braindancegg.com`) sets the canonical and image addresses.
+- **Missing pages:** The standalone `404.html` links to Home and Discover and loads no app bundle. Pages serves it
+  for unmatched addresses. The worker serves it with a specific heading for a confirmed missing game or giveaway.
 - **Game, giveaway, and event pages:** `_routes.json` runs `_worker.js` only on their paths; every other request stays a free
   static file. It serves the same app page with the item's title, description, and image, read from
   the API through its edge cache and kept per data center for a day (games) or an hour (events, giveaways, and unknown IDs).
