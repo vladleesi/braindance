@@ -103,7 +103,7 @@ jobs:
           echo "head=$head_sha" >> "$GITHUB_OUTPUT"
 
       - name: Review Dependency Changes
-        uses: actions/dependency-review-action@v5.0.0
+        uses: actions/dependency-review-action@v5.0.1
         with:
           fail-on-severity: high
           base-ref: ${{ steps.comparison.outputs.base }}
@@ -140,7 +140,7 @@ jobs:
           persist-credentials: false
 
       - name: Audit GitHub Actions
-        uses: zizmorcore/zizmor-action@v0.8.1
+        uses: zizmorcore/zizmor-action@v0.9.2
         with:
           advanced-security: false
           annotations: true

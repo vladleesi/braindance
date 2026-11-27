@@ -339,7 +339,7 @@ therefore gets its own title, description, canonical link, and preview image:
   "Braindance".
 - **Abuse:** the zone's per-IP rate limit covers game and giveaway preview paths with the API's per-game routes and search. Event previews use the shared events feed.
 - **Checks:** `node --test webApp/src/edgeTest/*.test.mjs` tests the worker. To try the whole site locally, serve
-  the production distribution with `npx wrangler@4.161.0 pages dev <dist>`; the app's own API requests then fail
+  the production distribution with `npx wrangler@4.168.0 pages dev <dist>`; the app's own API requests then fail
   CORS, but the HTML, statuses, and previews are the same as on Cloudflare.
 
 A new fixed path needs an entry in `webPages`; a new ID path needs the worker's routes, `_routes.json`, and

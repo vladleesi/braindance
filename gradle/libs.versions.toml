@@ -1,18 +1,18 @@
 [versions]
-gradle = "9.5.1"
+gradle = "9.5.3"
 kotlin = "2.4.21"
 coroutines = "1.11.0"
 compose-plugin = "1.12.2"
 ktlint = "14.2.0"
 detekt = "1.23.8"
-ktor = "3.6.1"
+ktor = "3.6.2"
 activity-compose = "1.13.0"
 compose = "1.12.2"
 compose-android = "1.12.1"
 material3 = "1.12.0-alpha03"
 lifecycle = "2.11.0"
 coil3 = "3.6.3"
-buildkonfig = "0.24.0"
+buildkonfig = "0.24.1"
 datetime = "0.8.0"
 koin = "4.2.2"
 nav3 = "1.2.0"
@@ -81,7 +81,7 @@ coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.re
 logging-napier = { module = "io.github.aakira:napier", version = "2.7.1" }
 
 # Sharing
-sharekit = { module = "dev.vladleesi:kmp-sharekit", version = "0.2.0" }
+sharekit = { module = "dev.vladleesi:kmp-sharekit", version = "0.9.0" }
 
 # koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }

@@ -7,11 +7,16 @@ The Braindance API is versioned and released separately.
 
 ## 0.34.1 — 2026-11-27
 
+### Android, iOS, and Web
+
+- Update the networking and sharing libraries, and build with the latest Gradle bug-fix release.
+
 ### Android
 
 - The in-app video player applies its security settings, which keep it away from your files and other apps' data,
   where automated security scans can confirm them.
 - Those scans now stop a release that would let the player, or any other web view, open other apps' data.
+- Build with the latest Android Gradle Plugin bug-fix release.
 
 ## 0.34.0 — 2026-11-27
 
