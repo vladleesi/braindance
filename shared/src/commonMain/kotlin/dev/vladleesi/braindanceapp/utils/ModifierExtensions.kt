@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.utils
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.WindowInsets
@@ -12,7 +11,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -24,17 +28,22 @@ import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
+import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.LayoutAwareModifierNode
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.currentValueOf
+import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.node.invalidateMeasurement
+import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.offset
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.neonCyan
+import dev.vladleesi.braindanceapp.ui.style.LocalAppColors
 import kotlin.math.roundToInt
 import androidx.compose.foundation.clickable as foundationClickable
 
@@ -137,9 +146,48 @@ private class CoveredBottomPaddingNode(
     }
 }
 
-/** The Braindance keyboard-focus outline, drawn only while [visible]; see [isFocusVisible]. */
+/**
+ * The Braindance keyboard-focus outline in the theme's accent, drawn only while [visible] (see [isFocusVisible]). Like
+ * a border, it stays inside the element's bounds.
+ */
 fun Modifier.focusRing(
     visible: Boolean,
     shape: Shape,
     width: Dp = Dimens.one,
-): Modifier = if (visible) border(width, neonCyan, shape) else this
+): Modifier = if (visible) this then FocusRingElement(shape, width) else this
+
+private data class FocusRingElement(
+    val shape: Shape,
+    val width: Dp,
+) : ModifierNodeElement<FocusRingNode>() {
+    override fun create() = FocusRingNode(shape, width)
+
+    override fun update(node: FocusRingNode) {
+        node.shape = shape
+        node.width = width
+        node.invalidateDraw()
+    }
+
+    override fun InspectorInfo.inspectableProperties() {
+        name = "focusRing"
+        properties["shape"] = shape
+        properties["width"] = width
+    }
+}
+
+/** Reads the accent while drawing, so the ring follows the theme without anything recomposing. */
+private class FocusRingNode(
+    var shape: Shape,
+    var width: Dp,
+) : Modifier.Node(),
+    DrawModifierNode,
+    CompositionLocalConsumerModifierNode {
+    override fun ContentDrawScope.draw() {
+        drawContent()
+        val stroke = width.toPx()
+        val outline = shape.createOutline(Size(size.width - stroke, size.height - stroke), layoutDirection, this)
+        translate(left = stroke / 2, top = stroke / 2) {
+            drawOutline(outline, currentValueOf(LocalAppColors).accent, style = Stroke(stroke))
+        }
+    }
+}

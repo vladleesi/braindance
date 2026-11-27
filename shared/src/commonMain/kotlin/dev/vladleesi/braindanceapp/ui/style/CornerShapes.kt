@@ -4,6 +4,8 @@ package dev.vladleesi.braindanceapp.ui.style
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 
 /**
  * The app's shape system (docs/branding/README.md#shape): soft geometry, in three steps.
@@ -21,4 +23,6 @@ object CornerShapes {
 }
 
 /** The outline of tags and outlined controls. Cards and panels are filled, not outlined. */
-val HairlineBorder = BorderStroke(Dimens.one, secondaryVariant)
+val HairlineBorder: BorderStroke
+    @Composable @ReadOnlyComposable
+    get() = BorderStroke(Dimens.one, secondaryVariant)

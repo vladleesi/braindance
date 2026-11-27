@@ -35,10 +35,10 @@ import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.navigation.externalLink
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.icons.OpenInNew
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.focusRing
 import dev.vladleesi.braindanceapp.utils.isFocusVisible
 
@@ -110,7 +110,7 @@ fun LinkRow(
             Spacer(modifier = Modifier.size(RowIconSize))
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.subtitle1, color = white)
+            Text(text = title, style = MaterialTheme.typography.subtitle1, color = foreground)
             if (supportingText != null) {
                 Text(text = supportingText, style = MaterialTheme.typography.caption, color = secondaryText)
             }

@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.utils.ParentPlatformType
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 import org.jetbrains.compose.resources.painterResource
@@ -38,7 +38,7 @@ fun PlatformLogoList(
                 modifier = Modifier.size(imageSize),
                 painter = painterResource(platform.iconRes),
                 contentDescription = platform.name.toContentDescription(),
-                colorFilter = ColorFilter.tint(white),
+                colorFilter = ColorFilter.tint(foreground),
             )
         }
     }

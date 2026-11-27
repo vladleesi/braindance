@@ -27,6 +27,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -47,9 +48,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.surface
-import dev.vladleesi.braindanceapp.ui.style.white
 import kotlinx.browser.window
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
@@ -298,6 +299,9 @@ private suspend fun awaitAnimationFrame(): Double =
 /** The anchor that autoscrolling measures from, like the browser's: a disc with arrows up and down. */
 @Composable
 private fun AutoscrollMarker(anchor: Offset) {
+    val fill = surface
+    val outline = secondaryText
+    val arrows = foreground
     Canvas(
         modifier =
             Modifier
@@ -307,15 +311,18 @@ private fun AutoscrollMarker(anchor: Offset) {
                     IntOffset((anchor.x - radius).roundToInt(), (anchor.y - radius).roundToInt())
                 }.size(Dimens.large),
     ) {
-        drawCircle(color = surface)
-        drawCircle(color = secondaryText, style = Stroke(width = Dimens.one.toPx()))
-        drawArrow(pointsUp = true)
-        drawArrow(pointsUp = false)
-        drawCircle(color = white, radius = Dimens.micro.toPx())
+        drawCircle(color = fill)
+        drawCircle(color = outline, style = Stroke(width = Dimens.one.toPx()))
+        drawArrow(pointsUp = true, color = arrows)
+        drawArrow(pointsUp = false, color = arrows)
+        drawCircle(color = arrows, radius = Dimens.micro.toPx())
     }
 }
 
-private fun DrawScope.drawArrow(pointsUp: Boolean) {
+private fun DrawScope.drawArrow(
+    pointsUp: Boolean,
+    color: Color,
+) {
     val halfWidth = Dimens.tiny.toPx()
     val height = Dimens.tiny.toPx()
     val gap = Dimens.tiny.toPx()
@@ -329,7 +336,7 @@ private fun DrawScope.drawArrow(pointsUp: Boolean) {
             lineTo(center.x, tipY)
             close()
         }
-    drawPath(arrow, color = white)
+    drawPath(arrow, color = color)
 }
 
 private fun isWindowsPlatform(): Boolean = js("/Win/.test(navigator.platform)")

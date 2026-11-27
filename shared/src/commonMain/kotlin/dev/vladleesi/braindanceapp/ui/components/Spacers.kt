@@ -16,7 +16,8 @@ fun SpacerStatusBarInsets() {
     Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
 }
 
+/** The space a hero leaves at its top for the bar over it ([Dimens.heroTopBarHeight]) and the status bar. */
 @Composable
 fun SpacerTopBarWithStatusBarInsets() {
-    Spacer(Modifier.height(Dimens.topBarHeightWithInsets))
+    Spacer(Modifier.height(Dimens.heroTopBarHeightWithInsets))
 }

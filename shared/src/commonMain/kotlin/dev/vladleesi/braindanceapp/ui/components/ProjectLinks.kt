@@ -73,6 +73,19 @@ data class CommunityLinks(
     val openReleases: () -> Unit,
 )
 
+/** Links that do nothing, for previews. */
+internal val PreviewProjectLinks =
+    ProjectLinks(
+        shareLabel = Res.string.profile_support_share,
+        openRepository = {},
+        share = {},
+        openIgdb = {},
+        openGamerPower = {},
+        emailSupport = {},
+        openPrivacyPolicy = {},
+        openLicenses = {},
+    )
+
 /** The project actions shared by Profile and the desktop sidebar. */
 @Composable
 fun rememberProjectLinks(): ProjectLinks {

@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.white
 
 private val IconSize = 14.dp
 
@@ -47,7 +47,7 @@ fun ReleaseDateLabel(
         Text(
             text = releaseDate,
             style = MaterialTheme.typography.subtitle2,
-            color = white,
+            color = foreground,
             maxLines = 1,
         )
     }

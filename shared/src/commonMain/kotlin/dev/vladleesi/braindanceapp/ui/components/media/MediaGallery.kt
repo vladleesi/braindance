@@ -105,6 +105,7 @@ import dev.vladleesi.braindanceapp.resources.game_media_video_unavailable
 import dev.vladleesi.braindanceapp.resources.game_media_watch_on_youtube
 import dev.vladleesi.braindanceapp.resources.game_media_youtube
 import dev.vladleesi.braindanceapp.system.hasTouchScreen
+import dev.vladleesi.braindanceapp.system.isExtraLargeWindow
 import dev.vladleesi.braindanceapp.system.windowHeight
 import dev.vladleesi.braindanceapp.ui.components.ListScrollbar
 import dev.vladleesi.braindanceapp.ui.components.TonalButton
@@ -118,10 +119,10 @@ import dev.vladleesi.braindanceapp.ui.style.black
 import dev.vladleesi.braindanceapp.ui.style.icons.Expand
 import dev.vladleesi.braindanceapp.ui.style.icons.OpenInNew
 import dev.vladleesi.braindanceapp.ui.style.icons.Play
+import dev.vladleesi.braindanceapp.ui.style.onMedia
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith70Alpha
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.focusRing
 import dev.vladleesi.braindanceapp.utils.isFocusVisible
 import dev.vladleesi.braindanceapp.utils.placeholder
@@ -136,18 +137,20 @@ import org.jetbrains.compose.resources.stringResource
 // The preview's frame. Screenshots of another shape are fitted into it, so selecting one never moves the layout.
 private const val MEDIA_ASPECT_RATIO = 16f / 9f
 
-// The preview takes at most this share of the window's height, so on a laptop or a landscape phone the whole gallery
-// fits on screen.
-private const val MAX_PREVIEW_HEIGHT_FRACTION = 0.6f
+// The preview takes at most this share of the window's height, so on a landscape phone the gallery still fits on
+// screen, while on a laptop it fills the page's main column instead of leaving a gap beside the cards next to it.
+private const val MAX_PREVIEW_HEIGHT_FRACTION = 0.75f
 private const val UNSELECTED_THUMBNAIL_ALPHA = 0.6f
 private const val NEXT_ICON_ROTATION_DEGREES = 180f
 private const val THUMBNAIL_CONTENT_TYPE = "media_thumbnail"
 
-// Large enough to see detail in a screenshot, small enough to leave room for the rail and the page around it.
-private val MaxPreviewWidth = 1024.dp
+// Wider than the game page's main column ever gets beside its rail and side column, so the preview fills that column.
+// The window's height can still limit it first.
+private val MaxPreviewWidth = 1440.dp
 
-// From this width the thumbnails move to a rail beside the preview, as tall as it, instead of a strip under it: the
-// rail fills width that would otherwise stay empty, and the gallery stays short enough to see whole.
+// In extra-large windows the thumbnails move to a rail beside the preview, as tall as it, instead of a strip under it:
+// the rail fills width that would otherwise stay empty, and the gallery stays short enough to see whole. The gallery
+// also needs this much width for it, wherever it is placed.
 private val SideRailMinWidth = 840.dp
 private val RailWidth = 208.dp
 private val StripThumbnailWidth = 112.dp
@@ -178,6 +181,9 @@ private val SwipeThreshold = 48.dp
  * gutter: the heading and preview line up with the page column, and the thumbnail strip scrolls through the padding,
  * so thumbnails slide out at the screen's edge. [coveredTop] is the height of a bar at the window's top that the page
  * scrolls under; a playing video is cut off below it (see [YouTubePlayer]).
+ *
+ * The thumbnails sit in a strip under the preview, or, with [thumbnailRail], in a rail beside it. The rail needs the
+ * width of Material's extra-large windows: in a narrower window it would leave the preview too small next to it.
  */
 @Composable
 fun MediaGallery(
@@ -189,6 +195,7 @@ fun MediaGallery(
     horizontalPadding: Dp = 0.dp,
     coveredTop: Dp = 0.dp,
     scrollState: ScrollState? = null,
+    thumbnailRail: Boolean = isExtraLargeWindow(),
 ) {
     if (state.gallery.isEmpty) return
     val viewerButtonFocus = remember { FocusRequester() }
@@ -204,7 +211,7 @@ fun MediaGallery(
     BoxWithConstraints(modifier = modifier) {
         val availableWidth = (maxWidth - horizontalPadding * 2).coerceAtLeast(0.dp)
         val hasThumbnails = state.gallery.items.size > 1
-        val sideRail = hasThumbnails && availableWidth >= SideRailMinWidth
+        val sideRail = thumbnailRail && hasThumbnails && availableWidth >= SideRailMinWidth
         val previewWidth =
             if (sideRail) {
                 min(availableWidth - RailWidth - Dimens.small, maxPreviewWidth)
@@ -639,7 +646,7 @@ internal fun PlayCircle(
         modifier = modifier.size(size).background(overlayBlackWith70Alpha, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(imageVector = Play, contentDescription = null, tint = white, modifier = Modifier.size(iconSize))
+        Icon(imageVector = Play, contentDescription = null, tint = onMedia, modifier = Modifier.size(iconSize))
     }
 }
 
@@ -652,7 +659,7 @@ private fun SourceLabel(
     Text(
         text = text,
         style = MaterialTheme.typography.caption,
-        color = white,
+        color = onMedia,
         modifier =
             modifier
                 .background(overlayBlackWith70Alpha, CornerShapes.pill)
@@ -686,7 +693,7 @@ internal fun MediaIconButton(
                     interactionSource = null,
                     // Like the carousels' buttons, the focus highlight shows only for keyboard focus.
                     indication =
-                        FocusVisibleIndication(ripple(bounded = false, radius = ArrowButtonSize / 2, color = white)),
+                        FocusVisibleIndication(ripple(bounded = false, radius = ArrowButtonSize / 2, color = onMedia)),
                     onClick = onClick,
                 ).semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
@@ -694,7 +701,7 @@ internal fun MediaIconButton(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = white.copy(alpha = if (enabled) 1f else ContentAlpha.disabled),
+            tint = onMedia.copy(alpha = if (enabled) 1f else ContentAlpha.disabled),
             modifier =
                 Modifier
                     .size(ArrowIconSize)
@@ -971,11 +978,10 @@ internal fun MediaGalleryPreview() {
     }
 }
 
-// A tablet in landscape, where the thumbnails move into a rail beside the preview. The Web desktop layout keeps the
-// gallery to a reading column's width, so it shows the strip of the narrow preview instead.
-@Preview(widthDp = 1200)
+// An extra-large window, where the thumbnails move into a rail beside the preview.
+@Preview(widthDp = 1600)
 @Composable
-internal fun MediaGalleryTabletPreview() {
+internal fun MediaGalleryRailPreview() {
     BraindanceTheme {
         Box(modifier = Modifier.background(background).padding(vertical = Dimens.large)) {
             MediaGallery(
@@ -983,6 +989,7 @@ internal fun MediaGalleryTabletPreview() {
                 gameName = "Sample game",
                 onWatchOnYouTube = {},
                 horizontalPadding = Dimens.large,
+                thumbnailRail = true,
             )
         }
     }

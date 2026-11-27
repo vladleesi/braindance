@@ -24,15 +24,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.coming_soon
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.white
 import org.jetbrains.compose.resources.stringResource
 
 /*
@@ -40,7 +41,8 @@ import org.jetbrains.compose.resources.stringResource
  * hold no state, so they can be replaced one by one as the features arrive.
  */
 
-private val CardMaxWidth = 560.dp
+/** The width a [ComingSoonCard] keeps on its own, which suits its couple of lines. */
+val ComingSoonCardMaxWidth = 560.dp
 
 /** The "Coming soon" [Tag]. */
 @Composable
@@ -51,16 +53,20 @@ fun ComingSoonLabel(modifier: Modifier = Modifier) {
 /**
  * A preview of a planned feature: its [title] and [description] under a [ComingSoonLabel]. [action], when given,
  * sits at the end, for example a link to the destination that will host the feature.
+ *
+ * On its own the card keeps a [maxWidth] that suits its couple of lines. Where it takes the place of content that
+ * fills the page, such as a feed in the desktop layout, or of a cell in a grid, pass [Dp.Unspecified] so it fills its
+ * space like the content it stands for.
  */
 @Composable
 fun ComingSoonCard(
     title: String,
     description: String,
     modifier: Modifier = Modifier,
+    maxWidth: Dp = ComingSoonCardMaxWidth,
     action: (@Composable () -> Unit)? = null,
 ) {
-    // A card holds a couple of lines; on a wide window it keeps a readable width instead of stretching across it.
-    SurfaceCard(modifier = modifier.widthIn(max = CardMaxWidth).fillMaxWidth()) {
+    SurfaceCard(modifier = modifier.widthIn(max = maxWidth).fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(Dimens.medium),
             verticalAlignment = Alignment.CenterVertically,
@@ -98,7 +104,7 @@ fun ComingSoonAction(
         Icon(
             imageVector = imageVector,
             contentDescription = label,
-            tint = white.copy(alpha = ContentAlpha.disabled),
+            tint = foreground.copy(alpha = ContentAlpha.disabled),
         )
     }
 }

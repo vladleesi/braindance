@@ -11,6 +11,9 @@ import androidx.compose.ui.unit.dp
 /** Medium width in the Material window size classes: tablets, landscape phones, and wide browser windows. */
 private val LARGE_WINDOW_WIDTH = 600.dp
 
+/** Extra-large width in the Material window size classes: desktop displays. */
+private val EXTRA_LARGE_WINDOW_WIDTH = 1600.dp
+
 // Desktop tiers. They follow the cards' minimum widths: below the first one the grids would drop to two narrow cards.
 private val DESKTOP_COMPACT_WIDTH = 768.dp
 private val DESKTOP_SIDEBAR_WIDTH = 1100.dp
@@ -22,18 +25,19 @@ private val DESKTOP_WIDE_WIDTH = 1440.dp
  */
 val LocalDesktopLayoutEnabled = staticCompositionLocalOf { false }
 
-/** The desktop presentation for the current window width; the narrowest tier keeps the collapsed navigation rail. */
+/** The desktop presentation for the current window width. The narrowest tier keeps the sidebar collapsed. */
 enum class DesktopLayout {
-    /** The navigation rail with desktop content grids. */
+    /** The collapsed sidebar with desktop content grids: too narrow to expand it. */
     Compact,
 
-    /** The navigation sidebar with desktop content grids. */
+    /** The navigation sidebar with desktop content grids. People can collapse it. */
     Sidebar,
 
     /** The navigation sidebar, the content grids, and a column of contextual modules. */
     Wide,
     ;
 
+    /** Whether the expanded sidebar fits beside the content. */
     val hasSidebar: Boolean get() = this != Compact
     val hasContextColumn: Boolean get() = this == Wide
 }
@@ -44,6 +48,10 @@ enum class DesktopLayout {
  */
 @Composable
 fun isLargeWindow(): Boolean = windowWidth() >= LARGE_WINDOW_WIDTH
+
+/** Whether the app's window is in Material's extra-large class, 1600 dp and wider. Like [isLargeWindow], it updates. */
+@Composable
+fun isExtraLargeWindow(): Boolean = windowWidth() >= EXTRA_LARGE_WINDOW_WIDTH
 
 /**
  * The desktop presentation for the current window, or null when the host does not enable it or the window is too

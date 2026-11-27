@@ -4,13 +4,16 @@ package dev.vladleesi.braindanceapp.ui.components
 
 import ChevronLeft
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -23,6 +26,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,8 +41,10 @@ import dev.vladleesi.braindanceapp.resources.profile_screen_title
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.accent
+import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.navBar
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.withCircleRippleEffect
 import org.jetbrains.compose.resources.stringResource
 
@@ -54,16 +60,18 @@ fun TopAppBar(
     modifier: Modifier = Modifier,
     title: String = "",
     subtitle: String = "",
-    titleColor: Color = white,
+    titleColor: Color = foreground,
     titleStyle: TextStyle = MaterialTheme.typography.body2,
-    tabBarColor: Color = navBar,
+    // The canvas every screen shows. A screen whose bar covers scrolled content passes its own color.
+    tabBarColor: Color = background,
     backButtonIcon: ImageVector = ChevronLeft,
     showBackButton: Boolean = false,
     backButtonBackgroundColor: Color = navBar,
-    backButtonColor: Color = white,
+    backButtonColor: Color = foreground,
     onBackButtonPressed: () -> Unit = {},
     actions: (@Composable RowScope.() -> Unit)? = null,
     maxContentWidth: Dp = Dimens.pageMaxWidth,
+    height: Dp = Dimens.topBarHeight,
 ) {
     val gutter = pageGutter()
     // The color spans the whole width; the back button, title, and actions line up with the page column below, which
@@ -72,7 +80,7 @@ fun TopAppBar(
         modifier =
             modifier
                 .fillMaxWidth()
-                .height(Dimens.topBarHeight)
+                .height(height)
                 .background(tabBarColor)
                 .pageWidth(gutter, maxContentWidth)
                 .padding(start = gutter, end = if (actions == null) gutter else gutter - iconButtonInset),
@@ -126,15 +134,15 @@ fun TopAppBar(
 
 /**
  * The bar of a top-level screen: its [title], the screen's own [actions], and the profile button, which calls
- * [onProfileClick]. The button is left out while the desktop sidebar is shown, because the sidebar already links to
- * Profile; [showProfileButton] overrides that. Nested screens use [TopAppBar] with a back button instead.
+ * [onProfileClick]. The button is left out in the desktop layout, whose header has it. [showProfileButton] overrides
+ * that. Nested screens use [TopAppBar] with a back button instead.
  */
 @Composable
 fun TopLevelTopAppBar(
     title: String,
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
-    showProfileButton: Boolean = desktopLayout()?.hasSidebar != true,
+    showProfileButton: Boolean = desktopLayout() == null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
@@ -144,16 +152,55 @@ fun TopLevelTopAppBar(
         tabBarColor = Color.Transparent,
         actions = {
             actions()
-            if (showProfileButton) {
-                IconButton(
-                    onClick = onProfileClick,
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand).routeLink(ProfileRoute),
-                ) {
-                    UserAvatar(contentDescription = stringResource(Res.string.profile_screen_title))
-                }
-            }
+            if (showProfileButton) ProfileButton(onClick = onProfileClick)
         },
     )
+}
+
+/**
+ * The account button: the user's avatar, named "Profile", which opens Profile with [onClick]. While [selected], as
+ * when Profile is open, a ring in the accent marks it. The ring's space is kept either way, so the avatar never moves.
+ */
+@Composable
+fun ProfileButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+) {
+    IconButton(
+        onClick = onClick,
+        modifier =
+            modifier
+                .pointerHoverIcon(PointerIcon.Hand)
+                .routeLink(ProfileRoute)
+                .semantics { this.selected = selected },
+    ) {
+        UserAvatar(
+            contentDescription = stringResource(Res.string.profile_screen_title),
+            modifier =
+                Modifier
+                    .border(Dimens.micro, if (selected) accent else Color.Transparent, CircleShape)
+                    .padding(Dimens.micro),
+        )
+    }
+}
+
+/**
+ * A secondary screen's loading or error state under a top bar with the back button alone, so a slow or failed load
+ * never leaves the user without a way back. The state fills the rest of the screen through the modifier it gets.
+ */
+@Composable
+fun BackOnlyFrame(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable (Modifier) -> Unit,
+) {
+    Column(modifier = modifier.fillMaxSize()) {
+        SpacerStatusBarInsets()
+        // As tall as the loaded page's bar, so Back does not move when the page arrives.
+        TopAppBar(showBackButton = true, onBackButtonPressed = onBack, height = Dimens.heroTopBarHeight)
+        content(Modifier.weight(1f))
+    }
 }
 
 @Preview
@@ -174,5 +221,26 @@ internal fun TopAppBarPreview() {
 internal fun TopLevelTopAppBarPreview() {
     BraindanceTheme {
         TopLevelTopAppBar(title = "Library", onProfileClick = {})
+    }
+}
+
+@Preview
+@Composable
+internal fun ProfileButtonPreview() {
+    BraindanceTheme {
+        Row {
+            ProfileButton(onClick = {})
+            ProfileButton(onClick = {}, selected = true)
+        }
+    }
+}
+
+@Preview
+@Composable
+internal fun BackOnlyFramePreview() {
+    BraindanceTheme {
+        BackOnlyFrame(onBack = {}) { modifier ->
+            Text(text = "Something went wrong", modifier = modifier.padding(Dimens.medium))
+        }
     }
 }

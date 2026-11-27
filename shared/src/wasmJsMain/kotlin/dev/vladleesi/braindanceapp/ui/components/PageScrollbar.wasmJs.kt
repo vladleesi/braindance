@@ -9,6 +9,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.ScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.defaultScrollbarStyle
 import androidx.compose.foundation.gestures.Orientation
@@ -53,7 +54,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.overlayWhiteWith45Alpha
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import kotlinx.browser.window
 import kotlinx.coroutines.delay
@@ -79,15 +80,27 @@ private val PageScrollbarThumbShape =
             }
     }
 
-// The look of every scrollbar in the app: the page's and those of lists inside it.
-internal val PageScrollbarStyle =
-    defaultScrollbarStyle().copy(
-        minimalHeight = Dimens.large,
-        thickness = Dimens.small + Dimens.micro,
-        shape = PageScrollbarThumbShape,
-        unhoverColor = overlayWhiteWith45Alpha,
-        hoverColor = secondaryText,
-    )
+/** The width of every scrollbar in the app, which a list's scrollbar gutter also reserves. */
+internal val PageScrollbarThickness = Dimens.small + Dimens.micro
+
+// The thumb at rest: the theme's foreground, faint.
+private const val THUMB_RESTING_ALPHA = 0.45f
+
+/** The look of every scrollbar in the app, the page's and those of lists inside it, in the theme's colors. */
+@Composable
+internal fun rememberPageScrollbarStyle(): ScrollbarStyle {
+    val resting = foreground.copy(alpha = THUMB_RESTING_ALPHA)
+    val hovered = secondaryText
+    return remember(resting, hovered) {
+        defaultScrollbarStyle().copy(
+            minimalHeight = Dimens.large,
+            thickness = PageScrollbarThickness,
+            shape = PageScrollbarThumbShape,
+            unhoverColor = resting,
+            hoverColor = hovered,
+        )
+    }
+}
 
 @Composable
 internal actual fun BoxScope.PageScrollbar(
@@ -151,7 +164,7 @@ private fun BoxScope.AnimatedPageScrollbar(
                     .fillMaxHeight()
                     .padding(top = topInset + Dimens.tiny, bottom = Dimens.tiny, end = Dimens.tiny)
                     .scrollable(state, Orientation.Vertical, reverseDirection = true),
-            style = PageScrollbarStyle,
+            style = rememberPageScrollbarStyle(),
             interactionSource = interactionSource,
         )
     }

@@ -7,15 +7,17 @@ import kotlinx.browser.window
 import org.w3c.dom.events.Event
 import org.w3c.dom.url.URL
 
-// The tab title for screens other than the one the page was opened at.
+// The tab title of a screen that has not named itself, and the suffix of every screen's own title.
 private const val APP_TITLE = "Braindance"
 
 /**
  * Real paths such as `/games/42` under the page's base path (`<base href>`), for example `/` or `/braindance/`.
  * The host serves the app's page at every address the app opens, so a reload or a shared link still loads it.
  *
- * Each address's page has its own title, such as a game's name. The tab keeps it while the app shows that screen and
- * shows the app's name on any other, so history entries and tabs never carry a title that no longer applies.
+ * Each screen names itself, such as "Discover | Braindance" or a game's name, once it knows its title, so the tab and
+ * every history entry say where they lead, which screen readers announce on each page change. Until then, the screen
+ * the page was opened at keeps the title it was served with, and any other shows the app's name, so a tab never
+ * carries a title that no longer applies.
  */
 @OptIn(ExperimentalWasmJsInterop::class)
 internal actual val browserLocation: BrowserLocation? =
@@ -24,8 +26,20 @@ internal actual val browserLocation: BrowserLocation? =
         private val openedRoute = webPathToRoute(read())
         private val openedTitle = document.title
 
+        // The names screens gave their paths. Bounded by the addresses visited in this tab.
+        private val titles = HashMap<String, String>()
+
         private fun updateTitle(path: String?) {
-            document.title = if (webPathToRoute(path) == openedRoute) openedTitle else APP_TITLE
+            val named = path?.let(titles::get)?.let { "$it | $APP_TITLE" }
+            document.title = named ?: if (webPathToRoute(path) == openedRoute) openedTitle else APP_TITLE
+        }
+
+        override fun setTitle(
+            path: String,
+            title: String?,
+        ) {
+            if (title.isNullOrBlank()) titles.remove(path) else titles[path] = title
+            if (read() == path) updateTitle(path)
         }
 
         override fun read(): String? {

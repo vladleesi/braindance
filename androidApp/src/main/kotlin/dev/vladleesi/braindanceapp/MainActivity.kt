@@ -10,7 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.graphics.toArgb
 import dev.vladleesi.braindanceapp.navigation.AppLinkInbox
-import dev.vladleesi.braindanceapp.ui.style.navBar
+import dev.vladleesi.braindanceapp.ui.style.DarkAppColors
 import dev.vladleesi.kmpsharekit.ShareKit
 
 class MainActivity : ComponentActivity() {
@@ -18,9 +18,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Set before the first frame, outside the theme, so it names the dark palette, the app's only one. A light
+        // theme sets the bars' style from inside the composition instead.
+        val chrome = DarkAppColors.navBar.toArgb()
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(navBar.toArgb()),
-            navigationBarStyle = SystemBarStyle.dark(navBar.toArgb()),
+            statusBarStyle = SystemBarStyle.dark(chrome),
+            navigationBarStyle = SystemBarStyle.dark(chrome),
         )
         // A recreated activity keeps its launch intent but restores its own navigation, so only a fresh start opens
         // the link it was launched with.

@@ -53,6 +53,15 @@ internal interface BrowserLocation {
      * that stops observing.
      */
     fun observe(onChange: (path: String?, index: Int?, snapshotJson: String?) -> Unit): () -> Unit
+
+    /**
+     * Names the page at [path], such as a game's name, for the browser tab and its history entries. Null forgets the
+     * name.
+     */
+    fun setTitle(
+        path: String,
+        title: String?,
+    )
 }
 
 internal expect val browserLocation: BrowserLocation?

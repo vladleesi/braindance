@@ -32,7 +32,6 @@ fun ErrorScreen(
     retryButtonText: String = stringResource(Res.string.error_screen_retry_button_text),
     onRetry: () -> Unit,
 ) {
-    // TODO: Add back button
     Box(
         modifier =
             modifier

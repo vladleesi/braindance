@@ -174,6 +174,8 @@ class DetailsViewModelTest : ViewModelTest() {
                 BackdropImage(
                     compactUrl = "https://images.igdb.com/igdb/image/upload/t_screenshot_med/ar1.webp",
                     wideUrl = "https://images.igdb.com/igdb/image/upload/t_screenshot_big/ar1.webp",
+                    hdUrl = "https://images.igdb.com/igdb/image/upload/t_720p/ar1.webp",
+                    fullHdUrl = "https://images.igdb.com/igdb/image/upload/t_1080p/ar1.webp",
                 ),
                 details.backdrop,
             )

@@ -11,10 +11,10 @@ import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.unit.dp
+import dev.vladleesi.braindanceapp.ui.style.ghost
 import dev.vladleesi.braindanceapp.ui.style.hotMagenta
 import dev.vladleesi.braindanceapp.ui.style.neonCyan
 import dev.vladleesi.braindanceapp.ui.style.signalYellow
-import dev.vladleesi.braindanceapp.ui.style.white
 
 // The wordmark's letters from docs/branding/logo/svg/wordmark-white.svg, in the font's 1000-unit em.
 private const val WORDMARK_PATH =
@@ -122,7 +122,7 @@ val BraindanceWordmark: ImageVector
                         copy(letters, signalYellow, TRAIL_STEP * 3)
                         copy(letters, hotMagenta, TRAIL_STEP * 2)
                         copy(letters, neonCyan, TRAIL_STEP)
-                        copy(letters, white, 0f)
+                        copy(letters, ghost, 0f)
                     }
                 }.build()
         braindanceWordmark = imageVector

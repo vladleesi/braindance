@@ -5,8 +5,11 @@ package dev.vladleesi.braindanceapp.ui.screens
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
@@ -16,10 +19,12 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.text.AnnotatedString
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigationevent.DirectNavigationEventInput
@@ -135,6 +140,31 @@ class DiscoverSearchBackTest {
 
             onNodeWithText("What should I play next?").assertIsDisplayed()
             assertEquals(0, onAllNodesWithText("2020").fetchSemanticsNodes().size)
+        }
+
+    @Test
+    fun clearingASubmittedSearchStartsOverInsteadOfLeavingIt() =
+        runComposeUiTest {
+            setDiscover()
+            val field = onNode(hasSetTextAction())
+            field.performTextInput("Hades")
+            field.performImeAction()
+            waitForIdle()
+            field.assertIsNotFocused()
+
+            onNodeWithContentDescription("Clear search").performClick()
+            waitForIdle()
+
+            // Clear keeps the user in search, ready to type. Only back (or the chevron) leaves it.
+            field.assertIsFocused()
+            // Only the typed text: the node's text also holds the placeholder.
+            field.assert(SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString("")))
+            onNodeWithContentDescription("Close search").assertIsDisplayed()
+
+            back.backCompleted()
+            waitForIdle()
+            field.assertIsNotFocused()
+            assertEquals(0, screenBacks)
         }
 
     @Test

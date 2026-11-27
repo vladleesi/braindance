@@ -16,8 +16,8 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.HairlineBorder
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.surface
-import dev.vladleesi.braindanceapp.ui.style.white
 
 /**
  * A small label for a status or category, such as "Coming soon": an outlined pill, like the landing site's tags. It
@@ -27,7 +27,7 @@ import dev.vladleesi.braindanceapp.ui.style.white
 fun Tag(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = white,
+    color: Color = foreground,
 ) {
     Text(
         text = text,

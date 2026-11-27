@@ -73,8 +73,8 @@ import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.pageWidth
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith80Alpha
-import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.viewmodels.HomeViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.utils.observePointerType
@@ -82,6 +82,8 @@ import dev.vladleesi.braindanceapp.utils.rememberCachedLazyListState
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+
+private const val STATUS_BAR_SCRIM_ALPHA = 0.8f
 
 @Composable
 fun HomeScreen(
@@ -191,7 +193,8 @@ private fun StandardHomeScreen(
             item { Spacer(Modifier.height(Dimens.large)) }
         }
         PageScrollbar(listState)
-        StatusBarOverlay(backgroundColor = overlayBlackWith80Alpha)
+        // The canvas, mostly opaque, so the status bar stays readable over the list scrolling under it.
+        StatusBarOverlay(backgroundColor = background.copy(alpha = STATUS_BAR_SCRIM_ALPHA))
         PullRefreshIndicator(
             refreshing = isRefreshing,
             state = pullState,
@@ -378,7 +381,7 @@ private fun HomePreviewCard(
                         onClick = onLinkClick,
                         modifier = linkRoute?.let { Modifier.routeLink(it) } ?: Modifier,
                     ) {
-                        Text(stringResource(link), color = white)
+                        Text(stringResource(link), color = foreground)
                     }
                 }
             } else {

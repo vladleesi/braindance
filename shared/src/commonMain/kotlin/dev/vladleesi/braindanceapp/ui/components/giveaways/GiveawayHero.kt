@@ -48,10 +48,10 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.icons.OpenInNew
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayEnding
 import dev.vladleesi.braindanceapp.utils.ParentPlatformType
@@ -73,7 +73,8 @@ private const val URGENT_DAYS = 7
  * image, for tablets and wide windows; on phones it stacks under the image and the action spans the width.
  *
  * [onGetGiveaway] is null when there is no safe link. An ended giveaway shows the action disabled, so nobody follows
- * a link that no longer gives anything away.
+ * a link that no longer gives anything away. [scrolledPx] moves the artwork with a parallax as the page scrolls (see
+ * [HeroBackdrop]).
  */
 @Composable
 fun GiveawayHero(
@@ -82,11 +83,18 @@ fun GiveawayHero(
     expanded: Boolean,
     onGetGiveaway: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    scrolledPx: () -> Int = { 0 },
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
-        HeroBackdrop(imageUrl = details.imageUrl.ifEmpty { null }, modifier = Modifier.matchParentSize())
+        HeroBackdrop(
+            imageUrl = details.imageUrl.ifEmpty { null },
+            modifier = Modifier.matchParentSize(),
+            scrolledPx = scrolledPx,
+        )
         Column(modifier = Modifier.pageColumn(pageGutter()).fillMaxWidth()) {
             SpacerTopBarWithStatusBarInsets()
+            // A band of artwork between the bar and the image, wider on large screens, where there is room for it.
+            Spacer(Modifier.height(if (expanded) Dimens.large else Dimens.medium))
             if (expanded) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     GiveawayImage(id = id, details = details, modifier = Modifier.width(ExpandedImageWidth))
@@ -140,7 +148,7 @@ private fun HeroText(
         Text(
             text = details.title,
             style = if (expanded) MaterialTheme.typography.h1 else MaterialTheme.typography.h2,
-            color = white,
+            color = foreground,
             modifier = Modifier.semantics { heading() },
         )
         PriceAndPlatforms(worth = details.worth, platforms = details.platforms)
@@ -201,7 +209,7 @@ private fun PriceAndPlatforms(
         Text(
             text = stringResource(Res.string.giveaway_details_free),
             style = MaterialTheme.typography.h3,
-            color = white,
+            color = foreground,
         )
         if (worth.isNotEmpty()) {
             val worthLabel = stringResource(Res.string.giveaway_details_worth, worth)

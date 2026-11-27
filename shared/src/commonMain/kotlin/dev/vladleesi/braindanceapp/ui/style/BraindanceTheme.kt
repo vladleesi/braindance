@@ -5,12 +5,14 @@ package dev.vladleesi.braindanceapp.ui.style
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
 import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -27,9 +29,9 @@ fun BraindanceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    if (!darkTheme) {
-        // ignore by now
-    }
+    // The dark palette is the only one so far. A light palette goes here, chosen by [darkTheme], and every component
+    // follows it, since they all read the roles in Colors.kt.
+    val colors = DarkAppColors
     val shapes =
         Shapes(
             // Material buttons and chips use the small shape; cards, sheets, and dialogs use medium and large.
@@ -38,16 +40,20 @@ fun BraindanceTheme(
             large = CornerShapes.large,
         )
     val fonts = FontFamily(AppFonts.map { font -> Font(font.resource, font.weight) })
+    val typography = remember(fonts, colors) { buildTypography(fonts, colors) }
 
     MaterialTheme(
-        colors = DarkColors,
-        typography = buildTypography(fonts),
+        colors = remember(colors) { colors.toMaterialColors() },
+        typography = typography,
         shapes = shapes,
     ) {
         CompositionLocalProvider(
             values =
                 arrayOf(
-                    LocalTextSelectionColors provides DarkTextSelectionColors,
+                    LocalAppColors provides colors,
+                    // Text and icons without a color of their own take the theme's.
+                    LocalContentColor provides colors.foreground,
+                    LocalTextSelectionColors provides remember(colors) { colors.toTextSelectionColors() },
                     // Compose Web focuses a component on every click, so the ripple's focus highlight would stay on
                     // whatever was clicked last. It shows only for keyboard focus instead, like the focus ring.
                     LocalIndication provides AppIndication,
@@ -80,10 +86,13 @@ internal val AppFonts =
  * Compact headings and readable body styles, using only the three bundled Poppins weights. Headings are set tight,
  * like the landing site's.
  */
-private fun buildTypography(fonts: FontFamily): Typography {
-    val heading = TextStyle(color = white, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp)
-    val body = TextStyle(color = white, fontWeight = FontWeight.Normal, letterSpacing = 0.sp)
-    val label = TextStyle(color = secondaryText, fontWeight = FontWeight.Medium, letterSpacing = 0.1.sp)
+private fun buildTypography(
+    fonts: FontFamily,
+    colors: AppColors,
+): Typography {
+    val heading = TextStyle(color = colors.foreground, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp)
+    val body = TextStyle(color = colors.foreground, fontWeight = FontWeight.Normal, letterSpacing = 0.sp)
+    val label = TextStyle(color = colors.secondaryText, fontWeight = FontWeight.Medium, letterSpacing = 0.1.sp)
 
     return Typography(
         defaultFontFamily = fonts,
@@ -99,6 +108,7 @@ private fun buildTypography(fonts: FontFamily): Typography {
         subtitle2 = label.copy(fontSize = 14.sp, lineHeight = 20.sp),
         caption = label.copy(fontSize = 12.sp, lineHeight = 16.sp),
         button = heading.copy(fontSize = 14.sp, lineHeight = 20.sp, letterSpacing = 0.1.sp),
-        overline = label.copy(fontSize = 12.sp, lineHeight = 16.sp, letterSpacing = 0.5.sp),
+        // The smallest label, for footnotes such as the desktop sidebar's links.
+        overline = label.copy(fontSize = 11.sp, lineHeight = 14.sp, letterSpacing = 0.2.sp),
     )
 }

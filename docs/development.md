@@ -71,14 +71,38 @@ or distribution.
 ## Design system
 
 The rules are in the [brand guide](branding/README.md#in-the-product). Every screen shows the canvas color, which
-`NavigationScaffold` paints once, so screens add no background of their own. The bottom bar, rail, and desktop
-sidebar use the darker chrome color. Build new screens from these shared pieces in
+`NavigationScaffold` paints once, so screens add no background of their own. The bottom bar, rail, desktop
+sidebar, and desktop header use the darker chrome color. Build new screens from these shared pieces in
 `shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui` before adding new ones:
+
+### Theme colors
+
+Components read colors only through the theme's roles in `ui/style/Colors.kt`, never as fixed values, so a light
+theme can come later as one more palette without changes to any component. The roles are `navBar` (chrome),
+`background` (canvas), `surface`, `secondary`, `secondaryVariant`, `shimmer`, `foreground` (text and icons),
+`secondaryText`, `accent`, `error`, the status tag colors, and `positive`. `BraindanceTheme` provides the palette
+(`AppColors`) as `LocalAppColors`, builds the typography and Material's colors from it, and sets `foreground` as the
+default content color.
+
+- Read roles in composition. Code that draws or builds a brush outside composition takes the colors as parameters, or
+  `remember`s the brush keyed by them. A `Modifier.Node` reads `currentValueOf(LocalAppColors)` while drawing, as
+  `focusRing` does. The roles come from a static composition local, so reading them costs no tracking.
+- Fixed colors are for two cases only: brand artwork (the logo, its trail, the score rings, the avatar), and what sits
+  on photos and video, which stay dark in any theme (`onMedia`, `black`, the overlay scrims).
+- Do not add color literals in components. A new color is a new role in `AppColors`, with a value in every palette.
+- Still outside the theme, for the light theme to handle: the Web page's loading background and `theme-color`
+  (`webApp/src/wasmJsMain/resources/index.html`), and Android's system bar style, which `MainActivity` sets from the
+  dark palette before the first frame.
 
 | Piece | Where | Use |
 | --- | --- | --- |
 | Colors, `CornerShapes`, `Dimens`, typography | `style/` | Tokens: color roles, the three corner shapes, spacing, text styles |
 | `pageColumn`, `pageWidth`, `pageGutter` | `components/PageColumn.kt` | Page layout; see [page layout](#page-layout) |
+| `SupportingPaneLayout`, `SectionColumns` | `components/` | Desktop layouts that fill the page column. See [desktop layout](#desktop-layout) |
+| `DesktopHeader`, `DesktopSidebar` | `components/desktop/` | The desktop layout's header and sidebar. See [header and sidebar](#header-and-sidebar) |
+| `TopLevelTopAppBar`, `TopAppBar`, `ProfileButton` | `components/TopAppBar.kt` | A screen's own title, back button, and actions, and the account button |
+| `ScrollAwayBarLayout` | `components/ScrollAwayBar.kt` | A screen's own bar that scrolls away with its content in the desktop layout. See [header and sidebar](#header-and-sidebar) |
+| `FooterLinks`, `DataCredits`, `FooterLink` | `components/FooterLinks.kt` | Legal links, support, and the data credits, in the sidebar and Profile |
 | `PrimaryButton`, `TonalButton`, `OutlineButton` | `components/Buttons.kt` | The main action, secondary actions, and links inside cards |
 | `SurfaceCard`, `SurfaceTile` | `components/Surfaces.kt` | Containers: cards and panels, and compact tiles |
 | `LinkRow`, `LinkDivider` | `components/LinkRow.kt` | Rows of links on a card, such as Profile's links and a game's stores |
@@ -90,23 +114,123 @@ sidebar use the darker chrome color. Build new screens from these shared pieces 
 
 ### Page layout
 
-Every screen lays out its content in one page column, centered beside the navigation, so the content's edges stay in
-place between screens of the same width. Its side margin, `pageGutter()`, is 16 dp on phones and tablets and 32 dp in
-the desktop layout of wide Web windows. Pick the column's width by what the page shows, not per screen:
+Every screen lays out its content in the same page column, at most `Dimens.pageMaxWidth` (1920 dp) wide and centered
+beside the navigation, so the content's edges stay in place when you switch screens. Its side margin,
+`pageGutter()`, is 16 dp on phones and tablets and 32 dp in the desktop layout of wide Web windows. The navigation
+stays at the window's edge at every width.
 
-| Page | Column width | Screens |
-| --- | --- | --- |
-| Grids, rows of cards, or a hero | `Dimens.pageMaxWidth` (1440 dp) | Every tab, the lists behind See all, game and giveaway details |
-| One list or a text | `Dimens.readableTextWidth` (720 dp) | Profile |
+- Pages are mostly grids of covers, so a wider window shows more of them instead of empty space, as in other media
+  catalogs. Paged grids fit as many columns as their minimum card width allows. Home's rows stop at a maximum per
+  section (`DesktopHomeSections.kt`) that keeps their cards near their usual size. Only windows wider than about
+  2200 dp leave spare width, split evenly on both sides of the column.
 
 - The top bar takes the page's width as `maxContentWidth`, so its back button, title, and actions line up with the
   content. Backgrounds and full-bleed artwork, such as the game details hero, still span the whole width.
-- Inside the wide column, running text, the search field, and placeholder cards keep their readable widths, aligned
-  to its start. In the desktop layout, game details keep Overview, media, and storyline at that width, with About
-  and store links in a sidebar when both columns fit.
+- Inside the column, running text, the search field, and placeholder cards keep their readable width
+  (`Dimens.readableTextWidth`, 720 dp), aligned to its start.
+- The desktop layout fills the column. See [desktop layout](#desktop-layout).
 - Scrolling containers span the whole width so the wheel also works over the margins: apply `pageColumn` after
   `verticalScroll`, inset lazy grids and lists with `pageSidePadding`, and let carousels take `pageWidth` and inset
   their cards by the gutter.
+
+### Desktop layout
+
+The Web app switches to a desktop layout in windows 768 dp and wider (`desktopLayout()`). Android and iOS keep their
+phone and tablet layouts at every size. The desktop layout has one rule: **every screen fills the page column**.
+Spare width becomes more content, larger media, or a side column, never a narrow column beside empty space. Screens
+fill it in one of four ways, after Material's [canonical layouts][canonical-layouts]:
+
+| Pattern | For | Reuse | Screens |
+| --- | --- | --- | --- |
+| Feed | Grids of equal cards | `CardGrid`, `PagedGrid`, `DesktopCardRow` | Home's rows, search results, See all, events, an event's games |
+| Supporting pane | One item's main content and its facts | `SupportingPaneLayout` | Game and giveaway details. Home's context column follows the same pattern |
+| Section columns | Independent lists or cards | `SectionColumns` | Profile, Discover's previews |
+| Full-width blocks | Heroes, banners, a calendar, a feed's placeholder | `pageColumn`, `ComingSoonCard(maxWidth = Dp.Unspecified)` | Home's hero, an event's header, Library, Releases, News |
+
+- The navigation stays at the window's edge, and the page column is centered beside it. At any window size, every
+  screen's content starts and ends in the same place.
+- Text keeps a readable line length: paragraphs, the search field, and forms stay at most
+  `Dimens.readableTextWidth` (720 dp), at the start of their column, while the cards and panels around them fill.
+  Material's search bar has the same limit: it is 360 to 720 dp wide.
+- Grids add columns from a minimum card width instead of growing their cards, and Home's rows cap the columns per
+  section to keep cards near their usual size.
+- Media grow with their column and fill it. The game gallery's preview is at most 1440 dp wide, wider than its
+  column gets, and 75% of the window's height, so the whole gallery still fits on a landscape phone.
+- A supporting pane is `SupportingPaneWidth` (320 dp) wide at the column's end, top-aligned with the main content.
+  Where the main content would get narrower than its minimum, the pane moves below it at the readable width. Home's
+  context column is 280 dp, so a 1440 dp window still fits five game cards beside it.
+- Section columns are at least `SectionColumnMinWidth` (360 dp) wide, top-aligned, and in reading order, so keyboard
+  and screen reader order match what you see.
+- A placeholder takes the space of what it stands for: a feed's preview spans the column, and a widget's preview
+  fills its side column.
+- Reuse these components and `pageColumn` before writing a new layout. Phones and tablets keep their layouts unless
+  a change means to change them. Check a new desktop layout at 1280, 1920, and 2560 dp.
+
+The breakpoints, with the [Material window size classes][window-size-classes] they fall in:
+
+| Width | Material class | What changes |
+| --- | --- | --- |
+| Below 600 dp | Compact | Phone layouts and the bottom navigation bar |
+| 600 dp | Medium | Tablet layouts and the navigation rail (`isLargeWindow()`) |
+| 768 dp | Medium | Web: the desktop layout and its header, with the sidebar collapsed (`DesktopLayout.Compact`) |
+| 1100 dp | Expanded | Web: the expanded sidebar with the footer links, which people can collapse (`DesktopLayout.Sidebar`) |
+| 1440 dp | Large | Web: Home's context column (`DesktopLayout.Wide`) |
+| 1600 dp | Extra-large | The game gallery's thumbnails move into a rail beside the preview (`isExtraLargeWindow()`) |
+| About 2200 dp | Extra-large | The page column reaches 1920 dp, and wider windows add equal margins around it |
+
+The desktop tiers follow the cards' minimum widths rather than Material's class boundaries exactly. The gallery's rail
+waits for an extra-large window because the rail and a game's supporting pane together take about 560 dp. In a
+narrower window the preview beside them would be too small, so the thumbnails stay in a strip under it.
+
+#### Header and sidebar
+
+The desktop layout has a header above every screen and the navigation beside them. Both are chrome, in the darker
+`navBar` color, and neither scrolls with the page. The header is 56 dp tall with a 40 dp search field, compact for a
+bar on every screen, and the sidebar's brand row has the same height, so the logo and the field share a line.
+
+- The header (`DesktopHeader`) holds only what applies on every screen: the game search field at the start of the
+  page column, then notifications and the account button (`ProfileButton`) at its end. A screen's own title, back
+  button, and actions stay in its top bar below the header, so the header looks the same everywhere.
+- A screen's own bar is 56 dp in the desktop layout, like the header, and 82 dp on phones and tablets for their
+  large titles. On screens of titles and lists it scrolls away with the content, so reading takes the whole height
+  under the header: use `ScrollAwayBarLayout` for a bar above scrolling content, or put the bar inside the scrolling
+  column, as Home, Library, and Profile do. Content never scrolls under a title that stays.
+- Game, giveaway, and event pages keep their bar over the hero on screen, 82 dp tall on every layout
+  (`Dimens.heroTopBarHeight`), as are their loading and error states, so Back never moves. It starts clear over the
+  artwork and fills, with the page's name, as the page scrolls under it. Phones and tablets keep every screen's bar
+  on screen, as Material's top app bar does.
+- Heroes with artwork (game and giveaway pages) leave a band of it between the bar and their content: 16 dp on phones
+  and 32 dp on large screens. On large screens the game backdrop is the smallest IGDB size that fills the window's pixel
+  width, up to 1080p (`BackdropImage.wideUrlFor`), chosen by the window rather than the page, so the file stays the same
+  while the sidebar changes the page's width. Phones keep the small size, where the backdrop sits dimmed and data
+  matters more. The artwork moves with a parallax as the page scrolls (`HeroBackdrop`), shifted while drawing, so
+  scrolling never recomposes. Decorative motion like this and the sidebar's animation stays still when the system asks
+  for less motion (`prefersReducedMotion()`).
+- While a search shows, Discover's title names it ("Results for …") and scrolls away with the results.
+- The header's field and Discover share one search (`SearchQueryState`, provided by `NavigationScaffold` as
+  `LocalSearchQuery`). Typing on any screen opens Discover's results. The field shows the search only while Discover's
+  own screen is open. In the desktop layout Discover shows no field of its own, and `SearchAction` draws nothing.
+- `Navigator.openSearch` and the shortcuts focus the header's field: "/" when no field has the focus, and Ctrl+K or
+  ⌘K anywhere (`SearchShortcuts`, Web only). The empty field shows the "/" hint. Escape clears the search and leaves
+  the field, and Enter searches at once.
+- The expanded sidebar (232 dp) holds the wordmark, the destinations, and at its bottom `FooterLinks`: the privacy
+  policy, licenses, support, and the data credits, in 24 dp rows of the smallest label size. Profile is the header's
+  account button.
+- One button in the sidebar's bottom corner, in the same place in both states, collapses the sidebar to an 80 dp
+  rail like Material's navigation rail and expands it again. The rail holds the small mark (`BraindanceMark`, the
+  brand kit's `mark-small-on-ink`) and each destination as an icon in a pill over its label. The width animates for
+  250 ms with Material's emphasized easing while the two layouts cross-fade, each at its own width, so nothing
+  reflows. The choice is kept in the browser's `localStorage` (`LayoutPreferences`), and the privacy policy mentions
+  it. Windows narrower than 1100 dp show the collapsed sidebar without the button. The collapsed sidebar has no footer
+  links. Profile lists the same pages, as on phones and tablets.
+- A layout whose width can change while it shows, through the sidebar or a resized window, must follow at once.
+  `animateContentSize` animates the width too, so fix the width before it (`fillMaxWidth()`) when only the height
+  should ease.
+- The app has no footer bar. A bar that stays on screen takes height from every page for links people rarely open.
+  Add a status bar only for live state worth watching, such as being offline.
+
+[canonical-layouts]: https://developer.android.com/develop/adaptive-apps/guides/canonical-layouts
+[window-size-classes]: https://developer.android.com/develop/adaptive-apps/guides/use-window-size-classes
 
 ## Validation
 
@@ -208,6 +332,11 @@ therefore gets its own title, description, canonical link, and preview image:
   bundle. When the API fails, the page keeps a
   generic preview. If the Function does not run, for example after the free daily allowance (100,000 requests) is
   used up, `_redirects` still serves the app on those paths.
+- **Tab titles while browsing:** the HTML title covers the address the page was opened at. As the app moves between
+  screens, each screen names itself with `PageTitle(route, title)` from its own composable, next to the title it shows
+  (never from its route's `Content`), such as "Discover | Braindance" or a game's name once it has loaded, so the tab
+  and its history entries say where they lead, and screen readers announce it. A screen that has not named itself shows
+  "Braindance".
 - **Abuse:** the zone's per-IP rate limit covers game and giveaway preview paths with the API's per-game routes and search. Event previews use the shared events feed.
 - **Checks:** `node --test webApp/src/edgeTest/*.test.mjs` tests the worker. To try the whole site locally, serve
   the production distribution with `npx wrangler@4.161.0 pages dev <dist>`; the app's own API requests then fail

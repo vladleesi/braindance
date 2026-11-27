@@ -113,7 +113,7 @@ class CompilationScreenTest {
             // The first page stays loaded above the second.
             onNode(hasScrollToIndexAction()).performScrollToIndex(0)
             onAllNodesWithText("Game 1.0", useUnmergedTree = true)[0].assertExists()
-            onNodeWithContentDescription("Button: Back").performClick()
+            onNodeWithContentDescription("Back").performClick()
             assertEquals(1, backs)
         }
 

@@ -15,6 +15,7 @@ LUCIDE_ICONS = {
     "IconBell.kt", "IconCalendarDays.kt", "IconChevronLeft.kt", "IconCompass.kt",
     "IconGithub.kt", "IconHouse.kt", "IconLibrary.kt", "IconNewspaper.kt", "IconPlus.kt", "IconRss.kt",
     "IconSearch.kt", "IconSlidersHorizontal.kt", "IconUsers.kt", "IconX.kt", "IconHeart.kt", "IconCheck.kt",
+    "IconPanelLeft.kt",
 }
 SIMPLE_ICONS = {"IconBlueskyLogo.kt", "IconDiscordLogo.kt", "IconRedditLogo.kt", "IconThreadsLogo.kt", "IconXLogo.kt"}
 SOURCE_SUFFIXES = {".kt", ".kts", ".swift", ".py", ".sh"}

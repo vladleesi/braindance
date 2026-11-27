@@ -28,8 +28,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.PageTitle
+import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute.LibraryRoute
 import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.library_create_list_coming_soon
@@ -42,7 +45,9 @@ import dev.vladleesi.braindanceapp.resources.library_status_wishlist
 import dev.vladleesi.braindanceapp.resources.library_statuses_description
 import dev.vladleesi.braindanceapp.resources.library_statuses_title
 import dev.vladleesi.braindanceapp.resources.navigation_library
+import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
+import dev.vladleesi.braindanceapp.ui.components.ComingSoonCardMaxWidth
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.SearchAction
@@ -52,11 +57,12 @@ import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondary
-import dev.vladleesi.braindanceapp.ui.style.white
 import org.jetbrains.compose.resources.stringResource
 
 private const val STATUSES_PER_ROW = 2
+private const val DESKTOP_STATUSES_PER_ROW = 4
 
 // Material's floating action button size.
 private val fabSize = 56.dp
@@ -64,14 +70,17 @@ private val fabSize = 56.dp
 @Composable
 fun LibraryScreen(modifier: Modifier) {
     val navigator = LocalNavigator.current
+    val title = stringResource(Res.string.navigation_library)
+    PageTitle(LibraryRoute, title)
     // The scaffold's content area ends above the bottom bar and beside the rail, and already respects window insets.
     val gutter = pageGutter()
+    val desktop = desktopLayout() != null
     Box(modifier = modifier.fillMaxSize()) {
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             SpacerStatusBarInsets()
             TopLevelTopAppBar(
-                title = stringResource(Res.string.navigation_library),
+                title = title,
                 onProfileClick = { navigator.navigate(ProfileRoute) },
                 // Searches games, as on Home; searching your own games is announced with the statuses below.
                 actions = { SearchAction(onClick = navigator::openSearch) },
@@ -80,11 +89,16 @@ fun LibraryScreen(modifier: Modifier) {
                 modifier = Modifier.pageColumn(gutter),
                 verticalArrangement = Arrangement.spacedBy(Dimens.large),
             ) {
-                // Four short labels read as one group at a readable width instead of tiles across a wide window.
-                StatusSection(modifier = Modifier.widthIn(max = Dimens.readableTextWidth))
+                // The desktop layout fills the column: the four statuses in one row, and the lists' preview across
+                // it, as the lists will be. Elsewhere the statuses read as one group of two rows at a readable width.
+                StatusSection(
+                    statusesPerRow = if (desktop) DESKTOP_STATUSES_PER_ROW else STATUSES_PER_ROW,
+                    modifier = if (desktop) Modifier else Modifier.widthIn(max = Dimens.readableTextWidth),
+                )
                 ComingSoonCard(
                     title = stringResource(Res.string.library_custom_lists_title),
                     description = stringResource(Res.string.library_custom_lists_description),
+                    maxWidth = if (desktop) Dp.Unspecified else ComingSoonCardMaxWidth,
                 )
             }
             // Lets the last section scroll clear of the button.
@@ -108,7 +122,10 @@ fun LibraryScreen(modifier: Modifier) {
 
 /** Game statuses, kept apart from custom lists: each game has one status but can be in any number of lists. */
 @Composable
-private fun StatusSection(modifier: Modifier) {
+private fun StatusSection(
+    statusesPerRow: Int,
+    modifier: Modifier,
+) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Dimens.small)) {
         ComingSoonLabel()
         Text(
@@ -122,7 +139,7 @@ private fun StatusSection(modifier: Modifier) {
         )
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
-            maxItemsInEachRow = STATUSES_PER_ROW,
+            maxItemsInEachRow = statusesPerRow,
             horizontalArrangement = Arrangement.spacedBy(Dimens.small),
             verticalArrangement = Arrangement.spacedBy(Dimens.small),
         ) {
@@ -161,7 +178,7 @@ private fun CreateListButton(modifier: Modifier = Modifier) {
             Icon(
                 imageVector = Plus,
                 contentDescription = stringResource(Res.string.library_create_list_coming_soon),
-                tint = white.copy(alpha = ContentAlpha.disabled),
+                tint = foreground.copy(alpha = ContentAlpha.disabled),
             )
         }
     }

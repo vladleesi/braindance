@@ -42,6 +42,7 @@ internal actual fun ListScrollbar(
         derivedStateOf(structuralEqualityPolicy()) { state.canScrollForward || state.canScrollBackward }
     }
     val adapter = rememberScrollbarAdapter(state)
+    val style = rememberPageScrollbarStyle()
     // The gutter is always there, so the list keeps its size whether or not it overflows. The wheel over the
     // scrollbar scrolls the list, as over the list itself.
     if (orientation == Orientation.Vertical) {
@@ -50,13 +51,13 @@ internal actual fun ListScrollbar(
                 modifier
                     .fillMaxHeight()
                     .padding(start = Dimens.tiny)
-                    .width(PageScrollbarStyle.thickness),
+                    .width(PageScrollbarThickness),
         ) {
             if (canScroll) {
                 VerticalScrollbar(
                     adapter = adapter,
                     modifier = Modifier.fillMaxHeight().scrollable(state, orientation, reverseDirection = true),
-                    style = PageScrollbarStyle,
+                    style = style,
                 )
             }
         }
@@ -66,13 +67,13 @@ internal actual fun ListScrollbar(
                 modifier
                     .fillMaxWidth()
                     .padding(top = Dimens.tiny)
-                    .height(PageScrollbarStyle.thickness),
+                    .height(PageScrollbarThickness),
         ) {
             if (canScroll) {
                 HorizontalScrollbar(
                     adapter = adapter,
                     modifier = Modifier.fillMaxWidth().scrollable(state, orientation, reverseDirection = true),
-                    style = PageScrollbarStyle,
+                    style = style,
                 )
             }
         }

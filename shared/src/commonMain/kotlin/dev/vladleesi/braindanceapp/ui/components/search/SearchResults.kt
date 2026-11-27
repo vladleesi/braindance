@@ -11,6 +11,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.data.DataError
 import dev.vladleesi.braindanceapp.resources.Res
@@ -47,6 +48,7 @@ fun SearchResultsGrid(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     state: LazyGridState = rememberCachedLazyGridState(),
+    contentTopInset: Dp = 0.dp,
 ) {
     PagedGrid(
         items = games,
@@ -57,6 +59,7 @@ fun SearchResultsGrid(
         skeleton = { GameCardSkeleton(showTitle = true, titleLines = TITLE_LINES) },
         modifier = modifier,
         state = state,
+        contentTopInset = contentTopInset,
     ) { game ->
         GameCard(card = game, onClick = onGameClick, showTitle = true, titleLines = TITLE_LINES)
     }
@@ -64,8 +67,15 @@ fun SearchResultsGrid(
 
 /** Placeholder cards with the geometry of [SearchResultsGrid], shown until the first results arrive. */
 @Composable
-fun SearchResultsSkeleton(modifier: Modifier = Modifier) {
-    PagedGridSkeleton(skeleton = { GameCardSkeleton(showTitle = true, titleLines = TITLE_LINES) }, modifier = modifier)
+fun SearchResultsSkeleton(
+    modifier: Modifier = Modifier,
+    contentTopInset: Dp = 0.dp,
+) {
+    PagedGridSkeleton(
+        skeleton = { GameCardSkeleton(showTitle = true, titleLines = TITLE_LINES) },
+        modifier = modifier,
+        contentTopInset = contentTopInset,
+    )
 }
 
 /** A search that found nothing. */

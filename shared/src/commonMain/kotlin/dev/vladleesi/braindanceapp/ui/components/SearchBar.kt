@@ -37,19 +37,21 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.navigation.routeLink
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.discover_search_placeholder
+import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.focusRing
 import dev.vladleesi.braindanceapp.utils.isFocusVisible
 import org.jetbrains.compose.resources.stringResource
@@ -61,6 +63,8 @@ private val SearchFieldHeight = 44.dp
 private val SearchIconSlotWidth = 44.dp
 private val SearchIconSize = 20.dp
 private val SearchProgressSize = 18.dp
+
+// Wide enough to read as a field, not a pill-shaped button.
 
 /**
  * A compact pill-shaped search field. The caller owns [query], so it can clear, restore, or act on it.
@@ -77,14 +81,15 @@ fun SearchBar(
     modifier: Modifier = Modifier,
     leadingIcon: @Composable () -> Unit = { SearchFieldIcon(imageVector = Search) },
     trailingIcon: @Composable () -> Unit = {},
+    fieldHeight: Dp = SearchFieldHeight,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     BasicTextField(
         value = query,
         onValueChange = onQueryChange,
-        modifier = modifier.fillMaxWidth().height(SearchFieldHeight),
+        modifier = modifier.fillMaxWidth().height(fieldHeight),
         singleLine = true,
-        textStyle = MaterialTheme.typography.body2.copy(color = white),
+        textStyle = MaterialTheme.typography.body2.copy(color = foreground),
         cursorBrush = SolidColor(accent),
         // Game titles are names, so autocorrect would only rewrite them.
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search, autoCorrectEnabled = false),
@@ -148,20 +153,22 @@ fun SearchFieldIcon(
             imageVector = imageVector,
             contentDescription = label,
             modifier = Modifier.size(SearchIconSize),
-            tint = if (onClick != null) white else secondaryText,
+            tint = if (onClick != null) foreground else secondaryText,
         )
     }
 }
 
 /**
- * The search button of a top bar. It always searches games, wherever it appears, so the icon means the same thing on
- * every screen; pass [Navigator.openSearch][dev.vladleesi.braindanceapp.navigation.Navigator.openSearch] as [onClick].
+ * The search button of a top bar. It always searches games, wherever it appears, so it means the same thing on every
+ * screen. Pass [Navigator.openSearch][dev.vladleesi.braindanceapp.navigation.Navigator.openSearch] as [onClick]. The
+ * desktop layout leaves it out: its header's search field is on every screen.
  */
 @Composable
 fun SearchAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (desktopLayout() != null) return
     // Search lives on Discover, so the action links to it.
     IconButton(
         onClick = onClick,
@@ -170,7 +177,7 @@ fun SearchAction(
         Icon(
             imageVector = Search,
             contentDescription = stringResource(Res.string.discover_search_placeholder),
-            tint = white,
+            tint = foreground,
         )
     }
 }
@@ -184,7 +191,7 @@ fun SearchFieldProgress(modifier: Modifier = Modifier) {
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(SearchProgressSize),
-            color = white,
+            color = foreground,
             strokeWidth = Dimens.micro,
         )
     }

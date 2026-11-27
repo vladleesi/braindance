@@ -15,10 +15,17 @@ class PageColumnTest {
     }
 
     @Test
+    fun aDesktopWindowFillsTheSpaceBesideTheSidebar() {
+        // The content area beside the desktop sidebar in a 1920 dp window: no spare width, only the gutters.
+        assertEquals(1624.dp, pageContentWidth(availableWidth = 1688.dp, gutter = Dimens.large))
+        assertEquals(Dimens.large, pageSidePadding(availableWidth = 1688.dp, gutter = Dimens.large))
+    }
+
+    @Test
     fun aWideWindowCentersTheColumnAtItsMaximumWidth() {
-        // The content area beside the desktop sidebar in a 1920 dp window.
-        assertEquals(Dimens.pageMaxWidth, pageContentWidth(availableWidth = 1688.dp, gutter = Dimens.large))
-        assertEquals(124.dp, pageSidePadding(availableWidth = 1688.dp, gutter = Dimens.large))
+        // The content area beside the desktop sidebar in a 2560 dp window.
+        assertEquals(Dimens.pageMaxWidth, pageContentWidth(availableWidth = 2328.dp, gutter = Dimens.large))
+        assertEquals(204.dp, pageSidePadding(availableWidth = 2328.dp, gutter = Dimens.large))
     }
 
     @Test

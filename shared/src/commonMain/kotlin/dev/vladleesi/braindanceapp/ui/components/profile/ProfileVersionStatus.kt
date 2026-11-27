@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.hotMagenta
-import dev.vladleesi.braindanceapp.ui.style.hotMagentaLight
+import dev.vladleesi.braindanceapp.ui.style.positive
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.statusGreen
+import dev.vladleesi.braindanceapp.ui.style.statusMagenta
 
 private val StatusDotSize = 6.dp
 
@@ -56,7 +56,7 @@ fun ProfileVersionStatus(
                 modifier =
                     Modifier
                         .size(StatusDotSize)
-                        .background(statusGreen, CircleShape)
+                        .background(positive, CircleShape)
                         .clearAndSetSemantics {},
             )
             Text(text = versionLabel, style = MaterialTheme.typography.caption, color = secondaryText)
@@ -64,7 +64,7 @@ fun ProfileVersionStatus(
         Text(
             text = statusLabel,
             style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.SemiBold),
-            color = hotMagentaLight,
+            color = statusMagenta,
             maxLines = 1,
             modifier =
                 Modifier

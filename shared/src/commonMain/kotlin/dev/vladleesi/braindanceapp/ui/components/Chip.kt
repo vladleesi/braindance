@@ -35,9 +35,9 @@ import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import dev.vladleesi.braindanceapp.ui.style.surface
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.focusRing
 import dev.vladleesi.braindanceapp.utils.isFocusVisible
 import dev.vladleesi.braindanceapp.utils.placeholder
@@ -117,7 +117,7 @@ fun Chip(
         Text(
             text = text,
             style = MaterialTheme.typography.caption,
-            color = white,
+            color = foreground,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

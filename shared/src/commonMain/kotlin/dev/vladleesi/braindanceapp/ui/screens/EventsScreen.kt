@@ -40,8 +40,11 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.PageTitle
 import dev.vladleesi.braindanceapp.navigation.ShareTarget
 import dev.vladleesi.braindanceapp.navigation.routes.EventsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
@@ -59,6 +62,7 @@ import dev.vladleesi.braindanceapp.ui.components.CardGrid
 import dev.vladleesi.braindanceapp.ui.components.LOADING_ROWS
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.PagedGridCardWidth
+import dev.vladleesi.braindanceapp.ui.components.ScrollAwayBarLayout
 import dev.vladleesi.braindanceapp.ui.components.SectionEmpty
 import dev.vladleesi.braindanceapp.ui.components.SectionError
 import dev.vladleesi.braindanceapp.ui.components.ShareButton
@@ -77,15 +81,16 @@ import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.home.PreviewEvent
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.pageSidePadding
+import dev.vladleesi.braindanceapp.ui.components.rememberContentScrollPosition
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.navBar
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.surface
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.EventCardModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.EventDetail
 import dev.vladleesi.braindanceapp.ui.viewmodels.EventStatus
@@ -119,19 +124,35 @@ internal fun EventsScreen(
     LaunchedEffect(viewModel) { viewModel.load() }
 
     if (route.id == null) {
+        PageTitle(route, stringResource(Res.string.home_events_title))
         val events by viewModel.events.collectAsStateWithLifecycle()
-        Column(modifier.fillMaxSize()) {
-            SpacerStatusBarInsets()
-            TopAppBar(
-                title = stringResource(Res.string.home_events_title),
-                titleStyle = MaterialTheme.typography.h2,
-                showBackButton = true,
-                onBackButtonPressed = { navigator.goBack() },
+        val grid = rememberLazyGridState()
+        ScrollAwayBarLayout(
+            position = rememberContentScrollPosition(grid),
+            bar = {
+                Column {
+                    SpacerStatusBarInsets()
+                    TopAppBar(
+                        title = stringResource(Res.string.home_events_title),
+                        titleStyle = MaterialTheme.typography.h2,
+                        showBackButton = true,
+                        onBackButtonPressed = { navigator.goBack() },
+                    )
+                }
+            },
+            modifier = modifier,
+        ) { topInset ->
+            EventsList(
+                state = events,
+                onRetry = viewModel::refresh,
+                onOpenEvent = { navigator.navigate(EventsRoute(it)) },
+                grid = grid,
+                topInset = topInset,
             )
-            EventsList(events, viewModel::refresh, onOpenEvent = { navigator.navigate(EventsRoute(it)) })
         }
     } else {
         val detail by viewModel.detail.collectAsStateWithLifecycle()
+        PageTitle(route, (detail as? EventDetail.Ready)?.event?.name ?: (detail as? EventDetail.Error)?.event?.name)
         val uriHandler = LocalUriHandler.current
         EventDetails(
             detail = detail,
@@ -149,9 +170,10 @@ private fun EventsList(
     state: SectionState<EventCardModel>,
     onRetry: () -> Unit,
     onOpenEvent: (Int) -> Unit,
+    grid: LazyGridState,
+    topInset: Dp,
 ) {
     val gutter = pageGutter()
-    val grid = rememberLazyGridState()
     BoxWithConstraints(Modifier.fillMaxSize()) {
         LazyVerticalGrid(
             GridCells.Adaptive(Dimens.giveAwayCardWidth),
@@ -159,8 +181,10 @@ private fun EventsList(
             state = grid,
             contentPadding =
                 PaddingValues(
-                    horizontal = pageSidePadding(maxWidth, gutter),
-                    vertical = Dimens.medium,
+                    start = pageSidePadding(maxWidth, gutter),
+                    top = topInset + Dimens.medium,
+                    end = pageSidePadding(maxWidth, gutter),
+                    bottom = Dimens.medium,
                 ),
             horizontalArrangement = Arrangement.spacedBy(Dimens.medium),
             verticalArrangement = Arrangement.spacedBy(Dimens.medium),
@@ -204,7 +228,7 @@ private fun EventDetails(
         if (detail == EventDetail.Loading) {
             EventDetailsSkeleton()
         } else {
-            val topInset = Dimens.topBarHeightWithInsets
+            val topInset = Dimens.heroTopBarHeightWithInsets
             CardGrid(
                 modifier = Modifier,
                 cardWidth = PagedGridCardWidth.Games,
@@ -269,7 +293,7 @@ private fun EventDetailsTopBar(
     val (barColor, chipColor, titleColor) =
         when {
             loading -> Triple(Color.Transparent, navBar, Color.Transparent)
-            event == null -> Triple(navBar, Color.Transparent, white)
+            event == null -> Triple(navBar, Color.Transparent, foreground)
             else -> grid.calculateScrollTopBarColors()
         }
     val title =
@@ -281,6 +305,7 @@ private fun EventDetailsTopBar(
     Column {
         StatusBarOverlay(backgroundColor = barColor)
         TopAppBar(
+            height = Dimens.heroTopBarHeight,
             tabBarColor = barColor,
             title = title,
             subtitle = event?.let { eventDates(it.startDate, it.endDate) }.orEmpty(),
@@ -310,7 +335,7 @@ private fun EventDetailsSkeleton() {
             },
         cardWidth = PagedGridCardWidth.Games,
         userScrollEnabled = false,
-        topPadding = Dimens.topBarHeightWithInsets,
+        topPadding = Dimens.heroTopBarHeightWithInsets,
     ) { columns ->
         item(key = HEADER_KEY, span = { GridItemSpan(maxLineSpan) }, contentType = "header-skeleton") {
             EventHeaderSkeleton()
@@ -347,9 +372,10 @@ private fun EventHeaderLayout(
     text: @Composable (Modifier, fullWidthWatch: Boolean) -> Unit,
 ) {
     val desktop = desktopLayout() != null
+    // The desktop layout spans the header across the column like a hero, with its text beside the logo.
     BoxWithConstraints(
         Modifier
-            .widthIn(max = Dimens.readableTextWidth)
+            .then(if (desktop) Modifier else Modifier.widthIn(max = Dimens.readableTextWidth))
             .fillMaxWidth()
             .background(surface, CornerShapes.large)
             .padding(Dimens.medium),
@@ -425,7 +451,9 @@ private fun eventDates(
 @Preview
 @Composable
 internal fun EventsListPreview() {
-    BraindanceTheme { EventsList(SectionState.Success(listOf(PreviewEvent)), {}, {}) }
+    BraindanceTheme {
+        EventsList(SectionState.Success(listOf(PreviewEvent)), {}, {}, grid = rememberLazyGridState(), topInset = 0.dp)
+    }
 }
 
 @Preview

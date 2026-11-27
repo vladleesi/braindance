@@ -26,6 +26,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -42,13 +43,13 @@ import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.hotMagenta
 import dev.vladleesi.braindanceapp.ui.style.icons.OpenInNew
 import dev.vladleesi.braindanceapp.ui.style.neonCyan
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import dev.vladleesi.braindanceapp.ui.style.signalYellow
-import dev.vladleesi.braindanceapp.ui.style.void
-import dev.vladleesi.braindanceapp.ui.style.white
 
 // Comfortable for touch, and the same height for every text button so rows of them align.
 internal val ButtonMinHeight = 48.dp
@@ -61,7 +62,9 @@ private const val DISABLED_CONTAINER_ALPHA = 0.12f
 
 // Material's disabled content emphasis (ContentAlpha.disabled, which can only be read in composition).
 private const val DISABLED_CONTENT_ALPHA = 0.38f
-private val DisabledContentColor = white.copy(alpha = DISABLED_CONTENT_ALPHA)
+private val disabledContentColor: Color
+    @Composable @ReadOnlyComposable
+    get() = foreground.copy(alpha = DISABLED_CONTENT_ALPHA)
 
 // The Echo trail, as on the landing site's primary button: the button lifts by one step, and flat cyan, magenta, and
 // yellow copies appear one, two, and three steps behind it.
@@ -76,13 +79,13 @@ private val OutlineArrowSize = 16.dp
 private const val OUTLINE_ARROW_ROTATION = 180f
 
 /**
- * The main action of a view: a white pill with dark text, the logo in miniature. Under a mouse pointer it lifts and
- * the Echo trail appears behind it, the same effect as the landing site's primary button; touch screens have no hover,
- * so there it stays flat. Use it once per view, for the action the view exists for. [trailingIcon] marks what the
- * action does, for example opening another site; [trailingIconDescription] says so to screen readers.
- *
- * A disabled button is dimmed, for an action that is unavailable. While [loading], a progress indicator replaces the
- * trailing icon and the button ignores presses but keeps its colors, because the action is underway, not unavailable.
+ * The main action of a view: a pill in the foreground color with text in the canvas color, the logo in miniature. Under
+ * a mouse pointer it lifts and the Echo trail appears behind it, the same effect as the landing site's primary button.
+ * Touch screens have no hover, so there it stays flat. Use it once per view, for the action the view exists for.
+ * [trailingIcon] marks what the action does, for example opening another site, and [trailingIconDescription] says so to
+ * screen readers. A disabled button is dimmed, for an action that is unavailable. While [loading], a progress indicator
+ * replaces the trailing icon and the button ignores presses but keeps its colors, because the action is underway, not
+ * unavailable.
  */
 @Composable
 fun PrimaryButton(
@@ -103,7 +106,8 @@ fun PrimaryButton(
             targetValue = if (hovered.value && interactive) 1f else 0f,
             animationSpec = tween(ECHO_MILLIS),
         )
-    val contentColor = if (enabled) void else DisabledContentColor
+    // The pill inverts the theme: the foreground color as its fill, and the canvas color for its text.
+    val contentColor = if (enabled) background else disabledContentColor
     Button(
         onClick = onClick,
         modifier =
@@ -128,9 +132,16 @@ fun PrimaryButton(
         elevation = null,
         colors =
             ButtonDefaults.buttonColors(
-                backgroundColor = white,
-                contentColor = void,
-                disabledBackgroundColor = if (enabled) white else white.copy(alpha = DISABLED_CONTAINER_ALPHA),
+                backgroundColor = foreground,
+                contentColor = background,
+                disabledBackgroundColor =
+                    if (enabled) {
+                        foreground
+                    } else {
+                        foreground.copy(
+                            alpha = DISABLED_CONTAINER_ALPHA,
+                        )
+                    },
                 disabledContentColor = contentColor,
             ),
         contentPadding = ButtonContentPadding,
@@ -188,9 +199,9 @@ fun TonalButton(
         colors =
             ButtonDefaults.buttonColors(
                 backgroundColor = secondaryVariant,
-                contentColor = white,
+                contentColor = foreground,
                 disabledBackgroundColor = secondaryVariant,
-                disabledContentColor = DisabledContentColor,
+                disabledContentColor = disabledContentColor,
             ),
         contentPadding = ButtonContentPadding,
         content = content,
@@ -210,12 +221,12 @@ fun OutlineButton(
     OutlinedButton(
         onClick = onClick,
         shape = CornerShapes.pill,
-        border = BorderStroke(Dimens.one, white.copy(alpha = OUTLINE_ALPHA)),
-        colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent, contentColor = white),
+        border = BorderStroke(Dimens.one, foreground.copy(alpha = OUTLINE_ALPHA)),
+        colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.Transparent, contentColor = foreground),
         contentPadding = PaddingValues(horizontal = Dimens.compact, vertical = Dimens.small),
         modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
     ) {
-        Text(text = text, color = white)
+        Text(text = text, color = foreground)
         Spacer(Modifier.width(Dimens.small))
         Icon(
             imageVector = ChevronLeft,
@@ -230,7 +241,7 @@ fun OutlineButton(
 internal fun ButtonsPreview() {
     BraindanceTheme {
         Column(
-            modifier = Modifier.background(void).padding(Dimens.medium),
+            modifier = Modifier.background(background).padding(Dimens.medium),
             verticalArrangement = Arrangement.spacedBy(Dimens.medium),
         ) {
             PrimaryButton(text = "Explore games", onClick = {})

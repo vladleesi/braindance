@@ -27,9 +27,9 @@ import dev.vladleesi.braindanceapp.ui.components.Tag
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.surface
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameFact
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameFactsModel
 import dev.vladleesi.braindanceapp.utils.placeholder
@@ -89,7 +89,7 @@ private fun FactCell(fact: GameFact) {
             fact.value,
             modifier = Modifier.weight(FACT_VALUE_WEIGHT).alignByBaseline(),
             style = MaterialTheme.typography.subtitle2.copy(fontWeight = FontWeight.SemiBold),
-            color = white,
+            color = foreground,
         )
     }
 }

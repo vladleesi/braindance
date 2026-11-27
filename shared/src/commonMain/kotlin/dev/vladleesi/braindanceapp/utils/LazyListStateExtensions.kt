@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.layout.LazyLayoutCacheWindow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -16,8 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalDensity
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.navBar
-import dev.vladleesi.braindanceapp.ui.style.white
 
 /** The default cache window of [rememberCachedLazyListState]: one viewport ahead and one behind. */
 const val LAZY_CACHE_WINDOW_VIEWPORT_FRACTION = 1f
@@ -68,7 +69,7 @@ fun rememberCachedLazyGridState(
 
 @Composable
 fun LazyListState.calculateScrollTopBarColors(): Triple<Color, Color, Color> {
-    val maxScrollOffsetPx = with(LocalDensity.current) { Dimens.topBarHeightWithInsets.toPx() }
+    val maxScrollOffsetPx = with(LocalDensity.current) { Dimens.heroTopBarHeightWithInsets.toPx() }
 
     // Derived so callers recompose only while the fraction changes, not on every scroll frame.
     val fraction by remember(this, maxScrollOffsetPx) {
@@ -90,7 +91,7 @@ fun LazyListState.calculateScrollTopBarColors(): Triple<Color, Color, Color> {
 
 @Composable
 internal fun LazyGridState.calculateScrollTopBarColors(): Triple<Color, Color, Color> {
-    val maxScrollOffsetPx = with(LocalDensity.current) { Dimens.topBarHeightWithInsets.toPx() }
+    val maxScrollOffsetPx = with(LocalDensity.current) { Dimens.heroTopBarHeightWithInsets.toPx() }
     val fraction by remember(this, maxScrollOffsetPx) {
         derivedStateOf {
             if (firstVisibleItemIndex == 0) {
@@ -103,11 +104,13 @@ internal fun LazyGridState.calculateScrollTopBarColors(): Triple<Color, Color, C
     return scrollTopBarColors(fraction)
 }
 
+@Composable
+@ReadOnlyComposable
 private fun scrollTopBarColors(fraction: Float): Triple<Color, Color, Color> {
     val targetColor = navBar
     return Triple(
         lerp(Color.Transparent, targetColor, fraction),
         lerp(targetColor, Color.Transparent, fraction),
-        lerp(Color.Transparent, white, fraction),
+        lerp(Color.Transparent, foreground, fraction),
     )
 }

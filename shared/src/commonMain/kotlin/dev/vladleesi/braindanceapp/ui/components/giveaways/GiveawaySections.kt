@@ -44,10 +44,10 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.icons.OpenInNew
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawayEnding
 import dev.vladleesi.braindanceapp.utils.formatShortDate
 import dev.vladleesi.braindanceapp.utils.withThousandsSeparators
@@ -158,7 +158,12 @@ private fun FactRow(
         )
         Spacer(Modifier.width(Dimens.medium))
         Column(modifier = Modifier.weight(1f).alignByBaseline(), horizontalAlignment = Alignment.End) {
-            Text(text = value, style = MaterialTheme.typography.subtitle1, color = white, textAlign = TextAlign.End)
+            Text(
+                text = value,
+                style = MaterialTheme.typography.subtitle1,
+                color = foreground,
+                textAlign = TextAlign.End,
+            )
             supportingText?.let { text ->
                 Text(
                     text = text,
@@ -182,7 +187,7 @@ fun GiveawaySection(
         Text(
             text = title,
             style = MaterialTheme.typography.h3,
-            color = white,
+            color = foreground,
             modifier = Modifier.semantics { heading() },
         )
         content()
@@ -200,7 +205,7 @@ fun ClaimSteps(
 ) {
     SelectionContainer(modifier = modifier) {
         if (steps.size == 1) {
-            Text(text = steps.single(), style = MaterialTheme.typography.body2, color = white)
+            Text(text = steps.single(), style = MaterialTheme.typography.body2, color = foreground)
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.compact)) {
                 steps.forEachIndexed { index, step ->
@@ -209,7 +214,7 @@ fun ClaimSteps(
                         Text(
                             text = step,
                             style = MaterialTheme.typography.body2,
-                            color = white,
+                            color = foreground,
                             modifier = Modifier.weight(1f).padding(top = Dimens.micro),
                         )
                     }
@@ -225,7 +230,7 @@ private fun StepNumber(number: Int) {
         modifier = Modifier.size(StepNumberSize).background(secondary, CornerShapes.pill),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = number.toString(), style = MaterialTheme.typography.caption, color = white)
+        Text(text = number.toString(), style = MaterialTheme.typography.caption, color = foreground)
     }
 }
 

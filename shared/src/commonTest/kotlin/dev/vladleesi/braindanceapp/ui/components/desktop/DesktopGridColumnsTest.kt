@@ -9,16 +9,25 @@ import kotlin.test.assertEquals
 class DesktopGridColumnsTest {
     @Test
     fun wideLayoutShowsEachSectionAtItsMaximum() {
-        // The main column beside the sidebar and the context column in a 1440 dp window.
-        assertEquals(DesktopGridColumns(games = 5, anticipated = 6, giveaways = 5), DesktopGridColumns.forWidth(832.dp))
+        // The main column beside the sidebar and the context column at the widest page column (1920 dp).
+        assertEquals(
+            DesktopGridColumns(games = 7, anticipated = 8, giveaways = 6),
+            DesktopGridColumns.forWidth(1608.dp),
+        )
     }
 
     @Test
     fun widerColumnsNeverExceedTheMaximums() {
         assertEquals(
-            DesktopGridColumns(games = 5, anticipated = 6, giveaways = 5),
-            DesktopGridColumns.forWidth(1120.dp),
+            DesktopGridColumns(games = 7, anticipated = 8, giveaways = 6),
+            DesktopGridColumns.forWidth(2400.dp),
         )
+    }
+
+    @Test
+    fun aLaptopWindowKeepsFiveGameCards() {
+        // The main column beside the sidebar and the context column in a 1440 dp window.
+        assertEquals(DesktopGridColumns(games = 5, anticipated = 6, giveaways = 5), DesktopGridColumns.forWidth(832.dp))
     }
 
     @Test

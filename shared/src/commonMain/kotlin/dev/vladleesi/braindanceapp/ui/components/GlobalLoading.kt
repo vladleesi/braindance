@@ -13,7 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.ui.style.foreground
 
 @Composable
 fun GlobalLoading(modifier: Modifier = Modifier) {
@@ -28,7 +28,7 @@ fun GlobalLoading(modifier: Modifier = Modifier) {
                 Modifier
                     .size(64.dp)
                     .align(Alignment.Center),
-            color = white,
+            color = foreground,
             strokeWidth = Dimens.tiny,
         )
     }

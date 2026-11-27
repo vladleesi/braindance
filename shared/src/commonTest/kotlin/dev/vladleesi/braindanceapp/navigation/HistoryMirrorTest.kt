@@ -57,6 +57,12 @@ class HistoryMirrorTest {
 
         override fun observe(onChange: (path: String?, index: Int?, snapshotJson: String?) -> Unit): () -> Unit = {}
 
+        // History does not depend on titles, so these tests do not record them.
+        override fun setTitle(
+            path: String,
+            title: String?,
+        ) = Unit
+
         /** The Back button: the browser moves, then the page receives popstate. */
         fun pressBack(
             mirror: HistoryMirror,

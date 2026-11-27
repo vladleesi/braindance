@@ -4,8 +4,8 @@ package dev.vladleesi.braindanceapp.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,8 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.vladleesi.braindanceapp.data.DataError
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.PageTitle
 import dev.vladleesi.braindanceapp.navigation.ShareTarget
 import dev.vladleesi.braindanceapp.navigation.routes.Compilation
+import dev.vladleesi.braindanceapp.navigation.routes.CompilationRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.navigation.routes.GiveawayDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
@@ -27,6 +29,7 @@ import dev.vladleesi.braindanceapp.resources.home_screen_popular_right_now
 import dev.vladleesi.braindanceapp.ui.components.PagedGrid
 import dev.vladleesi.braindanceapp.ui.components.PagedGridCardWidth
 import dev.vladleesi.braindanceapp.ui.components.PagedGridSkeleton
+import dev.vladleesi.braindanceapp.ui.components.ScrollAwayBarLayout
 import dev.vladleesi.braindanceapp.ui.components.SectionEmpty
 import dev.vladleesi.braindanceapp.ui.components.SectionError
 import dev.vladleesi.braindanceapp.ui.components.ShareButton
@@ -40,6 +43,7 @@ import dev.vladleesi.braindanceapp.ui.components.home.GameCardModel
 import dev.vladleesi.braindanceapp.ui.components.home.GameCardSkeleton
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.pagedGridMessage
+import dev.vladleesi.braindanceapp.ui.components.rememberContentScrollPosition
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
@@ -90,6 +94,7 @@ fun CompilationScreen(
             LaunchedEffect(viewModel) { viewModel.load() }
             val state by viewModel.state.collectAsStateWithLifecycle()
             val title = stringResource(Res.string.home_screen_popular_latest_giveaways)
+            PageTitle(CompilationRoute(compilation), title)
             CompilationContent(
                 title = title,
                 state = state,
@@ -120,6 +125,7 @@ internal fun GameCompilation(
 ) {
     // Loads only on first navigation; returning from a game keeps the loaded pages and the scroll position.
     LaunchedEffect(viewModel) { viewModel.load() }
+    PageTitle(CompilationRoute(compilation), title)
     val state by viewModel.state.collectAsStateWithLifecycle()
     CompilationContent(
         title = title,
@@ -159,22 +165,30 @@ internal fun <T> CompilationContent(
     itemContent: @Composable (T) -> Unit,
 ) {
     val gridState = rememberCachedLazyGridState()
-    Column(modifier = modifier.fillMaxSize()) {
-        SpacerStatusBarInsets()
-        TopAppBar(
-            title = title,
-            titleStyle = MaterialTheme.typography.h2,
-            showBackButton = true,
-            onBackButtonPressed = onBack,
-            actions =
-                if (shareTarget != null && showsShareActions()) {
-                    { ShareButton(target = shareTarget, visible = true) }
-                } else {
-                    null
-                },
-        )
+    ScrollAwayBarLayout(
+        position = rememberContentScrollPosition(gridState),
+        bar = {
+            Column {
+                SpacerStatusBarInsets()
+                TopAppBar(
+                    title = title,
+                    titleStyle = MaterialTheme.typography.h2,
+                    showBackButton = true,
+                    onBackButtonPressed = onBack,
+                    actions =
+                        if (shareTarget != null && showsShareActions()) {
+                            { ShareButton(target = shareTarget, visible = true) }
+                        } else {
+                            null
+                        },
+                )
+            }
+        },
+        modifier = modifier,
+    ) { topInset ->
         when (state) {
-            PagedListState.Loading -> PagedGridSkeleton(skeleton = skeleton, cardWidth = cardWidth)
+            PagedListState.Loading ->
+                PagedGridSkeleton(skeleton = skeleton, cardWidth = cardWidth, contentTopInset = topInset)
             is PagedListState.Loaded ->
                 PagedGrid(
                     items = state.items,
@@ -185,14 +199,16 @@ internal fun <T> CompilationContent(
                     skeleton = skeleton,
                     state = gridState,
                     cardWidth = cardWidth,
+                    contentTopInset = topInset,
                     itemContent = itemContent,
                 )
-            PagedListState.Empty -> SectionEmpty(modifier = Modifier.pagedGridMessage(pageGutter()))
+            PagedListState.Empty ->
+                SectionEmpty(modifier = Modifier.padding(top = topInset).pagedGridMessage(pageGutter()))
             is PagedListState.Error ->
                 SectionError(
                     message = state.error.userMessage(),
                     onRetry = onRetry,
-                    modifier = Modifier.pagedGridMessage(pageGutter()),
+                    modifier = Modifier.padding(top = topInset).pagedGridMessage(pageGutter()),
                 )
         }
     }

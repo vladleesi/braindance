@@ -8,6 +8,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
@@ -17,6 +18,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -34,8 +36,6 @@ private const val SHIMMER_END_WIDTH_FRACTION = 2f
 // A text placeholder's bar leaves this share of its line's height free above and below, so lines read as lines.
 private const val LINE_INSET_FRACTION = 0.2f
 
-private val ShimmerColors = listOf(secondary, shimmer, secondary)
-
 @Composable
 private fun rememberShimmerProgress(): State<Float> =
     rememberInfiniteTransition().animateFloat(
@@ -44,13 +44,22 @@ private fun rememberShimmerProgress(): State<Float> =
         animationSpec = infiniteRepeatable(animation = tween(SHIMMER_DURATION)),
     )
 
+/** The shimmer's colors, from the theme: a lighter band passing over the control color. */
+@Composable
+private fun rememberShimmerColors(): List<Color> {
+    val base = secondary
+    val highlight = shimmer
+    return remember(base, highlight) { listOf(base, highlight, base) }
+}
+
 private fun shimmerBrush(
     progress: Float,
     size: Size,
+    colors: List<Color>,
 ): Brush {
     val startOffsetX = progress * size.width
     return Brush.linearGradient(
-        colors = ShimmerColors,
+        colors = colors,
         start = Offset(startOffsetX, 0f),
         end = Offset(startOffsetX + size.width, size.height),
     )
@@ -60,7 +69,8 @@ private fun shimmerBrush(
 fun Modifier.shimmerEffect(): Modifier =
     composed {
         val progress = rememberShimmerProgress()
-        drawBehind { drawRect(brush = shimmerBrush(progress.value, size)) }
+        val colors = rememberShimmerColors()
+        drawBehind { drawRect(brush = shimmerBrush(progress.value, size, colors)) }
     }
 
 internal fun Modifier.placeholderSemantics(): Modifier =
@@ -97,9 +107,10 @@ fun Modifier.textPlaceholder(
     if (visible) {
         composed {
             val progress = rememberShimmerProgress()
+            val colors = rememberShimmerColors()
             placeholderSemantics().drawWithContent {
                 val text = layout() ?: return@drawWithContent
-                val brush = shimmerBrush(progress.value, size)
+                val brush = shimmerBrush(progress.value, size, colors)
                 for (line in 0 until text.lineCount) {
                     val top = text.getLineTop(line)
                     val height = text.getLineBottom(line) - top

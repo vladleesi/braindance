@@ -2,7 +2,6 @@
 
 package dev.vladleesi.braindanceapp.ui.screens
 
-import Bell
 import CalendarDays
 import Star
 import androidx.compose.foundation.background
@@ -23,6 +22,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.heading
@@ -63,7 +64,6 @@ import dev.vladleesi.braindanceapp.resources.desktop_tagline
 import dev.vladleesi.braindanceapp.resources.home_events_title
 import dev.vladleesi.braindanceapp.resources.home_latest_news_description
 import dev.vladleesi.braindanceapp.resources.home_latest_news_title
-import dev.vladleesi.braindanceapp.resources.home_notifications_coming_soon
 import dev.vladleesi.braindanceapp.resources.home_open_news
 import dev.vladleesi.braindanceapp.resources.home_open_releases
 import dev.vladleesi.braindanceapp.resources.home_recommendations_description
@@ -74,13 +74,11 @@ import dev.vladleesi.braindanceapp.resources.home_upcoming_releases_description
 import dev.vladleesi.braindanceapp.resources.releases_upcoming_title
 import dev.vladleesi.braindanceapp.system.DesktopLayout
 import dev.vladleesi.braindanceapp.ui.components.COVER_ASPECT_RATIO
-import dev.vladleesi.braindanceapp.ui.components.ComingSoonAction
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonCard
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.OutlineButton
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.PrimaryButton
-import dev.vladleesi.braindanceapp.ui.components.SearchAction
 import dev.vladleesi.braindanceapp.ui.components.SurfaceCard
 import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
 import dev.vladleesi.braindanceapp.ui.components.desktop.BrandAccentStrip
@@ -122,12 +120,12 @@ private const val HERO_SCRIM_FADE_ALPHA = 0.6f
 private const val HERO_SCRIM_END_ALPHA = 0.2f
 
 // Opaque behind the text, then fading so the covers on the right stay visible but subdued.
-private val HeroScrim =
+private fun heroScrim(chrome: Color): Brush =
     Brush.horizontalGradient(
-        0f to navBar,
-        HERO_SCRIM_OPAQUE_END to navBar,
-        HERO_SCRIM_FADE_STOP to navBar.copy(alpha = HERO_SCRIM_FADE_ALPHA),
-        1f to navBar.copy(alpha = HERO_SCRIM_END_ALPHA),
+        0f to chrome,
+        HERO_SCRIM_OPAQUE_END to chrome,
+        HERO_SCRIM_FADE_STOP to chrome.copy(alpha = HERO_SCRIM_FADE_ALPHA),
+        1f to chrome.copy(alpha = HERO_SCRIM_END_ALPHA),
     )
 
 /**
@@ -161,18 +159,11 @@ internal fun DesktopHomeScreen(
         // The scroll container spans the whole width, so the wheel also scrolls from the margins.
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-            // The same bar as every other tab, so switching tabs keeps the title and actions in place.
+            // The same bar as every other tab, so switching tabs keeps the title in place. Search, notifications,
+            // and the account button are in the desktop header above it.
             TopLevelTopAppBar(
                 title = stringResource(Res.string.desktop_tagline),
                 onProfileClick = { navigator.navigate(ProfileRoute) },
-                actions = {
-                    // Starts a search on Discover, as on every Home.
-                    SearchAction(onClick = navigator::openSearch)
-                    ComingSoonAction(
-                        imageVector = Bell,
-                        label = stringResource(Res.string.home_notifications_coming_soon),
-                    )
-                },
             )
             Row(
                 modifier =
@@ -301,6 +292,8 @@ private fun DesktopHero(
     visibleTrendingCount: Int,
     onExploreClick: () -> Unit,
 ) {
+    val chrome = navBar
+    val scrim = remember(chrome) { heroScrim(chrome) }
     Box(
         modifier =
             Modifier
@@ -340,12 +333,14 @@ private fun DesktopHero(
             modifier =
                 Modifier
                     .matchParentSize()
-                    .background(HeroScrim),
+                    .background(scrim),
         )
         Column(
             modifier =
                 Modifier
                     .fillMaxWidth(HERO_TEXT_WIDTH_FRACTION)
+                    // In the widest page column, the text keeps a readable line length and the covers keep the rest.
+                    .widthIn(max = Dimens.readableTextWidth)
                     .padding(Dimens.large),
             verticalArrangement = Arrangement.spacedBy(Dimens.compact),
         ) {

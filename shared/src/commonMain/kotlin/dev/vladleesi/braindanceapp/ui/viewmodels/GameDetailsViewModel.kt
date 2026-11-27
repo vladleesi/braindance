@@ -376,13 +376,15 @@ internal sealed interface GameBadge {
 }
 
 /**
- * The API's backdrop at the two sizes the hero draws it. It sits dimmed behind the hero, where IGDB's small sizes are
- * enough: a larger file would only add bytes and decoding the scrim hides.
+ * The API's backdrop at the sizes the hero draws it: IGDB's small size on phones, where it sits dimmed and the data
+ * matters more, and a ladder up to 1080p for wide layouts, which pick by the window's width.
  */
 private fun String.toBackdropImage() =
     BackdropImage(
         compactUrl = toCoverUrl(CoverSize.SCREENSHOT_MED),
         wideUrl = toCoverUrl(CoverSize.SCREENSHOT_BIG),
+        hdUrl = toCoverUrl(CoverSize.P_720),
+        fullHdUrl = toCoverUrl(CoverSize.P_1080),
     )
 
 // Cards without an ID cannot be opened, and lazy lists need unique keys.
@@ -459,11 +461,31 @@ internal data class GameDetails(
     val releaseId: Int get() = selectedVariant?.id ?: id
 }
 
-/** The backdrop at a smaller size for compact layouts and a larger one for wide layouts. */
+/**
+ * The backdrop at a small size for compact layouts, and at IGDB's larger sizes for wide ones: 889 px wide
+ * ([wideUrl]), 720p ([hdUrl]), and 1080p ([fullHdUrl]).
+ */
 data class BackdropImage(
     val compactUrl: String,
     val wideUrl: String,
-)
+    val hdUrl: String,
+    val fullHdUrl: String,
+) {
+    /**
+     * The wide layout's image for a backdrop drawn up to [widthPx] pixels wide: the smallest size that fills it, so a
+     * large or high-density screen gets the sharpest file IGDB resizes to, and a small window no more than it shows.
+     */
+    fun wideUrlFor(widthPx: Int): String =
+        when {
+            widthPx <= SCREENSHOT_BIG_WIDTH_PX -> wideUrl
+            widthPx <= P_720_WIDTH_PX -> hdUrl
+            else -> fullHdUrl
+        }
+}
+
+// The widths of IGDB's screenshot_big and 720p sizes.
+private const val SCREENSHOT_BIG_WIDTH_PX = 889
+private const val P_720_WIDTH_PX = 1280
 
 data class GenreTag(
     val id: Int,

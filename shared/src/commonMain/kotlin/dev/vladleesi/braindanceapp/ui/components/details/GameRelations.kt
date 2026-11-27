@@ -69,8 +69,8 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameOrigin
 import dev.vladleesi.braindanceapp.ui.viewmodels.OriginRelation
 import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedCategory
@@ -112,12 +112,13 @@ fun OriginLine(
             OriginRelation.OF -> stringResource(Res.string.game_relation_of, kind, origin.gameName)
             OriginRelation.PART_OF -> stringResource(Res.string.game_relation_part_of, origin.gameName)
         }
+    val linkColor = accent
     val linkStyles =
-        remember {
+        remember(linkColor) {
             TextLinkStyles(
-                style = SpanStyle(color = accent),
-                hoveredStyle = SpanStyle(color = accent, textDecoration = TextDecoration.Underline),
-                focusedStyle = SpanStyle(color = accent, textDecoration = TextDecoration.Underline),
+                style = SpanStyle(color = linkColor),
+                hoveredStyle = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline),
+                focusedStyle = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline),
             )
         }
     // The name is found in the formatted sentence, so translations may place it anywhere.
@@ -345,7 +346,7 @@ fun RelatedGameRow(
             Text(
                 text = game.title,
                 style = MaterialTheme.typography.subtitle1,
-                color = white,
+                color = foreground,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )

@@ -44,8 +44,8 @@ import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.system.hasTouchScreen
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith70Alpha
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.kmpsharekit.ShareKit
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.StringResource
@@ -192,7 +192,7 @@ fun ShareButton(
         Icon(
             imageVector = if (copied) Check else Share,
             contentDescription = description,
-            tint = white,
+            tint = foreground,
             // Both icons at the share icon's size, so the button does not change when it shows the check mark.
             modifier = Modifier.size(Share.defaultWidth),
         )

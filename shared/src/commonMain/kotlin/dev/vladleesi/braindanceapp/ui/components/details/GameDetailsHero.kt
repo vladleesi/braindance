@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import dev.vladleesi.braindanceapp.system.windowSize
 import dev.vladleesi.braindanceapp.ui.components.COVER_ASPECT_RATIO
 import dev.vladleesi.braindanceapp.ui.components.PlatformLogoList
 import dev.vladleesi.braindanceapp.ui.components.SpacerTopBarWithStatusBarInsets
@@ -102,6 +104,7 @@ private val ExpandedMetrics
  * [expanded] is for tablets and wide windows: the cover grows to poster size and the actions and genres join the
  * column beside it. On phones the genres and then the actions span the width under the cover, where the actions are
  * easy to reach. The hero has no state of its own; [libraryActions] and the callbacks come from the screen.
+ * [scrolledPx] moves the artwork with a parallax as the page scrolls (see [HeroBackdrop]).
  * [relation] goes right under the title, such as the game an expansion belongs to. While [loadingRelease], another
  * version's cover, title, facts, and genres are loading: the current ones keep their place as shimmering
  * placeholders of their exact size, so nothing moves until the new ones arrive.
@@ -116,16 +119,23 @@ internal fun GameDetailsHero(
     modifier: Modifier = Modifier,
     relation: (@Composable () -> Unit)? = null,
     loadingRelease: Boolean = false,
+    scrolledPx: () -> Int = { 0 },
 ) {
     val metrics = if (expanded) ExpandedMetrics else CompactMetrics
     Box(modifier = modifier.fillMaxWidth()) {
+        // Wide layouts pick by the window's width, which the backdrop never exceeds: the file stays the same while the
+        // page's width changes with the sidebar.
+        val windowWidthPx = with(LocalDensity.current) { windowSize().width.roundToPx() }
         HeroBackdrop(
-            imageUrl = details.backdrop?.let { if (expanded) it.wideUrl else it.compactUrl },
+            imageUrl = details.backdrop?.let { if (expanded) it.wideUrlFor(windowWidthPx) else it.compactUrl },
             modifier = Modifier.matchParentSize(),
+            scrolledPx = scrolledPx,
         )
         // The artwork spans the whole width; the cover and text line up with the page column below.
         Column(modifier = Modifier.pageColumn(pageGutter()).fillMaxWidth()) {
             SpacerTopBarWithStatusBarInsets()
+            // A band of artwork between the bar and the cover, wider on large screens, where there is room for it.
+            Spacer(Modifier.height(if (expanded) Dimens.large else Dimens.medium))
             Row(verticalAlignment = Alignment.Bottom) {
                 // A game without a cover leaves the title the whole width rather than beside an empty tile.
                 if (details.coverImageUrl.isNotBlank()) {
@@ -338,7 +348,10 @@ internal fun GameDetailsHeroCompactPreview() {
 internal fun GameDetailsHeroExpandedPreview() {
     BraindanceTheme {
         GameDetailsHero(
-            details = PreviewDetails.copy(backdrop = BackdropImage(compactUrl = "", wideUrl = "")),
+            details =
+                PreviewDetails.copy(
+                    backdrop = BackdropImage(compactUrl = "", wideUrl = "", hdUrl = "", fullHdUrl = ""),
+                ),
             expanded = true,
             libraryActions = LibraryActionsState.Ready(LibraryStatus.Wishlist),
             onLibraryStatusChange = {},

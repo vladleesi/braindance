@@ -37,10 +37,10 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.surface
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.EventCardModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.EventDateLabel
 import dev.vladleesi.braindanceapp.ui.viewmodels.EventStatus
@@ -105,11 +105,11 @@ internal fun EventCard(
         verticalArrangement = Arrangement.spacedBy(Dimens.small),
     ) {
         EventLogo(event.logoUrl, interactionSource = interaction)
+        // The game cards' title style, so event and game titles read alike across Home.
         Text(
             event.name,
             Modifier.clearAndSetSemantics {},
-            style = MaterialTheme.typography.body2,
-            color = white,
+            style = MaterialTheme.typography.subtitle1,
             minLines = 2,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -162,7 +162,7 @@ internal fun EventStatusTag(status: EventStatus) {
                 if (live) accent.copy(alpha = LIVE_TAG_FILL_ALPHA) else secondary,
                 CornerShapes.pill,
             ),
-        color = if (live) accent else white,
+        color = if (live) accent else foreground,
     )
 }
 
@@ -173,8 +173,8 @@ internal fun EventCardSkeleton(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(Dimens.small),
     ) {
         EventLogoSkeleton()
-        TextLineSkeleton(MaterialTheme.typography.body2, widthFraction = NAME_SKELETON_FRACTION)
-        TextLineSkeleton(MaterialTheme.typography.body2, widthFraction = NAME_SKELETON_FRACTION)
+        TextLineSkeleton(MaterialTheme.typography.subtitle1, widthFraction = NAME_SKELETON_FRACTION)
+        TextLineSkeleton(MaterialTheme.typography.subtitle1, widthFraction = NAME_SKELETON_FRACTION)
         TextLineSkeleton(MaterialTheme.typography.caption, widthFraction = NAME_SKELETON_FRACTION)
         TextLineSkeleton(MaterialTheme.typography.caption, widthFraction = STATUS_SKELETON_FRACTION)
     }

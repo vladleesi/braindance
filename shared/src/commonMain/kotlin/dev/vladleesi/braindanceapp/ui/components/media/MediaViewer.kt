@@ -80,8 +80,8 @@ import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.black
 import dev.vladleesi.braindanceapp.ui.style.icons.Expand
 import dev.vladleesi.braindanceapp.ui.style.icons.Shrink
+import dev.vladleesi.braindanceapp.ui.style.onMedia
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.rememberCachedImageRequest
 import dev.vladleesi.braindanceapp.utils.shimmerEffect
 import dev.vladleesi.braindanceapp.utils.toContentDescription
@@ -231,7 +231,7 @@ private fun ViewerTopBar(
             Text(
                 text = stringResource(Res.string.game_media_position, index + 1, state.gallery.screenshots.size),
                 style = MaterialTheme.typography.subtitle2,
-                color = white,
+                color = onMedia,
                 maxLines = 1,
             )
             Text(

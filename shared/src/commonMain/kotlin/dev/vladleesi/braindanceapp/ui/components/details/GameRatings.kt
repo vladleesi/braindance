@@ -15,6 +15,7 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -42,15 +43,17 @@ import dev.vladleesi.braindanceapp.ui.components.Tag
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.hotMagenta
-import dev.vladleesi.braindanceapp.ui.style.hotMagentaLight
 import dev.vladleesi.braindanceapp.ui.style.neonCyan
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import dev.vladleesi.braindanceapp.ui.style.signalYellow
-import dev.vladleesi.braindanceapp.ui.style.void
-import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.ui.style.statusCyan
+import dev.vladleesi.braindanceapp.ui.style.statusMagenta
+import dev.vladleesi.braindanceapp.ui.style.statusYellow
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameBadge
 import dev.vladleesi.braindanceapp.utils.placeholder
 import dev.vladleesi.braindanceapp.utils.placeholderSemantics
@@ -90,7 +93,7 @@ internal fun GameRatings(
                 GameBadge.Adult ->
                     StatusTag(
                         stringResource(Res.string.badge_adult),
-                        hotMagentaLight,
+                        statusMagenta,
                         placeholder,
                         Modifier.align(Alignment.CenterVertically),
                     )
@@ -116,13 +119,15 @@ private fun StatusTag(
     )
 }
 
+@Composable
+@ReadOnlyComposable
 private fun GameBadge.Status.tagColor() =
     when (this) {
         // Still being made: playable, but not finished.
-        GameBadge.Status.Alpha, GameBadge.Status.Beta, GameBadge.Status.EarlyAccess -> signalYellow
+        GameBadge.Status.Alpha, GameBadge.Status.Beta, GameBadge.Status.EarlyAccess -> statusYellow
         // No longer, or not yet, something to play or buy.
-        GameBadge.Status.Offline, GameBadge.Status.Cancelled, GameBadge.Status.Delisted -> neonCyan
-        GameBadge.Status.Rumored -> neonCyan
+        GameBadge.Status.Offline, GameBadge.Status.Cancelled, GameBadge.Status.Delisted -> statusCyan
+        GameBadge.Status.Rumored -> statusCyan
     }
 
 @Composable
@@ -151,13 +156,13 @@ private fun GameScore(
                 Modifier
                     .size(maxOf(MinimumScoreDiameter, scaledDiameter))
                     .placeholder(visible = placeholder, shape = CircleShape)
-                    .scoreRing(score),
+                    .scoreRing(score, centerColor = background, trackColor = secondaryVariant),
             contentAlignment = Alignment.Center,
         ) {
             BasicText(
                 text = stringResource(Res.string.game_score_percent, score),
                 modifier = Modifier.padding(horizontal = ScoreTextInset),
-                style = scoreStyle.copy(color = white),
+                style = scoreStyle.copy(color = foreground),
                 softWrap = false,
                 maxLines = 1,
                 autoSize =
@@ -177,7 +182,12 @@ private fun GameScore(
     }
 }
 
-private fun Modifier.scoreRing(score: Int): Modifier =
+/** The ring's [centerColor] and its unfilled [trackColor] come from the theme. The fill is the brand trail. */
+private fun Modifier.scoreRing(
+    score: Int,
+    centerColor: Color,
+    trackColor: Color,
+): Modifier =
     drawWithCache {
         val radius = size.minDimension / 2
         val ringWidth = ScoreRingWidth.toPx().coerceAtMost(radius)
@@ -213,8 +223,8 @@ private fun Modifier.scoreRing(score: Int): Modifier =
                 null
             }
         onDrawBehind {
-            drawCircle(void, radius = radius)
-            if (score < MAX_SCORE) drawCircle(secondaryVariant, radius = ringRadius, style = stroke)
+            drawCircle(centerColor, radius = radius)
+            if (score < MAX_SCORE) drawCircle(trackColor, radius = ringRadius, style = stroke)
             if (gradient != null && ringRadius > 0f) {
                 rotate(SCORE_RING_TOP_ANGLE, pivot = center) {
                     drawArc(

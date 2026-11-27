@@ -37,9 +37,9 @@ by 1/24 of the font size. No blur, glow, gradient, or gaps.
 ## Using the logo
 
 - Keep clear space of half the mark's height on every side.
-- Smallest sizes: mark 24 px wide, wordmark 120 px wide. At 48 px and under, `mark-small-on-ink` has a deeper trail
-  that survives small sizes. The favicons use the regular trail on an Ink tile, like the touch and app icons, so the
-  letters' counters stay open.
+- Smallest sizes: mark 24 px wide, wordmark 120 px wide. At 48 px and under, `mark-small-on-ink` has a deeper trail that
+  survives small sizes. The app's collapsed desktop sidebar uses it (`BraindanceMark`). The favicons use the regular
+  trail on an Ink tile, like the touch and app icons, so the letters' counters stay open.
 - Place the logo on Ink or a very dark, flat color. On light or busy backgrounds, put it on an Ink tile.
 - Where only one color is possible, use `mark-white` / `wordmark-white` or `mark-ink` / `wordmark-ink`, without the
   trail.
@@ -79,8 +79,8 @@ cyan for rumors. The app's development status uses magenta.
 
 ### The trail in the interface
 
-The trail belongs to the logo first. In the interface it marks only the main action: the primary button (white on
-Ink, a pill) lifts and shows the trail under a pointer, on the landing site and in the app alike. The landing site
-also sets it on one word of a headline and behind the hero screenshot. Do not put it on cards, lists, or icons.
+The trail belongs to the logo first. In the interface it marks only the main action: the primary button (white on Ink in
+the dark theme, a pill) lifts and shows the trail under a pointer, on the landing site and in the app alike. The landing
+site also sets it on one word of a headline and behind the hero screenshot. Do not put it on cards, lists, or icons.
 
 Source and permissions are recorded in [artwork and branding notices](../../THIRD_PARTY_NOTICES.md#artwork-and-branding).

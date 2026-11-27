@@ -53,7 +53,7 @@ private fun createPrimer(): HTMLInputElement =
 private fun isFocused(element: HTMLInputElement): Boolean = js("document.activeElement === element")
 
 /** Whether a text field has the focus, also inside a shadow root such as Compose's. */
-private fun isEditingText(): Boolean =
+internal fun isEditingText(): Boolean =
     js(
         """(() => {
         let element = document.activeElement;

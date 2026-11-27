@@ -290,10 +290,33 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   already exists. Add a new shared dimension only when it represents a reusable design-system value.
 - Lay out screen content in the page column (`ui/components/PageColumn.kt`) with `pageGutter()` instead of fixed side
   padding, and give the top bar the same `maxContentWidth`. Follow `docs/development.md#page-layout` for widths.
+- In the Web desktop layout, every screen fills the page column with a feed, a supporting pane, section columns, or
+  full-width blocks, while text keeps the readable width. Reuse `SupportingPaneLayout`, `SectionColumns`, the card
+  grids, and `ComingSoonCard`'s `maxWidth` before writing a new layout, and keep phone and tablet layouts as they
+  are. Follow `docs/development.md#desktop-layout`.
+- Keep the Web desktop header (`DesktopHeader`) to what applies on every screen: game search, notifications, and the
+  account button. A screen's title, back button, and own actions belong in its top bar below the header. Add no second
+  search field or account button to desktop screens, and keep the header's field and Discover on the shared
+  `SearchQueryState`. Start searches with `Navigator.openSearch`, and keep the "/" and Ctrl/⌘+K shortcuts working.
+- In the desktop layout a screen's own bar is compact. On screens of titles and lists, give it `ScrollAwayBarLayout`
+  or a place inside the scrolling column, so it scrolls away with the content, and never let content scroll under a
+  title that stays. Game, giveaway, and event pages keep their 82 dp bar over the hero on screen, filling as the page
+  scrolls. Phones and tablets keep every bar on screen.
+- Keep decorative motion, such as parallax and layout transitions, still when `prefersReducedMotion()` is true, and
+  shift scroll-driven effects while drawing or placing, never through recomposition.
+- Keep legal links, support, and the data credits in the expanded sidebar's `FooterLinks` and in Profile's About. Do
+  not add a footer bar to the app. A bar that stays on screen needs live state worth watching. The collapsed sidebar
+  shows the small mark (`BraindanceMark`) and the expanded one the wordmark. See
+  `docs/development.md#header-and-sidebar`.
 - Follow the product design rules in `docs/branding/README.md#in-the-product`. In the app, use `CornerShapes`
   (`ui/style/CornerShapes.kt`): `small` for imagery, tiles, and rows, `large` for cards and panels, `pill` for
   buttons, chips, and tags, and `CircleShape` for icon buttons. Do not create `RoundedCornerShape` in composables.
   Fill cards with `surface`; use the neutral roles in `Colors.kt` and cyan (`accent`) as the only functional accent.
+- Read colors only through the theme roles in `ui/style/Colors.kt` (`foreground`, `background`, `surface`,
+  `secondaryText`, `accent`, and the others), so a light theme needs no component changes. Use the fixed colors only
+  for brand artwork and for content on photos or video. Add no color literals in components. A new color is a new
+  role in `AppColors`. Read roles in composition and pass them into draw code, or read `LocalAppColors` from a
+  `Modifier.Node`. See `docs/development.md#theme-colors`.
 - Use `PrimaryButton` for the one main action of a view and `TonalButton` for secondary actions
   (`ui/components/Buttons.kt`) instead of styling Material buttons in place. The landing site keeps square imagery.
 - Add a `@Preview` for every new UI component, in the same file: an `internal fun <Name>Preview()` wrapped in
@@ -330,6 +353,8 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
 - Keep `WebAppHost` around the Web app's content: it supplies resource loading, lazy-layout prefetching, and link
   handling that Compose's Web host lacks. Give every element that opens a screen `Modifier.routeLink(route)` (cards get
   it through `cardClickable`). See `docs/development.md#web-app-runtime`.
+- Give every screen a browser tab title with `PageTitle(route, title)` once its title is known. Call it inside the
+  screen's composable, next to the title the screen shows, never in its route's `Content`. Home keeps "Braindance".
 - Avoid hard-coded mobile widths, user-agent branching, and assumptions about filesystem, threading, or process
   lifetime in browser code.
 - Keep browser route serialization deterministic.

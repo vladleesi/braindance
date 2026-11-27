@@ -5,6 +5,39 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.34.0 — 2026-11-27
+
+### Android, iOS, and Web
+
+- Clearing a search keeps you in it, ready to type again. Only Back leaves search.
+- Profile lines up with the other screens instead of sitting in a narrower column of its own.
+- A game or giveaway that cannot load still shows a Back button, also while it loads.
+- Screen readers announce the Back button as "Back".
+- Title bars of lists and events use the same background as the rest of the screen.
+- A game's thumbnails sit beside its media only in very wide windows, and under them otherwise, so the media stay
+  large.
+- Wide screens show more of a game's related releases side by side.
+- Event titles on Home use the same style as game titles.
+- Time to beat labels are smaller and bolder, like the hours beside them.
+- Game and giveaway pages show more of their artwork, which moves with a gentle parallax as you scroll. It stays still
+  when your device asks for less motion.
+
+### Web
+
+- Wide windows show more games per row instead of empty space next to the content.
+- Every page uses the whole width on desktop: larger media beside a game's details, Profile's sections and
+  Discover's previews side by side, and Library, Releases, News, and event headers across the page.
+- A header on every page holds the game search, notifications, and your profile. Typing there shows the results on
+  Discover, and "/" or Ctrl+K (⌘K on a Mac) jumps to the search field.
+- The sidebar can collapse to icons under a small logo with a smooth animation, from one button in its bottom corner,
+  and Braindance remembers the choice in this browser. Narrower windows show it collapsed. Expanded, it ends with
+  small links to the privacy policy, licenses, support, and the game data credits.
+- A game's media fill the space beside its details, also with the sidebar collapsed.
+- Game pages on large screens show their artwork in full HD.
+- Each page names itself in the browser tab and history, such as a game's name.
+- Page title bars are more compact, and on Discover, Releases, events, and full lists they scroll away with the page,
+  so results no longer pass under a title. Discover's title shows what you searched for.
+
 ## 0.33.0 — 2026-11-26
 
 ### Android, iOS, and Web

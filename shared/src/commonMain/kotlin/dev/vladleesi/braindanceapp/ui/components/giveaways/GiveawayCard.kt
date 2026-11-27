@@ -32,10 +32,12 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
+import dev.vladleesi.braindanceapp.ui.style.onMedia
 import dev.vladleesi.braindanceapp.ui.style.overlayBlackWith70Alpha
 import dev.vladleesi.braindanceapp.ui.style.overlayWhiteWith80Alpha
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.ui.style.void
 import dev.vladleesi.braindanceapp.utils.ParentPlatformType
 import dev.vladleesi.braindanceapp.utils.toContentDescription
 import org.jetbrains.compose.resources.painterResource
@@ -69,7 +71,7 @@ fun GiveawayCard(
                 Text(
                     text = item.endDate,
                     style = MaterialTheme.typography.caption,
-                    color = white,
+                    color = onMedia,
                     maxLines = 1,
                     modifier =
                         Modifier
@@ -84,7 +86,8 @@ fun GiveawayCard(
                 Text(
                     text = item.type,
                     style = MaterialTheme.typography.caption,
-                    color = background,
+                    // On the white overlay over the image, so dark in any theme.
+                    color = void,
                     modifier =
                         Modifier
                             .align(Alignment.BottomEnd)
@@ -109,7 +112,7 @@ fun GiveawayCard(
             Text(
                 text = stringResource(Res.string.giveaway_details_screen_free),
                 style = MaterialTheme.typography.caption,
-                color = white,
+                color = foreground,
             )
             Text(
                 text = item.worth,
@@ -159,7 +162,7 @@ private fun GiveawayPlatforms(
             Image(
                 painter = painterResource(iconRes),
                 contentDescription = platform.name.toContentDescription(),
-                colorFilter = ColorFilter.tint(white),
+                colorFilter = ColorFilter.tint(onMedia),
                 modifier = Modifier.size(Dimens.compact),
             )
         }

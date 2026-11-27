@@ -32,7 +32,7 @@ import dev.vladleesi.braindanceapp.resources.expandable_text_read_more
 import dev.vladleesi.braindanceapp.resources.expandable_text_show_less
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.white
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.utils.textPlaceholder
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
@@ -58,9 +58,9 @@ fun ExpandableText(
     expandText: String = stringResource(Res.string.expandable_text_read_more),
     collapseText: String = stringResource(Res.string.expandable_text_show_less),
     textStyle: TextStyle = MaterialTheme.typography.body2,
-    textColor: Color = white,
+    textColor: Color = foreground,
     expandTextStyle: TextStyle = MaterialTheme.typography.caption,
-    expandTextColor: Color = white,
+    expandTextColor: Color = foreground,
     placeholder: Boolean = false,
     onCollapse: (suspend (Int) -> Boolean)? = null,
 ) {

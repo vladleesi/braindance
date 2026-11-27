@@ -33,10 +33,10 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.icons.Clock
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GamePlayTimes
 import dev.vladleesi.braindanceapp.ui.viewmodels.PlayTime
 import dev.vladleesi.braindanceapp.utils.placeholder
@@ -89,16 +89,17 @@ private fun PlayTimeRow(playTime: PlayTime) {
             modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
             horizontalArrangement = Arrangement.spacedBy(Dimens.small),
         ) {
+            // The hours' size and weight, in the quieter color, so the label and its value read as one line.
             Text(
                 stringResource(playTime.label),
                 modifier = Modifier.weight(1f).alignByBaseline(),
                 color = secondaryText,
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.subtitle1,
             )
             Text(
                 stringResource(Res.string.about_hours, playTime.hours),
                 modifier = Modifier.alignByBaseline(),
-                color = white,
+                color = foreground,
                 style = MaterialTheme.typography.subtitle1,
                 textAlign = TextAlign.End,
             )

@@ -6,6 +6,7 @@ import Github
 import Share
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.BuildKonfig
+import dev.vladleesi.braindanceapp.navigation.PageTitle
+import dev.vladleesi.braindanceapp.navigation.routes.ProfileRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.profile_activity
 import dev.vladleesi.braindanceapp.resources.profile_bluesky_handle
@@ -44,14 +47,16 @@ import dev.vladleesi.braindanceapp.resources.profile_settings
 import dev.vladleesi.braindanceapp.resources.profile_sign_in
 import dev.vladleesi.braindanceapp.resources.profile_social_handle
 import dev.vladleesi.braindanceapp.resources.profile_statistics
-import dev.vladleesi.braindanceapp.resources.profile_support_share
+import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.CommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.LinkDivider
 import dev.vladleesi.braindanceapp.ui.components.LinkRow
 import dev.vladleesi.braindanceapp.ui.components.LinkRowTextInset
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
+import dev.vladleesi.braindanceapp.ui.components.PreviewProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
+import dev.vladleesi.braindanceapp.ui.components.SectionColumns
 import dev.vladleesi.braindanceapp.ui.components.SpacerStatusBarInsets
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
@@ -60,6 +65,7 @@ import dev.vladleesi.braindanceapp.ui.components.profile.AboutCard
 import dev.vladleesi.braindanceapp.ui.components.profile.ProfileSection
 import dev.vladleesi.braindanceapp.ui.components.rememberCommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.rememberProjectLinks
+import dev.vladleesi.braindanceapp.ui.components.sectionColumnsFor
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
@@ -76,6 +82,7 @@ fun ProfileScreen(
     onBackButtonPressed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    PageTitle(ProfileRoute, stringResource(Res.string.profile_screen_title))
     ProfileContent(
         links = rememberProjectLinks(),
         community = rememberCommunityLinks(),
@@ -87,9 +94,10 @@ fun ProfileScreen(
 
 /**
  * Profile, grouped the way a settings list is: the account features that are coming, then the community links, then
- * About with the app version, support, the legal pages, and the data credits. Rows of
- * one list read best at a readable width, so the page is a single centered column, its title included, instead of
- * rows stretched across a wide window.
+ * About with the app version, support, the legal pages, and the data credits. The page uses the same column as every
+ * other screen, so its edges stay in place between tabs. Phones and tablets show the sections as one list at a
+ * readable width. The desktop layout fills the column with them side by side in [SectionColumns], up to one column
+ * per section.
  */
 @Composable
 internal fun ProfileContent(
@@ -113,25 +121,27 @@ internal fun ProfileContent(
             TopAppBar(
                 title = stringResource(Res.string.profile_screen_title),
                 titleStyle = MaterialTheme.typography.h2,
-                tabBarColor = background,
                 showBackButton = true,
                 onBackButtonPressed = onBackButtonPressed,
-                maxContentWidth = Dimens.readableTextWidth,
             )
-            Column(
-                modifier =
-                    Modifier
-                        .pageColumn(gutter, maxContentWidth = Dimens.readableTextWidth)
-                        .padding(top = Dimens.small),
-                verticalArrangement = Arrangement.spacedBy(Dimens.large),
-            ) {
-                AccountSection()
-                CommunitySection(links = links, community = community)
-                AboutCard(
-                    links = links,
-                    onOpenReleases = community.openReleases,
-                    versionLabel = versionLabel,
-                    statusLabel = stringResource(Res.string.profile_development_status),
+            val desktop = desktopLayout() != null
+            val sections =
+                listOf<@Composable () -> Unit>(
+                    { AccountSection() },
+                    { CommunitySection(links = links, community = community) },
+                    {
+                        AboutCard(
+                            links = links,
+                            onOpenReleases = community.openReleases,
+                            versionLabel = versionLabel,
+                            statusLabel = stringResource(Res.string.profile_development_status),
+                        )
+                    },
+                )
+            BoxWithConstraints(modifier = Modifier.pageColumn(gutter).padding(top = Dimens.small)) {
+                SectionColumns(
+                    columns = if (desktop) sectionColumnsFor(maxWidth, maxColumns = sections.size) else 1,
+                    sections = sections,
                 )
             }
         }
@@ -236,32 +246,50 @@ private fun ComingSoonRow(title: String) {
     }
 }
 
+private val PreviewCommunity =
+    CommunityLinks(
+        openThreads = {},
+        openX = {},
+        openBluesky = {},
+        openReddit = {},
+        openDiscord = {},
+        openReleases = {},
+    )
+
+@Preview(name = "Profile sections, desktop", widthDp = 1200, heightDp = 640)
+@Composable
+internal fun ProfileSectionsPreview() {
+    BraindanceTheme {
+        Surface(color = MaterialTheme.colors.background) {
+            SectionColumns(
+                columns = 3,
+                sections =
+                    listOf(
+                        { AccountSection() },
+                        { CommunitySection(links = PreviewProjectLinks, community = PreviewCommunity) },
+                        {
+                            AboutCard(
+                                links = PreviewProjectLinks,
+                                onOpenReleases = {},
+                                versionLabel = "v1.0.0",
+                                statusLabel = "In development",
+                            )
+                        },
+                    ),
+                modifier = Modifier.padding(Dimens.large),
+            )
+        }
+    }
+}
+
 @Preview(name = "Profile", widthDp = 360, heightDp = 800)
 @Composable
 internal fun ProfileScreenPreview() {
     BraindanceTheme {
         Surface(color = MaterialTheme.colors.background) {
             ProfileContent(
-                links =
-                    ProjectLinks(
-                        shareLabel = Res.string.profile_support_share,
-                        openRepository = {},
-                        share = {},
-                        openIgdb = {},
-                        openGamerPower = {},
-                        emailSupport = {},
-                        openPrivacyPolicy = {},
-                        openLicenses = {},
-                    ),
-                community =
-                    CommunityLinks(
-                        openThreads = {},
-                        openX = {},
-                        openBluesky = {},
-                        openReddit = {},
-                        openDiscord = {},
-                        openReleases = {},
-                    ),
+                links = PreviewProjectLinks,
+                community = PreviewCommunity,
                 versionLabel = "v1.0.0",
                 onBackButtonPressed = {},
                 modifier = Modifier.fillMaxSize(),

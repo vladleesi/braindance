@@ -36,13 +36,14 @@ import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 
 private val CardGap = Dimens.medium
 
-// Minimum card widths: the grids show as many cards as fit, between two and their maximum.
+// Minimum card widths: the grids show as many cards as fit, between two and their maximum. The maximums keep cards
+// near their usual size in the widest page column, so wide windows show more of them instead of larger ones.
 private val GameCardMinWidth = 150.dp
 private val AnticipatedCardMinWidth = 120.dp
 private val GiveawayCardMinWidth = 150.dp
-private const val GAME_COLUMNS_MAX = 5
-private const val ANTICIPATED_COLUMNS_MAX = 6
-private const val GIVEAWAY_COLUMNS_MAX = 5
+private const val GAME_COLUMNS_MAX = 7
+private const val ANTICIPATED_COLUMNS_MAX = 8
+private const val GIVEAWAY_COLUMNS_MAX = 6
 private const val COLUMNS_MIN = 2
 
 /** How many cards of each section fit in one row of [width]. */

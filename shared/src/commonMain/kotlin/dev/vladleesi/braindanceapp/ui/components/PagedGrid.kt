@@ -80,7 +80,8 @@ data class PagedGridCardWidth(
  * [items] as a grid of cards in order, for lists that load page by page. While [more] items are available,
  * [skeleton] placeholders complete the last row and add one more, and the next page is requested through [onLoadMore]
  * as the grid nears its end, so scrolling rarely waits for it. A failed page shows its error with [onRetry] below the
- * loaded cards, which stay in place. Cards need unique, stable keys from [itemKey].
+ * loaded cards, which stay in place. Cards need unique, stable keys from [itemKey]. [contentTopInset] leaves room
+ * above the cards for a bar that scrolls away with them (see [ScrollAwayBarLayout]).
  */
 @Suppress("LongParameterList")
 @Composable
@@ -94,6 +95,7 @@ fun <T> PagedGrid(
     modifier: Modifier = Modifier,
     state: LazyGridState = rememberCachedLazyGridState(),
     cardWidth: PagedGridCardWidth = PagedGridCardWidth.Games,
+    contentTopInset: Dp = 0.dp,
     itemContent: @Composable (T) -> Unit,
 ) {
     val loadMore by rememberUpdatedState(onLoadMore)
@@ -110,7 +112,12 @@ fun <T> PagedGrid(
             .filter { nearEnd -> nearEnd }
             .collect { loadMore() }
     }
-    CardGrid(modifier = modifier, cardWidth = cardWidth, state = state) { columns ->
+    CardGrid(
+        modifier = modifier,
+        cardWidth = cardWidth,
+        state = state,
+        topPadding = GridTopPadding + contentTopInset,
+    ) { columns ->
         items(items, key = itemKey, contentType = { CARD_CONTENT_TYPE }) { item -> itemContent(item) }
         when (more) {
             MoreResults.Available, MoreResults.Loading -> {
@@ -138,8 +145,14 @@ fun PagedGridSkeleton(
     skeleton: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     cardWidth: PagedGridCardWidth = PagedGridCardWidth.Games,
+    contentTopInset: Dp = 0.dp,
 ) {
-    CardGrid(modifier = modifier, cardWidth = cardWidth, userScrollEnabled = false) { columns ->
+    CardGrid(
+        modifier = modifier,
+        cardWidth = cardWidth,
+        userScrollEnabled = false,
+        topPadding = GridTopPadding + contentTopInset,
+    ) { columns ->
         items(columns * LOADING_ROWS, contentType = { SKELETON_CONTENT_TYPE }) { skeleton() }
     }
 }

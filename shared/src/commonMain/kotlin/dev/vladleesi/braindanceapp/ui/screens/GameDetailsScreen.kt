@@ -6,9 +6,9 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,17 +35,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import dev.vladleesi.braindanceapp.navigation.LocalNavigator
+import dev.vladleesi.braindanceapp.navigation.PageTitle
 import dev.vladleesi.braindanceapp.navigation.ShareTarget
 import dev.vladleesi.braindanceapp.navigation.routes.GameDetailsRoute
 import dev.vladleesi.braindanceapp.resources.Res
@@ -55,6 +54,7 @@ import dev.vladleesi.braindanceapp.resources.game_details_show_all
 import dev.vladleesi.braindanceapp.resources.game_details_show_fewer
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.system.isLargeWindow
+import dev.vladleesi.braindanceapp.ui.components.BackOnlyFrame
 import dev.vladleesi.braindanceapp.ui.components.CarouselSection
 import dev.vladleesi.braindanceapp.ui.components.DisclosureButton
 import dev.vladleesi.braindanceapp.ui.components.FullWindowOverlay
@@ -62,7 +62,9 @@ import dev.vladleesi.braindanceapp.ui.components.GlobalLoading
 import dev.vladleesi.braindanceapp.ui.components.PageScrollbar
 import dev.vladleesi.braindanceapp.ui.components.ShareButton
 import dev.vladleesi.braindanceapp.ui.components.StatusBarOverlay
+import dev.vladleesi.braindanceapp.ui.components.SupportingPaneLayout
 import dev.vladleesi.braindanceapp.ui.components.TopAppBar
+import dev.vladleesi.braindanceapp.ui.components.desktop.DesktopHeaderHeight
 import dev.vladleesi.braindanceapp.ui.components.details.GameDetailsHero
 import dev.vladleesi.braindanceapp.ui.components.details.GameFacts
 import dev.vladleesi.braindanceapp.ui.components.details.GameOverview
@@ -82,21 +84,21 @@ import dev.vladleesi.braindanceapp.ui.components.media.MediaGalleryState
 import dev.vladleesi.braindanceapp.ui.components.media.MediaViewer
 import dev.vladleesi.braindanceapp.ui.components.media.rememberMediaGalleryState
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
+import dev.vladleesi.braindanceapp.ui.components.pageContentWidth
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.pageWidth
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.accent
-import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.navBar
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetails
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.GameDetailsViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.RecommendationsState
 import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedCategory
+import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedGame
 import dev.vladleesi.braindanceapp.ui.viewmodels.RelatedGroup
 import dev.vladleesi.braindanceapp.ui.viewmodels.SectionState
 import dev.vladleesi.braindanceapp.ui.viewmodels.VersionSelector
@@ -115,6 +117,10 @@ private const val RELATED_COLLAPSED = 3
 
 /** Related rows side by side in a wide layout. */
 private const val WIDE_RELATED_COLUMNS = 2
+
+// Wider pages fit more related releases side by side, each at least this wide.
+private val RelatedRowMinWidth = 360.dp
+private const val RELATED_COLUMNS_MAX = 4
 
 @Composable
 fun GameDetailsScreen(
@@ -140,19 +146,26 @@ fun GameDetailsScreen(
 
     when (val currentState = state) {
         is GameDetailsState.Error ->
-            ErrorScreen(errorMessage = currentState.error.userMessage(), modifier = modifier) {
-                viewModel.refresh()
+            BackOnlyFrame(onBack = { navigator.goBack() }, modifier = modifier) { content ->
+                ErrorScreen(errorMessage = currentState.error.userMessage(), modifier = content) {
+                    viewModel.refresh()
+                }
             }
 
         GameDetailsState.NotFound ->
-            ErrorScreen(errorMessage = stringResource(Res.string.game_details_not_found), modifier = modifier) {
-                viewModel.refresh()
+            BackOnlyFrame(onBack = { navigator.goBack() }, modifier = modifier) { content ->
+                ErrorScreen(errorMessage = stringResource(Res.string.game_details_not_found), modifier = content) {
+                    viewModel.refresh()
+                }
             }
 
         GameDetailsState.Loading ->
-            GlobalLoading(modifier = modifier)
+            BackOnlyFrame(onBack = { navigator.goBack() }, modifier = modifier) { content ->
+                GlobalLoading(modifier = content)
+            }
 
-        is GameDetailsState.Success ->
+        is GameDetailsState.Success -> {
+            PageTitle(route, currentState.gameDetails.name)
             key(currentState.gameDetails.id) {
                 GameDetailsScreen(
                     route = route,
@@ -162,6 +175,7 @@ fun GameDetailsScreen(
                     onBackButtonPressed = { navigator.goBack() },
                 )
             }
+        }
     }
 }
 
@@ -204,11 +218,14 @@ private fun GameDetailsScreen(
         // The page has a bounded body with lazy horizontal galleries. ScrollState uses its measured height,
         // including expanded text and related rows, for both scrolling and the Web scrollbar.
         Column(Modifier.fillMaxSize().verticalScroll(scrollState)) {
-            // New edition titles and wrapped version chips can change the hero's height.
-            Column(Modifier.animateContentSize(tween(RELEASE_HEADER_RESIZE_MILLIS))) {
+            // New edition titles and wrapped version chips can change the hero's height. Its width is fixed first, so
+            // only the height eases: a page that widens, as when the sidebar collapses, takes the hero along at once.
+            Column(Modifier.fillMaxWidth().animateContentSize(tween(RELEASE_HEADER_RESIZE_MILLIS))) {
                 GameDetailsHero(
                     details = state.gameDetails,
                     expanded = isLargeWindow,
+                    // The hero is the first thing in the page, so the page's scroll is how far it has moved.
+                    scrolledPx = { scrollState.value },
                     // Accounts and collections do not exist yet, so the actions stay disabled and never call back.
                     // The library will provide this state and handle onLibraryStatusChange.
                     libraryActions = LibraryActionsState.Unavailable,
@@ -256,7 +273,7 @@ private fun GameDetailsScreen(
             SimilarGames(recommendations, gutter, onGameClick = openGame)
             Spacer(modifier = Modifier.size(Dimens.large))
         }
-        PageScrollbar(scrollState, topInset = Dimens.topBarHeightWithInsets)
+        PageScrollbar(scrollState, topInset = Dimens.heroTopBarHeightWithInsets)
         GameDetailsTopBar(
             gameDetails = state.gameDetails,
             scrollState = scrollState,
@@ -273,7 +290,7 @@ private fun GameDetailsScreen(
 /**
  * The bar over the scrolling content: back, the game's name, and, in layouts that [showsShareActions], Share, which
  * links to the game's page. The title fades in as the bar fills, but Share is always visible: like the back button it
- * is a white icon on a circular backdrop that is a dark chip over the artwork and blends into the bar once it fills.
+ * is an icon on a circular backdrop that is a dark chip over the artwork and blends into the bar once it fills.
  */
 @Composable
 private fun GameDetailsTopBar(
@@ -281,17 +298,18 @@ private fun GameDetailsTopBar(
     scrollState: ScrollState,
     onBackButtonPressed: () -> Unit,
 ) {
-    val fadeDistance = with(LocalDensity.current) { Dimens.topBarHeightWithInsets.toPx() }
+    val fadeDistance = with(LocalDensity.current) { Dimens.heroTopBarHeightWithInsets.toPx() }
     val fraction by remember(scrollState, fadeDistance) {
         derivedStateOf { (scrollState.value / fadeDistance).coerceIn(0f, 1f) }
     }
     val topBarColor = lerp(Color.Transparent, navBar, fraction)
     val backButtonColor = lerp(navBar, Color.Transparent, fraction)
-    val titleColor = lerp(Color.Transparent, white, fraction)
+    val titleColor = lerp(Color.Transparent, foreground, fraction)
     val shareTarget = ShareTarget.Game(id = gameDetails.releaseId, name = gameDetails.name)
     Column {
         StatusBarOverlay(backgroundColor = topBarColor)
         TopAppBar(
+            height = Dimens.heroTopBarHeight,
             tabBarColor = topBarColor,
             titleColor = titleColor,
             showBackButton = true,
@@ -320,22 +338,7 @@ private fun DetailsBody(
     onWatchOnYouTube: (GameMedia.YouTubeVideo) -> Unit = {},
     scrollState: ScrollState? = null,
 ) {
-    val onCollapse: (suspend (Int) -> Boolean)? =
-        if (desktop && scrollState != null) {
-            { height ->
-                // The disclosure moves up by the removed height. Move the viewport by the same amount.
-                var anchored = false
-                scrollState.scroll(MutatePriority.UserInput) {
-                    if (scrollState.value >= height) {
-                        scrollBy(-height.toFloat())
-                        anchored = true
-                    }
-                }
-                anchored
-            }
-        } else {
-            null
-        }
+    val onCollapse = if (desktop && scrollState != null) anchorOnCollapse(scrollState) else null
     val overview = @Composable {
         GameOverview(
             details.summary,
@@ -348,11 +351,13 @@ private fun DetailsBody(
     val storyline = @Composable { GameStoryline(details.storyline, placeholder = placeholder, onCollapse = onCollapse) }
     val about = @Composable { GameFacts(details.facts, placeholder = placeholder) }
     val stores = @Composable { StoresBlock(stores = details.stores, placeholder = placeholder) }
+    val hasOverview = details.summary.isNotBlank() || details.overview.isNotEmpty() || details.isAdult
     if (desktop) {
-        DetailsColumns(
-            primary = {
+        SupportingPaneLayout(
+            main = {
                 Column(verticalArrangement = Arrangement.spacedBy(Dimens.large)) {
-                    if (details.summary.isNotBlank() || details.overview.isNotEmpty() || details.isAdult) overview()
+                    // Text keeps its line length, while the media take the column's full width.
+                    if (hasOverview) ReadableWidth(overview)
                     if (!media.gallery.isEmpty) {
                         DetailsMedia(
                             details.name,
@@ -363,10 +368,10 @@ private fun DetailsBody(
                             scrollState = scrollState,
                         )
                     }
-                    if (details.storyline.isNotEmpty()) storyline()
+                    if (details.storyline.isNotEmpty()) ReadableWidth(storyline)
                 }
             },
-            sidebar = {
+            pane = {
                 if (!details.facts.isEmpty || details.playTimes != null || details.stores.isNotEmpty()) {
                     Column(verticalArrangement = Arrangement.spacedBy(Dimens.medium)) {
                         if (!details.facts.isEmpty) about()
@@ -380,7 +385,7 @@ private fun DetailsBody(
     } else {
         val readingColumn = Modifier.pageColumn(gutter).widthIn(max = Dimens.readableTextWidth)
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.large)) {
-            if (details.summary.isNotBlank() || details.overview.isNotEmpty() || details.isAdult) {
+            if (hasOverview) {
                 Column(readingColumn) { overview() }
             }
             if (!media.gallery.isEmpty) {
@@ -427,7 +432,8 @@ private fun DetailsMedia(
         modifier = modifier,
         placeholder = placeholder,
         horizontalPadding = gutter,
-        coveredTop = Dimens.topBarHeightWithInsets,
+        // Measured from the window's top: in the desktop layout the header is above the page's bar.
+        coveredTop = Dimens.heroTopBarHeightWithInsets + if (desktopLayout() != null) DesktopHeaderHeight else 0.dp,
         scrollState = scrollState,
     )
 }
@@ -473,7 +479,7 @@ private fun VersionSelectorBlock(
 
 /**
  * One section for every related release: the heading or tabs, then the selected kind as compact rows, one to a line
- * in a [compact] layout and [WIDE_RELATED_COLUMNS] otherwise, and "Show all" past [RELATED_COLLAPSED].
+ * in a [compact] layout and as many as fit otherwise, from [WIDE_RELATED_COLUMNS] to [RELATED_COLUMNS_MAX].
  * The API caps each group. A missing [category] opens the first kind.
  */
 @Suppress("LongParameterList")
@@ -497,33 +503,68 @@ private fun RelatedReleases(
         onSelect = onCategoryChange,
         modifier = Modifier.pageColumn(gutter).padding(bottom = Dimens.small),
     )
-    val columns = if (compact) 1 else WIDE_RELATED_COLUMNS
-    val shown = if (expanded) group.games else group.games.take(RELATED_COLLAPSED)
-    for (line in shown.chunked(columns)) {
-        Row(
-            modifier = Modifier.pageColumn(gutter),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.large),
-        ) {
-            line.forEach { game ->
-                key(game.id) { RelatedGameRow(game = game, onClick = onGameClick, modifier = Modifier.weight(1f)) }
-            }
-            repeat(columns - line.size) { Spacer(modifier = Modifier.weight(1f)) }
-        }
-    }
-    if (group.games.size > RELATED_COLLAPSED) {
-        DisclosureButton(
-            label =
-                if (expanded) {
-                    stringResource(Res.string.game_details_show_fewer)
-                } else {
-                    stringResource(Res.string.game_details_show_all, group.games.size)
-                },
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val columns = if (compact) 1 else relatedColumnsFor(pageContentWidth(maxWidth, gutter))
+        RelatedGrid(
+            games = group.games,
+            columns = columns,
             expanded = expanded,
-            onClick = onToggleExpanded,
-            modifier = Modifier.pageColumn(gutter).padding(top = Dimens.small),
+            gutter = gutter,
+            onToggleExpanded = onToggleExpanded,
+            onGameClick = onGameClick,
         )
     }
 }
+
+/**
+ * Related releases in [columns], and "Show all" while some are hidden. Collapsed, the list shows [RELATED_COLLAPSED]
+ * releases, or its whole first line when that is longer.
+ */
+@Suppress("LongParameterList")
+@Composable
+private fun RelatedGrid(
+    games: List<RelatedGame>,
+    columns: Int,
+    expanded: Boolean,
+    gutter: Dp,
+    onToggleExpanded: () -> Unit,
+    onGameClick: (Int) -> Unit,
+) {
+    val collapsed = maxOf(RELATED_COLLAPSED, columns)
+    val shown = if (expanded) games else games.take(collapsed)
+    Column {
+        for (line in shown.chunked(columns)) {
+            Row(
+                modifier = Modifier.pageColumn(gutter),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.large),
+            ) {
+                line.forEach { game ->
+                    key(game.id) { RelatedGameRow(game = game, onClick = onGameClick, modifier = Modifier.weight(1f)) }
+                }
+                repeat(columns - line.size) { Spacer(modifier = Modifier.weight(1f)) }
+            }
+        }
+        if (games.size > collapsed) {
+            DisclosureButton(
+                label =
+                    if (expanded) {
+                        stringResource(Res.string.game_details_show_fewer)
+                    } else {
+                        stringResource(Res.string.game_details_show_all, games.size)
+                    },
+                expanded = expanded,
+                onClick = onToggleExpanded,
+                modifier = Modifier.pageColumn(gutter).padding(top = Dimens.small),
+            )
+        }
+    }
+}
+
+/** How many related releases fit side by side in [width]: at least two, and at most [RELATED_COLUMNS_MAX]. */
+private fun relatedColumnsFor(width: Dp): Int =
+    ((width + Dimens.large) / (RelatedRowMinWidth + Dimens.large))
+        .toInt()
+        .coerceIn(WIDE_RELATED_COLUMNS, RELATED_COLUMNS_MAX)
 
 /** Similar games while they load and once there are any; a failure hides the section instead. */
 @Composable
@@ -567,64 +608,26 @@ private fun SimilarGames(
     }
 }
 
-// Keep the main content readable when the sidebar fits beside it.
-private val MinDetailsColumnWidth = 360.dp
-private val DetailsSidebarWidth = 300.dp
-
 /**
- * The main content uses a reading column. About, Time to beat, and stores share a sidebar when both columns fit.
+ * Keeps a collapsing text's disclosure in view on desktop: it moves up by the removed height, so the viewport moves by
+ * the same amount. Returns whether it could.
  */
-@Composable
-private fun DetailsColumns(
-    primary: @Composable () -> Unit,
-    sidebar: @Composable () -> Unit,
-    modifier: Modifier,
-) {
-    Layout(
-        contents = listOf(primary, sidebar),
-        modifier = modifier,
-    ) { (primaryMeasurables, sidebarMeasurables), constraints ->
-        val width = constraints.maxWidth
-        val gap = Dimens.large.roundToPx()
-        val readable = Dimens.readableTextWidth.roundToPx()
-        val sidebarWidth = DetailsSidebarWidth.roundToPx()
-        val hasSidebar = sidebarMeasurables.isNotEmpty()
-        val beside = hasSidebar && width >= MinDetailsColumnWidth.roundToPx() + gap + sidebarWidth
-        val primaryWidth = minOf(readable, if (beside) width - gap - sidebarWidth else width)
-        val primaryPlaceable = primaryMeasurables.firstOrNull()?.measure(Constraints(maxWidth = primaryWidth))
-        val sidebarMax = if (beside) sidebarWidth else primaryWidth
-        val sidebarPlaceable = sidebarMeasurables.firstOrNull()?.measure(Constraints(maxWidth = sidebarMax))
-        val primaryHeight = primaryPlaceable?.height ?: 0
-        val sidebarHeight = sidebarPlaceable?.height ?: 0
-        val height =
-            when {
-                sidebarPlaceable == null -> primaryHeight
-                beside -> maxOf(primaryHeight, sidebarHeight)
-                else -> primaryHeight + gap + sidebarHeight
-            }
-        layout(width, height) {
-            primaryPlaceable?.placeRelative(0, 0)
-            if (beside) {
-                sidebarPlaceable?.placeRelative((primaryPlaceable?.width ?: 0) + gap, 0)
-            } else {
-                sidebarPlaceable?.placeRelative(0, primaryHeight + gap)
+private fun anchorOnCollapse(scrollState: ScrollState): suspend (Int) -> Boolean =
+    { height ->
+        var anchored = false
+        scrollState.scroll(MutatePriority.UserInput) {
+            if (scrollState.value >= height) {
+                scrollBy(-height.toFloat())
+                anchored = true
             }
         }
+        anchored
     }
-}
 
-private val PreviewBlockHeight = 180.dp
-
-@Preview(widthDp = 1100)
+/** [content] at most the readable width, at the start of a wider column. */
 @Composable
-internal fun DetailsColumnsPreview() {
-    BraindanceTheme {
-        DetailsColumns(
-            primary = { Box(modifier = Modifier.fillMaxWidth().height(PreviewBlockHeight).background(white)) },
-            sidebar = { Box(modifier = Modifier.fillMaxWidth().height(PreviewBlockHeight / 2).background(accent)) },
-            modifier = Modifier.background(background).fillMaxWidth(),
-        )
-    }
+private fun ReadableWidth(content: @Composable () -> Unit) {
+    Column(modifier = Modifier.widthIn(max = Dimens.readableTextWidth)) { content() }
 }
 
 @Preview(widthDp = 1000)

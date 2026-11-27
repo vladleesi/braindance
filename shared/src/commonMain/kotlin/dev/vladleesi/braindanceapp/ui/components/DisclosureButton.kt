@@ -39,9 +39,9 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
+import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
-import dev.vladleesi.braindanceapp.ui.style.white
 import dev.vladleesi.braindanceapp.utils.focusRing
 import dev.vladleesi.braindanceapp.utils.isFocusVisible
 import dev.vladleesi.braindanceapp.utils.placeholder
@@ -63,7 +63,7 @@ internal fun DisclosureButton(
     layout: DisclosureLayout = DisclosureLayout.Vertical,
     placeholder: Boolean = false,
     style: TextStyle = MaterialTheme.typography.caption,
-    color: Color = white,
+    color: Color = foreground,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
@@ -98,17 +98,19 @@ internal fun DisclosureButton(
                     modifier = iconModifier.rotate(if (expanded) CHEVRON_UP_ROTATION else -CHEVRON_UP_ROTATION),
                 )
 
-            DisclosureLayout.Inline ->
+            DisclosureLayout.Inline -> {
+                val signColor = accent
                 Canvas(iconModifier) {
                     val armLength = Dimens.tiny.toPx()
                     val stroke = Dimens.one.toPx()
                     val horizontal = Offset(armLength, 0f)
-                    drawLine(accent, center - horizontal, center + horizontal, stroke, StrokeCap.Round)
+                    drawLine(signColor, center - horizontal, center + horizontal, stroke, StrokeCap.Round)
                     if (!expanded) {
                         val vertical = Offset(0f, armLength)
-                        drawLine(accent, center - vertical, center + vertical, stroke, StrokeCap.Round)
+                        drawLine(signColor, center - vertical, center + vertical, stroke, StrokeCap.Round)
                     }
                 }
+            }
         }
         Text(
             text = label,
