@@ -36,6 +36,7 @@ import dev.vladleesi.braindanceapp.utils.toSafeExternalUrl
  * YouTube app or the browser; the page's failure address notifies [state]. The WebView pauses with the screen, as a
  * browser does for a background tab, and is destroyed once it has left the composition.
  */
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 internal actual fun YouTubePlayer(
     video: GameMedia.YouTubeVideo?,
@@ -52,12 +53,23 @@ internal actual fun YouTubePlayer(
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     AndroidView(
         factory = { context ->
-            PlayerWebView(
-                context = context,
-                lifecycle = lifecycle,
-                onOpenLink = { url -> openLink(url) },
-                onFailed = { failed -> currentState.onPlaybackFailed(failed) },
-            )
+            val view =
+                PlayerWebView(
+                    context = context,
+                    lifecycle = lifecycle,
+                    onOpenLink = { url -> openLink(url) },
+                    onFailed = { failed -> currentState.onPlaybackFailed(failed) },
+                )
+            // Set on the new view where it is created, which is where CodeQL checks them, not in its init. JavaScript
+            // runs only the app's player page and YouTube's player, and the page reaches no files or content providers.
+            val settings = view.settings
+            settings.javaScriptEnabled = true
+            // The user pressed play to start a video, so it may play with sound.
+            settings.mediaPlaybackRequiresUserGesture = false
+            settings.allowFileAccess = false
+            settings.allowContentAccess = false
+            settings.setSupportMultipleWindows(false)
+            view
         },
         modifier =
             Modifier.collapsedWhenStopped(video).fillMaxSize().then(
@@ -75,10 +87,10 @@ internal actual fun YouTubePlayer(
 }
 
 /**
- * A WebView for the player page that pauses with [lifecycle] until it is released. JavaScript runs only the app's own
- * player page and YouTube's player; no interface is exposed to it.
+ * A WebView for the player page that pauses with [lifecycle] until it is released. It exposes no interface to the
+ * page's JavaScript. [YouTubePlayer] sets its settings where it creates it.
  */
-@SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
+@SuppressLint("ViewConstructor")
 private class PlayerWebView(
     context: Context,
     private val lifecycle: Lifecycle,
@@ -101,14 +113,6 @@ private class PlayerWebView(
         // Without this, the WebView wraps its content, so the page's 100% height is 0 and the player stays empty.
         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         setBackgroundColor(Color.BLACK)
-        settings.apply {
-            javaScriptEnabled = true
-            // The user pressed play to start a video, so it may play with sound.
-            mediaPlaybackRequiresUserGesture = false
-            allowFileAccess = false
-            allowContentAccess = false
-            setSupportMultipleWindows(false)
-        }
         webViewClient =
             object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(

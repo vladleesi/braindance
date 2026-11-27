@@ -13,6 +13,9 @@ To report a vulnerability, see the [security policy](../SECURITY.md).
   in the WebView of the in-app YouTube player (`YouTubePlayer.android.kt`), which YouTube's player needs. It applies
   only to that file, and only while the WebView keeps file and content access off, opens no new windows, and has no
   JavaScript interface; the same rule anywhere else still fails. Review a new WebView on its own before extending it.
+  The gate also fails on WebView content access (`java/android/websettings-allow-content-access`) at any severity.
+  CodeQL checks a WebView's settings on the instance where it is created, so set them there, not in a subclass's
+  `init`, as the player does.
 - **Dependency Review:** blocks new high and critical vulnerabilities on pushes and pull requests; incomplete
   snapshots fail.
   - Both revisions resolve with read-only permissions; the privileged snapshot submission never runs pull request

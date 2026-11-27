@@ -5,6 +5,14 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.34.1 — 2026-11-27
+
+### Android
+
+- The in-app video player applies its security settings, which keep it away from your files and other apps' data,
+  where automated security scans can confirm them.
+- Those scans now stop a release that would let the player, or any other web view, open other apps' data.
+
 ## 0.34.0 — 2026-11-27
 
 ### Android, iOS, and Web

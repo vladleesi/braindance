@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MPL-2.0
 
-"""Fail CI when CodeQL reports high or critical security findings, apart from reviewed exceptions."""
+"""Fail CI when CodeQL reports high or critical security findings, or a rule that always blocks, apart from reviewed
+exceptions."""
 
 import json
 from pathlib import Path
 import sys
+
+# Rules that fail CI whatever their severity. CodeQL rates WebView content access medium, but a WebView that can load
+# content:// links must never ship. Keep docs/security.md in step.
+ALWAYS_BLOCKED = {"java/android/websettings-allow-content-access"}
 
 # Reviewed findings that may stay, each limited to one rule in one file. An exception holds only while its file still
 # contains every required line and none of the forbidden ones, so a change that undoes the reason fails CI again.
@@ -81,7 +86,7 @@ def main():
                 rule_id = result.get("ruleId") or result.get("rule", {}).get("id")
                 rule = rules.get(rule_id, {})
                 severity = float(rule.get("properties", {}).get("security-severity", 0))
-                if severity < 7:
+                if severity < 7 and rule_id not in ALWAYS_BLOCKED:
                     continue
                 path = result_path(result)
                 if exception_for(rule_id, path, root):
@@ -89,10 +94,11 @@ def main():
                     print(f"Reviewed exception: {rule_id} in {path}")
                 else:
                     blocked += 1
-                    print(f"High/critical CodeQL finding: {rule_id} in {path}", file=sys.stderr)
+                    label = "High/critical" if severity >= 7 else "Always-blocked"
+                    print(f"{label} CodeQL finding: {rule_id} in {path}", file=sys.stderr)
 
     print(
-        f"Reviewed {len(reports)} CodeQL reports; {blocked} high/critical findings, "
+        f"Reviewed {len(reports)} CodeQL reports: {blocked} blocking findings, "
         f"{accepted} reviewed exceptions."
     )
     return 1 if blocked else 0
