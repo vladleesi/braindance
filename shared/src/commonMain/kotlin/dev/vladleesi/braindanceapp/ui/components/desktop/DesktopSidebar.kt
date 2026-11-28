@@ -5,15 +5,18 @@ package dev.vladleesi.braindanceapp.ui.components.desktop
 import PanelLeftClose
 import PanelLeftOpen
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,22 +28,30 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -51,8 +62,12 @@ import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.app_name
 import dev.vladleesi.braindanceapp.resources.sidebar_collapse
+import dev.vladleesi.braindanceapp.resources.sidebar_collapse_short
 import dev.vladleesi.braindanceapp.resources.sidebar_expand
-import dev.vladleesi.braindanceapp.ui.components.FooterLinks
+import dev.vladleesi.braindanceapp.resources.sidebar_help
+import dev.vladleesi.braindanceapp.resources.sidebar_theme
+import dev.vladleesi.braindanceapp.system.prefersReducedMotion
+import dev.vladleesi.braindanceapp.ui.components.FullWindowOverlay
 import dev.vladleesi.braindanceapp.ui.components.PreviewProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.selectedLine
@@ -64,11 +79,14 @@ import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.hotMagenta
 import dev.vladleesi.braindanceapp.ui.style.icons.BraindanceMark
 import dev.vladleesi.braindanceapp.ui.style.icons.BraindanceWordmark
+import dev.vladleesi.braindanceapp.ui.style.icons.SidebarHelp
+import dev.vladleesi.braindanceapp.ui.style.icons.SidebarMoon
 import dev.vladleesi.braindanceapp.ui.style.navBar
 import dev.vladleesi.braindanceapp.ui.style.neonCyan
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import dev.vladleesi.braindanceapp.ui.style.signalYellow
+import dev.vladleesi.braindanceapp.ui.style.surface
 import dev.vladleesi.braindanceapp.utils.focusRing
 import dev.vladleesi.braindanceapp.utils.isFocusVisible
 import org.jetbrains.compose.resources.stringResource
@@ -81,6 +99,9 @@ val DesktopSidebarCollapsedWidth = 80.dp
 
 private val ItemMinHeight = 44.dp
 private val ItemIconSize = 20.dp
+
+// The rail's content width, in which each bottom control is centered.
+private val SidebarControlSlotWidth = 48.dp
 private val IndicatorWidth = 3.dp
 private val IndicatorHeight = 20.dp
 private val AccentSegmentWidth = 10.dp
@@ -99,15 +120,18 @@ private val MarkSize = 32.dp
 // How long the two layouts take to cross-fade while the scaffold animates the sidebar's width.
 private const val LAYOUT_FADE_MILLIS = 200
 
+// The theme and help buttons, which the rail stacks above its toggle.
+private const val UTILITY_BUTTON_COUNT = 2
+
 /**
- * The desktop navigation sidebar: the brand, the top-level destinations, and at the bottom the [links] a site's footer
- * would hold (legal pages, support, and the data credits). Profile is the header's account button. While Profile is
- * open, [isProfileSelected] leaves every destination unselected. It renders the existing routes and navigation state,
- * and [onRouteClick] performs the navigation.
+ * The desktop navigation sidebar: the brand, the top-level destinations, and at the bottom a help button that opens
+ * the [links] a site's footer would hold (legal pages, support, and the data credits). Profile is the header's account
+ * button. While Profile is open, [isProfileSelected] leaves every destination unselected. It renders the existing
+ * routes and navigation state, and [onRouteClick] performs the navigation.
  *
- * [collapsed] narrows it to a rail of icons with short labels under the small mark, without the links, which Profile
- * also lists. [onToggleCollapsed], when given, shows the button that switches between the two, in the bottom corner
- * of either, so it never moves. Without it, the sidebar stays as it is, as in windows too narrow for the expanded one.
+ * [collapsed] narrows it to a rail of icons with short labels under the small mark. [onToggleCollapsed], when given,
+ * shows the button that switches between the two, in the bottom corner of either, so it never moves. Without it, the
+ * sidebar stays as it is, as in windows too narrow for the expanded one.
  * [width] is the sidebar's current width, which the scaffold animates between the two. The layouts cross-fade inside
  * it, each at its own width, so nothing reflows while it moves. The brand row is as tall as the desktop header, so the
  * logo and the search field share a line.
@@ -124,8 +148,6 @@ fun DesktopSidebar(
     onToggleCollapsed: (() -> Unit)? = null,
     width: Dp = if (collapsed) DesktopSidebarCollapsedWidth else DesktopSidebarWidth,
 ) {
-    // The toggle's row, as tall as the header's, keeps the bottom of either layout free.
-    val bottomSpace = if (onToggleCollapsed != null) DesktopHeaderHeight else Dimens.medium
     val destinations: @Composable (collapsed: Boolean) -> Unit = { compact ->
         BottomBarRoute.routes.forEach { route ->
             // The profile opens on top of the current tab, so only one destination is highlighted at a time.
@@ -157,52 +179,210 @@ fun DesktopSidebar(
     ) {
         Crossfade(
             targetState = collapsed,
-            animationSpec = tween(LAYOUT_FADE_MILLIS),
+            animationSpec = if (prefersReducedMotion()) snap() else tween(LAYOUT_FADE_MILLIS),
             label = "Sidebar layout",
         ) { rail ->
+            // The controls take a header's height for their first row and one more item height for each further row.
+            val rows = controlRows(rail = rail, hasToggle = onToggleCollapsed != null)
+            val controlsSpace = DesktopHeaderHeight + ItemMinHeight * (rows - 1)
             Column(
                 modifier =
                     Modifier
                         .wrapContentWidth(Alignment.Start, unbounded = true)
                         .width(if (rail) DesktopSidebarCollapsedWidth else DesktopSidebarWidth)
                         .fillMaxHeight()
-                        .padding(start = edgePadding(rail), end = edgePadding(rail), bottom = bottomSpace),
+                        .padding(start = edgePadding(rail), end = edgePadding(rail), bottom = controlsSpace),
                 horizontalAlignment = if (rail) Alignment.CenterHorizontally else Alignment.Start,
             ) {
                 SidebarBrand(collapsed = rail)
-                // Scrolls on its own in short windows or with enlarged text, so every destination stays reachable.
                 Column(
                     modifier =
                         Modifier
                             .weight(1f)
-                            .padding(top = Dimens.small)
-                            .verticalScroll(rememberScrollState()),
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(top = Dimens.small),
                     verticalArrangement = Arrangement.spacedBy(if (rail) Dimens.small else Dimens.tiny),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     destinations(rail)
                 }
-                if (!rail) {
-                    // Under the destinations, as YouTube's sidebar does, instead of a footer bar that would take height
-                    // from every page. The links' own inset lines their text up with the destinations' icons.
-                    FooterLinks(links = links, modifier = Modifier.padding(top = Dimens.small))
-                }
             }
         }
-        onToggleCollapsed?.let { onToggle ->
-            // One button outside the cross-fade, so it keeps the keyboard focus while the sidebar changes.
-            Box(
-                modifier =
-                    Modifier
-                        .align(Alignment.BottomStart)
-                        .height(DesktopHeaderHeight)
-                        .padding(start = Dimens.medium),
-                contentAlignment = Alignment.CenterStart,
+        // The toggle keeps the same layout slot and keyboard focus while the destinations cross-fade.
+        SidebarControls(
+            collapsed = collapsed,
+            width = width,
+            onToggle = onToggleCollapsed,
+            links = links,
+            modifier = Modifier.align(Alignment.BottomStart),
+        )
+    }
+}
+
+/**
+ * How many rows of [ItemMinHeight] the bottom controls take: one in the expanded sidebar, or the theme and help buttons
+ * stacked above the toggle, when there is one, in the rail.
+ */
+private fun controlRows(
+    rail: Boolean,
+    hasToggle: Boolean,
+): Int = if (rail) UTILITY_BUTTON_COUNT + (if (hasToggle) 1 else 0) else 1
+
+/**
+ * The sidebar's bottom controls, outside the cross-fade so they keep their place and the keyboard focus while the
+ * layout changes. The expanded sidebar shows one row: a labeled collapse button, then theme and help. The rail stacks
+ * theme and help above the toggle. While the width animates between the two, only the toggle shows. Help opens
+ * [SidebarHelpPopup] above its button and returns the keyboard focus to it on close.
+ */
+@Composable
+private fun SidebarControls(
+    collapsed: Boolean,
+    width: Dp,
+    onToggle: (() -> Unit)?,
+    links: ProjectLinks,
+    modifier: Modifier = Modifier,
+) {
+    var helpOpen by remember { mutableStateOf(false) }
+    val helpFocus = remember { FocusRequester() }
+    val expanded = !collapsed && width >= DesktopSidebarWidth
+    val stacked = collapsed && width <= DesktopSidebarCollapsedWidth
+    val expandedBy = width - DesktopSidebarCollapsedWidth
+    val expansion = (expandedBy / (DesktopSidebarWidth - DesktopSidebarCollapsedWidth)).coerceIn(0f, 1f)
+    val verticalInset = (DesktopHeaderHeight - ItemMinHeight) / 2
+    val controlInset = (SidebarControlSlotWidth - ItemMinHeight) / 2
+    val slot = Modifier.padding(horizontal = controlInset)
+    val utilitySlots: @Composable () -> Unit = {
+        val control = if (stacked) slot else Modifier
+        SidebarUtilityButton(
+            icon = SidebarMoon,
+            label = stringResource(Res.string.sidebar_theme),
+            onClick = null,
+            modifier = control,
+        )
+        SidebarUtilityButton(
+            icon = SidebarHelp,
+            label = stringResource(Res.string.sidebar_help),
+            onClick = { helpOpen = true },
+            modifier = control.focusRequester(helpFocus),
+        )
+    }
+    Column(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = Dimens.medium, vertical = verticalInset)
+                .background(surface.copy(alpha = if (stacked) 1f else expansion), CornerShapes.large),
+    ) {
+        if (stacked) utilitySlots()
+        if (onToggle != null || expanded) {
+            Row(
+                modifier = Modifier.fillMaxWidth().height(ItemMinHeight),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                SidebarToggle(collapsed = collapsed, onClick = onToggle)
+                val control = if (expanded) Modifier.weight(1f) else slot
+                if (onToggle != null) {
+                    val label = if (collapsed) Res.string.sidebar_expand else Res.string.sidebar_collapse
+                    SidebarUtilityButton(
+                        icon = if (collapsed) PanelLeftOpen else PanelLeftClose,
+                        label = stringResource(label),
+                        onClick = onToggle,
+                        modifier = control,
+                        expandedToggle = expanded,
+                    )
+                } else {
+                    Spacer(control)
+                }
+                if (expanded) utilitySlots()
             }
         }
     }
+    if (helpOpen && (stacked || expanded)) {
+        val start = if (expanded) width - Dimens.medium - ItemMinHeight else Dimens.medium + controlInset
+        // The popup opens just above the help button: in the rail, the toggle's row lies below it.
+        val rowsThroughHelp = if (stacked && onToggle != null) 2 else 1
+        val bottom = verticalInset + ItemMinHeight * rowsThroughHelp + Dimens.small
+        val focusManager = LocalFocusManager.current
+        val inputMode = LocalInputModeManager.current
+        FullWindowOverlay {
+            SidebarHelpPopup(links = links, start = start, bottom = bottom) {
+                focusManager.clearFocus(force = true)
+                helpOpen = false
+                if (inputMode.inputMode == InputMode.Keyboard) helpFocus.requestFocus()
+            }
+        }
+    }
+}
+
+/**
+ * A 44 dp square button named by [label], disabled without [onClick]. As the [expandedToggle], it fills its row's width
+ * and shows a short "Collapse" label beside the icon, which stays where the rail centers it.
+ */
+@Composable
+private fun SidebarUtilityButton(
+    icon: ImageVector,
+    label: String,
+    onClick: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+    expandedToggle: Boolean = false,
+) {
+    Box(
+        modifier =
+            modifier
+                .size(ItemMinHeight)
+                .then(if (expandedToggle) Modifier.background(secondary, CornerShapes.large) else Modifier)
+                .sidebarControl(onClick),
+        contentAlignment = if (expandedToggle) Alignment.CenterStart else Alignment.Center,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = if (onClick != null) secondaryText else secondaryText.copy(alpha = ContentAlpha.disabled),
+            modifier =
+                Modifier
+                    // Keep the glyph centered in its rail slot as the toggle target grows wider.
+                    .padding(start = if (expandedToggle) (SidebarControlSlotWidth - ItemIconSize) / 2 else 0.dp)
+                    .size(ItemIconSize),
+        )
+        if (expandedToggle) {
+            Text(
+                text = stringResource(Res.string.sidebar_collapse_short),
+                modifier =
+                    Modifier
+                        .padding(start = SidebarControlSlotWidth - Dimens.tiny, end = Dimens.tiny)
+                        .clearAndSetSemantics {},
+                style = MaterialTheme.typography.caption,
+                color = secondaryText,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+/**
+ * A sidebar button's target: the large shape, the theme ripple, the keyboard focus ring, and the hand pointer. Without
+ * [onClick] the control is disabled, with neither the ring nor the hand.
+ */
+@Composable
+internal fun Modifier.sidebarControl(onClick: (() -> Unit)?): Modifier {
+    val shape = CornerShapes.large
+    val interactionSource = if (onClick != null) remember { MutableInteractionSource() } else null
+    val feedback =
+        if (interactionSource != null) {
+            Modifier.focusRing(interactionSource.isFocusVisible(), shape).pointerHoverIcon(PointerIcon.Hand)
+        } else {
+            Modifier
+        }
+    return clip(shape)
+        .then(feedback)
+        .clickable(
+            enabled = onClick != null,
+            interactionSource = interactionSource,
+            indication = LocalIndication.current,
+            role = Role.Button,
+            onClick = onClick ?: {},
+        )
 }
 
 /** The wordmark, or the small mark in the collapsed sidebar, in a row as tall as the desktop header. */
@@ -224,24 +404,6 @@ private fun SidebarBrand(collapsed: Boolean) {
 }
 
 private fun edgePadding(collapsed: Boolean) = if (collapsed) Dimens.small else Dimens.medium
-
-/** The button that collapses or expands the sidebar, named for what it does. */
-@Composable
-private fun SidebarToggle(
-    collapsed: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    IconButton(onClick = onClick, modifier = modifier.pointerHoverIcon(PointerIcon.Hand)) {
-        Icon(
-            imageVector = if (collapsed) PanelLeftOpen else PanelLeftClose,
-            contentDescription =
-                stringResource(if (collapsed) Res.string.sidebar_expand else Res.string.sidebar_collapse),
-            tint = secondaryText,
-            modifier = Modifier.size(ItemIconSize),
-        )
-    }
-}
 
 /** Three short bars in the brand colors: a small accent for headings, used sparingly. */
 @Composable
@@ -390,6 +552,32 @@ internal fun CollapsedDesktopSidebarPreview() {
             collapsed = true,
             onToggleCollapsed = {},
         )
+    }
+}
+
+@Preview
+@Composable
+internal fun SidebarControlsPreview() {
+    BraindanceTheme {
+        Box(Modifier.width(DesktopSidebarWidth).background(navBar)) {
+            SidebarControls(
+                collapsed = false,
+                width = DesktopSidebarWidth,
+                onToggle = {},
+                links = PreviewProjectLinks,
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+internal fun SidebarUtilityButtonPreview() {
+    BraindanceTheme {
+        Row(Modifier.background(surface)) {
+            SidebarUtilityButton(icon = SidebarMoon, label = "Theme unavailable", onClick = null)
+            SidebarUtilityButton(icon = SidebarHelp, label = "Help & links", onClick = {})
+        }
     }
 }
 

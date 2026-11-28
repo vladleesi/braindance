@@ -102,7 +102,8 @@ default content color.
 | `DesktopHeader`, `DesktopSidebar` | `components/desktop/` | The desktop layout's header and sidebar. See [header and sidebar](#header-and-sidebar) |
 | `TopLevelTopAppBar`, `TopAppBar`, `ProfileButton` | `components/TopAppBar.kt` | A screen's own title, back button, and actions, and the account button |
 | `ScrollAwayBarLayout` | `components/ScrollAwayBar.kt` | A screen's own bar that scrolls away with its content in the desktop layout. See [header and sidebar](#header-and-sidebar) |
-| `FooterLinks`, `DataCredits`, `FooterLink` | `components/FooterLinks.kt` | Legal links, support, and the data credits, in the sidebar and Profile |
+| `SidebarHelpPopup` | `components/desktop/SidebarHelpPopup.kt` | Legal links, support, and data credits in the sidebar's help menu |
+| `DataCredits` | `components/DataCredits.kt` | Linked data credits in Profile |
 | `PrimaryButton`, `TonalButton`, `OutlineButton` | `components/Buttons.kt` | The main action, secondary actions, and links inside cards |
 | `SurfaceCard`, `SurfaceTile` | `components/Surfaces.kt` | Containers: cards and panels, and compact tiles |
 | `LinkRow`, `LinkDivider` | `components/LinkRow.kt` | Rows of links on a card, such as Profile's links and a game's stores |
@@ -173,7 +174,7 @@ The breakpoints, with the [Material window size classes][window-size-classes] th
 | Below 600 dp | Compact | Phone layouts and the bottom navigation bar |
 | 600 dp | Medium | Tablet layouts and the navigation rail (`isLargeWindow()`) |
 | 768 dp | Medium | Web: the desktop layout and its header, with the sidebar collapsed (`DesktopLayout.Compact`) |
-| 1100 dp | Expanded | Web: the expanded sidebar with the footer links, which people can collapse (`DesktopLayout.Sidebar`) |
+| 1100 dp | Expanded | Web: the sidebar can expand or collapse (`DesktopLayout.Sidebar`) |
 | 1440 dp | Large | Web: Home's context column (`DesktopLayout.Wide`) |
 | 1600 dp | Extra-large | The game gallery's thumbnails move into a rail beside the preview (`isExtraLargeWindow()`) |
 | About 2200 dp | Extra-large | The page column reaches 1920 dp, and wider windows add equal margins around it |
@@ -213,16 +214,19 @@ bar on every screen, and the sidebar's brand row has the same height, so the log
 - `Navigator.openSearch` and the shortcuts focus the header's field: "/" when no field has the focus, and Ctrl+K or
   ⌘K anywhere (`SearchShortcuts`, Web only). The empty field shows the "/" hint. Escape clears the search and leaves
   the field, and Enter searches at once.
-- The expanded sidebar (232 dp) holds the wordmark, the destinations, and at its bottom `FooterLinks`: the privacy
-  policy, licenses, support, and the data credits, in 24 dp rows of the smallest label size. Profile is the header's
-  account button.
-- One button in the sidebar's bottom corner, in the same place in both states, collapses the sidebar to an 80 dp
-  rail like Material's navigation rail and expands it again. The rail holds the small mark (`BraindanceMark`, the
-  brand kit's `mark-small-on-ink`) and each destination as an icon in a pill over its label. The width animates for
-  250 ms with Material's emphasized easing while the two layouts cross-fade, each at its own width, so nothing
-  reflows. The choice is kept in the browser's `localStorage` (`LayoutPreferences`), and the privacy policy mentions
-  it. Windows narrower than 1100 dp show the collapsed sidebar without the button. The collapsed sidebar has no footer
-  links. Profile lists the same pages, as on phones and tablets.
+- The expanded sidebar (232 dp) holds the wordmark and the destinations. Profile is the header's account button.
+- The sidebar's bottom controls (`SidebarControls`) sit outside the cross-fade, so the toggle keeps its place and the
+  keyboard focus while the layout changes. The expanded sidebar shows them in one row: a labeled Collapse button, then
+  two 44 dp square buttons for the theme and help. The 80 dp rail stacks the theme and help buttons above its Expand
+  button. The theme button is disabled for now.
+- Help opens `SidebarHelpPopup` above its button, with support, the privacy policy, the terms of use, the licenses, and
+  the linked data credits. It exists only while open, takes the keyboard focus, closes on Escape, a click outside, or
+  a chosen link, and its links scroll in short windows. Profile lists the same pages on every platform.
+- The rail holds the small mark (`BraindanceMark`, the brand kit's `mark-small-on-ink`) and each destination as an
+  icon in a pill over its label. The width animates for 250 ms with Material's emphasized easing while the two
+  layouts cross-fade, each at its own width. The choice is kept in the browser's `localStorage` (`LayoutPreferences`),
+  and the privacy policy mentions it. Windows narrower than 1100 dp show the rail without the toggle, and help stays
+  available.
 - A layout whose width can change while it shows, through the sidebar or a resized window, must follow at once.
   `animateContentSize` animates the width too, so fix the width before it (`fillMaxWidth()`) when only the height
   should ease.

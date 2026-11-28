@@ -5,6 +5,13 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.34.4 — 2026-11-27
+
+### Web
+
+- Open legal links, support, and data credits from the sidebar's help button. Keep the sidebar toggle in the same
+  spot when switching between layouts, and switch without a cross-fade when the system asks for less motion.
+
 ## 0.34.3 — 2026-11-27
 
 ### Web

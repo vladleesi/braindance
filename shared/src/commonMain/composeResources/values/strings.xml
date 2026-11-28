@@ -36,11 +36,11 @@
     <string name="profile_privacy_policy">Privacy policy</string>
     <string name="terms_of_use">Terms of use</string>
     <string name="profile_licenses">Open-source licenses</string>
-    <string name="footer_privacy">Privacy</string>
-    <string name="footer_licenses">Licenses</string>
-    <string name="footer_support">Support</string>
     <string name="sidebar_collapse">Collapse sidebar</string>
+    <string name="sidebar_collapse_short">Collapse</string>
     <string name="sidebar_expand">Expand sidebar</string>
+    <string name="sidebar_help">Help &amp; links</string>
+    <string name="sidebar_theme">Theme unavailable</string>
     <string name="data_attribution_igdb">Game data by %1$s</string>
     <string name="data_attribution_gamerpower">Giveaways by %1$s</string>
     <string name="profile_support_share">Share</string>

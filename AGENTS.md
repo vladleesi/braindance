@@ -304,9 +304,9 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   scrolls. Phones and tablets keep every bar on screen.
 - Keep decorative motion, such as parallax and layout transitions, still when `prefersReducedMotion()` is true, and
   shift scroll-driven effects while drawing or placing, never through recomposition.
-- Keep legal links, support, and the data credits in the expanded sidebar's `FooterLinks` and in Profile's About. Do
-  not add a footer bar to the app. A bar that stays on screen needs live state worth watching. The collapsed sidebar
-  shows the small mark (`BraindanceMark`) and the expanded one the wordmark. See
+- Keep legal links, support, and the data credits in the sidebar's help menu and in Profile's About. Do not add a
+  footer bar to the app. A bar that stays on screen needs live state worth watching. The collapsed sidebar shows the
+  small mark (`BraindanceMark`) and the expanded one the wordmark. See
   `docs/development.md#header-and-sidebar`.
 - Follow the product design rules in `docs/branding/README.md#in-the-product`. In the app, use `CornerShapes`
   (`ui/style/CornerShapes.kt`): `small` for imagery, tiles, and rows, `large` for cards and panels, `pill` for
