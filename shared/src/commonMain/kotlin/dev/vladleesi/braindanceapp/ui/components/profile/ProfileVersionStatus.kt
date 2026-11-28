@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.hotMagenta
+import dev.vladleesi.braindanceapp.ui.style.pinkText
 import dev.vladleesi.braindanceapp.ui.style.positive
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
-import dev.vladleesi.braindanceapp.ui.style.statusMagenta
 
 private val StatusDotSize = 6.dp
 
@@ -33,7 +33,7 @@ private val StatusDotSize = 6.dp
 private const val BADGE_BACKGROUND_ALPHA = 0.14f
 
 /**
- * The app version with a green dot at the start, and a pink badge for the development stage ([statusLabel]) after
+ * The app version with a green dot at the start and a badge for the development stage ([statusLabel]) after
  * it. The badge wraps to its own line when the text is enlarged or translated at length. The dot is decoration.
  */
 @Composable
@@ -42,6 +42,7 @@ fun ProfileVersionStatus(
     statusLabel: String,
     modifier: Modifier = Modifier,
 ) {
+    val badgeFill = hotMagenta.copy(alpha = BADGE_BACKGROUND_ALPHA)
     FlowRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Dimens.compact),
@@ -64,11 +65,11 @@ fun ProfileVersionStatus(
         Text(
             text = statusLabel,
             style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.SemiBold),
-            color = statusMagenta,
+            color = pinkText,
             maxLines = 1,
             modifier =
                 Modifier
-                    .background(hotMagenta.copy(alpha = BADGE_BACKGROUND_ALPHA), CircleShape)
+                    .background(badgeFill, CircleShape)
                     // The same size as the app's other tags, such as Coming soon.
                     .padding(horizontal = Dimens.small, vertical = Dimens.micro),
         )

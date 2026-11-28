@@ -2,24 +2,22 @@
 
 package dev.vladleesi.braindanceapp.ui.components.profile
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dev.vladleesi.braindanceapp.resources.Res
-import dev.vladleesi.braindanceapp.resources.app_name
 import dev.vladleesi.braindanceapp.resources.profile_contact_support
 import dev.vladleesi.braindanceapp.resources.profile_licenses
 import dev.vladleesi.braindanceapp.resources.profile_privacy_policy
 import dev.vladleesi.braindanceapp.resources.profile_release_notes
 import dev.vladleesi.braindanceapp.resources.profile_section_about
 import dev.vladleesi.braindanceapp.resources.terms_of_use
+import dev.vladleesi.braindanceapp.ui.components.BrandWordmark
 import dev.vladleesi.braindanceapp.ui.components.DataCredits
 import dev.vladleesi.braindanceapp.ui.components.LinkDivider
 import dev.vladleesi.braindanceapp.ui.components.LinkRow
@@ -28,7 +26,6 @@ import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
 import dev.vladleesi.braindanceapp.ui.components.SUPPORT_EMAIL
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.icons.BraindanceWordmark
 import org.jetbrains.compose.resources.stringResource
 
 private val WordmarkHeight = Dimens.medium + Dimens.small
@@ -52,12 +49,7 @@ fun AboutCard(
                 modifier = Modifier.padding(Dimens.medium),
                 verticalArrangement = Arrangement.spacedBy(Dimens.small),
             ) {
-                // The real wordmark, as in the desktop sidebar: the brand's name is never retyped.
-                Image(
-                    imageVector = BraindanceWordmark,
-                    contentDescription = stringResource(Res.string.app_name),
-                    modifier = Modifier.height(WordmarkHeight),
-                )
+                BrandWordmark(echoHeight = WordmarkHeight)
                 ProfileVersionStatus(versionLabel = versionLabel, statusLabel = statusLabel)
             }
             LinkDivider()

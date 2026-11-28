@@ -38,8 +38,9 @@ by 1/24 of the font size. No blur, glow, gradient, or gaps.
 
 - Keep clear space of half the mark's height on every side.
 - Smallest sizes: mark 24 px wide, wordmark 120 px wide. At 48 px and under, `mark-small-on-ink` has a deeper trail that
-  survives small sizes. The app's collapsed desktop sidebar uses it (`BraindanceMark`). The favicons use the regular
-  trail on an Ink tile, like the touch and app icons, so the letters' counters stay open.
+  survives small sizes. The favicons use the regular
+  trail on an Ink tile, like the touch and app icons, so the letters' counters stay open. The app's collapsed desktop
+  sidebar shows `mark-echo-on-ink` at 40 dp.
 - Place the logo on Ink or a very dark, flat color. On light or busy backgrounds, put it on an Ink tile.
 - Where only one color is possible, use `mark-white` / `wordmark-white` or `mark-ink` / `wordmark-ink`, without the
   trail.

@@ -77,10 +77,10 @@ sidebar, and desktop header use the darker chrome color. Build new screens from 
 
 ### Theme colors
 
-Components read colors only through the theme's roles in `ui/style/Colors.kt`, never as fixed values, so a light
-theme can come later as one more palette without changes to any component. The roles are `navBar` (chrome),
-`background` (canvas), `surface`, `secondary`, `secondaryVariant`, `shimmer`, `foreground` (text and icons),
-`secondaryText`, `accent`, `error`, the status tag colors, and `positive`. `BraindanceTheme` provides the palette
+Components read the active palette through the roles in `ui/style/Colors.kt`. The roles include `navBar` (chrome),
+`background` (canvas), `surface`, `secondary`, `secondaryVariant`, `shimmer`, `divider`, `foreground` (text and icons),
+`secondaryText`, `mutedText`, `disabledText`, `disabledFill`, `accent`, `error`, the status tag colors, and
+`positive`. `BraindanceTheme` provides the palette
 (`AppColors`) as `LocalAppColors`, builds the typography and Material's colors from it, and sets `foreground` as the
 default content color.
 
@@ -90,9 +90,11 @@ default content color.
 - Fixed colors are for two cases only: brand artwork (the logo, its trail, the score rings, the avatar), and what sits
   on photos and video, which stay dark in any theme (`onMedia`, `black`, the overlay scrims).
 - Do not add color literals in components. A new color is a new role in `AppColors`, with a value in every palette.
-- Still outside the theme, for the light theme to handle: the Web page's loading background and `theme-color`
-  (`webApp/src/wasmJsMain/resources/index.html`), and Android's system bar style, which `MainActivity` sets from the
-  dark palette before the first frame.
+- Profile's Appearance controls and the Web desktop sidebar share a choice of Light, System, and Dark. Dark is the
+  default. System follows changes to device or browser appearance. The app stores the choice locally and the platform
+  hosts apply it to browser chrome and native system bars.
+  Keep the Web loading colors and storage key in `index.html` and `theme.js` in sync with the Compose palette and
+  preference.
 
 | Piece | Where | Use |
 | --- | --- | --- |
@@ -186,17 +188,19 @@ narrower window the preview beside them would be too small, so the thumbnails st
 #### Header and sidebar
 
 The desktop layout has a header above every screen and the navigation beside them. Both are chrome, in the darker
-`navBar` color, and neither scrolls with the page. The header is 56 dp tall with a 40 dp search field, compact for a
+`navBar` color, and neither scrolls with the page. The header is 52 dp tall with a 40 dp search field, compact for a
 bar on every screen, and the sidebar's brand row has the same height, so the logo and the field share a line.
 
 - The header (`DesktopHeader`) holds only what applies on every screen: the game search field at the start of the
   page column, then notifications and the account button (`ProfileButton`) at its end. A screen's own title, back
   button, and actions stay in its top bar below the header, so the header looks the same everywhere.
-- A screen's own bar is 56 dp in the desktop layout, like the header, and 82 dp on phones and tablets for their
-  large titles. On screens of titles and lists it scrolls away with the content, so reading takes the whole height
+- A screen's own bar is 52 dp in the desktop layout, like the header, and 72 dp on phones and tablets for their
+  large titles. A bar with a back button is 72 dp on every layout (`Dimens.backTopBarHeight`, which `TopAppBar` uses by
+  default), as on game pages, so Back sits in the same place on every screen. `ScrollAwayBarLayout` takes the bar's
+  `barHeight` for it. On screens of titles and lists it scrolls away with the content, so reading takes the whole height
   under the header: use `ScrollAwayBarLayout` for a bar above scrolling content, or put the bar inside the scrolling
   column, as Home, Library, and Profile do. Content never scrolls under a title that stays.
-- Game, giveaway, and event pages keep their bar over the hero on screen, 82 dp tall on every layout
+- Game, giveaway, and event pages keep their bar over the hero on screen, 72 dp tall on every layout
   (`Dimens.heroTopBarHeight`), as are their loading and error states, so Back never moves. It starts clear over the
   artwork and fills, with the page's name, as the page scrolls under it. Phones and tablets keep every screen's bar
   on screen, as Material's top app bar does.
@@ -214,15 +218,14 @@ bar on every screen, and the sidebar's brand row has the same height, so the log
 - `Navigator.openSearch` and the shortcuts focus the header's field: "/" when no field has the focus, and Ctrl+K or
   ⌘K anywhere (`SearchShortcuts`, Web only). The empty field shows the "/" hint. Escape clears the search and leaves
   the field, and Enter searches at once.
-- The expanded sidebar (232 dp) holds the wordmark and the destinations. Profile is the header's account button.
-- The sidebar's bottom controls (`SidebarControls`) sit outside the cross-fade, so the toggle keeps its place and the
-  keyboard focus while the layout changes. The expanded sidebar shows them in one row: a labeled Collapse button, then
-  two 44 dp square buttons for the theme and help. The 80 dp rail stacks the theme and help buttons above its Expand
-  button. The theme button is disabled for now.
+- The sidebar starts collapsed and remembers changes to its width. The expanded sidebar (232 dp) holds the wordmark
+  and destinations. Profile is the header's account button.
+- Below the divider, the expanded sidebar puts Collapse, the animated theme selector, and Help in one row. The
+  80 dp rail stacks a theme menu, Help, and Expand. The theme menu shows the icon for the current choice.
 - Help opens `SidebarHelpPopup` above its button, with support, the privacy policy, the terms of use, the licenses, and
   the linked data credits. It exists only while open, takes the keyboard focus, closes on Escape, a click outside, or
   a chosen link, and its links scroll in short windows. Profile lists the same pages on every platform.
-- The rail holds the small mark (`BraindanceMark`, the brand kit's `mark-small-on-ink`) and each destination as an
+- The rail holds the kit's `mark-echo-on-ink.png` on its Ink tile, in both themes, and each destination as an
   icon in a pill over its label. The width animates for 250 ms with Material's emphasized easing while the two
   layouts cross-fade, each at its own width. The choice is kept in the browser's `localStorage` (`LayoutPreferences`),
   and the privacy policy mentions it. Windows narrower than 1100 dp show the rail without the toggle, and help stays

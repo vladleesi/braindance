@@ -17,18 +17,9 @@ internal actual val layoutPreferences: LayoutPreferences? =
         private var unavailable = false
 
         override var isSidebarCollapsed: Boolean
-            get() = storage { it.getItem(SIDEBAR_COLLAPSED_KEY) } == "true"
+            get() = storage { it.getItem(SIDEBAR_COLLAPSED_KEY) } != "false"
             set(value) {
-                storage {
-                    if (value) {
-                        it.setItem(
-                            SIDEBAR_COLLAPSED_KEY,
-                            "true",
-                        )
-                    } else {
-                        it.removeItem(SIDEBAR_COLLAPSED_KEY)
-                    }
-                }
+                storage { it.setItem(SIDEBAR_COLLAPSED_KEY, value.toString()) }
             }
 
         private fun <T> storage(block: (Storage) -> T): T? {

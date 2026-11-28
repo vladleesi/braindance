@@ -2,8 +2,10 @@
 
 package dev.vladleesi.braindanceapp
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import dev.vladleesi.braindanceapp.navigation.AppLinkHandler
@@ -16,6 +18,8 @@ import dev.vladleesi.braindanceapp.navigation.appLinkRoute
 import dev.vladleesi.braindanceapp.navigation.rememberNavigationState
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
 import dev.vladleesi.braindanceapp.system.LocalDesktopLayoutEnabled
+import dev.vladleesi.braindanceapp.system.LocalThemeChoice
+import dev.vladleesi.braindanceapp.system.rememberThemeChoice
 import dev.vladleesi.braindanceapp.ui.components.LocalOverlayHost
 import dev.vladleesi.braindanceapp.ui.components.NavigationGraph
 import dev.vladleesi.braindanceapp.ui.components.NavigationScaffold
@@ -34,6 +38,8 @@ fun BraindanceApp(
     desktopLayoutEnabled: Boolean = false,
     launchLink: String? = null,
     appLinks: AppLinkInbox? = null,
+    onLightThemeChanged: (Boolean) -> Unit = {},
+    onThemeOverrideChanged: (Boolean?) -> Unit = {},
 ) {
     // Coil documents this as safe to call repeatedly; an image loader that already exists is never replaced.
     ImageLoaderInitializer.initialize()
@@ -49,14 +55,20 @@ fun BraindanceApp(
     val overlayHistory = BrowserHistorySync(navigationState, navigator)
     AppLinkHandler(appLinks, navigator)
     val overlayHost = remember { OverlayHost() }
+    val theme = rememberThemeChoice()
+    val lightOverride = theme.mode.lightOverride
+    val lightTheme = lightOverride ?: !isSystemInDarkTheme()
+    LaunchedEffect(lightTheme) { onLightThemeChanged(lightTheme) }
+    LaunchedEffect(lightOverride) { onThemeOverrideChanged(lightOverride) }
 
     CompositionLocalProvider(
         LocalNavigator provides navigator,
         LocalDesktopLayoutEnabled provides desktopLayoutEnabled,
         LocalOverlayHost provides overlayHost,
         LocalOverlayHistory provides overlayHistory,
+        LocalThemeChoice provides theme,
     ) {
-        BraindanceTheme {
+        BraindanceTheme(darkTheme = !lightTheme) {
             OverlayHostLayout(overlayHost) {
                 NavigationScaffold(modifier = modifier) { contentModifier ->
                     NavigationGraph(modifier = contentModifier)

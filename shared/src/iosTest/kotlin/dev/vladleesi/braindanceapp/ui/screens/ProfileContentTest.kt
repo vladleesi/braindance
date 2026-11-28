@@ -4,12 +4,15 @@ package dev.vladleesi.braindanceapp.ui.screens
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.runComposeUiTest
 import dev.vladleesi.braindanceapp.resources.Res
 import dev.vladleesi.braindanceapp.resources.profile_support_share
+import dev.vladleesi.braindanceapp.system.ThemeChoice
+import dev.vladleesi.braindanceapp.system.ThemeMode
 import dev.vladleesi.braindanceapp.ui.components.CommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.ProjectLinks
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
@@ -22,6 +25,7 @@ class ProfileContentTest {
     fun everyRowOpensItsOwnDestination() =
         runComposeUiTest {
             val opened = mutableListOf<String>()
+            val theme = ThemeChoice(ThemeMode.Dark) {}
             setContent {
                 BraindanceTheme {
                     ProfileContent(
@@ -48,9 +52,13 @@ class ProfileContentTest {
                             ),
                         versionLabel = "v1.0.0",
                         onBackButtonPressed = {},
+                        theme = theme,
                     )
                 }
             }
+
+            onNodeWithText("Dark").assertIsSelected()
+            onNodeWithText("Light").performClick().assertIsSelected()
 
             listOf(
                 "Discord",
@@ -93,6 +101,7 @@ class ProfileContentTest {
     @Test
     fun showsTheVersionWithTheDevelopmentStage() =
         runComposeUiTest {
+            val theme = ThemeChoice(ThemeMode.Dark) {}
             setContent {
                 BraindanceTheme {
                     ProfileContent(
@@ -119,6 +128,7 @@ class ProfileContentTest {
                             ),
                         versionLabel = "v1.0.0",
                         onBackButtonPressed = {},
+                        theme = theme,
                     )
                 }
             }

@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -57,7 +56,7 @@ import dev.vladleesi.braindanceapp.ui.components.TopLevelTopAppBar
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.style.Dimens
-import dev.vladleesi.braindanceapp.ui.style.foreground
+import dev.vladleesi.braindanceapp.ui.style.disabledText
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import org.jetbrains.compose.resources.stringResource
 
@@ -178,7 +177,7 @@ private fun CreateListButton(modifier: Modifier = Modifier) {
             Icon(
                 imageVector = Plus,
                 contentDescription = stringResource(Res.string.library_create_list_coming_soon),
-                tint = foreground.copy(alpha = ContentAlpha.disabled),
+                tint = disabledText,
             )
         }
     }

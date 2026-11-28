@@ -74,7 +74,8 @@ modifications, and applicable brand guidelines before redistributing them.
 - Copies of that kit in the apps: `androidApp/src/main/ic_launcher-playstore.png`, the launcher icons in
   `androidApp/src/main/res/mipmap-*/`, and `androidApp/src/main/res/values/ic_launcher_background.xml`;
   `iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/*.png`; the icons and `og-image.png` in
-  `webApp/src/wasmJsMain/resources/`; and the outlines of the wordmark and the small mark in
+  `webApp/src/wasmJsMain/resources/`; `shared/src/commonMain/composeResources/drawable/wordmark_ink.png` and `mark_echo_on_ink.png`;
+  and the outlines of the wordmark and the small mark in
   `shared/src/commonMain/kotlin/dev/vladleesi/braindanceapp/ui/style/icons/BraindanceWordmark.kt` and
   `BraindanceMark.kt` there.
 - Copies of the kit on the landing site: `landing/favicon*`, `landing/apple-touch-icon.png`, `landing/icon-512.png`,

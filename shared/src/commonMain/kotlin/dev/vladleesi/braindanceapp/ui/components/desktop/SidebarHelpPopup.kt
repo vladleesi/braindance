@@ -68,7 +68,7 @@ import dev.vladleesi.braindanceapp.ui.style.surface
 import org.jetbrains.compose.resources.stringResource
 
 private val HelpRowHeight = 36.dp
-private val HelpMenuWidth = 232.dp
+private val SidebarPopupWidth = 232.dp
 
 /**
  * The sidebar's help menu: support, the legal pages, and the data credits, each opening outside the app. It sits
@@ -83,6 +83,19 @@ internal fun SidebarHelpPopup(
     bottom: Dp,
     onClose: () -> Unit,
 ) {
+    SidebarPopup(start = start, bottom = bottom, onClose = onClose) {
+        SidebarHelpLinks(links = links, onClose = onClose)
+    }
+}
+
+@Composable
+internal fun SidebarPopup(
+    start: Dp,
+    bottom: Dp,
+    onClose: () -> Unit,
+    width: Dp = SidebarPopupWidth,
+    content: @Composable () -> Unit,
+) {
     Box(Modifier.fillMaxSize()) {
         Box(Modifier.matchParentSize().pointerInput(onClose) { detectTapGestures { onClose() } })
         Surface(
@@ -90,12 +103,12 @@ internal fun SidebarHelpPopup(
                 Modifier
                     .align(Alignment.BottomStart)
                     .padding(start = start, top = Dimens.medium, end = Dimens.medium, bottom = bottom)
-                    .width(HelpMenuWidth),
+                    .width(width),
             color = surface,
             shape = CornerShapes.large,
             border = BorderStroke(Dimens.one, secondary),
         ) {
-            SidebarHelpLinks(links = links, onClose = onClose)
+            content()
         }
     }
 }
@@ -106,7 +119,6 @@ private fun SidebarHelpLinks(
     onClose: () -> Unit,
 ) {
     val firstLink = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
     val title = stringResource(Res.string.sidebar_help)
     LaunchedEffect(Unit) { firstLink.requestFocus() }
     val entries =
@@ -121,12 +133,7 @@ private fun SidebarHelpLinks(
     Column(
         modifier =
             Modifier
-                .semantics {
-                    paneTitle = title
-                    isTraversalGroup = true
-                }.onPreviewKeyEvent { event -> event.handleMenuKey(focusManager, onClose) }
-                .focusProperties { onExit = { cancelFocusChange() } }
-                .focusGroup()
+                .sidebarMenuFocus(title, onClose)
                 .padding(Dimens.tiny)
                 .verticalScroll(rememberScrollState()),
     ) {
@@ -163,6 +170,20 @@ private fun SidebarHelpLinks(
     }
 }
 
+@Composable
+internal fun Modifier.sidebarMenuFocus(
+    title: String,
+    onClose: () -> Unit,
+): Modifier {
+    val focusManager = LocalFocusManager.current
+    return semantics {
+        paneTitle = title
+        isTraversalGroup = true
+    }.onPreviewKeyEvent { event -> event.handleMenuKey(focusManager, onClose) }
+        .focusProperties { onExit = { cancelFocusChange() } }
+        .focusGroup()
+}
+
 private fun KeyEvent.handleMenuKey(
     focusManager: FocusManager,
     onClose: () -> Unit,
@@ -175,6 +196,16 @@ private fun KeyEvent.handleMenuKey(
         else -> return false
     }
     return true
+}
+
+@Preview(widthDp = 390, heightDp = 240)
+@Composable
+internal fun SidebarPopupPreview() {
+    BraindanceTheme {
+        SidebarPopup(start = Dimens.medium, bottom = Dimens.extraLarge, onClose = {}) {
+            Text("Appearance", Modifier.padding(Dimens.medium))
+        }
+    }
 }
 
 @Preview(widthDp = 390, heightDp = 430)

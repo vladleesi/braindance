@@ -47,6 +47,7 @@ import dev.vladleesi.braindanceapp.ui.components.rememberContentScrollPosition
 import dev.vladleesi.braindanceapp.ui.components.showsShareActions
 import dev.vladleesi.braindanceapp.ui.components.userMessage
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
+import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.viewmodels.AnticipatedGamesViewModel
 import dev.vladleesi.braindanceapp.ui.viewmodels.GiveawaysListViewModel
@@ -185,6 +186,7 @@ internal fun <T> CompilationContent(
             }
         },
         modifier = modifier,
+        barHeight = Dimens.backTopBarHeight,
     ) { topInset ->
         when (state) {
             PagedListState.Loading ->

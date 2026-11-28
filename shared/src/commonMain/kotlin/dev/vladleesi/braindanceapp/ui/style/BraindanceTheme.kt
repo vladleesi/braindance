@@ -3,13 +3,16 @@
 package dev.vladleesi.braindanceapp.ui.style
 
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.LocalContentColor
+import androidx.compose.material.LocalRippleConfiguration
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RippleConfiguration
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
 import androidx.compose.material.ripple
+import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -24,14 +27,13 @@ import dev.vladleesi.braindanceapp.resources.poppins_semibold
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.FontResource
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BraindanceTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    // The dark palette is the only one so far. A light palette goes here, chosen by [darkTheme], and every component
-    // follows it, since they all read the roles in Colors.kt.
-    val colors = DarkAppColors
+    val colors = if (darkTheme) DarkAppColors else LightAppColors
     val shapes =
         Shapes(
             // Material buttons and chips use the small shape; cards, sheets, and dialogs use medium and large.
@@ -57,6 +59,7 @@ fun BraindanceTheme(
                     // Compose Web focuses a component on every click, so the ripple's focus highlight would stay on
                     // whatever was clicked last. It shows only for keyboard focus instead, like the focus ring.
                     LocalIndication provides AppIndication,
+                    LocalRippleConfiguration provides if (darkTheme) DefaultRipple else LightRipple,
                 ),
             content = content,
         )
@@ -64,6 +67,29 @@ fun BraindanceTheme(
 }
 
 private val AppIndication = FocusVisibleIndication(ripple())
+
+// Material's state layers: hover 8%, press and focus 10%, drag 12%. The light palette keeps them at those strengths, a
+// little under the library's own press strength, because anything weaker disappears on white cards and rows. The dark
+// palette keeps the library's defaults.
+private const val LIGHT_PRESSED_RIPPLE_ALPHA = 0.10f
+private const val LIGHT_HOVERED_RIPPLE_ALPHA = 0.08f
+private const val LIGHT_FOCUSED_RIPPLE_ALPHA = 0.10f
+private const val LIGHT_DRAGGED_RIPPLE_ALPHA = 0.12f
+
+@OptIn(ExperimentalMaterialApi::class)
+private val DefaultRipple = RippleConfiguration()
+
+@OptIn(ExperimentalMaterialApi::class)
+private val LightRipple =
+    RippleConfiguration(
+        rippleAlpha =
+            RippleAlpha(
+                draggedAlpha = LIGHT_DRAGGED_RIPPLE_ALPHA,
+                focusedAlpha = LIGHT_FOCUSED_RIPPLE_ALPHA,
+                hoveredAlpha = LIGHT_HOVERED_RIPPLE_ALPHA,
+                pressedAlpha = LIGHT_PRESSED_RIPPLE_ALPHA,
+            ),
+    )
 
 /** A bundled font file and the weight the typography uses it for. */
 internal class AppFont(

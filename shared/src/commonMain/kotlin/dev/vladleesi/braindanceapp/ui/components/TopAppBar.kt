@@ -71,7 +71,7 @@ fun TopAppBar(
     onBackButtonPressed: () -> Unit = {},
     actions: (@Composable RowScope.() -> Unit)? = null,
     maxContentWidth: Dp = Dimens.pageMaxWidth,
-    height: Dp = Dimens.topBarHeight,
+    height: Dp = if (showBackButton) Dimens.backTopBarHeight else Dimens.topBarHeight,
 ) {
     val gutter = pageGutter()
     // The color spans the whole width; the back button, title, and actions line up with the page column below, which

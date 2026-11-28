@@ -108,9 +108,11 @@ internal fun LazyGridState.calculateScrollTopBarColors(): Triple<Color, Color, C
 @ReadOnlyComposable
 private fun scrollTopBarColors(fraction: Float): Triple<Color, Color, Color> {
     val targetColor = navBar
+    val textColor = foreground
+    // Fades through the color's own transparent form: Color.Transparent is black, and the blend would darken first.
     return Triple(
-        lerp(Color.Transparent, targetColor, fraction),
-        lerp(targetColor, Color.Transparent, fraction),
-        lerp(Color.Transparent, foreground, fraction),
+        lerp(targetColor.copy(alpha = 0f), targetColor, fraction),
+        lerp(targetColor, targetColor.copy(alpha = 0f), fraction),
+        lerp(textColor.copy(alpha = 0f), textColor, fraction),
     )
 }

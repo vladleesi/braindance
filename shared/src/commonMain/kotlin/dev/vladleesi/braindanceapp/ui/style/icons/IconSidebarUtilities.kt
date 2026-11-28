@@ -22,6 +22,50 @@ internal val SidebarMoon: ImageVector by lazy {
     }
 }
 
+internal val SidebarSun: ImageVector by lazy {
+    sidebarUtilityIcon("SidebarSun") {
+        moveTo(12f, 8f)
+        arcTo(4f, 4f, 0f, isMoreThanHalf = false, isPositiveArc = true, x1 = 12f, y1 = 16f)
+        arcTo(4f, 4f, 0f, isMoreThanHalf = false, isPositiveArc = true, x1 = 12f, y1 = 8f)
+        close()
+        moveTo(12f, 2f)
+        lineTo(12f, 4f)
+        moveTo(12f, 20f)
+        lineTo(12f, 22f)
+        moveTo(2f, 12f)
+        lineTo(4f, 12f)
+        moveTo(20f, 12f)
+        lineTo(22f, 12f)
+        moveTo(5f, 5f)
+        lineTo(6.5f, 6.5f)
+        moveTo(17.5f, 17.5f)
+        lineTo(19f, 19f)
+        moveTo(5f, 19f)
+        lineTo(6.5f, 17.5f)
+        moveTo(17.5f, 6.5f)
+        lineTo(19f, 5f)
+    }
+}
+
+internal val SidebarMonitor: ImageVector by lazy {
+    sidebarUtilityIcon("SidebarMonitor") {
+        moveTo(4f, 4f)
+        horizontalLineTo(20f)
+        quadTo(22f, 4f, 22f, 6f)
+        verticalLineTo(15f)
+        quadTo(22f, 17f, 20f, 17f)
+        horizontalLineTo(4f)
+        quadTo(2f, 17f, 2f, 15f)
+        verticalLineTo(6f)
+        quadTo(2f, 4f, 4f, 4f)
+        close()
+        moveTo(12f, 17f)
+        verticalLineTo(21f)
+        moveTo(8f, 21f)
+        horizontalLineTo(16f)
+    }
+}
+
 internal val SidebarHelp: ImageVector by lazy {
     sidebarUtilityIcon("SidebarHelp") {
         moveTo(12f, 3f)

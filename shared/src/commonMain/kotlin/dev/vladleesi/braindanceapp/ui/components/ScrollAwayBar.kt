@@ -127,18 +127,20 @@ fun ScrollAwayBar(
 /**
  * A screen's own [bar] above [content] that scrolls. Phones and tablets keep the bar on screen above the content. In
  * the desktop layout the bar is a [ScrollAwayBar] at the content's [position], and [content] starts its scrolling
- * content `topInset` lower, the bar's height, so the two move as one.
+ * content `topInset` lower, the bar's [barHeight] and the status bar, so the two move as one. A bar with a back button
+ * is [Dimens.backTopBarHeight] tall.
  */
 @Composable
 fun ScrollAwayBarLayout(
     position: ContentScrollPosition,
     bar: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    barHeight: Dp = Dimens.topBarHeight,
     content: @Composable (topInset: Dp) -> Unit,
 ) {
     if (desktopLayout() != null) {
         Box(modifier = modifier.fillMaxSize().clipToBounds()) {
-            content(Dimens.topBarHeightWithInsets)
+            content(Dimens.statusBarInsets + barHeight)
             ScrollAwayBar(position = position, bar = bar)
         }
     } else {

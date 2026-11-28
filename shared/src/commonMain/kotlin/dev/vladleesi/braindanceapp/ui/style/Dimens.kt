@@ -11,8 +11,8 @@ import androidx.compose.ui.unit.dp
 import dev.vladleesi.braindanceapp.system.desktopLayout
 
 object Dimens {
-    private val mobileTopBarHeight = 82.dp
-    private val desktopTopBarHeight = 56.dp
+    private val mobileTopBarHeight = 72.dp
+    private val desktopTopBarHeight = 52.dp
     val one = 1.dp
     val micro = 2.dp
     val tiny = 4.dp
@@ -39,6 +39,9 @@ object Dimens {
     // The bar over a page's hero (game, giveaway, and event pages) and over their loading and error states: the same on
     // every layout, so Back stays in one place while a page loads.
     val heroTopBarHeight = mobileTopBarHeight
+
+    // A bar with a back button has this height on every screen and layout, so Back sits where it does on a game page.
+    val backTopBarHeight = heroTopBarHeight
 
     // The widest a block of running text gets: about 80 characters a line, however wide the window is. Pages that are
     // a single column of text or rows, such as Profile, use it as their width.

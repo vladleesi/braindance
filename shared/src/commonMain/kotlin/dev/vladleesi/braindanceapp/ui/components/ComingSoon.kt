@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -31,7 +30,7 @@ import dev.vladleesi.braindanceapp.resources.coming_soon
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
-import dev.vladleesi.braindanceapp.ui.style.foreground
+import dev.vladleesi.braindanceapp.ui.style.disabledText
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import org.jetbrains.compose.resources.stringResource
@@ -104,7 +103,7 @@ fun ComingSoonAction(
         Icon(
             imageVector = imageVector,
             contentDescription = label,
-            tint = foreground.copy(alpha = ContentAlpha.disabled),
+            tint = disabledText,
         )
     }
 }

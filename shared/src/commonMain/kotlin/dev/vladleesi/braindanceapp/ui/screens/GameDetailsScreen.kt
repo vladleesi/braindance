@@ -35,7 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
@@ -346,9 +345,10 @@ private fun GameDetailsTopBar(
     val fraction by remember(scrollState, fadeDistance) {
         derivedStateOf { (scrollState.value / fadeDistance).coerceIn(0f, 1f) }
     }
-    val topBarColor = lerp(Color.Transparent, navBar, fraction)
-    val backButtonColor = lerp(navBar, Color.Transparent, fraction)
-    val titleColor = lerp(Color.Transparent, foreground, fraction)
+    // Fades through the color's own transparent form: Color.Transparent is black, and the blend would darken first.
+    val topBarColor = lerp(navBar.copy(alpha = 0f), navBar, fraction)
+    val backButtonColor = lerp(navBar, navBar.copy(alpha = 0f), fraction)
+    val titleColor = lerp(foreground.copy(alpha = 0f), foreground, fraction)
     val shareTarget = ShareTarget.Game(id = gameDetails.releaseId, name = gameDetails.name)
     Column {
         StatusBarOverlay(backgroundColor = topBarColor)

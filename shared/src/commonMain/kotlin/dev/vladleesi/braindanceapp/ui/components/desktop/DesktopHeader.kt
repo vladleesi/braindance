@@ -24,9 +24,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -55,13 +57,14 @@ import dev.vladleesi.braindanceapp.ui.components.search.SearchQueryState
 import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
+import dev.vladleesi.braindanceapp.ui.style.divider
 import dev.vladleesi.braindanceapp.ui.style.navBar
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
 import org.jetbrains.compose.resources.stringResource
 
 /** The height of [DesktopHeader], compact for a bar that is on every screen. The sidebar's brand row matches it. */
-internal val DesktopHeaderHeight = 56.dp
+internal val DesktopHeaderHeight = 52.dp
 
 // The search field of a compact header, a little lower than Discover's own field.
 private val HeaderSearchHeight = 40.dp
@@ -93,8 +96,20 @@ fun DesktopHeader(
     searchFocusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val gutter = pageGutter()
+    val edge = divider
     var searchFocused by remember { mutableStateOf(false) }
-    Box(modifier = modifier.fillMaxWidth().height(DesktopHeaderHeight).background(navBar)) {
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(DesktopHeaderHeight)
+                .background(navBar)
+                .drawBehind {
+                    val stroke = Dimens.one.toPx()
+                    val y = size.height - stroke / 2
+                    drawLine(edge, Offset(0f, y), Offset(size.width, y), stroke)
+                },
+    ) {
         Row(
             modifier =
                 Modifier
@@ -144,9 +159,15 @@ fun DesktopHeader(
     }
 }
 
-/** The "/" key cap in the empty field. Screen readers skip it, as it repeats what the keyboard already offers. */
+/**
+ * The "/" key cap in the empty field. The dark theme outlines it; the light theme shows the bare "/" in the field's
+ * darkest readable gray, since the field's own gray leaves no outline that shows. Screen readers skip it, as it
+ * repeats what the keyboard already offers.
+ */
 @Composable
 private fun ShortcutHint() {
+    val outline =
+        if (MaterialTheme.colors.isLight) Modifier else Modifier.border(Dimens.one, secondary, CornerShapes.small)
     Text(
         text = SEARCH_SHORTCUT_HINT,
         style = MaterialTheme.typography.caption,
@@ -154,7 +175,7 @@ private fun ShortcutHint() {
         modifier =
             Modifier
                 .padding(end = Dimens.compact)
-                .border(Dimens.one, secondary, CornerShapes.small)
+                .then(outline)
                 .padding(horizontal = Dimens.small, vertical = Dimens.micro)
                 .clearAndSetSemantics {},
     )

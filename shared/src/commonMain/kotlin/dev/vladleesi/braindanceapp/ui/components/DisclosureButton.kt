@@ -115,7 +115,8 @@ internal fun DisclosureButton(
         Text(
             text = label,
             style = style.copy(fontWeight = FontWeight.SemiBold),
-            color = if (hovered) accent else color,
+            // The light palette's accent is a gray, so hovering keeps the text's own ink.
+            color = if (hovered && !MaterialTheme.colors.isLight) accent else color,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

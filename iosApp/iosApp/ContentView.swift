@@ -4,8 +4,11 @@ import SwiftUI
 import shared
 
 struct ContentView: View {
+	@State private var themeOverride: ColorScheme?
+
 	var body: some View {
-		ComposeView()
+		ComposeView { themeOverride = $0 }
+			.preferredColorScheme(themeOverride)
 			// Compose handles system insets and the keyboard, as on Android. SwiftUI's keyboard avoidance would shrink
 			// the view on top of Compose's keyboard inset and squeeze screens to their title.
 			.ignoresSafeArea()

@@ -26,12 +26,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -56,6 +54,8 @@ import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.disabledFill
+import dev.vladleesi.braindanceapp.ui.style.disabledText
 import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import dev.vladleesi.braindanceapp.utils.focusRing
@@ -67,12 +67,6 @@ private val ToggleSize = 48.dp
 private val ToggleIconSize = 20.dp
 private val CheckIconSize = 18.dp
 private val ToggleLabelPadding = 20.dp
-
-// Material's disabled content emphasis (ContentAlpha.disabled, which can only be read in composition).
-private const val DISABLED_CONTENT_ALPHA = 0.38f
-private val disabledContentColor: Color
-    @Composable @ReadOnlyComposable
-    get() = foreground.copy(alpha = DISABLED_CONTENT_ALPHA)
 
 /**
  * Where a game sits in the user's library. A game is in the collection or on the wishlist, never both, so the two
@@ -242,7 +236,7 @@ private fun CollectionButton(
         Text(
             text = stringResource(Res.string.game_details_in_collection),
             style = MaterialTheme.typography.button,
-            color = if (enabled || saving) foreground else disabledContentColor,
+            color = if (enabled || saving) foreground else disabledText,
         )
     }
 }
@@ -264,14 +258,16 @@ private fun WishlistToggle(
     val enabled = actionState == ActionState.Enabled
     val saving = actionState == ActionState.Saving
     // A saving toggle keeps full emphasis: its change is underway, not unavailable.
-    val contentColor = if (actionState == ActionState.Disabled) disabledContentColor else foreground
+    val disabled = actionState == ActionState.Disabled
+    val contentColor = if (disabled) disabledText else foreground
+    val fill = if (disabled && MaterialTheme.colors.isLight) disabledFill else secondaryVariant
     Row(
         modifier =
             Modifier
                 .heightIn(min = ToggleSize)
                 .then(if (showLabel) Modifier else Modifier.size(ToggleSize))
                 .clip(shape)
-                .background(secondaryVariant)
+                .background(fill)
                 .focusRing(interactionSource.isFocusVisible(), shape, Dimens.micro)
                 .toggleable(
                     value = onWishlist,

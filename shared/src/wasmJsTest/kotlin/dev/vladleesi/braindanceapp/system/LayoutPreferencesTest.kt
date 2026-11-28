@@ -8,7 +8,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class LayoutPreferencesTest {
@@ -18,7 +17,7 @@ class LayoutPreferencesTest {
     }
 
     @Test
-    fun aCollapsedSidebarIsRememberedAndExpandingForgetsIt() {
+    fun bothSidebarChoicesAreRemembered() {
         val preferences = assertNotNull(layoutPreferences)
 
         preferences.isSidebarCollapsed = true
@@ -27,14 +26,14 @@ class LayoutPreferencesTest {
 
         preferences.isSidebarCollapsed = false
         assertFalse(preferences.isSidebarCollapsed)
-        assertNull(window.localStorage.getItem(KEY))
+        assertEquals("false", window.localStorage.getItem(KEY))
     }
 
     @Test
-    fun anUnknownStoredValueReadsAsExpanded() {
+    fun anUnknownStoredValueReadsAsCollapsed() {
         window.localStorage.setItem(KEY, "yes")
 
-        assertFalse(assertNotNull(layoutPreferences).isSidebarCollapsed)
+        assertTrue(assertNotNull(layoutPreferences).isSidebarCollapsed)
     }
 
     private companion object {

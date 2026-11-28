@@ -5,6 +5,23 @@ what changed.
 History begins with the introduction of shared version tracking in `version.xcconfig`.
 The Braindance API is versioned and released separately.
 
+## 0.35.0 — 2026-11-28
+
+### Android, iOS, and Web
+
+- Choose a Light, System, or Dark theme in Profile. The choice is remembered on the device, Dark stays the default,
+  and System follows the device's appearance. On Android and iOS the system bars follow it too.
+- Make top bars a little shorter, and give every screen with a back button the same bar height as game pages.
+
+### Web
+
+- Pick the theme from the sidebar as well. The collapsed sidebar now shows the brand tile in both themes, and new
+  visitors start with the sidebar collapsed.
+
+### Website and documentation
+
+- Mention the remembered theme choice in the privacy policy.
+
 ## 0.34.4 — 2026-11-27
 
 ### Web

@@ -13,9 +13,9 @@ import kotlin.native.Platform
 private val appLinks = AppLinkInbox()
 
 @OptIn(ExperimentalNativeApi::class)
-fun mainViewController(): UIViewController =
+fun mainViewController(onThemeOverrideChanged: (Boolean?) -> Unit): UIViewController =
     ComposeUIViewController(configure = { initKoin(isDebugBuild = Platform.isDebugBinary) }) {
-        BraindanceApp(appLinks = appLinks)
+        BraindanceApp(appLinks = appLinks, onThemeOverrideChanged = onThemeOverrideChanged)
     }
 
 /**

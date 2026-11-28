@@ -141,6 +141,7 @@ internal fun EventsScreen(
                 }
             },
             modifier = modifier,
+            barHeight = Dimens.backTopBarHeight,
         ) { topInset ->
             EventsList(
                 state = events,

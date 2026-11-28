@@ -18,6 +18,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
@@ -47,6 +48,9 @@ import dev.vladleesi.braindanceapp.resources.profile_settings
 import dev.vladleesi.braindanceapp.resources.profile_sign_in
 import dev.vladleesi.braindanceapp.resources.profile_social_handle
 import dev.vladleesi.braindanceapp.resources.profile_statistics
+import dev.vladleesi.braindanceapp.system.LocalThemeChoice
+import dev.vladleesi.braindanceapp.system.ThemeChoice
+import dev.vladleesi.braindanceapp.system.ThemeMode
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.ui.components.ComingSoonLabel
 import dev.vladleesi.braindanceapp.ui.components.CommunityLinks
@@ -62,6 +66,7 @@ import dev.vladleesi.braindanceapp.ui.components.TopAppBar
 import dev.vladleesi.braindanceapp.ui.components.pageColumn
 import dev.vladleesi.braindanceapp.ui.components.pageGutter
 import dev.vladleesi.braindanceapp.ui.components.profile.AboutCard
+import dev.vladleesi.braindanceapp.ui.components.profile.ProfileAppearance
 import dev.vladleesi.braindanceapp.ui.components.profile.ProfileSection
 import dev.vladleesi.braindanceapp.ui.components.rememberCommunityLinks
 import dev.vladleesi.braindanceapp.ui.components.rememberProjectLinks
@@ -88,12 +93,13 @@ fun ProfileScreen(
         community = rememberCommunityLinks(),
         versionLabel = stringResource(Res.string.profile_screen_version, BuildKonfig.APP_VERSION),
         onBackButtonPressed = onBackButtonPressed,
+        theme = LocalThemeChoice.current,
         modifier = modifier,
     )
 }
 
 /**
- * Profile, grouped the way a settings list is: the account features that are coming, then the community links, then
+ * Profile, grouped the way a settings list is: appearance, account features, community links, and
  * About with the app version, support, the legal pages, and the data credits. The page uses the same column as every
  * other screen, so its edges stay in place between tabs. Phones and tablets show the sections as one list at a
  * readable width. The desktop layout fills the column with them side by side in [SectionColumns], up to one column
@@ -105,6 +111,7 @@ internal fun ProfileContent(
     community: CommunityLinks,
     versionLabel: String,
     onBackButtonPressed: () -> Unit,
+    theme: ThemeChoice,
     modifier: Modifier = Modifier,
 ) {
     val gutter = pageGutter()
@@ -127,7 +134,15 @@ internal fun ProfileContent(
             val desktop = desktopLayout() != null
             val sections =
                 listOf<@Composable () -> Unit>(
-                    { AccountSection() },
+                    {
+                        Column(verticalArrangement = Arrangement.spacedBy(Dimens.medium)) {
+                            ProfileAppearance(
+                                mode = theme.mode,
+                                onChooseTheme = theme::choose,
+                            )
+                            AccountSection()
+                        }
+                    },
                     { CommunitySection(links = links, community = community) },
                     {
                         AboutCard(
@@ -265,7 +280,12 @@ internal fun ProfileSectionsPreview() {
                 columns = 3,
                 sections =
                     listOf(
-                        { AccountSection() },
+                        {
+                            Column(verticalArrangement = Arrangement.spacedBy(Dimens.medium)) {
+                                ProfileAppearance(mode = ThemeMode.System, onChooseTheme = {})
+                                AccountSection()
+                            }
+                        },
                         { CommunitySection(links = PreviewProjectLinks, community = PreviewCommunity) },
                         {
                             AboutCard(
@@ -292,6 +312,7 @@ internal fun ProfileScreenPreview() {
                 community = PreviewCommunity,
                 versionLabel = "v1.0.0",
                 onBackButtonPressed = {},
+                theme = remember { ThemeChoice(ThemeMode.System) {} },
                 modifier = Modifier.fillMaxSize(),
             )
         }

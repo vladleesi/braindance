@@ -64,6 +64,7 @@ import dev.vladleesi.braindanceapp.navigation.routes.registerNestedRoute
 import dev.vladleesi.braindanceapp.navigation.routes.registerTopLevelRoute
 import dev.vladleesi.braindanceapp.navigation.toEntries
 import dev.vladleesi.braindanceapp.system.DesktopLayout
+import dev.vladleesi.braindanceapp.system.LocalThemeChoice
 import dev.vladleesi.braindanceapp.system.desktopLayout
 import dev.vladleesi.braindanceapp.system.isLargeWindow
 import dev.vladleesi.braindanceapp.system.layoutPreferences
@@ -81,6 +82,7 @@ import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.navBar
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
+import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import org.jetbrains.compose.resources.stringResource
 
 private val SelectedLineWidth = Dimens.compact
@@ -96,7 +98,7 @@ internal fun NavigationScaffold(
     // Only the Web host enables the desktop layout, and with it the sidebar. Elsewhere this is null.
     val desktop = desktopLayout()
     val useSidebar = desktop != null
-    val sidebar = remember { SidebarState(collapsedByChoice = layoutPreferences?.isSidebarCollapsed == true) }
+    val sidebar = remember { SidebarState(collapsedByChoice = layoutPreferences?.isSidebarCollapsed ?: true) }
     val sidebarWidth = animatedSidebarWidth(sidebar, desktop)
     val navigator = LocalNavigator.current
     // The scaffold and items share the width-only policy; defaults also consider height and posture.
@@ -213,7 +215,7 @@ private fun NavigationItems(
         ShortNavigationBarItemDefaults.colors(
             selectedIconColor = foreground,
             selectedTextColor = foreground,
-            selectedIndicatorColor = secondary,
+            selectedIndicatorColor = if (MaterialTheme.colors.isLight) secondaryVariant else secondary,
             unselectedIconColor = secondaryText,
             unselectedTextColor = secondaryText,
         )
@@ -299,10 +301,13 @@ private fun NavigationSidebar(
     modifier: Modifier = Modifier,
 ) {
     val currentStack = navigator.state.backStacks[navigator.state.topLevelRoute]
+    val theme = LocalThemeChoice.current
     DesktopSidebar(
         selectedRoute = navigator.state.topLevelRoute,
         isProfileSelected = currentStack?.lastOrNull() == ProfileRoute,
         onRouteClick = { route -> navigator.selectTab(route) },
+        themeMode = theme.mode,
+        onChooseTheme = theme::choose,
         links = rememberProjectLinks(),
         modifier = modifier,
         collapsed = collapsed,

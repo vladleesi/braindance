@@ -4,18 +4,22 @@ package dev.vladleesi.braindanceapp.ui.components.desktop
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import dev.vladleesi.braindanceapp.navigation.routes.BottomBarRoute
+import dev.vladleesi.braindanceapp.system.ThemeMode
 import dev.vladleesi.braindanceapp.ui.components.LocalOverlayHost
 import dev.vladleesi.braindanceapp.ui.components.OverlayHost
 import dev.vladleesi.braindanceapp.ui.components.OverlayHostLayout
@@ -33,7 +37,9 @@ class DesktopSidebarTest {
             setContent { Sidebar(collapsed = false, onToggle = { toggles++ }) }
 
             onNodeWithText(PRIVACY).assertDoesNotExist()
-            onNodeWithContentDescription(THEME).assertIsNotEnabled()
+            onNodeWithContentDescription("Dark").assertIsSelected()
+            onNodeWithContentDescription("Light").performClick()
+            onNodeWithContentDescription("Light").assertIsSelected()
             onNodeWithContentDescription(HELP).performClick()
             onNodeWithText(PRIVACY).assertIsDisplayed()
             onNodeWithText("Terms of use").assertIsDisplayed()
@@ -54,7 +60,9 @@ class DesktopSidebarTest {
             setContent { Sidebar(collapsed = true, onToggle = {}, onRouteClick = { opened = it }) }
 
             onNodeWithContentDescription(EXPAND).assertIsDisplayed()
-            onNodeWithContentDescription(THEME).assertIsNotEnabled()
+            onNodeWithContentDescription("Theme (Dark)").performClick()
+            onNodeWithText("System").performClick()
+            onNodeWithContentDescription("Theme (System)").assertIsDisplayed()
             onNodeWithContentDescription(HELP).assertIsDisplayed()
             onNodeWithText(PRIVACY).assertDoesNotExist()
             onNodeWithText("Discover")
@@ -77,7 +85,6 @@ class DesktopSidebarTest {
     private companion object {
         const val PRIVACY = "Privacy policy"
         const val HELP = "Help & links"
-        const val THEME = "Theme unavailable"
         const val COLLAPSE = "Collapse sidebar"
         const val EXPAND = "Expand sidebar"
     }
@@ -90,13 +97,16 @@ private fun Sidebar(
     onRouteClick: (BottomBarRoute) -> Unit = {},
 ) {
     val host = remember { OverlayHost() }
-    BraindanceTheme {
+    var mode by remember { mutableStateOf(ThemeMode.Dark) }
+    BraindanceTheme(darkTheme = mode != ThemeMode.Light) {
         CompositionLocalProvider(LocalOverlayHost provides host) {
             OverlayHostLayout(host) {
                 DesktopSidebar(
                     selectedRoute = BottomBarRoute.DiscoverRoute,
                     isProfileSelected = false,
                     onRouteClick = onRouteClick,
+                    themeMode = mode,
+                    onChooseTheme = { mode = it },
                     links = PreviewProjectLinks,
                     collapsed = collapsed,
                     onToggleCollapsed = onToggle,

@@ -50,8 +50,10 @@ import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.accent
 import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.foreground
+import dev.vladleesi.braindanceapp.ui.style.mutedText
 import dev.vladleesi.braindanceapp.ui.style.secondary
 import dev.vladleesi.braindanceapp.ui.style.secondaryText
+import dev.vladleesi.braindanceapp.ui.style.secondaryVariant
 import dev.vladleesi.braindanceapp.utils.focusRing
 import dev.vladleesi.braindanceapp.utils.isFocusVisible
 import org.jetbrains.compose.resources.stringResource
@@ -100,8 +102,10 @@ fun SearchBar(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .background(secondary, CornerShapes.pill)
-                        .focusRing(visible = interactionSource.isFocusVisible(), shape = CornerShapes.pill),
+                        .background(
+                            color = if (MaterialTheme.colors.isLight) secondaryVariant else secondary,
+                            shape = CornerShapes.pill,
+                        ).focusRing(visible = interactionSource.isFocusVisible(), shape = CornerShapes.pill),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 leadingIcon()
@@ -113,7 +117,7 @@ fun SearchBar(
                         Text(
                             text = placeholder,
                             style = MaterialTheme.typography.body2,
-                            color = secondaryText,
+                            color = mutedText,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )

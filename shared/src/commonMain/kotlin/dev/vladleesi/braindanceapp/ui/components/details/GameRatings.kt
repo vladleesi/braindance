@@ -109,12 +109,13 @@ private fun StatusTag(
     placeholder: Boolean,
     modifier: Modifier,
 ) {
+    val fill = if (MaterialTheme.colors.isLight) secondary else lerp(secondary, color, STATUS_TINT_FRACTION)
     Tag(
         text,
         modifier =
             modifier
                 .placeholder(visible = placeholder, shape = CornerShapes.pill)
-                .background(lerp(secondary, color, STATUS_TINT_FRACTION), CornerShapes.pill),
+                .background(fill, CornerShapes.pill),
         color = color,
     )
 }

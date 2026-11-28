@@ -37,10 +37,9 @@
     <string name="terms_of_use">Terms of use</string>
     <string name="profile_licenses">Open-source licenses</string>
     <string name="sidebar_collapse">Collapse sidebar</string>
-    <string name="sidebar_collapse_short">Collapse</string>
     <string name="sidebar_expand">Expand sidebar</string>
     <string name="sidebar_help">Help &amp; links</string>
-    <string name="sidebar_theme">Theme unavailable</string>
+    <string name="sidebar_theme_menu">Theme (%1$s)</string>
     <string name="data_attribution_igdb">Game data by %1$s</string>
     <string name="data_attribution_gamerpower">Giveaways by %1$s</string>
     <string name="profile_support_share">Share</string>
@@ -58,6 +57,10 @@
     <string name="profile_activity">Activity</string>
     <string name="profile_reviews">Reviews</string>
     <string name="profile_settings">Settings</string>
+    <string name="profile_appearance">Appearance</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_system">System</string>
+    <string name="theme_dark">Dark</string>
 
     <!-- Home screen -->
     <string name="home_screen_popular_right_now">Popular Right Now</string>

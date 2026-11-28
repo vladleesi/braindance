@@ -26,7 +26,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -44,6 +43,8 @@ import dev.vladleesi.braindanceapp.ui.style.BraindanceTheme
 import dev.vladleesi.braindanceapp.ui.style.CornerShapes
 import dev.vladleesi.braindanceapp.ui.style.Dimens
 import dev.vladleesi.braindanceapp.ui.style.background
+import dev.vladleesi.braindanceapp.ui.style.disabledFill
+import dev.vladleesi.braindanceapp.ui.style.disabledText
 import dev.vladleesi.braindanceapp.ui.style.foreground
 import dev.vladleesi.braindanceapp.ui.style.hotMagenta
 import dev.vladleesi.braindanceapp.ui.style.icons.OpenInNew
@@ -56,15 +57,6 @@ internal val ButtonMinHeight = 48.dp
 private val ButtonContentPadding = PaddingValues(horizontal = 24.dp, vertical = Dimens.compact)
 private val TrailingIconSize = 18.dp
 private val ProgressStrokeWidth = 2.dp
-
-// Material's disabled container: the content color at 12%.
-private const val DISABLED_CONTAINER_ALPHA = 0.12f
-
-// Material's disabled content emphasis (ContentAlpha.disabled, which can only be read in composition).
-private const val DISABLED_CONTENT_ALPHA = 0.38f
-private val disabledContentColor: Color
-    @Composable @ReadOnlyComposable
-    get() = foreground.copy(alpha = DISABLED_CONTENT_ALPHA)
 
 // The Echo trail, as on the landing site's primary button: the button lifts by one step, and flat cyan, magenta, and
 // yellow copies appear one, two, and three steps behind it.
@@ -107,7 +99,7 @@ fun PrimaryButton(
             animationSpec = tween(ECHO_MILLIS),
         )
     // The pill inverts the theme: the foreground color as its fill, and the canvas color for its text.
-    val contentColor = if (enabled) background else disabledContentColor
+    val contentColor = if (enabled) background else disabledText
     Button(
         onClick = onClick,
         modifier =
@@ -134,14 +126,7 @@ fun PrimaryButton(
             ButtonDefaults.buttonColors(
                 backgroundColor = foreground,
                 contentColor = background,
-                disabledBackgroundColor =
-                    if (enabled) {
-                        foreground
-                    } else {
-                        foreground.copy(
-                            alpha = DISABLED_CONTAINER_ALPHA,
-                        )
-                    },
+                disabledBackgroundColor = if (enabled) foreground else disabledFill,
                 disabledContentColor = contentColor,
             ),
         contentPadding = ButtonContentPadding,
@@ -200,8 +185,8 @@ fun TonalButton(
             ButtonDefaults.buttonColors(
                 backgroundColor = secondaryVariant,
                 contentColor = foreground,
-                disabledBackgroundColor = secondaryVariant,
-                disabledContentColor = disabledContentColor,
+                disabledBackgroundColor = if (MaterialTheme.colors.isLight) disabledFill else secondaryVariant,
+                disabledContentColor = disabledText,
             ),
         contentPadding = ButtonContentPadding,
         content = content,

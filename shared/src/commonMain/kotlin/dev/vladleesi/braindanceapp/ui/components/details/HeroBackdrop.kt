@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.BiasAlignment
@@ -26,18 +27,21 @@ import dev.vladleesi.braindanceapp.ui.style.background
 import dev.vladleesi.braindanceapp.ui.style.surface
 import dev.vladleesi.braindanceapp.utils.rememberCachedImageRequest
 
-// The canvas color over the image. It is lightest behind the top bar, where the artwork shows most, at least 78% from
-// the title down, which keeps the foreground text above 4.5:1 even over a screenshot in the opposite tone, and opaque
-// at the bottom edge, so the hero fades into the page with no seam. The stops are fractions of the hero's height, so
-// one brush fits every size.
-private const val TOP_SCRIM_ALPHA = 0.55f
+// The canvas color over the image. The top bar leaves the most artwork visible. Higher opacity in the light theme
+// keeps the text readable over dark art. At the bottom the scrim is opaque and fades seamlessly into the page.
+private const val DARK_TOP_SCRIM_ALPHA = 0.55f
+private const val LIGHT_TOP_SCRIM_ALPHA = 0.48f
 private const val TITLE_SCRIM_STOP = 0.4f
-private const val TITLE_SCRIM_ALPHA = 0.78f
+private const val DARK_TITLE_SCRIM_ALPHA = 0.78f
+private const val LIGHT_TITLE_SCRIM_ALPHA = 0.68f
 
-private fun scrim(canvas: Color): Brush =
+private fun scrim(
+    canvas: Color,
+    lightTheme: Boolean,
+): Brush =
     Brush.verticalGradient(
-        0f to canvas.copy(alpha = TOP_SCRIM_ALPHA),
-        TITLE_SCRIM_STOP to canvas.copy(alpha = TITLE_SCRIM_ALPHA),
+        0f to canvas.copy(alpha = if (lightTheme) LIGHT_TOP_SCRIM_ALPHA else DARK_TOP_SCRIM_ALPHA),
+        TITLE_SCRIM_STOP to canvas.copy(alpha = if (lightTheme) LIGHT_TITLE_SCRIM_ALPHA else DARK_TITLE_SCRIM_ALPHA),
         1f to canvas,
     )
 
@@ -54,8 +58,8 @@ private const val PARALLAX_FACTOR = 0.4f
 // Without an image, a faint lift from the card surface into the canvas still sets the hero apart.
 
 /**
- * The hero's background: the image the API chose, key art or a screenshot, under an Ink scrim, or a quiet gradient
- * when there is none ([imageUrl] is null). A crop keeps its upper part, where faces usually are. It is decorative and
+ * The hero's background: key art or a screenshot under a canvas-color scrim, or a quiet gradient when [imageUrl]
+ * is null. A crop keeps the image's upper part, where faces usually are. It is decorative and
  * draws behind the hero, so the hero never changes size while the image loads; the image fades in when it arrives.
  * There is no blur: a small image drawn large is already soft, and the scrim is a single cheap gradient draw, so
  * scrolling never re-renders an effect.
@@ -76,7 +80,8 @@ fun HeroBackdrop(
         Box(modifier = modifier.background(fallback))
         return
     }
-    val scrim = remember(canvas) { scrim(canvas) }
+    val lightTheme = MaterialTheme.colors.isLight
+    val scrim = remember(canvas, lightTheme) { scrim(canvas, lightTheme) }
     val parallax = if (prefersReducedMotion()) 0f else PARALLAX_FACTOR
     Box(
         modifier =

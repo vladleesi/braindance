@@ -300,7 +300,7 @@ Read `docs/security.md` for existing security-check coverage or Android backup p
   `SearchQueryState`. Start searches with `Navigator.openSearch`, and keep the "/" and Ctrl/⌘+K shortcuts working.
 - In the desktop layout a screen's own bar is compact. On screens of titles and lists, give it `ScrollAwayBarLayout`
   or a place inside the scrolling column, so it scrolls away with the content, and never let content scroll under a
-  title that stays. Game, giveaway, and event pages keep their 82 dp bar over the hero on screen, filling as the page
+  title that stays. Game, giveaway, and event pages keep their bar over the hero on screen, filling as the page
   scrolls. Phones and tablets keep every bar on screen.
 - Keep decorative motion, such as parallax and layout transitions, still when `prefersReducedMotion()` is true, and
   shift scroll-driven effects while drawing or placing, never through recomposition.
